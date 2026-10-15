@@ -1,0 +1,11 @@
+dist
+node_modules
+.env
+.env.production
+/src/generated/prisma
+/static/*
+!/static/public/
+!/static/public/avatars/
+!/static/public/avatars/**
+
+GEMINI.md

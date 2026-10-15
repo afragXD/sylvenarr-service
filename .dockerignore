@@ -1,0 +1,11 @@
+node_modules
+dist
+.env*
+.dockerignore
+Dockerfile
+.git
+.gitignore
+README.md
+*.log
+
+GEMINI.md
