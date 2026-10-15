@@ -20,23 +20,27 @@ enum RatingResult {
 
 /// Класс героя из каталога (статы из legacy stats_dict).
 model HeroClass {
-  code        String   @id
-  displayName String
-  health      Int
-  damage      Int
-  armor       Int
-  initiative  Int
-  dodge       Int
-  luck        Int
-  morale      Int
-  mana        Int
-  power       Int
-  gold        Int
-  accuracy    Int
-  isPlayable  Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  code         String   @id
+  displayName  String
+  /// Lore со слайдов arenamsterbot/imgs/intro.
+  description  String   @default("")
+  /// Геймплейная роль со слайдов intro.
+  roleSummary  String   @default("")
+  health       Int
+  damage       Int
+  armor        Int
+  initiative   Int
+  dodge        Int
+  luck         Int
+  morale       Int
+  mana         Int
+  power        Int
+  gold         Int
+  accuracy     Int
+  isPlayable   Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   ratingEntries RatingEntry[]
 }

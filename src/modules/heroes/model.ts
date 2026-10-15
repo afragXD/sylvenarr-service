@@ -4,6 +4,8 @@ export namespace HeroesModel {
   export const heroClass = t.Object({
     code: t.String(),
     displayName: t.String(),
+    description: t.String(),
+    roleSummary: t.String(),
     health: t.Number(),
     damage: t.Number(),
     armor: t.Number(),

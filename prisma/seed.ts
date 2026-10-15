@@ -13,6 +13,8 @@ async function main(): Promise<void> {
       create: { ...hero },
       update: {
         displayName: hero.displayName,
+        description: hero.description,
+        roleSummary: hero.roleSummary,
         health: hero.health,
         damage: hero.damage,
         armor: hero.armor,

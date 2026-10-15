@@ -13,6 +13,8 @@ export abstract class HeroesService {
       select: {
         code: true,
         displayName: true,
+        description: true,
+        roleSummary: true,
         health: true,
         damage: true,
         armor: true,
@@ -40,6 +42,8 @@ export abstract class HeroesService {
       select: {
         code: true,
         displayName: true,
+        description: true,
+        roleSummary: true,
         health: true,
         damage: true,
         armor: true,

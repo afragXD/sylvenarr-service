@@ -745,6 +745,8 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const HeroClassScalarFieldEnum = {
   code: 'code',
   displayName: 'displayName',
+  description: 'description',
+  roleSummary: 'roleSummary',
   health: 'health',
   damage: 'damage',
   armor: 'armor',

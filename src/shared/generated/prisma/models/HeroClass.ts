@@ -59,6 +59,8 @@ export type HeroClassSumAggregateOutputType = {
 export type HeroClassMinAggregateOutputType = {
   code: string | null
   displayName: string | null
+  description: string | null
+  roleSummary: string | null
   health: number | null
   damage: number | null
   armor: number | null
@@ -79,6 +81,8 @@ export type HeroClassMinAggregateOutputType = {
 export type HeroClassMaxAggregateOutputType = {
   code: string | null
   displayName: string | null
+  description: string | null
+  roleSummary: string | null
   health: number | null
   damage: number | null
   armor: number | null
@@ -99,6 +103,8 @@ export type HeroClassMaxAggregateOutputType = {
 export type HeroClassCountAggregateOutputType = {
   code: number
   displayName: number
+  description: number
+  roleSummary: number
   health: number
   damage: number
   armor: number
@@ -151,6 +157,8 @@ export type HeroClassSumAggregateInputType = {
 export type HeroClassMinAggregateInputType = {
   code?: true
   displayName?: true
+  description?: true
+  roleSummary?: true
   health?: true
   damage?: true
   armor?: true
@@ -171,6 +179,8 @@ export type HeroClassMinAggregateInputType = {
 export type HeroClassMaxAggregateInputType = {
   code?: true
   displayName?: true
+  description?: true
+  roleSummary?: true
   health?: true
   damage?: true
   armor?: true
@@ -191,6 +201,8 @@ export type HeroClassMaxAggregateInputType = {
 export type HeroClassCountAggregateInputType = {
   code?: true
   displayName?: true
+  description?: true
+  roleSummary?: true
   health?: true
   damage?: true
   armor?: true
@@ -298,6 +310,8 @@ export type HeroClassGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 export type HeroClassGroupByOutputType = {
   code: string
   displayName: string
+  description: string
+  roleSummary: string
   health: number
   damage: number
   armor: number
@@ -341,6 +355,8 @@ export type HeroClassWhereInput = {
   NOT?: Prisma.HeroClassWhereInput | Prisma.HeroClassWhereInput[]
   code?: Prisma.StringFilter<"HeroClass"> | string
   displayName?: Prisma.StringFilter<"HeroClass"> | string
+  description?: Prisma.StringFilter<"HeroClass"> | string
+  roleSummary?: Prisma.StringFilter<"HeroClass"> | string
   health?: Prisma.IntFilter<"HeroClass"> | number
   damage?: Prisma.IntFilter<"HeroClass"> | number
   armor?: Prisma.IntFilter<"HeroClass"> | number
@@ -362,6 +378,8 @@ export type HeroClassWhereInput = {
 export type HeroClassOrderByWithRelationInput = {
   code?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  roleSummary?: Prisma.SortOrder
   health?: Prisma.SortOrder
   damage?: Prisma.SortOrder
   armor?: Prisma.SortOrder
@@ -386,6 +404,8 @@ export type HeroClassWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.HeroClassWhereInput[]
   NOT?: Prisma.HeroClassWhereInput | Prisma.HeroClassWhereInput[]
   displayName?: Prisma.StringFilter<"HeroClass"> | string
+  description?: Prisma.StringFilter<"HeroClass"> | string
+  roleSummary?: Prisma.StringFilter<"HeroClass"> | string
   health?: Prisma.IntFilter<"HeroClass"> | number
   damage?: Prisma.IntFilter<"HeroClass"> | number
   armor?: Prisma.IntFilter<"HeroClass"> | number
@@ -407,6 +427,8 @@ export type HeroClassWhereUniqueInput = Prisma.AtLeast<{
 export type HeroClassOrderByWithAggregationInput = {
   code?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  roleSummary?: Prisma.SortOrder
   health?: Prisma.SortOrder
   damage?: Prisma.SortOrder
   armor?: Prisma.SortOrder
@@ -435,6 +457,8 @@ export type HeroClassScalarWhereWithAggregatesInput = {
   NOT?: Prisma.HeroClassScalarWhereWithAggregatesInput | Prisma.HeroClassScalarWhereWithAggregatesInput[]
   code?: Prisma.StringWithAggregatesFilter<"HeroClass"> | string
   displayName?: Prisma.StringWithAggregatesFilter<"HeroClass"> | string
+  description?: Prisma.StringWithAggregatesFilter<"HeroClass"> | string
+  roleSummary?: Prisma.StringWithAggregatesFilter<"HeroClass"> | string
   health?: Prisma.IntWithAggregatesFilter<"HeroClass"> | number
   damage?: Prisma.IntWithAggregatesFilter<"HeroClass"> | number
   armor?: Prisma.IntWithAggregatesFilter<"HeroClass"> | number
@@ -455,6 +479,8 @@ export type HeroClassScalarWhereWithAggregatesInput = {
 export type HeroClassCreateInput = {
   code: string
   displayName: string
+  description?: string
+  roleSummary?: string
   health: number
   damage: number
   armor: number
@@ -476,6 +502,8 @@ export type HeroClassCreateInput = {
 export type HeroClassUncheckedCreateInput = {
   code: string
   displayName: string
+  description?: string
+  roleSummary?: string
   health: number
   damage: number
   armor: number
@@ -497,6 +525,8 @@ export type HeroClassUncheckedCreateInput = {
 export type HeroClassUpdateInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  roleSummary?: Prisma.StringFieldUpdateOperationsInput | string
   health?: Prisma.IntFieldUpdateOperationsInput | number
   damage?: Prisma.IntFieldUpdateOperationsInput | number
   armor?: Prisma.IntFieldUpdateOperationsInput | number
@@ -518,6 +548,8 @@ export type HeroClassUpdateInput = {
 export type HeroClassUncheckedUpdateInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  roleSummary?: Prisma.StringFieldUpdateOperationsInput | string
   health?: Prisma.IntFieldUpdateOperationsInput | number
   damage?: Prisma.IntFieldUpdateOperationsInput | number
   armor?: Prisma.IntFieldUpdateOperationsInput | number
@@ -539,6 +571,8 @@ export type HeroClassUncheckedUpdateInput = {
 export type HeroClassCreateManyInput = {
   code: string
   displayName: string
+  description?: string
+  roleSummary?: string
   health: number
   damage: number
   armor: number
@@ -559,6 +593,8 @@ export type HeroClassCreateManyInput = {
 export type HeroClassUpdateManyMutationInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  roleSummary?: Prisma.StringFieldUpdateOperationsInput | string
   health?: Prisma.IntFieldUpdateOperationsInput | number
   damage?: Prisma.IntFieldUpdateOperationsInput | number
   armor?: Prisma.IntFieldUpdateOperationsInput | number
@@ -579,6 +615,8 @@ export type HeroClassUpdateManyMutationInput = {
 export type HeroClassUncheckedUpdateManyInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  roleSummary?: Prisma.StringFieldUpdateOperationsInput | string
   health?: Prisma.IntFieldUpdateOperationsInput | number
   damage?: Prisma.IntFieldUpdateOperationsInput | number
   armor?: Prisma.IntFieldUpdateOperationsInput | number
@@ -599,6 +637,8 @@ export type HeroClassUncheckedUpdateManyInput = {
 export type HeroClassCountOrderByAggregateInput = {
   code?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  roleSummary?: Prisma.SortOrder
   health?: Prisma.SortOrder
   damage?: Prisma.SortOrder
   armor?: Prisma.SortOrder
@@ -634,6 +674,8 @@ export type HeroClassAvgOrderByAggregateInput = {
 export type HeroClassMaxOrderByAggregateInput = {
   code?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  roleSummary?: Prisma.SortOrder
   health?: Prisma.SortOrder
   damage?: Prisma.SortOrder
   armor?: Prisma.SortOrder
@@ -654,6 +696,8 @@ export type HeroClassMaxOrderByAggregateInput = {
 export type HeroClassMinOrderByAggregateInput = {
   code?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  roleSummary?: Prisma.SortOrder
   health?: Prisma.SortOrder
   damage?: Prisma.SortOrder
   armor?: Prisma.SortOrder
@@ -730,6 +774,8 @@ export type HeroClassUpdateOneWithoutRatingEntriesNestedInput = {
 export type HeroClassCreateWithoutRatingEntriesInput = {
   code: string
   displayName: string
+  description?: string
+  roleSummary?: string
   health: number
   damage: number
   armor: number
@@ -750,6 +796,8 @@ export type HeroClassCreateWithoutRatingEntriesInput = {
 export type HeroClassUncheckedCreateWithoutRatingEntriesInput = {
   code: string
   displayName: string
+  description?: string
+  roleSummary?: string
   health: number
   damage: number
   armor: number
@@ -786,6 +834,8 @@ export type HeroClassUpdateToOneWithWhereWithoutRatingEntriesInput = {
 export type HeroClassUpdateWithoutRatingEntriesInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  roleSummary?: Prisma.StringFieldUpdateOperationsInput | string
   health?: Prisma.IntFieldUpdateOperationsInput | number
   damage?: Prisma.IntFieldUpdateOperationsInput | number
   armor?: Prisma.IntFieldUpdateOperationsInput | number
@@ -806,6 +856,8 @@ export type HeroClassUpdateWithoutRatingEntriesInput = {
 export type HeroClassUncheckedUpdateWithoutRatingEntriesInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  roleSummary?: Prisma.StringFieldUpdateOperationsInput | string
   health?: Prisma.IntFieldUpdateOperationsInput | number
   damage?: Prisma.IntFieldUpdateOperationsInput | number
   armor?: Prisma.IntFieldUpdateOperationsInput | number
@@ -857,6 +909,8 @@ export type HeroClassCountOutputTypeCountRatingEntriesArgs<ExtArgs extends runti
 export type HeroClassSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   code?: boolean
   displayName?: boolean
+  description?: boolean
+  roleSummary?: boolean
   health?: boolean
   damage?: boolean
   armor?: boolean
@@ -879,6 +933,8 @@ export type HeroClassSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type HeroClassSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   code?: boolean
   displayName?: boolean
+  description?: boolean
+  roleSummary?: boolean
   health?: boolean
   damage?: boolean
   armor?: boolean
@@ -899,6 +955,8 @@ export type HeroClassSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
 export type HeroClassSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   code?: boolean
   displayName?: boolean
+  description?: boolean
+  roleSummary?: boolean
   health?: boolean
   damage?: boolean
   armor?: boolean
@@ -919,6 +977,8 @@ export type HeroClassSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
 export type HeroClassSelectScalar = {
   code?: boolean
   displayName?: boolean
+  description?: boolean
+  roleSummary?: boolean
   health?: boolean
   damage?: boolean
   armor?: boolean
@@ -936,7 +996,7 @@ export type HeroClassSelectScalar = {
   updatedAt?: boolean
 }
 
-export type HeroClassOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"code" | "displayName" | "health" | "damage" | "armor" | "initiative" | "dodge" | "luck" | "morale" | "mana" | "power" | "gold" | "accuracy" | "isPlayable" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["heroClass"]>
+export type HeroClassOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"code" | "displayName" | "description" | "roleSummary" | "health" | "damage" | "armor" | "initiative" | "dodge" | "luck" | "morale" | "mana" | "power" | "gold" | "accuracy" | "isPlayable" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["heroClass"]>
 export type HeroClassInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ratingEntries?: boolean | Prisma.HeroClass$ratingEntriesArgs<ExtArgs>
   _count?: boolean | Prisma.HeroClassCountOutputTypeDefaultArgs<ExtArgs>
@@ -952,6 +1012,14 @@ export type $HeroClassPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     code: string
     displayName: string
+    /**
+     * Lore со слайдов arenamsterbot/imgs/intro.
+     */
+    description: string
+    /**
+     * Геймплейная роль со слайдов intro.
+     */
+    roleSummary: string
     health: number
     damage: number
     armor: number
@@ -1393,6 +1461,8 @@ export interface Prisma__HeroClassClient<T, Null = never, ExtArgs extends runtim
 export interface HeroClassFieldRefs {
   readonly code: Prisma.FieldRef<"HeroClass", 'String'>
   readonly displayName: Prisma.FieldRef<"HeroClass", 'String'>
+  readonly description: Prisma.FieldRef<"HeroClass", 'String'>
+  readonly roleSummary: Prisma.FieldRef<"HeroClass", 'String'>
   readonly health: Prisma.FieldRef<"HeroClass", 'Int'>
   readonly damage: Prisma.FieldRef<"HeroClass", 'Int'>
   readonly armor: Prisma.FieldRef<"HeroClass", 'Int'>
