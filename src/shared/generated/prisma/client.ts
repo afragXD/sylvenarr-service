@@ -29,8 +29,8 @@ export * from "./enums"
  * @example
  * ```
  * const prisma = new PrismaClient()
- * // Fetch zero or more Users
- * const users = await prisma.user.findMany()
+ * // Fetch zero or more HeroClasses
+ * const heroClasses = await prisma.heroClass.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -39,4 +39,23 @@ export const PrismaClient = $Class.getPrismaClientClass()
 export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts extends Prisma.PrismaClientOptions["omit"] = Prisma.PrismaClientOptions["omit"], ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = $Class.PrismaClient<LogOpts, OmitOpts, ExtArgs>
 export { Prisma }
 
-
+/**
+ * Model HeroClass
+ * Класс героя из каталога (статы из legacy stats_dict).
+ */
+export type HeroClass = Prisma.HeroClassModel
+/**
+ * Model Player
+ * Гостевой игрок (сессия по cookie).
+ */
+export type Player = Prisma.PlayerModel
+/**
+ * Model Match
+ * Лобби / матч до старта боя.
+ */
+export type Match = Prisma.MatchModel
+/**
+ * Model RatingEntry
+ * Запись результата матча для рейтинга.
+ */
+export type RatingEntry = Prisma.RatingEntryModel

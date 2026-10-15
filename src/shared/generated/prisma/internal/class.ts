@@ -20,7 +20,7 @@ const config: runtime.GetPrismaClientConfig = {
   "clientVersion": "7.2.0",
   "engineVersion": "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3",
   "activeProvider": "postgresql",
-  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../src/shared/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../src/shared/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nenum MatchStatus {\n  waiting\n  ready\n  cancelled\n}\n\nenum RatingResult {\n  win\n  loss\n}\n\n/// Класс героя из каталога (статы из legacy stats_dict).\nmodel HeroClass {\n  code        String   @id\n  displayName String\n  health      Int\n  damage      Int\n  armor       Int\n  initiative  Int\n  dodge       Int\n  luck        Int\n  morale      Int\n  mana        Int\n  power       Int\n  gold        Int\n  accuracy    Int\n  isPlayable  Boolean  @default(true)\n  sortOrder   Int      @default(0)\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  ratingEntries RatingEntry[]\n}\n\n/// Гостевой игрок (сессия по cookie).\nmodel Player {\n  id          String   @id @default(cuid())\n  displayName String\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  hostedMatches Match[]       @relation(\"MatchHost\")\n  guestMatches  Match[]       @relation(\"MatchGuest\")\n  ratingEntries RatingEntry[]\n}\n\n/// Лобби / матч до старта боя.\nmodel Match {\n  id         String      @id @default(cuid())\n  status     MatchStatus @default(waiting)\n  inviteCode String      @unique\n  hostId     String\n  guestId    String?\n  createdAt  DateTime    @default(now())\n  updatedAt  DateTime    @updatedAt\n\n  host  Player  @relation(\"MatchHost\", fields: [hostId], references: [id])\n  guest Player? @relation(\"MatchGuest\", fields: [guestId], references: [id])\n\n  @@index([status])\n  @@index([hostId])\n}\n\n/// Запись результата матча для рейтинга.\nmodel RatingEntry {\n  id            String       @id @default(cuid())\n  playerId      String\n  result        RatingResult\n  heroClassCode String?\n  createdAt     DateTime     @default(now())\n\n  player    Player     @relation(fields: [playerId], references: [id])\n  heroClass HeroClass? @relation(fields: [heroClassCode], references: [code])\n\n  @@index([playerId])\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -28,7 +28,7 @@ const config: runtime.GetPrismaClientConfig = {
   }
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"HeroClass\":{\"fields\":[{\"name\":\"code\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"displayName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"health\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"damage\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"armor\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"initiative\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"dodge\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"luck\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"morale\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"mana\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"power\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"gold\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"accuracy\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"isPlayable\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"sortOrder\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"ratingEntries\",\"kind\":\"object\",\"type\":\"RatingEntry\",\"relationName\":\"HeroClassToRatingEntry\"}],\"dbName\":null},\"Player\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"displayName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"hostedMatches\",\"kind\":\"object\",\"type\":\"Match\",\"relationName\":\"MatchHost\"},{\"name\":\"guestMatches\",\"kind\":\"object\",\"type\":\"Match\",\"relationName\":\"MatchGuest\"},{\"name\":\"ratingEntries\",\"kind\":\"object\",\"type\":\"RatingEntry\",\"relationName\":\"PlayerToRatingEntry\"}],\"dbName\":null},\"Match\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"MatchStatus\"},{\"name\":\"inviteCode\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"hostId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"guestId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"host\",\"kind\":\"object\",\"type\":\"Player\",\"relationName\":\"MatchHost\"},{\"name\":\"guest\",\"kind\":\"object\",\"type\":\"Player\",\"relationName\":\"MatchGuest\"}],\"dbName\":null},\"RatingEntry\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"playerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"result\",\"kind\":\"enum\",\"type\":\"RatingResult\"},{\"name\":\"heroClassCode\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"player\",\"kind\":\"object\",\"type\":\"Player\",\"relationName\":\"PlayerToRatingEntry\"},{\"name\":\"heroClass\",\"kind\":\"object\",\"type\":\"HeroClass\",\"relationName\":\"HeroClassToRatingEntry\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 
 async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Module> {
   const { Buffer } = await import('node:buffer')
@@ -58,8 +58,8 @@ export interface PrismaClientConstructor {
    * @example
    * ```
    * const prisma = new PrismaClient()
-   * // Fetch zero or more Users
-   * const users = await prisma.user.findMany()
+   * // Fetch zero or more HeroClasses
+   * const heroClasses = await prisma.heroClass.findMany()
    * ```
    * 
    * Read more in our [docs](https://pris.ly/d/client).
@@ -80,8 +80,8 @@ export interface PrismaClientConstructor {
  * @example
  * ```
  * const prisma = new PrismaClient()
- * // Fetch zero or more Users
- * const users = await prisma.user.findMany()
+ * // Fetch zero or more HeroClasses
+ * const heroClasses = await prisma.heroClass.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -174,7 +174,45 @@ export interface PrismaClient<
     extArgs: ExtArgs
   }>>
 
-    
+      /**
+   * `prisma.heroClass`: Exposes CRUD operations for the **HeroClass** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more HeroClasses
+    * const heroClasses = await prisma.heroClass.findMany()
+    * ```
+    */
+  get heroClass(): Prisma.HeroClassDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.player`: Exposes CRUD operations for the **Player** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Players
+    * const players = await prisma.player.findMany()
+    * ```
+    */
+  get player(): Prisma.PlayerDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.match`: Exposes CRUD operations for the **Match** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Matches
+    * const matches = await prisma.match.findMany()
+    * ```
+    */
+  get match(): Prisma.MatchDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.ratingEntry`: Exposes CRUD operations for the **RatingEntry** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more RatingEntries
+    * const ratingEntries = await prisma.ratingEntry.findMany()
+    * ```
+    */
+  get ratingEntry(): Prisma.RatingEntryDelegate<ExtArgs, { omit: OmitOpts }>;
 }
 
 export function getPrismaClientClass(): PrismaClientConstructor {

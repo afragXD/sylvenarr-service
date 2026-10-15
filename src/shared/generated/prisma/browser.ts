@@ -17,4 +17,23 @@ import * as Prisma from './internal/prismaNamespaceBrowser'
 export { Prisma }
 export * as $Enums from './enums'
 export * from './enums';
-
+/**
+ * Model HeroClass
+ * Класс героя из каталога (статы из legacy stats_dict).
+ */
+export type HeroClass = Prisma.HeroClassModel
+/**
+ * Model Player
+ * Гостевой игрок (сессия по cookie).
+ */
+export type Player = Prisma.PlayerModel
+/**
+ * Model Match
+ * Лобби / матч до старта боя.
+ */
+export type Match = Prisma.MatchModel
+/**
+ * Model RatingEntry
+ * Запись результата матча для рейтинга.
+ */
+export type RatingEntry = Prisma.RatingEntryModel

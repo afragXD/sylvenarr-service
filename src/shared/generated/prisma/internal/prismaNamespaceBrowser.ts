@@ -51,7 +51,10 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-
+  HeroClass: 'HeroClass',
+  Player: 'Player',
+  Match: 'Match',
+  RatingEntry: 'RatingEntry'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -68,4 +71,85 @@ export const TransactionIsolationLevel = {
 } as const
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const HeroClassScalarFieldEnum = {
+  code: 'code',
+  displayName: 'displayName',
+  health: 'health',
+  damage: 'damage',
+  armor: 'armor',
+  initiative: 'initiative',
+  dodge: 'dodge',
+  luck: 'luck',
+  morale: 'morale',
+  mana: 'mana',
+  power: 'power',
+  gold: 'gold',
+  accuracy: 'accuracy',
+  isPlayable: 'isPlayable',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HeroClassScalarFieldEnum = (typeof HeroClassScalarFieldEnum)[keyof typeof HeroClassScalarFieldEnum]
+
+
+export const PlayerScalarFieldEnum = {
+  id: 'id',
+  displayName: 'displayName',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlayerScalarFieldEnum = (typeof PlayerScalarFieldEnum)[keyof typeof PlayerScalarFieldEnum]
+
+
+export const MatchScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  inviteCode: 'inviteCode',
+  hostId: 'hostId',
+  guestId: 'guestId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MatchScalarFieldEnum = (typeof MatchScalarFieldEnum)[keyof typeof MatchScalarFieldEnum]
+
+
+export const RatingEntryScalarFieldEnum = {
+  id: 'id',
+  playerId: 'playerId',
+  result: 'result',
+  heroClassCode: 'heroClassCode',
+  createdAt: 'createdAt'
+} as const
+
+export type RatingEntryScalarFieldEnum = (typeof RatingEntryScalarFieldEnum)[keyof typeof RatingEntryScalarFieldEnum]
+
+
+export const SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+} as const
+
+export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+} as const
+
+export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 

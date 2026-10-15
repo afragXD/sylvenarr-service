@@ -7,7 +7,12 @@
     "lint": "bun x @biomejs/biome check src",
     "format": "bun lint --write",
     "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "bun prisma/seed.ts",
     "test": "bun test src"
+  },
+  "prisma": {
+    "seed": "bun prisma/seed.ts"
   },
   "dependencies": {
     "@elysiajs/cors": "1.4.0",

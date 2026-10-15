@@ -4,6 +4,10 @@ import { swagger } from '@elysiajs/swagger';
 import { Elysia } from 'elysia';
 import { config } from './config';
 import { appController } from './modules/app';
+import { heroesController } from './modules/heroes';
+import { matchesController } from './modules/matches';
+import { playersController } from './modules/players';
+import { ratingController } from './modules/rating';
 import { isDev } from './utils/isDev';
 
 export const app = new Elysia({
@@ -16,7 +20,7 @@ export const app = new Elysia({
     hostname: '0.0.0.0',
   },
   cookie: {
-    sameSite: 'none',
+    sameSite: isDev ? 'lax' : 'none',
     secure: !isDev,
     httpOnly: true,
     path: '/',
@@ -38,4 +42,8 @@ export const app = new Elysia({
       alwaysStatic: true,
     })
   )
-  .use(appController);
+  .use(appController)
+  .use(heroesController)
+  .use(playersController)
+  .use(matchesController)
+  .use(ratingController);

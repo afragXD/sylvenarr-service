@@ -9,7 +9,18 @@
 * 🟢 You can import this file directly.
 */
 
+export const MatchStatus = {
+  waiting: 'waiting',
+  ready: 'ready',
+  cancelled: 'cancelled'
+} as const
+
+export type MatchStatus = (typeof MatchStatus)[keyof typeof MatchStatus]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const RatingResult = {
+  win: 'win',
+  loss: 'loss'
+} as const
+
+export type RatingResult = (typeof RatingResult)[keyof typeof RatingResult]
