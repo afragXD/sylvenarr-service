@@ -6,7 +6,10 @@
 - `draft/rules.ts` — валидация пика, ход, завершение draft
 - Роуты: `POST /matches/:id/draft/pick`, `POST /matches/:id/draft/random`
 
-## Далее (фаза 3+)
+## Фаза 3 — Combat
 
-- бой (`Hero`, effects, resists, очередь хода)
-- ярмарка и перки
+- `combat/engine.ts` — очередь хода, attack/defend/wait, победа/ничья
+- `combat/store.ts` — Redis или in-memory state
+- `combat/hub.ts` — fan-out для WebSocket
+- `combat/skills.ts` — классовые множители и подписи атак (полный порт characters/* — дальше)
+- Роуты: `POST /matches/:id/battle/action`, WS `/matches/ws/:id`

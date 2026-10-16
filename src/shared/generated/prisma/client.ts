@@ -56,7 +56,7 @@ export type Player = Prisma.PlayerModel
 export type OAuthAccount = Prisma.OAuthAccountModel
 /**
  * Model Match
- * Лобби / матч до старта боя.
+ * Лобби / матч / бой.
  */
 export type Match = Prisma.MatchModel
 /**

@@ -6,6 +6,8 @@ export namespace MatchesModel {
     t.Literal('ready'),
     t.Literal('drafting'),
     t.Literal('drafted'),
+    t.Literal('fighting'),
+    t.Literal('finished'),
     t.Literal('cancelled'),
   ]);
   export type matchStatus = typeof matchStatus.static;
@@ -37,6 +39,41 @@ export namespace MatchesModel {
   });
   export type draftState = typeof draftState.static;
 
+  export const battleUnit = t.Object({
+    id: t.String(),
+    playerId: t.String(),
+    team: t.Union([t.Literal(0), t.Literal(1)]),
+    heroClassCode: t.String(),
+    displayName: t.String(),
+    row: t.Number(),
+    column: t.Number(),
+    health: t.Number(),
+    maxHp: t.Number(),
+    alive: t.Boolean(),
+    defending: t.Boolean(),
+    attackStyle: t.Union([t.Literal('melee'), t.Literal('ranged'), t.Literal('magic')]),
+  });
+  export type battleUnit = typeof battleUnit.static;
+
+  export const battleState = t.Object({
+    stage: t.Number(),
+    activeUnitId: t.Nullable(t.String()),
+    turnPlayerId: t.Nullable(t.String()),
+    outcome: t.Union([
+      t.Literal('ongoing'),
+      t.Literal('host_win'),
+      t.Literal('guest_win'),
+      t.Literal('draw'),
+    ]),
+    winnerPlayerId: t.Nullable(t.String()),
+    log: t.Array(t.String()),
+    legalTargetIds: t.Array(t.String()),
+    skillLabel: t.Nullable(t.String()),
+    legalSkillTargetIds: t.Array(t.String()),
+    units: t.Array(battleUnit),
+  });
+  export type battleState = typeof battleState.static;
+
   export const match = t.Object({
     id: t.String(),
     status: matchStatus,
@@ -44,7 +81,10 @@ export namespace MatchesModel {
     host: playerBrief,
     guest: t.Nullable(playerBrief),
     createdAt: t.String(),
+    finishedAt: t.Nullable(t.String()),
+    winnerPlayerId: t.Nullable(t.String()),
     draft: draftState,
+    battle: t.Nullable(battleState),
   });
   export type match = typeof match.static;
 
@@ -79,6 +119,27 @@ export namespace MatchesModel {
     row: t.Number({ minimum: 0, maximum: 1 }),
   });
   export type movePickBody = typeof movePickBody.static;
+
+  export const battleActionBody = t.Object({
+    unitId: t.String(),
+    action: t.Union([
+      t.Literal('attack'),
+      t.Literal('defend'),
+      t.Literal('wait'),
+      t.Literal('skill'),
+    ]),
+    targetId: t.Optional(t.String()),
+  });
+  export type battleActionBody = typeof battleActionBody.static;
+
+  export const matchHistoryItem = t.Object({
+    id: t.String(),
+    result: t.Union([t.Literal('win'), t.Literal('loss'), t.Literal('draw')]),
+    opponentName: t.String(),
+    finishedAt: t.String(),
+    heroCodes: t.Array(t.String()),
+  });
+  export type matchHistoryItem = typeof matchHistoryItem.static;
 
   export const errorResponse = t.Object({
     message: t.String(),

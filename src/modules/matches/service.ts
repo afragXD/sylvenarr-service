@@ -1,4 +1,13 @@
 import {
+  applyAction,
+  type BattleSummary,
+  createBattleState,
+  getBattleStore,
+  type HeroClassStats,
+  publishBattle,
+  toBattleSummary,
+} from '../../game/combat';
+import {
   isDraftComplete,
   pickRandomValid,
   resolveTurnPlayerId,
@@ -27,6 +36,8 @@ type MatchRow = {
   inviteCode: string;
   hostId: string;
   guestId: string | null;
+  winnerPlayerId: string | null;
+  finishedAt: Date | null;
   createdAt: Date;
   host: { id: string; displayName: string };
   guest: { id: string; displayName: string } | null;
@@ -66,9 +77,9 @@ export abstract class MatchesService {
   }
 
   /**
-   * Преобразует матч из БД в DTO с draft state.
+   * Преобразует матч из БД в DTO с draft (+ battle при наличии).
    */
-  static mapMatch(row: MatchRow): MatchesModel.match {
+  static mapMatch(row: MatchRow, battle: BattleSummary | null = null): MatchesModel.match {
     const picks = MatchesService.toDraftPicks(row.picks);
     const guestId = row.guestId ?? '';
     const hostSize = teamSize(picks, row.hostId);
@@ -85,6 +96,8 @@ export abstract class MatchesService {
       host: row.host,
       guest: row.guest,
       createdAt: row.createdAt.toISOString(),
+      finishedAt: row.finishedAt?.toISOString() ?? null,
+      winnerPlayerId: row.winnerPlayerId,
       draft: {
         turnPlayerId,
         hostPicks: picks.filter((pick) => pick.playerId === row.hostId),
@@ -93,7 +106,22 @@ export abstract class MatchesService {
         guestSize,
         initialTeamSize: INITIAL_TEAM_SIZE,
       },
+      battle,
     };
+  }
+
+  /**
+   * DTO матча с подгрузкой battle state из store.
+   */
+  static async mapMatchWithBattle(row: MatchRow): Promise<MatchesModel.match> {
+    let battle: BattleSummary | null = null;
+    if (row.status === 'fighting' || row.status === 'finished') {
+      const state = await getBattleStore().get(row.id);
+      if (state) {
+        battle = toBattleSummary(state);
+      }
+    }
+    return MatchesService.mapMatch(row, battle);
   }
 
   /**
@@ -164,7 +192,7 @@ export abstract class MatchesService {
     if (!row) {
       return null;
     }
-    return MatchesService.mapMatch(row);
+    return MatchesService.mapMatchWithBattle(row);
   }
 
   /**
@@ -248,10 +276,11 @@ export abstract class MatchesService {
       },
     ];
     const drafted = isDraftComplete(afterPicks, existing.hostId, existing.guestId);
-    if (drafted) {
-      await prisma.match.update({
-        where: { id: existing.id },
-        data: { status: 'drafted' },
+    if (drafted && existing.guestId) {
+      await MatchesService.startBattle({
+        matchId: existing.id,
+        hostId: existing.hostId,
+        guestId: existing.guestId,
       });
     }
 
@@ -259,7 +288,61 @@ export abstract class MatchesService {
       where: { id: existing.id },
       include: matchInclude,
     });
-    return { ok: true, match: MatchesService.mapMatch(row) };
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+  }
+
+  /**
+   * Инициализирует бой и переводит матч в fighting.
+   */
+  private static async startBattle(input: {
+    readonly matchId: string;
+    readonly hostId: string;
+    readonly guestId: string;
+  }): Promise<void> {
+    const picks = await prisma.matchPick.findMany({
+      where: { matchId: input.matchId },
+      orderBy: { pickOrder: 'asc' },
+    });
+    const codes = [...new Set(picks.map((pick) => pick.heroClassCode))];
+    const heroes = await prisma.heroClass.findMany({ where: { code: { in: codes } } });
+    const heroMap = new Map<string, HeroClassStats>(
+      heroes.map((hero) => [
+        hero.code,
+        {
+          code: hero.code,
+          displayName: hero.displayName,
+          health: hero.health,
+          damage: hero.damage,
+          armor: hero.armor,
+          initiative: hero.initiative,
+          dodge: hero.dodge,
+          luck: hero.luck,
+          accuracy: hero.accuracy,
+          power: hero.power,
+          mana: hero.mana,
+        },
+      ])
+    );
+
+    const state = createBattleState({
+      matchId: input.matchId,
+      hostPlayerId: input.hostId,
+      guestPlayerId: input.guestId,
+      picks: picks.map((pick) => ({
+        id: pick.id,
+        playerId: pick.playerId,
+        heroClassCode: pick.heroClassCode,
+        row: pick.row,
+        pickOrder: pick.pickOrder,
+      })),
+      heroes: heroMap,
+    });
+    await getBattleStore().set(state);
+    await prisma.match.update({
+      where: { id: input.matchId },
+      data: { status: 'fighting' },
+    });
+    publishBattle(input.matchId, 'battle:state', toBattleSummary(state));
   }
 
   /**
@@ -304,7 +387,7 @@ export abstract class MatchesService {
       return { ok: false, message: 'Пик не найден', status: 404 };
     }
     if (target.row === input.row) {
-      return { ok: true, match: MatchesService.mapMatch(existing) };
+      return { ok: true, match: await MatchesService.mapMatchWithBattle(existing) };
     }
 
     await prisma.matchPick.update({
@@ -316,7 +399,7 @@ export abstract class MatchesService {
       where: { id: existing.id },
       include: matchInclude,
     });
-    return { ok: true, match: MatchesService.mapMatch(row) };
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
   }
 
   /**
@@ -393,7 +476,7 @@ export abstract class MatchesService {
       return { ok: false, message: 'Отменить матч может только хост', status: 403 };
     }
     if (existing.status === 'cancelled') {
-      return { ok: true, match: MatchesService.mapMatch(existing) };
+      return { ok: true, match: await MatchesService.mapMatchWithBattle(existing) };
     }
     if (existing.status !== 'waiting' && existing.status !== 'drafting') {
       return { ok: false, message: 'Матч нельзя отменить в текущем статусе', status: 400 };
@@ -403,6 +486,139 @@ export abstract class MatchesService {
       data: { status: 'cancelled' },
       include: matchInclude,
     });
-    return { ok: true, match: MatchesService.mapMatch(row) };
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+  }
+
+  /**
+   * Ход в бою.
+   */
+  static async battleAction(input: {
+    readonly matchId: string;
+    readonly playerId: string;
+    readonly unitId: string;
+    readonly action: 'attack' | 'defend' | 'wait' | 'skill';
+    readonly targetId?: string;
+  }): Promise<
+    | { ok: true; match: MatchesModel.match }
+    | { ok: false; message: string; status: 400 | 403 | 404 }
+  > {
+    const existing = await prisma.match.findUnique({
+      where: { id: input.matchId },
+      include: matchInclude,
+    });
+    if (!existing) {
+      return { ok: false, message: 'Матч не найден', status: 404 };
+    }
+    if (!MatchesService.isParticipant(existing, input.playerId)) {
+      return { ok: false, message: 'Вы не участник этого матча', status: 403 };
+    }
+    if (existing.status !== 'fighting') {
+      return { ok: false, message: 'Бой сейчас недоступен', status: 400 };
+    }
+
+    const store = getBattleStore();
+    const state = await store.get(existing.id);
+    if (!state) {
+      return { ok: false, message: 'Состояние боя не найдено', status: 400 };
+    }
+
+    const result = applyAction(state, {
+      playerId: input.playerId,
+      unitId: input.unitId,
+      action: input.action,
+      targetId: input.targetId,
+    });
+    if (!result.ok) {
+      return { ok: false, message: result.message, status: 400 };
+    }
+
+    if (state.outcome !== 'ongoing') {
+      await MatchesService.finalizeBattle(existing.id, state.winnerPlayerId);
+      await store.set(state);
+      const summary = toBattleSummary(state);
+      publishBattle(existing.id, 'battle:ended', summary);
+    } else {
+      await store.set(state);
+      publishBattle(existing.id, 'battle:state', toBattleSummary(state));
+    }
+
+    const row = await prisma.match.findUniqueOrThrow({
+      where: { id: existing.id },
+      include: matchInclude,
+    });
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+  }
+
+  /**
+   * Завершает бой: статус, рейтинг (без ничьей).
+   */
+  private static async finalizeBattle(
+    matchId: string,
+    winnerPlayerId: string | null
+  ): Promise<void> {
+    const match = await prisma.match.findUnique({ where: { id: matchId } });
+    if (!match || !match.guestId) {
+      return;
+    }
+    await prisma.match.update({
+      where: { id: matchId },
+      data: {
+        status: 'finished',
+        winnerPlayerId,
+        finishedAt: new Date(),
+      },
+    });
+
+    if (!winnerPlayerId) {
+      return;
+    }
+    const loserId = winnerPlayerId === match.hostId ? match.guestId : match.hostId;
+    await prisma.ratingEntry.createMany({
+      data: [
+        { playerId: winnerPlayerId, result: 'win' },
+        { playerId: loserId, result: 'loss' },
+      ],
+    });
+  }
+
+  /**
+   * История завершённых матчей игрока.
+   */
+  static async listHistoryForPlayer(playerId: string): Promise<MatchesModel.matchHistoryItem[]> {
+    const rows = await prisma.match.findMany({
+      where: {
+        status: 'finished',
+        OR: [{ hostId: playerId }, { guestId: playerId }],
+      },
+      orderBy: { finishedAt: 'desc' },
+      take: 50,
+      include: {
+        host: { select: { id: true, displayName: true } },
+        guest: { select: { id: true, displayName: true } },
+        picks: {
+          where: { playerId },
+          select: { heroClassCode: true },
+          orderBy: { pickOrder: 'asc' },
+        },
+      },
+    });
+
+    return rows.map((row) => {
+      const isHost = row.hostId === playerId;
+      const opponent = isHost ? row.guest : row.host;
+      let result: 'win' | 'loss' | 'draw' = 'draw';
+      if (row.winnerPlayerId === playerId) {
+        result = 'win';
+      } else if (row.winnerPlayerId) {
+        result = 'loss';
+      }
+      return {
+        id: row.id,
+        result,
+        opponentName: opponent?.displayName ?? '—',
+        finishedAt: (row.finishedAt ?? row.updatedAt).toISOString(),
+        heroCodes: row.picks.map((pick) => pick.heroClassCode),
+      };
+    });
   }
 }

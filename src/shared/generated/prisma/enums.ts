@@ -14,6 +14,8 @@ export const MatchStatus = {
   ready: 'ready',
   drafting: 'drafting',
   drafted: 'drafted',
+  fighting: 'fighting',
+  finished: 'finished',
   cancelled: 'cancelled'
 } as const
 

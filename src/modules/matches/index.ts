@@ -181,4 +181,35 @@ export const matchesController = new Elysia({ prefix: '/matches', tags: ['Matche
         summary: 'Отменить матч (хост, waiting/drafting)',
       },
     }
+  )
+  .post(
+    '/:id/battle/action',
+    async ({ params, body, player, status }) => {
+      const result = await MatchesService.battleAction({
+        matchId: params.id,
+        playerId: player.id,
+        unitId: body.unitId,
+        action: body.action,
+        targetId: body.targetId,
+      });
+      if (!result.ok) {
+        return status(result.status, { message: result.message });
+      }
+      return result.match;
+    },
+    {
+      requireAuth: true,
+      params: MatchesModel.idParams,
+      body: MatchesModel.battleActionBody,
+      response: {
+        200: MatchesModel.match,
+        400: MatchesModel.errorResponse,
+        401: MatchesModel.errorResponse,
+        403: MatchesModel.errorResponse,
+        404: MatchesModel.errorResponse,
+      },
+      detail: {
+        summary: 'Действие юнита в бою',
+      },
+    }
   );

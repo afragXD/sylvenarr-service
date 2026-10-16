@@ -950,6 +950,8 @@ export const MatchScalarFieldEnum = {
   inviteCode: 'inviteCode',
   hostId: 'hostId',
   guestId: 'guestId',
+  winnerPlayerId: 'winnerPlayerId',
+  finishedAt: 'finishedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

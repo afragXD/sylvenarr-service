@@ -11,6 +11,15 @@ export namespace PlayersModel {
   });
   export type player = typeof player.static;
 
+  export const matchHistoryItem = t.Object({
+    id: t.String(),
+    result: t.Union([t.Literal('win'), t.Literal('loss'), t.Literal('draw')]),
+    opponentName: t.String(),
+    finishedAt: t.String(),
+    heroCodes: t.Array(t.String()),
+  });
+  export type matchHistoryItem = typeof matchHistoryItem.static;
+
   export const errorResponse = t.Object({
     message: t.String(),
   });
