@@ -38,6 +38,11 @@ export type OAuthAccount = Prisma.OAuthAccountModel
  */
 export type Match = Prisma.MatchModel
 /**
+ * Model MatchPick
+ * Пик героя в draft.
+ */
+export type MatchPick = Prisma.MatchPickModel
+/**
  * Model RatingEntry
  * Запись результата матча для рейтинга.
  */

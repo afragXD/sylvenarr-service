@@ -194,6 +194,7 @@ export type PlayerWhereInput = {
   guestMatches?: Prisma.MatchListRelationFilter
   ratingEntries?: Prisma.RatingEntryListRelationFilter
   oauthAccounts?: Prisma.OAuthAccountListRelationFilter
+  matchPicks?: Prisma.MatchPickListRelationFilter
 }
 
 export type PlayerOrderByWithRelationInput = {
@@ -207,6 +208,7 @@ export type PlayerOrderByWithRelationInput = {
   guestMatches?: Prisma.MatchOrderByRelationAggregateInput
   ratingEntries?: Prisma.RatingEntryOrderByRelationAggregateInput
   oauthAccounts?: Prisma.OAuthAccountOrderByRelationAggregateInput
+  matchPicks?: Prisma.MatchPickOrderByRelationAggregateInput
 }
 
 export type PlayerWhereUniqueInput = Prisma.AtLeast<{
@@ -223,6 +225,7 @@ export type PlayerWhereUniqueInput = Prisma.AtLeast<{
   guestMatches?: Prisma.MatchListRelationFilter
   ratingEntries?: Prisma.RatingEntryListRelationFilter
   oauthAccounts?: Prisma.OAuthAccountListRelationFilter
+  matchPicks?: Prisma.MatchPickListRelationFilter
 }, "id">
 
 export type PlayerOrderByWithAggregationInput = {
@@ -260,6 +263,7 @@ export type PlayerCreateInput = {
   guestMatches?: Prisma.MatchCreateNestedManyWithoutGuestInput
   ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutPlayerInput
   oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutPlayerInput
+  matchPicks?: Prisma.MatchPickCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUncheckedCreateInput = {
@@ -273,6 +277,7 @@ export type PlayerUncheckedCreateInput = {
   guestMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutGuestInput
   ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutPlayerInput
   oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutPlayerInput
+  matchPicks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUpdateInput = {
@@ -286,6 +291,7 @@ export type PlayerUpdateInput = {
   guestMatches?: Prisma.MatchUpdateManyWithoutGuestNestedInput
   ratingEntries?: Prisma.RatingEntryUpdateManyWithoutPlayerNestedInput
   oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutPlayerNestedInput
+  matchPicks?: Prisma.MatchPickUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateInput = {
@@ -299,6 +305,7 @@ export type PlayerUncheckedUpdateInput = {
   guestMatches?: Prisma.MatchUncheckedUpdateManyWithoutGuestNestedInput
   ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutPlayerNestedInput
   oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutPlayerNestedInput
+  matchPicks?: Prisma.MatchPickUncheckedUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerCreateManyInput = {
@@ -413,6 +420,20 @@ export type PlayerUpdateOneWithoutGuestMatchesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PlayerUpdateToOneWithWhereWithoutGuestMatchesInput, Prisma.PlayerUpdateWithoutGuestMatchesInput>, Prisma.PlayerUncheckedUpdateWithoutGuestMatchesInput>
 }
 
+export type PlayerCreateNestedOneWithoutMatchPicksInput = {
+  create?: Prisma.XOR<Prisma.PlayerCreateWithoutMatchPicksInput, Prisma.PlayerUncheckedCreateWithoutMatchPicksInput>
+  connectOrCreate?: Prisma.PlayerCreateOrConnectWithoutMatchPicksInput
+  connect?: Prisma.PlayerWhereUniqueInput
+}
+
+export type PlayerUpdateOneRequiredWithoutMatchPicksNestedInput = {
+  create?: Prisma.XOR<Prisma.PlayerCreateWithoutMatchPicksInput, Prisma.PlayerUncheckedCreateWithoutMatchPicksInput>
+  connectOrCreate?: Prisma.PlayerCreateOrConnectWithoutMatchPicksInput
+  upsert?: Prisma.PlayerUpsertWithoutMatchPicksInput
+  connect?: Prisma.PlayerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PlayerUpdateToOneWithWhereWithoutMatchPicksInput, Prisma.PlayerUpdateWithoutMatchPicksInput>, Prisma.PlayerUncheckedUpdateWithoutMatchPicksInput>
+}
+
 export type PlayerCreateNestedOneWithoutRatingEntriesInput = {
   create?: Prisma.XOR<Prisma.PlayerCreateWithoutRatingEntriesInput, Prisma.PlayerUncheckedCreateWithoutRatingEntriesInput>
   connectOrCreate?: Prisma.PlayerCreateOrConnectWithoutRatingEntriesInput
@@ -437,6 +458,7 @@ export type PlayerCreateWithoutOauthAccountsInput = {
   hostedMatches?: Prisma.MatchCreateNestedManyWithoutHostInput
   guestMatches?: Prisma.MatchCreateNestedManyWithoutGuestInput
   ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutPlayerInput
+  matchPicks?: Prisma.MatchPickCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUncheckedCreateWithoutOauthAccountsInput = {
@@ -449,6 +471,7 @@ export type PlayerUncheckedCreateWithoutOauthAccountsInput = {
   hostedMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutHostInput
   guestMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutGuestInput
   ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutPlayerInput
+  matchPicks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerCreateOrConnectWithoutOauthAccountsInput = {
@@ -477,6 +500,7 @@ export type PlayerUpdateWithoutOauthAccountsInput = {
   hostedMatches?: Prisma.MatchUpdateManyWithoutHostNestedInput
   guestMatches?: Prisma.MatchUpdateManyWithoutGuestNestedInput
   ratingEntries?: Prisma.RatingEntryUpdateManyWithoutPlayerNestedInput
+  matchPicks?: Prisma.MatchPickUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateWithoutOauthAccountsInput = {
@@ -489,6 +513,7 @@ export type PlayerUncheckedUpdateWithoutOauthAccountsInput = {
   hostedMatches?: Prisma.MatchUncheckedUpdateManyWithoutHostNestedInput
   guestMatches?: Prisma.MatchUncheckedUpdateManyWithoutGuestNestedInput
   ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutPlayerNestedInput
+  matchPicks?: Prisma.MatchPickUncheckedUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerCreateWithoutHostedMatchesInput = {
@@ -501,6 +526,7 @@ export type PlayerCreateWithoutHostedMatchesInput = {
   guestMatches?: Prisma.MatchCreateNestedManyWithoutGuestInput
   ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutPlayerInput
   oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutPlayerInput
+  matchPicks?: Prisma.MatchPickCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUncheckedCreateWithoutHostedMatchesInput = {
@@ -513,6 +539,7 @@ export type PlayerUncheckedCreateWithoutHostedMatchesInput = {
   guestMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutGuestInput
   ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutPlayerInput
   oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutPlayerInput
+  matchPicks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerCreateOrConnectWithoutHostedMatchesInput = {
@@ -530,6 +557,7 @@ export type PlayerCreateWithoutGuestMatchesInput = {
   hostedMatches?: Prisma.MatchCreateNestedManyWithoutHostInput
   ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutPlayerInput
   oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutPlayerInput
+  matchPicks?: Prisma.MatchPickCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUncheckedCreateWithoutGuestMatchesInput = {
@@ -542,6 +570,7 @@ export type PlayerUncheckedCreateWithoutGuestMatchesInput = {
   hostedMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutHostInput
   ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutPlayerInput
   oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutPlayerInput
+  matchPicks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerCreateOrConnectWithoutGuestMatchesInput = {
@@ -570,6 +599,7 @@ export type PlayerUpdateWithoutHostedMatchesInput = {
   guestMatches?: Prisma.MatchUpdateManyWithoutGuestNestedInput
   ratingEntries?: Prisma.RatingEntryUpdateManyWithoutPlayerNestedInput
   oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutPlayerNestedInput
+  matchPicks?: Prisma.MatchPickUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateWithoutHostedMatchesInput = {
@@ -582,6 +612,7 @@ export type PlayerUncheckedUpdateWithoutHostedMatchesInput = {
   guestMatches?: Prisma.MatchUncheckedUpdateManyWithoutGuestNestedInput
   ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutPlayerNestedInput
   oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutPlayerNestedInput
+  matchPicks?: Prisma.MatchPickUncheckedUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUpsertWithoutGuestMatchesInput = {
@@ -605,6 +636,7 @@ export type PlayerUpdateWithoutGuestMatchesInput = {
   hostedMatches?: Prisma.MatchUpdateManyWithoutHostNestedInput
   ratingEntries?: Prisma.RatingEntryUpdateManyWithoutPlayerNestedInput
   oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutPlayerNestedInput
+  matchPicks?: Prisma.MatchPickUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateWithoutGuestMatchesInput = {
@@ -615,6 +647,75 @@ export type PlayerUncheckedUpdateWithoutGuestMatchesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUncheckedUpdateManyWithoutHostNestedInput
+  ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutPlayerNestedInput
+  oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutPlayerNestedInput
+  matchPicks?: Prisma.MatchPickUncheckedUpdateManyWithoutPlayerNestedInput
+}
+
+export type PlayerCreateWithoutMatchPicksInput = {
+  id?: string
+  displayName: string
+  email?: string | null
+  avatarUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  hostedMatches?: Prisma.MatchCreateNestedManyWithoutHostInput
+  guestMatches?: Prisma.MatchCreateNestedManyWithoutGuestInput
+  ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutPlayerInput
+  oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutPlayerInput
+}
+
+export type PlayerUncheckedCreateWithoutMatchPicksInput = {
+  id?: string
+  displayName: string
+  email?: string | null
+  avatarUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  hostedMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutHostInput
+  guestMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutGuestInput
+  ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutPlayerInput
+  oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutPlayerInput
+}
+
+export type PlayerCreateOrConnectWithoutMatchPicksInput = {
+  where: Prisma.PlayerWhereUniqueInput
+  create: Prisma.XOR<Prisma.PlayerCreateWithoutMatchPicksInput, Prisma.PlayerUncheckedCreateWithoutMatchPicksInput>
+}
+
+export type PlayerUpsertWithoutMatchPicksInput = {
+  update: Prisma.XOR<Prisma.PlayerUpdateWithoutMatchPicksInput, Prisma.PlayerUncheckedUpdateWithoutMatchPicksInput>
+  create: Prisma.XOR<Prisma.PlayerCreateWithoutMatchPicksInput, Prisma.PlayerUncheckedCreateWithoutMatchPicksInput>
+  where?: Prisma.PlayerWhereInput
+}
+
+export type PlayerUpdateToOneWithWhereWithoutMatchPicksInput = {
+  where?: Prisma.PlayerWhereInput
+  data: Prisma.XOR<Prisma.PlayerUpdateWithoutMatchPicksInput, Prisma.PlayerUncheckedUpdateWithoutMatchPicksInput>
+}
+
+export type PlayerUpdateWithoutMatchPicksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  hostedMatches?: Prisma.MatchUpdateManyWithoutHostNestedInput
+  guestMatches?: Prisma.MatchUpdateManyWithoutGuestNestedInput
+  ratingEntries?: Prisma.RatingEntryUpdateManyWithoutPlayerNestedInput
+  oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutPlayerNestedInput
+}
+
+export type PlayerUncheckedUpdateWithoutMatchPicksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  hostedMatches?: Prisma.MatchUncheckedUpdateManyWithoutHostNestedInput
+  guestMatches?: Prisma.MatchUncheckedUpdateManyWithoutGuestNestedInput
   ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutPlayerNestedInput
   oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutPlayerNestedInput
 }
@@ -629,6 +730,7 @@ export type PlayerCreateWithoutRatingEntriesInput = {
   hostedMatches?: Prisma.MatchCreateNestedManyWithoutHostInput
   guestMatches?: Prisma.MatchCreateNestedManyWithoutGuestInput
   oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutPlayerInput
+  matchPicks?: Prisma.MatchPickCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUncheckedCreateWithoutRatingEntriesInput = {
@@ -641,6 +743,7 @@ export type PlayerUncheckedCreateWithoutRatingEntriesInput = {
   hostedMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutHostInput
   guestMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutGuestInput
   oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutPlayerInput
+  matchPicks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerCreateOrConnectWithoutRatingEntriesInput = {
@@ -669,6 +772,7 @@ export type PlayerUpdateWithoutRatingEntriesInput = {
   hostedMatches?: Prisma.MatchUpdateManyWithoutHostNestedInput
   guestMatches?: Prisma.MatchUpdateManyWithoutGuestNestedInput
   oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutPlayerNestedInput
+  matchPicks?: Prisma.MatchPickUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateWithoutRatingEntriesInput = {
@@ -681,6 +785,7 @@ export type PlayerUncheckedUpdateWithoutRatingEntriesInput = {
   hostedMatches?: Prisma.MatchUncheckedUpdateManyWithoutHostNestedInput
   guestMatches?: Prisma.MatchUncheckedUpdateManyWithoutGuestNestedInput
   oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutPlayerNestedInput
+  matchPicks?: Prisma.MatchPickUncheckedUpdateManyWithoutPlayerNestedInput
 }
 
 
@@ -693,6 +798,7 @@ export type PlayerCountOutputType = {
   guestMatches: number
   ratingEntries: number
   oauthAccounts: number
+  matchPicks: number
 }
 
 export type PlayerCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -700,6 +806,7 @@ export type PlayerCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   guestMatches?: boolean | PlayerCountOutputTypeCountGuestMatchesArgs
   ratingEntries?: boolean | PlayerCountOutputTypeCountRatingEntriesArgs
   oauthAccounts?: boolean | PlayerCountOutputTypeCountOauthAccountsArgs
+  matchPicks?: boolean | PlayerCountOutputTypeCountMatchPicksArgs
 }
 
 /**
@@ -740,6 +847,13 @@ export type PlayerCountOutputTypeCountOauthAccountsArgs<ExtArgs extends runtime.
   where?: Prisma.OAuthAccountWhereInput
 }
 
+/**
+ * PlayerCountOutputType without action
+ */
+export type PlayerCountOutputTypeCountMatchPicksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MatchPickWhereInput
+}
+
 
 export type PlayerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -752,6 +866,7 @@ export type PlayerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   guestMatches?: boolean | Prisma.Player$guestMatchesArgs<ExtArgs>
   ratingEntries?: boolean | Prisma.Player$ratingEntriesArgs<ExtArgs>
   oauthAccounts?: boolean | Prisma.Player$oauthAccountsArgs<ExtArgs>
+  matchPicks?: boolean | Prisma.Player$matchPicksArgs<ExtArgs>
   _count?: boolean | Prisma.PlayerCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["player"]>
 
@@ -788,6 +903,7 @@ export type PlayerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   guestMatches?: boolean | Prisma.Player$guestMatchesArgs<ExtArgs>
   ratingEntries?: boolean | Prisma.Player$ratingEntriesArgs<ExtArgs>
   oauthAccounts?: boolean | Prisma.Player$oauthAccountsArgs<ExtArgs>
+  matchPicks?: boolean | Prisma.Player$matchPicksArgs<ExtArgs>
   _count?: boolean | Prisma.PlayerCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PlayerIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -800,6 +916,7 @@ export type $PlayerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     guestMatches: Prisma.$MatchPayload<ExtArgs>[]
     ratingEntries: Prisma.$RatingEntryPayload<ExtArgs>[]
     oauthAccounts: Prisma.$OAuthAccountPayload<ExtArgs>[]
+    matchPicks: Prisma.$MatchPickPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1206,6 +1323,7 @@ export interface Prisma__PlayerClient<T, Null = never, ExtArgs extends runtime.T
   guestMatches<T extends Prisma.Player$guestMatchesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Player$guestMatchesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ratingEntries<T extends Prisma.Player$ratingEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Player$ratingEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RatingEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   oauthAccounts<T extends Prisma.Player$oauthAccountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Player$oauthAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OAuthAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  matchPicks<T extends Prisma.Player$matchPicksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Player$matchPicksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MatchPickPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1722,6 +1840,30 @@ export type Player$oauthAccountsArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.OAuthAccountScalarFieldEnum | Prisma.OAuthAccountScalarFieldEnum[]
+}
+
+/**
+ * Player.matchPicks
+ */
+export type Player$matchPicksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MatchPick
+   */
+  select?: Prisma.MatchPickSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MatchPick
+   */
+  omit?: Prisma.MatchPickOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MatchPickInclude<ExtArgs> | null
+  where?: Prisma.MatchPickWhereInput
+  orderBy?: Prisma.MatchPickOrderByWithRelationInput | Prisma.MatchPickOrderByWithRelationInput[]
+  cursor?: Prisma.MatchPickWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MatchPickScalarFieldEnum | Prisma.MatchPickScalarFieldEnum[]
 }
 
 /**

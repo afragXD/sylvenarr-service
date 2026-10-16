@@ -1,4 +1,4 @@
-import { Elysia } from 'elysia';
+import { Elysia, t } from 'elysia';
 import { playerSessionPlugin } from '../../shared/plugins/player-session';
 import { MatchesModel } from './model';
 import { MatchesService } from './service';
@@ -62,7 +62,66 @@ export const matchesController = new Elysia({ prefix: '/matches', tags: ['Matche
         404: MatchesModel.errorResponse,
       },
       detail: {
-        summary: 'Получить матч по id',
+        summary: 'Получить матч по id (включая draft state)',
+      },
+    }
+  )
+  .post(
+    '/:id/draft/pick',
+    async ({ params, body, player, status }) => {
+      const result = await MatchesService.draftPick({
+        matchId: params.id,
+        playerId: player.id,
+        heroCode: body.heroCode,
+        row: body.row,
+      });
+      if (!result.ok) {
+        return status(result.status, { message: result.message });
+      }
+      return result.match;
+    },
+    {
+      requireAuth: true,
+      params: MatchesModel.idParams,
+      body: MatchesModel.pickBody,
+      response: {
+        200: MatchesModel.match,
+        400: MatchesModel.errorResponse,
+        401: MatchesModel.errorResponse,
+        403: MatchesModel.errorResponse,
+        404: MatchesModel.errorResponse,
+      },
+      detail: {
+        summary: 'Выбрать героя в draft',
+      },
+    }
+  )
+  .post(
+    '/:id/draft/random',
+    async ({ params, body, player, status }) => {
+      const result = await MatchesService.draftRandom({
+        matchId: params.id,
+        playerId: player.id,
+        preferredRow: body?.row,
+      });
+      if (!result.ok) {
+        return status(result.status, { message: result.message });
+      }
+      return result.match;
+    },
+    {
+      requireAuth: true,
+      params: MatchesModel.idParams,
+      body: t.Optional(MatchesModel.randomBody),
+      response: {
+        200: MatchesModel.match,
+        400: MatchesModel.errorResponse,
+        401: MatchesModel.errorResponse,
+        403: MatchesModel.errorResponse,
+        404: MatchesModel.errorResponse,
+      },
+      detail: {
+        summary: 'Случайный герой в draft',
       },
     }
   )
@@ -83,12 +142,13 @@ export const matchesController = new Elysia({ prefix: '/matches', tags: ['Matche
       params: MatchesModel.idParams,
       response: {
         200: MatchesModel.match,
+        400: MatchesModel.errorResponse,
         401: MatchesModel.errorResponse,
         403: MatchesModel.errorResponse,
         404: MatchesModel.errorResponse,
       },
       detail: {
-        summary: 'Отменить матч (хост)',
+        summary: 'Отменить матч (хост, waiting/drafting)',
       },
     }
   );

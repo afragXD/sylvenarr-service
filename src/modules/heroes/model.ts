@@ -17,6 +17,7 @@ export namespace HeroesModel {
     power: t.Number(),
     gold: t.Number(),
     accuracy: t.Number(),
+    size: t.Number(),
     isPlayable: t.Boolean(),
     sortOrder: t.Number(),
   });

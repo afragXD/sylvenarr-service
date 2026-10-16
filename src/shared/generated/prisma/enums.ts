@@ -12,6 +12,8 @@
 export const MatchStatus = {
   waiting: 'waiting',
   ready: 'ready',
+  drafting: 'drafting',
+  drafted: 'drafted',
   cancelled: 'cancelled'
 } as const
 

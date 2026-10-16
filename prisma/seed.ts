@@ -26,6 +26,7 @@ async function main(): Promise<void> {
         power: hero.power,
         gold: hero.gold,
         accuracy: hero.accuracy,
+        size: hero.size,
         isPlayable: hero.isPlayable,
         sortOrder: hero.sortOrder,
       },

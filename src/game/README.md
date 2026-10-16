@@ -1,11 +1,12 @@
 # Game engine
 
-Заглушка под фазы 2–3 миграции.
+## Фаза 2 — Draft
 
-Сюда переносится чистая игровая логика из `arenamsterbot` (без VK):
+- `draft/settings.ts` — лимиты из legacy (`INITIAL_TEAM_SIZE`, `MAX_ROW_SIZE`)
+- `draft/rules.ts` — валидация пика, ход, завершение draft
+- Роуты: `POST /matches/:id/draft/pick`, `POST /matches/:id/draft/random`
 
-- draft отряда
+## Далее (фаза 3+)
+
 - бой (`Hero`, effects, resists, очередь хода)
 - ярмарка и перки
-
-MVP-1 этот модуль не использует — только каталог, рейтинг и лобби.

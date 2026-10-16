@@ -18,9 +18,13 @@ export type HeroSeed = {
   readonly power: number;
   readonly gold: number;
   readonly accuracy: number;
+  readonly size: number;
   readonly isPlayable: boolean;
   readonly sortOrder: number;
 };
+
+/** Гиганты: size = 2 (legacy DemonLord / Dracolich). */
+const giantCodes = new Set(['DemonLord', 'Dracolich']);
 
 const summonCodes = new Set([
   'GoblinTrapper',
@@ -31,7 +35,7 @@ const summonCodes = new Set([
   'Imp',
 ]);
 
-type RawHero = Omit<HeroSeed, 'isPlayable' | 'sortOrder'>;
+type RawHero = Omit<HeroSeed, 'isPlayable' | 'sortOrder' | 'size'>;
 
 const rawHeroes: ReadonlyArray<RawHero> = [
   {
@@ -595,6 +599,7 @@ const rawHeroes: ReadonlyArray<RawHero> = [
 
 export const heroSeeds: ReadonlyArray<HeroSeed> = rawHeroes.map((hero, index) => ({
   ...hero,
+  size: giantCodes.has(hero.code) ? 2 : 1,
   isPlayable: !summonCodes.has(hero.code),
   sortOrder: index + 1,
 }));
