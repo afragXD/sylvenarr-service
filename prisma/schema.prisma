@@ -87,15 +87,19 @@ model OAuthAccount {
 
 /// Лобби / матч / бой.
 model Match {
-  id             String      @id @default(cuid())
-  status         MatchStatus @default(waiting)
-  inviteCode     String      @unique
-  hostId         String
-  guestId        String?
-  winnerPlayerId String?
-  finishedAt     DateTime?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id                 String      @id @default(cuid())
+  status             MatchStatus @default(waiting)
+  inviteCode         String      @unique
+  hostId             String
+  guestId            String?
+  winnerPlayerId     String?
+  /// Момент перехода в fighting (для длительности боя).
+  fightingStartedAt  DateTime?
+  finishedAt         DateTime?
+  /// Финальный снимок боя для истории (составы, статы, лог).
+  resultSnapshot     Json?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
 
   host  Player  @relation("MatchHost", fields: [hostId], references: [id])
   guest Player? @relation("MatchGuest", fields: [guestId], references: [id])

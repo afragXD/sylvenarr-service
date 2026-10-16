@@ -7,6 +7,11 @@ export {
 } from './engine';
 export { publishBattle, subscribeBattle } from './hub';
 export {
+  buildResultSnapshot,
+  type MatchResultSnapshot,
+  type MatchUnitSnap,
+} from './result-snapshot';
+export {
   attackLabel,
   classDamageMult,
   classSkill,

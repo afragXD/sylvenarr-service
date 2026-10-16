@@ -137,9 +137,48 @@ export namespace MatchesModel {
     result: t.Union([t.Literal('win'), t.Literal('loss'), t.Literal('draw')]),
     opponentName: t.String(),
     finishedAt: t.String(),
-    heroCodes: t.Array(t.String()),
+    durationSeconds: t.Nullable(t.Number()),
   });
   export type matchHistoryItem = typeof matchHistoryItem.static;
+
+  export const matchHistoryUnit = t.Object({
+    pickId: t.String(),
+    heroClassCode: t.String(),
+    displayName: t.String(),
+    row: t.Number(),
+    column: t.Number(),
+    maxHp: t.Number(),
+    health: t.Number(),
+    alive: t.Boolean(),
+    damage: t.Number(),
+    armor: t.Number(),
+    initiative: t.Number(),
+  });
+  export type matchHistoryUnit = typeof matchHistoryUnit.static;
+
+  export const matchHistoryTeam = t.Object({
+    playerId: t.String(),
+    displayName: t.String(),
+    units: t.Array(matchHistoryUnit),
+  });
+  export type matchHistoryTeam = typeof matchHistoryTeam.static;
+
+  export const matchHistoryDetail = t.Object({
+    id: t.String(),
+    result: t.Union([t.Literal('win'), t.Literal('loss'), t.Literal('draw')]),
+    opponentName: t.String(),
+    finishedAt: t.String(),
+    durationSeconds: t.Nullable(t.Number()),
+    stage: t.Nullable(t.Number()),
+    outcome: t.Nullable(
+      t.Union([t.Literal('host_win'), t.Literal('guest_win'), t.Literal('draw')])
+    ),
+    hasSnapshot: t.Boolean(),
+    log: t.Array(t.String()),
+    host: matchHistoryTeam,
+    guest: matchHistoryTeam,
+  });
+  export type matchHistoryDetail = typeof matchHistoryDetail.static;
 
   export const errorResponse = t.Object({
     message: t.String(),

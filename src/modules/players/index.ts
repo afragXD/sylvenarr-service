@@ -37,4 +37,27 @@ export const playersController = new Elysia({ prefix: '/players', tags: ['Player
         summary: 'История завершённых матчей текущего игрока',
       },
     }
+  )
+  .get(
+    '/me/matches/:id',
+    async ({ player, params, status }) => {
+      const result = await MatchesService.getHistoryDetailForPlayer(player.id, params.id);
+      if (!result.ok) {
+        return status(result.status, { message: result.message });
+      }
+      return result.detail;
+    },
+    {
+      requireAuth: true,
+      params: t.Object({ id: t.String() }),
+      response: {
+        200: PlayersModel.matchHistoryDetail,
+        401: PlayersModel.errorResponse,
+        403: PlayersModel.errorResponse,
+        404: PlayersModel.errorResponse,
+      },
+      detail: {
+        summary: 'Детали завершённого матча текущего игрока',
+      },
+    }
   );

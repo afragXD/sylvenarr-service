@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Match" ADD COLUMN IF NOT EXISTS "fightingStartedAt" TIMESTAMP(3);
+ALTER TABLE "Match" ADD COLUMN IF NOT EXISTS "resultSnapshot" JSONB;

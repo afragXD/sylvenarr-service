@@ -1,12 +1,16 @@
 import {
   applyAction,
+  type BattleState,
   type BattleSummary,
+  buildResultSnapshot,
   createBattleState,
   getBattleStore,
   type HeroClassStats,
+  type MatchResultSnapshot,
   publishBattle,
   toBattleSummary,
 } from '../../game/combat';
+import type { Prisma } from '../../shared/generated/prisma/client';
 import {
   isDraftComplete,
   pickRandomValid,
@@ -340,7 +344,7 @@ export abstract class MatchesService {
     await getBattleStore().set(state);
     await prisma.match.update({
       where: { id: input.matchId },
-      data: { status: 'fighting' },
+      data: { status: 'fighting', fightingStartedAt: new Date() },
     });
     publishBattle(input.matchId, 'battle:state', toBattleSummary(state));
   }
@@ -533,7 +537,13 @@ export abstract class MatchesService {
     }
 
     if (state.outcome !== 'ongoing') {
-      await MatchesService.finalizeBattle(existing.id, state.winnerPlayerId);
+      await MatchesService.finalizeBattle({
+        matchId: existing.id,
+        winnerPlayerId: state.winnerPlayerId,
+        state,
+        hostDisplayName: existing.host.displayName,
+        guestDisplayName: existing.guest?.displayName ?? '—',
+      });
       await store.set(state);
       const summary = toBattleSummary(state);
       publishBattle(existing.id, 'battle:ended', summary);
@@ -550,32 +560,41 @@ export abstract class MatchesService {
   }
 
   /**
-   * Завершает бой: статус, рейтинг (без ничьей).
+   * Завершает бой: статус, snapshot, рейтинг (без ничьей).
    */
-  private static async finalizeBattle(
-    matchId: string,
-    winnerPlayerId: string | null
-  ): Promise<void> {
-    const match = await prisma.match.findUnique({ where: { id: matchId } });
+  private static async finalizeBattle(input: {
+    readonly matchId: string;
+    readonly winnerPlayerId: string | null;
+    readonly state: BattleState;
+    readonly hostDisplayName: string;
+    readonly guestDisplayName: string;
+  }): Promise<void> {
+    const match = await prisma.match.findUnique({ where: { id: input.matchId } });
     if (!match || !match.guestId) {
       return;
     }
+    const snapshot = buildResultSnapshot({
+      state: input.state,
+      hostDisplayName: input.hostDisplayName,
+      guestDisplayName: input.guestDisplayName,
+    });
     await prisma.match.update({
-      where: { id: matchId },
+      where: { id: input.matchId },
       data: {
         status: 'finished',
-        winnerPlayerId,
+        winnerPlayerId: input.winnerPlayerId,
         finishedAt: new Date(),
+        resultSnapshot: snapshot as unknown as Prisma.InputJsonValue,
       },
     });
 
-    if (!winnerPlayerId) {
+    if (!input.winnerPlayerId) {
       return;
     }
-    const loserId = winnerPlayerId === match.hostId ? match.guestId : match.hostId;
+    const loserId = input.winnerPlayerId === match.hostId ? match.guestId : match.hostId;
     await prisma.ratingEntry.createMany({
       data: [
-        { playerId: winnerPlayerId, result: 'win' },
+        { playerId: input.winnerPlayerId, result: 'win' },
         { playerId: loserId, result: 'loss' },
       ],
     });
@@ -595,11 +614,6 @@ export abstract class MatchesService {
       include: {
         host: { select: { id: true, displayName: true } },
         guest: { select: { id: true, displayName: true } },
-        picks: {
-          where: { playerId },
-          select: { heroClassCode: true },
-          orderBy: { pickOrder: 'asc' },
-        },
       },
     });
 
@@ -617,8 +631,126 @@ export abstract class MatchesService {
         result,
         opponentName: opponent?.displayName ?? '—',
         finishedAt: (row.finishedAt ?? row.updatedAt).toISOString(),
-        heroCodes: row.picks.map((pick) => pick.heroClassCode),
+        durationSeconds: durationSeconds(row.fightingStartedAt, row.finishedAt),
       };
     });
   }
+
+  /**
+   * Детали завершённого матча для участника.
+   */
+  static async getHistoryDetailForPlayer(
+    playerId: string,
+    matchId: string
+  ): Promise<
+    | { ok: true; detail: MatchesModel.matchHistoryDetail }
+    | { ok: false; message: string; status: 403 | 404 }
+  > {
+    const row = await prisma.match.findUnique({
+      where: { id: matchId },
+      include: {
+        host: { select: { id: true, displayName: true } },
+        guest: { select: { id: true, displayName: true } },
+        picks: {
+          orderBy: { pickOrder: 'asc' },
+          include: { heroClass: { select: { code: true, displayName: true } } },
+        },
+      },
+    });
+    if (!row) {
+      return { ok: false, message: 'Матч не найден', status: 404 };
+    }
+    if (row.hostId !== playerId && row.guestId !== playerId) {
+      return { ok: false, message: 'Нет доступа к матчу', status: 403 };
+    }
+    if (row.status !== 'finished') {
+      return { ok: false, message: 'Матч ещё не завершён', status: 404 };
+    }
+
+    const isHost = row.hostId === playerId;
+    const opponent = isHost ? row.guest : row.host;
+    let result: 'win' | 'loss' | 'draw' = 'draw';
+    if (row.winnerPlayerId === playerId) {
+      result = 'win';
+    } else if (row.winnerPlayerId) {
+      result = 'loss';
+    }
+
+    const snapshot = parseResultSnapshot(row.resultSnapshot);
+    const hostUnits =
+      snapshot?.host.units ??
+      row.picks
+        .filter((pick) => pick.playerId === row.hostId)
+        .map((pick) => unitFromPick(pick));
+    const guestUnits =
+      snapshot?.guest.units ??
+      row.picks
+        .filter((pick) => pick.playerId === row.guestId)
+        .map((pick) => unitFromPick(pick));
+
+    return {
+      ok: true,
+      detail: {
+        id: row.id,
+        result,
+        opponentName: opponent?.displayName ?? '—',
+        finishedAt: (row.finishedAt ?? row.updatedAt).toISOString(),
+        durationSeconds: durationSeconds(row.fightingStartedAt, row.finishedAt),
+        stage: snapshot?.stage ?? null,
+        outcome: snapshot?.outcome ?? null,
+        hasSnapshot: snapshot !== null,
+        log: snapshot?.log ?? [],
+        host: {
+          playerId: row.hostId,
+          displayName: snapshot?.host.displayName ?? row.host.displayName,
+          units: hostUnits,
+        },
+        guest: {
+          playerId: row.guestId ?? '',
+          displayName:
+            snapshot?.guest.displayName ?? row.guest?.displayName ?? '—',
+          units: guestUnits,
+        },
+      },
+    };
+  }
+}
+
+function durationSeconds(startedAt: Date | null, finishedAt: Date | null): number | null {
+  if (!startedAt || !finishedAt) {
+    return null;
+  }
+  return Math.max(0, Math.floor((finishedAt.getTime() - startedAt.getTime()) / 1000));
+}
+
+function parseResultSnapshot(value: unknown): MatchResultSnapshot | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+  const snap = value as Partial<MatchResultSnapshot>;
+  if (!snap.host || !snap.guest || !Array.isArray(snap.log)) {
+    return null;
+  }
+  return snap as MatchResultSnapshot;
+}
+
+function unitFromPick(pick: {
+  id: string;
+  heroClassCode: string;
+  row: number;
+  heroClass: { displayName: string };
+}): MatchesModel.matchHistoryUnit {
+  return {
+    pickId: pick.id,
+    heroClassCode: pick.heroClassCode,
+    displayName: pick.heroClass.displayName,
+    row: pick.row,
+    column: 0,
+    maxHp: 0,
+    health: 0,
+    alive: true,
+    damage: 0,
+    armor: 0,
+    initiative: 0,
+  };
 }
