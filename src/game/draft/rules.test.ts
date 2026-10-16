@@ -1,5 +1,12 @@
 import { describe, expect, test } from 'bun:test';
-import { canPickMore, isDraftComplete, resolveTurnPlayerId, teamSize, validatePick } from './rules';
+import {
+  canPickMore,
+  isDraftComplete,
+  resolveTurnPlayerId,
+  teamSize,
+  validateMovePick,
+  validatePick,
+} from './rules';
 import { INITIAL_TEAM_SIZE } from './settings';
 import type { DraftPick } from './types';
 
@@ -77,5 +84,13 @@ describe('draft rules', () => {
       row: 0,
     });
     expect(result.ok).toBe(false);
+  });
+
+  test('validateMovePick allows move to free row', () => {
+    const picks = [
+      pick({ id: 'a', playerId: 'h', size: 1, row: 0, pickOrder: 1 }),
+      pick({ id: 'b', playerId: 'h', size: 1, row: 0, pickOrder: 2 }),
+    ];
+    expect(validateMovePick({ picks, pickId: 'a', playerId: 'h', row: 1 }).ok).toBe(true);
   });
 });

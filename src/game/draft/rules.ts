@@ -85,6 +85,34 @@ export function validatePick(input: {
 }
 
 /**
+ * Перенос уже взятого юнита на другой ряд (size уже в квоте).
+ */
+export function validateMovePick(input: {
+  readonly picks: ReadonlyArray<DraftPick>;
+  readonly pickId: string;
+  readonly playerId: string;
+  readonly row: number;
+}): PickValidation {
+  if (input.row !== ROW_FRONT && input.row !== ROW_BACK) {
+    return { ok: false, message: 'Некорректный ряд' };
+  }
+  const pick = input.picks.find((item) => item.id === input.pickId);
+  if (!pick || pick.playerId !== input.playerId) {
+    return { ok: false, message: 'Пик не найден' };
+  }
+  if (pick.row === input.row) {
+    return { ok: true };
+  }
+  const rowCount = input.picks.filter(
+    (item) => item.playerId === input.playerId && item.row === input.row && item.id !== input.pickId
+  ).length;
+  if (rowCount + 1 > MAX_ROW_SIZE) {
+    return { ok: false, message: 'На этом ряду нет места' };
+  }
+  return { ok: true };
+}
+
+/**
  * Случайный валидный герой и ряд (сначала front, иначе back).
  */
 export function pickRandomValid(input: {

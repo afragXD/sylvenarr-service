@@ -69,6 +69,17 @@ export namespace MatchesModel {
   });
   export type randomBody = typeof randomBody.static;
 
+  export const pickIdParams = t.Object({
+    id: t.String(),
+    pickId: t.String(),
+  });
+  export type pickIdParams = typeof pickIdParams.static;
+
+  export const movePickBody = t.Object({
+    row: t.Number({ minimum: 0, maximum: 1 }),
+  });
+  export type movePickBody = typeof movePickBody.static;
+
   export const errorResponse = t.Object({
     message: t.String(),
   });

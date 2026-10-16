@@ -3,6 +3,7 @@ import {
   pickRandomValid,
   resolveTurnPlayerId,
   teamSize,
+  validateMovePick,
   validatePick,
 } from '../../game/draft/rules';
 import { INITIAL_TEAM_SIZE } from '../../game/draft/settings';
@@ -253,6 +254,63 @@ export abstract class MatchesService {
         data: { status: 'drafted' },
       });
     }
+
+    const row = await prisma.match.findUniqueOrThrow({
+      where: { id: existing.id },
+      include: matchInclude,
+    });
+    return { ok: true, match: MatchesService.mapMatch(row) };
+  }
+
+  /**
+   * Перенос своего пика на другой ряд.
+   */
+  static async moveDraftPick(input: {
+    readonly matchId: string;
+    readonly pickId: string;
+    readonly playerId: string;
+    readonly row: number;
+  }): Promise<
+    | { ok: true; match: MatchesModel.match }
+    | { ok: false; message: string; status: 400 | 403 | 404 }
+  > {
+    const existing = await prisma.match.findUnique({
+      where: { id: input.matchId },
+      include: matchInclude,
+    });
+    if (!existing) {
+      return { ok: false, message: 'Матч не найден', status: 404 };
+    }
+    if (!MatchesService.isParticipant(existing, input.playerId)) {
+      return { ok: false, message: 'Вы не участник этого матча', status: 403 };
+    }
+    if (existing.status !== 'drafting') {
+      return { ok: false, message: 'Сейчас нельзя менять расстановку', status: 400 };
+    }
+
+    const picks = MatchesService.toDraftPicks(existing.picks);
+    const validation = validateMovePick({
+      picks,
+      pickId: input.pickId,
+      playerId: input.playerId,
+      row: input.row,
+    });
+    if (!validation.ok) {
+      return { ok: false, message: validation.message, status: 400 };
+    }
+
+    const target = picks.find((pick) => pick.id === input.pickId);
+    if (!target) {
+      return { ok: false, message: 'Пик не найден', status: 404 };
+    }
+    if (target.row === input.row) {
+      return { ok: true, match: MatchesService.mapMatch(existing) };
+    }
+
+    await prisma.matchPick.update({
+      where: { id: input.pickId },
+      data: { row: input.row },
+    });
 
     const row = await prisma.match.findUniqueOrThrow({
       where: { id: existing.id },

@@ -125,6 +125,36 @@ export const matchesController = new Elysia({ prefix: '/matches', tags: ['Matche
       },
     }
   )
+  .patch(
+    '/:id/draft/picks/:pickId',
+    async ({ params, body, player, status }) => {
+      const result = await MatchesService.moveDraftPick({
+        matchId: params.id,
+        pickId: params.pickId,
+        playerId: player.id,
+        row: body.row,
+      });
+      if (!result.ok) {
+        return status(result.status, { message: result.message });
+      }
+      return result.match;
+    },
+    {
+      requireAuth: true,
+      params: MatchesModel.pickIdParams,
+      body: MatchesModel.movePickBody,
+      response: {
+        200: MatchesModel.match,
+        400: MatchesModel.errorResponse,
+        401: MatchesModel.errorResponse,
+        403: MatchesModel.errorResponse,
+        404: MatchesModel.errorResponse,
+      },
+      detail: {
+        summary: 'Перенести своего героя на другой ряд',
+      },
+    }
+  )
   .post(
     '/:id/cancel',
     async ({ params, player, status }) => {
