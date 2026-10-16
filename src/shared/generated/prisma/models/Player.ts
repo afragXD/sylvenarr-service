@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model Player
- * Гостевой игрок (сессия по cookie).
+ * Игрок (создаётся только через OAuth).
  */
 export type PlayerModel = runtime.Types.Result.DefaultSelection<Prisma.$PlayerPayload>
 
@@ -27,6 +27,8 @@ export type AggregatePlayer = {
 export type PlayerMinAggregateOutputType = {
   id: string | null
   displayName: string | null
+  email: string | null
+  avatarUrl: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -34,6 +36,8 @@ export type PlayerMinAggregateOutputType = {
 export type PlayerMaxAggregateOutputType = {
   id: string | null
   displayName: string | null
+  email: string | null
+  avatarUrl: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -41,6 +45,8 @@ export type PlayerMaxAggregateOutputType = {
 export type PlayerCountAggregateOutputType = {
   id: number
   displayName: number
+  email: number
+  avatarUrl: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -50,6 +56,8 @@ export type PlayerCountAggregateOutputType = {
 export type PlayerMinAggregateInputType = {
   id?: true
   displayName?: true
+  email?: true
+  avatarUrl?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -57,6 +65,8 @@ export type PlayerMinAggregateInputType = {
 export type PlayerMaxAggregateInputType = {
   id?: true
   displayName?: true
+  email?: true
+  avatarUrl?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -64,6 +74,8 @@ export type PlayerMaxAggregateInputType = {
 export type PlayerCountAggregateInputType = {
   id?: true
   displayName?: true
+  email?: true
+  avatarUrl?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -144,6 +156,8 @@ export type PlayerGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 export type PlayerGroupByOutputType = {
   id: string
   displayName: string
+  email: string | null
+  avatarUrl: string | null
   createdAt: Date
   updatedAt: Date
   _count: PlayerCountAggregateOutputType | null
@@ -172,21 +186,27 @@ export type PlayerWhereInput = {
   NOT?: Prisma.PlayerWhereInput | Prisma.PlayerWhereInput[]
   id?: Prisma.StringFilter<"Player"> | string
   displayName?: Prisma.StringFilter<"Player"> | string
+  email?: Prisma.StringNullableFilter<"Player"> | string | null
+  avatarUrl?: Prisma.StringNullableFilter<"Player"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Player"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Player"> | Date | string
   hostedMatches?: Prisma.MatchListRelationFilter
   guestMatches?: Prisma.MatchListRelationFilter
   ratingEntries?: Prisma.RatingEntryListRelationFilter
+  oauthAccounts?: Prisma.OAuthAccountListRelationFilter
 }
 
 export type PlayerOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
+  avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   hostedMatches?: Prisma.MatchOrderByRelationAggregateInput
   guestMatches?: Prisma.MatchOrderByRelationAggregateInput
   ratingEntries?: Prisma.RatingEntryOrderByRelationAggregateInput
+  oauthAccounts?: Prisma.OAuthAccountOrderByRelationAggregateInput
 }
 
 export type PlayerWhereUniqueInput = Prisma.AtLeast<{
@@ -195,16 +215,21 @@ export type PlayerWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.PlayerWhereInput[]
   NOT?: Prisma.PlayerWhereInput | Prisma.PlayerWhereInput[]
   displayName?: Prisma.StringFilter<"Player"> | string
+  email?: Prisma.StringNullableFilter<"Player"> | string | null
+  avatarUrl?: Prisma.StringNullableFilter<"Player"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Player"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Player"> | Date | string
   hostedMatches?: Prisma.MatchListRelationFilter
   guestMatches?: Prisma.MatchListRelationFilter
   ratingEntries?: Prisma.RatingEntryListRelationFilter
+  oauthAccounts?: Prisma.OAuthAccountListRelationFilter
 }, "id">
 
 export type PlayerOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
+  avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.PlayerCountOrderByAggregateInput
@@ -218,6 +243,8 @@ export type PlayerScalarWhereWithAggregatesInput = {
   NOT?: Prisma.PlayerScalarWhereWithAggregatesInput | Prisma.PlayerScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Player"> | string
   displayName?: Prisma.StringWithAggregatesFilter<"Player"> | string
+  email?: Prisma.StringNullableWithAggregatesFilter<"Player"> | string | null
+  avatarUrl?: Prisma.StringNullableWithAggregatesFilter<"Player"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Player"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Player"> | Date | string
 }
@@ -225,46 +252,60 @@ export type PlayerScalarWhereWithAggregatesInput = {
 export type PlayerCreateInput = {
   id?: string
   displayName: string
+  email?: string | null
+  avatarUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchCreateNestedManyWithoutHostInput
   guestMatches?: Prisma.MatchCreateNestedManyWithoutGuestInput
   ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutPlayerInput
+  oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUncheckedCreateInput = {
   id?: string
   displayName: string
+  email?: string | null
+  avatarUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutHostInput
   guestMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutGuestInput
   ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutPlayerInput
+  oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUpdateManyWithoutHostNestedInput
   guestMatches?: Prisma.MatchUpdateManyWithoutGuestNestedInput
   ratingEntries?: Prisma.RatingEntryUpdateManyWithoutPlayerNestedInput
+  oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUncheckedUpdateManyWithoutHostNestedInput
   guestMatches?: Prisma.MatchUncheckedUpdateManyWithoutGuestNestedInput
   ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutPlayerNestedInput
+  oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerCreateManyInput = {
   id?: string
   displayName: string
+  email?: string | null
+  avatarUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -272,6 +313,8 @@ export type PlayerCreateManyInput = {
 export type PlayerUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -279,6 +322,8 @@ export type PlayerUpdateManyMutationInput = {
 export type PlayerUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -286,6 +331,8 @@ export type PlayerUncheckedUpdateManyInput = {
 export type PlayerCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  avatarUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -293,6 +340,8 @@ export type PlayerCountOrderByAggregateInput = {
 export type PlayerMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  avatarUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -300,6 +349,8 @@ export type PlayerMaxOrderByAggregateInput = {
 export type PlayerMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  avatarUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -312,6 +363,24 @@ export type PlayerScalarRelationFilter = {
 export type PlayerNullableScalarRelationFilter = {
   is?: Prisma.PlayerWhereInput | null
   isNot?: Prisma.PlayerWhereInput | null
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
+export type PlayerCreateNestedOneWithoutOauthAccountsInput = {
+  create?: Prisma.XOR<Prisma.PlayerCreateWithoutOauthAccountsInput, Prisma.PlayerUncheckedCreateWithoutOauthAccountsInput>
+  connectOrCreate?: Prisma.PlayerCreateOrConnectWithoutOauthAccountsInput
+  connect?: Prisma.PlayerWhereUniqueInput
+}
+
+export type PlayerUpdateOneRequiredWithoutOauthAccountsNestedInput = {
+  create?: Prisma.XOR<Prisma.PlayerCreateWithoutOauthAccountsInput, Prisma.PlayerUncheckedCreateWithoutOauthAccountsInput>
+  connectOrCreate?: Prisma.PlayerCreateOrConnectWithoutOauthAccountsInput
+  upsert?: Prisma.PlayerUpsertWithoutOauthAccountsInput
+  connect?: Prisma.PlayerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PlayerUpdateToOneWithWhereWithoutOauthAccountsInput, Prisma.PlayerUpdateWithoutOauthAccountsInput>, Prisma.PlayerUncheckedUpdateWithoutOauthAccountsInput>
 }
 
 export type PlayerCreateNestedOneWithoutHostedMatchesInput = {
@@ -358,22 +427,92 @@ export type PlayerUpdateOneRequiredWithoutRatingEntriesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PlayerUpdateToOneWithWhereWithoutRatingEntriesInput, Prisma.PlayerUpdateWithoutRatingEntriesInput>, Prisma.PlayerUncheckedUpdateWithoutRatingEntriesInput>
 }
 
+export type PlayerCreateWithoutOauthAccountsInput = {
+  id?: string
+  displayName: string
+  email?: string | null
+  avatarUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  hostedMatches?: Prisma.MatchCreateNestedManyWithoutHostInput
+  guestMatches?: Prisma.MatchCreateNestedManyWithoutGuestInput
+  ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutPlayerInput
+}
+
+export type PlayerUncheckedCreateWithoutOauthAccountsInput = {
+  id?: string
+  displayName: string
+  email?: string | null
+  avatarUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  hostedMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutHostInput
+  guestMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutGuestInput
+  ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutPlayerInput
+}
+
+export type PlayerCreateOrConnectWithoutOauthAccountsInput = {
+  where: Prisma.PlayerWhereUniqueInput
+  create: Prisma.XOR<Prisma.PlayerCreateWithoutOauthAccountsInput, Prisma.PlayerUncheckedCreateWithoutOauthAccountsInput>
+}
+
+export type PlayerUpsertWithoutOauthAccountsInput = {
+  update: Prisma.XOR<Prisma.PlayerUpdateWithoutOauthAccountsInput, Prisma.PlayerUncheckedUpdateWithoutOauthAccountsInput>
+  create: Prisma.XOR<Prisma.PlayerCreateWithoutOauthAccountsInput, Prisma.PlayerUncheckedCreateWithoutOauthAccountsInput>
+  where?: Prisma.PlayerWhereInput
+}
+
+export type PlayerUpdateToOneWithWhereWithoutOauthAccountsInput = {
+  where?: Prisma.PlayerWhereInput
+  data: Prisma.XOR<Prisma.PlayerUpdateWithoutOauthAccountsInput, Prisma.PlayerUncheckedUpdateWithoutOauthAccountsInput>
+}
+
+export type PlayerUpdateWithoutOauthAccountsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  hostedMatches?: Prisma.MatchUpdateManyWithoutHostNestedInput
+  guestMatches?: Prisma.MatchUpdateManyWithoutGuestNestedInput
+  ratingEntries?: Prisma.RatingEntryUpdateManyWithoutPlayerNestedInput
+}
+
+export type PlayerUncheckedUpdateWithoutOauthAccountsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  hostedMatches?: Prisma.MatchUncheckedUpdateManyWithoutHostNestedInput
+  guestMatches?: Prisma.MatchUncheckedUpdateManyWithoutGuestNestedInput
+  ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutPlayerNestedInput
+}
+
 export type PlayerCreateWithoutHostedMatchesInput = {
   id?: string
   displayName: string
+  email?: string | null
+  avatarUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   guestMatches?: Prisma.MatchCreateNestedManyWithoutGuestInput
   ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutPlayerInput
+  oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUncheckedCreateWithoutHostedMatchesInput = {
   id?: string
   displayName: string
+  email?: string | null
+  avatarUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   guestMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutGuestInput
   ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutPlayerInput
+  oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerCreateOrConnectWithoutHostedMatchesInput = {
@@ -384,19 +523,25 @@ export type PlayerCreateOrConnectWithoutHostedMatchesInput = {
 export type PlayerCreateWithoutGuestMatchesInput = {
   id?: string
   displayName: string
+  email?: string | null
+  avatarUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchCreateNestedManyWithoutHostInput
   ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutPlayerInput
+  oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUncheckedCreateWithoutGuestMatchesInput = {
   id?: string
   displayName: string
+  email?: string | null
+  avatarUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutHostInput
   ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutPlayerInput
+  oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerCreateOrConnectWithoutGuestMatchesInput = {
@@ -418,19 +563,25 @@ export type PlayerUpdateToOneWithWhereWithoutHostedMatchesInput = {
 export type PlayerUpdateWithoutHostedMatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   guestMatches?: Prisma.MatchUpdateManyWithoutGuestNestedInput
   ratingEntries?: Prisma.RatingEntryUpdateManyWithoutPlayerNestedInput
+  oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateWithoutHostedMatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   guestMatches?: Prisma.MatchUncheckedUpdateManyWithoutGuestNestedInput
   ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutPlayerNestedInput
+  oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUpsertWithoutGuestMatchesInput = {
@@ -447,37 +598,49 @@ export type PlayerUpdateToOneWithWhereWithoutGuestMatchesInput = {
 export type PlayerUpdateWithoutGuestMatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUpdateManyWithoutHostNestedInput
   ratingEntries?: Prisma.RatingEntryUpdateManyWithoutPlayerNestedInput
+  oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateWithoutGuestMatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUncheckedUpdateManyWithoutHostNestedInput
   ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutPlayerNestedInput
+  oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerCreateWithoutRatingEntriesInput = {
   id?: string
   displayName: string
+  email?: string | null
+  avatarUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchCreateNestedManyWithoutHostInput
   guestMatches?: Prisma.MatchCreateNestedManyWithoutGuestInput
+  oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerUncheckedCreateWithoutRatingEntriesInput = {
   id?: string
   displayName: string
+  email?: string | null
+  avatarUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutHostInput
   guestMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutGuestInput
+  oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutPlayerInput
 }
 
 export type PlayerCreateOrConnectWithoutRatingEntriesInput = {
@@ -499,19 +662,25 @@ export type PlayerUpdateToOneWithWhereWithoutRatingEntriesInput = {
 export type PlayerUpdateWithoutRatingEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUpdateManyWithoutHostNestedInput
   guestMatches?: Prisma.MatchUpdateManyWithoutGuestNestedInput
+  oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutPlayerNestedInput
 }
 
 export type PlayerUncheckedUpdateWithoutRatingEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUncheckedUpdateManyWithoutHostNestedInput
   guestMatches?: Prisma.MatchUncheckedUpdateManyWithoutGuestNestedInput
+  oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutPlayerNestedInput
 }
 
 
@@ -523,12 +692,14 @@ export type PlayerCountOutputType = {
   hostedMatches: number
   guestMatches: number
   ratingEntries: number
+  oauthAccounts: number
 }
 
 export type PlayerCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   hostedMatches?: boolean | PlayerCountOutputTypeCountHostedMatchesArgs
   guestMatches?: boolean | PlayerCountOutputTypeCountGuestMatchesArgs
   ratingEntries?: boolean | PlayerCountOutputTypeCountRatingEntriesArgs
+  oauthAccounts?: boolean | PlayerCountOutputTypeCountOauthAccountsArgs
 }
 
 /**
@@ -562,21 +733,33 @@ export type PlayerCountOutputTypeCountRatingEntriesArgs<ExtArgs extends runtime.
   where?: Prisma.RatingEntryWhereInput
 }
 
+/**
+ * PlayerCountOutputType without action
+ */
+export type PlayerCountOutputTypeCountOauthAccountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OAuthAccountWhereInput
+}
+
 
 export type PlayerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   displayName?: boolean
+  email?: boolean
+  avatarUrl?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   hostedMatches?: boolean | Prisma.Player$hostedMatchesArgs<ExtArgs>
   guestMatches?: boolean | Prisma.Player$guestMatchesArgs<ExtArgs>
   ratingEntries?: boolean | Prisma.Player$ratingEntriesArgs<ExtArgs>
+  oauthAccounts?: boolean | Prisma.Player$oauthAccountsArgs<ExtArgs>
   _count?: boolean | Prisma.PlayerCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["player"]>
 
 export type PlayerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   displayName?: boolean
+  email?: boolean
+  avatarUrl?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["player"]>
@@ -584,6 +767,8 @@ export type PlayerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
 export type PlayerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   displayName?: boolean
+  email?: boolean
+  avatarUrl?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["player"]>
@@ -591,15 +776,18 @@ export type PlayerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
 export type PlayerSelectScalar = {
   id?: boolean
   displayName?: boolean
+  email?: boolean
+  avatarUrl?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type PlayerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "displayName" | "createdAt" | "updatedAt", ExtArgs["result"]["player"]>
+export type PlayerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "displayName" | "email" | "avatarUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["player"]>
 export type PlayerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   hostedMatches?: boolean | Prisma.Player$hostedMatchesArgs<ExtArgs>
   guestMatches?: boolean | Prisma.Player$guestMatchesArgs<ExtArgs>
   ratingEntries?: boolean | Prisma.Player$ratingEntriesArgs<ExtArgs>
+  oauthAccounts?: boolean | Prisma.Player$oauthAccountsArgs<ExtArgs>
   _count?: boolean | Prisma.PlayerCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PlayerIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -611,10 +799,13 @@ export type $PlayerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     hostedMatches: Prisma.$MatchPayload<ExtArgs>[]
     guestMatches: Prisma.$MatchPayload<ExtArgs>[]
     ratingEntries: Prisma.$RatingEntryPayload<ExtArgs>[]
+    oauthAccounts: Prisma.$OAuthAccountPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     displayName: string
+    email: string | null
+    avatarUrl: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["player"]>
@@ -1014,6 +1205,7 @@ export interface Prisma__PlayerClient<T, Null = never, ExtArgs extends runtime.T
   hostedMatches<T extends Prisma.Player$hostedMatchesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Player$hostedMatchesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   guestMatches<T extends Prisma.Player$guestMatchesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Player$guestMatchesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ratingEntries<T extends Prisma.Player$ratingEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Player$ratingEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RatingEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  oauthAccounts<T extends Prisma.Player$oauthAccountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Player$oauthAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OAuthAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1045,6 +1237,8 @@ export interface Prisma__PlayerClient<T, Null = never, ExtArgs extends runtime.T
 export interface PlayerFieldRefs {
   readonly id: Prisma.FieldRef<"Player", 'String'>
   readonly displayName: Prisma.FieldRef<"Player", 'String'>
+  readonly email: Prisma.FieldRef<"Player", 'String'>
+  readonly avatarUrl: Prisma.FieldRef<"Player", 'String'>
   readonly createdAt: Prisma.FieldRef<"Player", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Player", 'DateTime'>
 }
@@ -1504,6 +1698,30 @@ export type Player$ratingEntriesArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.RatingEntryScalarFieldEnum | Prisma.RatingEntryScalarFieldEnum[]
+}
+
+/**
+ * Player.oauthAccounts
+ */
+export type Player$oauthAccountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OAuthAccount
+   */
+  select?: Prisma.OAuthAccountSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OAuthAccount
+   */
+  omit?: Prisma.OAuthAccountOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OAuthAccountInclude<ExtArgs> | null
+  where?: Prisma.OAuthAccountWhereInput
+  orderBy?: Prisma.OAuthAccountOrderByWithRelationInput | Prisma.OAuthAccountOrderByWithRelationInput[]
+  cursor?: Prisma.OAuthAccountWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OAuthAccountScalarFieldEnum | Prisma.OAuthAccountScalarFieldEnum[]
 }
 
 /**

@@ -11,7 +11,7 @@ export const matchesController = new Elysia({ prefix: '/matches', tags: ['Matche
       return await MatchesService.createMatch(player.id);
     },
     {
-      requirePlayer: true,
+      requireAuth: true,
       response: {
         200: MatchesModel.match,
         401: MatchesModel.errorResponse,
@@ -34,7 +34,7 @@ export const matchesController = new Elysia({ prefix: '/matches', tags: ['Matche
       return result.match;
     },
     {
-      requirePlayer: true,
+      requireAuth: true,
       body: MatchesModel.joinBody,
       response: {
         200: MatchesModel.match,
@@ -79,7 +79,7 @@ export const matchesController = new Elysia({ prefix: '/matches', tags: ['Matche
       return result.match;
     },
     {
-      requirePlayer: true,
+      requireAuth: true,
       params: MatchesModel.idParams,
       response: {
         200: MatchesModel.match,

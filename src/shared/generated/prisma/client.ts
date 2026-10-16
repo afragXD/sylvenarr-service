@@ -46,9 +46,14 @@ export { Prisma }
 export type HeroClass = Prisma.HeroClassModel
 /**
  * Model Player
- * Гостевой игрок (сессия по cookie).
+ * Игрок (создаётся только через OAuth).
  */
 export type Player = Prisma.PlayerModel
+/**
+ * Model OAuthAccount
+ * Привязка внешнего OAuth-провайдера к игроку.
+ */
+export type OAuthAccount = Prisma.OAuthAccountModel
 /**
  * Model Match
  * Лобби / матч до старта боя.

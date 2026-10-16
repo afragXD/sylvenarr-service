@@ -18,4 +18,11 @@ export const config = {
   FRONTEND_URL: env.get('FRONTEND_URL').required().asString(),
   LOCAL_FRONTEND_URL: env.get('LOCAL_FRONTEND_URL').default('http://localhost:4001').asString(),
   LOCAL_FRONTEND_URL2: env.get('LOCAL_FRONTEND_URL2').default('https://localhost:4001').asString(),
+
+  YANDEX_CLIENT_ID: env.get('YANDEX_CLIENT_ID').asString(),
+  YANDEX_CLIENT_SECRET: env.get('YANDEX_CLIENT_SECRET').asString(),
+  YANDEX_REDIRECT_URI: env.get('YANDEX_REDIRECT_URI').asString(),
+
+  AUTH_SUCCESS_REDIRECT: env.get('AUTH_SUCCESS_REDIRECT').asString(),
+  AUTH_ERROR_REDIRECT: env.get('AUTH_ERROR_REDIRECT').asString(),
 };

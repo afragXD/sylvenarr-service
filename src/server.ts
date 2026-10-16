@@ -4,6 +4,7 @@ import { swagger } from '@elysiajs/swagger';
 import { Elysia } from 'elysia';
 import { config } from './config';
 import { appController } from './modules/app';
+import { authController } from './modules/auth';
 import { heroesController } from './modules/heroes';
 import { matchesController } from './modules/matches';
 import { playersController } from './modules/players';
@@ -43,6 +44,7 @@ export const app = new Elysia({
     })
   )
   .use(appController)
+  .use(authController)
   .use(heroesController)
   .use(playersController)
   .use(matchesController)

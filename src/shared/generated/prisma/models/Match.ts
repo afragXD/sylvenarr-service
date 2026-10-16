@@ -451,10 +451,6 @@ export type EnumMatchStatusFieldUpdateOperationsInput = {
   set?: $Enums.MatchStatus
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type MatchCreateWithoutHostInput = {
   id?: string
   status?: $Enums.MatchStatus

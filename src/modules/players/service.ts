@@ -4,7 +4,10 @@ import type { PlayersModel } from './model';
 type PlayerRow = {
   id: string;
   displayName: string;
+  email: string | null;
+  avatarUrl: string | null;
   createdAt: Date;
+  oauthAccounts: ReadonlyArray<{ provider: string }>;
 };
 
 export abstract class PlayersService {
@@ -15,33 +18,50 @@ export abstract class PlayersService {
     return {
       id: row.id,
       displayName: row.displayName,
+      email: row.email,
+      avatarUrl: row.avatarUrl,
+      providers: row.oauthAccounts.map((account) => account.provider),
       createdAt: row.createdAt.toISOString(),
     };
   }
 
+  private static readonly playerSelect = {
+    id: true,
+    displayName: true,
+    email: true,
+    avatarUrl: true,
+    createdAt: true,
+    oauthAccounts: {
+      select: { provider: true },
+      orderBy: { provider: 'asc' as const },
+    },
+  };
+
   /**
-   * Находит игрока по id.
+   * Находит авторизованного игрока по id (есть хотя бы один OAuthAccount).
    */
-  static async findById(id: string): Promise<PlayersModel.player | null> {
+  static async findAuthenticatedById(id: string): Promise<PlayersModel.player | null> {
     const row = await prisma.player.findUnique({
       where: { id },
-      select: { id: true, displayName: true, createdAt: true },
+      select: PlayersService.playerSelect,
     });
-    if (!row) {
+    if (!row || row.oauthAccounts.length === 0) {
       return null;
     }
     return PlayersService.mapPlayer(row);
   }
 
   /**
-   * Создаёт гостевого игрока.
+   * Находит игрока по id без проверки OAuth (для внутренних связей матча).
    */
-  static async createGuest(displayName?: string): Promise<PlayersModel.player> {
-    const name = displayName?.trim() || `Гость-${crypto.randomUUID().slice(0, 6)}`;
-    const row = await prisma.player.create({
-      data: { displayName: name },
-      select: { id: true, displayName: true, createdAt: true },
+  static async findById(id: string): Promise<PlayersModel.player | null> {
+    const row = await prisma.player.findUnique({
+      where: { id },
+      select: PlayersService.playerSelect,
     });
+    if (!row) {
+      return null;
+    }
     return PlayersService.mapPlayer(row);
   }
 }
