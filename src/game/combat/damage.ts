@@ -1,8 +1,11 @@
-import { applyVampWeaponHeal, hasEffect } from './effects';
+import { applyVampWeaponHeal, grantEffect, hasEffect } from './effects';
+import { PILOT_LVL } from './settings';
 import type { BattleState, BattleUnit } from './types';
 
 export const randInt = (min: number, max: number): number =>
   min + Math.floor(Math.random() * (max - min + 1));
+
+export { PILOT_LVL };
 
 /** Защита от рекурсии CONTR ↔ CONTR. */
 let counterDepth = 0;
@@ -31,7 +34,14 @@ function computeRawDamage(
     raw = Math.max(1, Math.round(attacker.damage - armor + randInt(0, 2)));
   }
   raw = Math.max(1, Math.round(raw * opts.damageMult));
-  if (randInt(1, 100) <= Math.min(40, attacker.luck)) {
+  let crit = false;
+  if ((attacker.critBank ?? 0) > 0) {
+    attacker.critBank -= 1;
+    crit = true;
+  } else if (randInt(1, 100) <= Math.min(40, attacker.luck)) {
+    crit = true;
+  }
+  if (crit) {
     raw = Math.round(raw * 1.5);
   }
   return raw;
@@ -54,6 +64,19 @@ export function dealDamage(
   }
   defender.health -= raw;
   applyVampWeaponHeal(attacker, raw);
+
+  if (
+    raw > 0 &&
+    defender.alive &&
+    defender.health > 0 &&
+    hasEffect(attacker, 'FIREDWEAPON') &&
+    randInt(1, 100) <= 55
+  ) {
+    grantEffect(defender, 'BURNING', 2, Math.max(2, Math.round(3 + PILOT_LVL * 0.2)));
+    if (state) {
+      state.log.push(`${defender.displayName} загорается от огненного оружия.`);
+    }
+  }
 
   if (
     counterDepth === 0 &&
@@ -110,6 +133,3 @@ export function markDeadIfNeeded(state: BattleState, unit: BattleUnit): void {
     });
   }
 }
-
-/** Условный уровень пилотов (без полноценной системы lvl). */
-export const PILOT_LVL = 5;

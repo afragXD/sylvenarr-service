@@ -1,0 +1,216 @@
+import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { grantEffect, hasEffect, trySpendMana } from '../effects';
+import { ROW_BACK, ROW_FRONT } from '../settings';
+import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
+import { createPhantomCopy, createSummon } from './summon';
+import { alliesOf, enemiesOf } from './targets';
+import type { AbilityHandler, AbilityOutcome } from './types';
+
+function abilityMeta(
+  state: BattleState,
+  actor: BattleUnit,
+  slot: AbilitySlot
+): AbilityInfo {
+  switch (slot) {
+    case 1: {
+      const targets = enemiesOf(state, actor);
+      return {
+        slot: 1,
+        label: 'Цепная молния',
+        needsTarget: true,
+        disabledReason:
+          actor.row !== ROW_FRONT
+            ? 'Нужен передний ряд'
+            : actor.mana < 3
+              ? 'Нужно 3 МР'
+              : targets.length === 0
+                ? 'Нет целей'
+                : null,
+        legalTargetIds: targets.map((unit) => unit.id),
+      };
+    }
+    case 2: {
+      const targets = state.units.filter(
+        (unit) => unit.alive && unit.id !== actor.id && !hasEffect(unit, 'SANCTUM')
+      );
+      return {
+        slot: 2,
+        label: 'Клоны',
+        needsTarget: true,
+        disabledReason:
+          actor.row !== ROW_BACK
+            ? 'Нужен задний ряд'
+            : actor.mana < 5
+              ? 'Нужно 5 МР'
+              : targets.length === 0
+                ? 'Нет целей'
+                : null,
+        legalTargetIds: targets.map((unit) => unit.id),
+      };
+    }
+    case 3: {
+      const targets = enemiesOf(state, actor);
+      return {
+        slot: 3,
+        label: 'Помрачение рассудка',
+        needsTarget: true,
+        disabledReason:
+          actor.mana < 2
+            ? 'Нужно 2 МР'
+            : targets.length === 0
+              ? 'Нет целей'
+              : null,
+        legalTargetIds: targets.map((unit) => unit.id),
+      };
+    }
+    case 4:
+      return {
+        slot: 4,
+        label: 'Призыв эктоплазмы',
+        needsTarget: false,
+        disabledReason: null,
+        legalTargetIds: [],
+      };
+    case 5:
+      return {
+        slot: 5,
+        label: 'Философский камень',
+        needsTarget: false,
+        disabledReason: actor.mana < 3 ? 'Нужно 3 МР' : null,
+        legalTargetIds: [],
+      };
+  }
+}
+
+/**
+ * Demiurge: chain lightning, phantom, mind control, ectoplasm.
+ */
+export const demiurgeAbilities: AbilityHandler = {
+  listAbilities(state, actor) {
+    return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
+  },
+
+  preChoice(state, actor) {
+    const others = alliesOf(state, actor).filter((unit) => unit.id !== actor.id);
+    if (others.length === 0 || randInt(1, 100) > 50) {
+      return;
+    }
+    const ally = others[randInt(0, others.length - 1)]!;
+    grantEffect(ally, 'GUARDED', 2, 3);
+    state.log.push(`${actor.displayName}: воздушный щит → ${ally.displayName} (GUARDED).`);
+  },
+
+  apply(state, actor, input): AbilityOutcome {
+    const meta = abilityMeta(state, actor, input.slot);
+    if (meta.disabledReason) {
+      return { status: 'reject', message: meta.disabledReason };
+    }
+
+    if (input.slot === 1) {
+      const err = trySpendMana(actor, 3);
+      if (err) {
+        return { status: 'reject', message: err };
+      }
+      const primary = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+      if (!primary) {
+        return { status: 'reject', message: 'Цель не найдена' };
+      }
+      const d1 = dealDamage(actor, primary, { damageMult: 1, armorIgnore: 0.1 }, state);
+      if (d1 > 0) {
+        state.log.push(`${actor.displayName}: молния → ${primary.displayName} (${d1}).`);
+        markDeadIfNeeded(state, primary);
+      }
+      const pool = enemiesOf(state, actor).filter((unit) => unit.id !== primary.id);
+      for (let i = 0; i < 2 && pool.length > 0; i += 1) {
+        const idx = randInt(0, pool.length - 1);
+        const next = pool.splice(idx, 1)[0]!;
+        const mult = 0.5 ** (i + 1);
+        const dmg = dealDamage(actor, next, { damageMult: mult, armorIgnore: 0.1 }, state);
+        if (dmg > 0) {
+          state.log.push(
+            `${actor.displayName}: разряд → ${next.displayName} (${dmg}).`
+          );
+          markDeadIfNeeded(state, next);
+        }
+      }
+      return { status: 'done' };
+    }
+
+    if (input.slot === 2) {
+      const err = trySpendMana(actor, 5);
+      if (err) {
+        return { status: 'reject', message: err };
+      }
+      const template = state.units.find(
+        (unit) => unit.alive && unit.id === input.targetId && unit.id !== actor.id
+      );
+      if (!template) {
+        return { status: 'reject', message: 'Цель не найдена' };
+      }
+      const phantom = createPhantomCopy(state, actor, template, actor.row);
+      if (!phantom) {
+        return { status: 'reject', message: 'Не удалось создать фантом' };
+      }
+      state.log.push(`${actor.displayName} копирует ${template.displayName}.`);
+      return { status: 'done' };
+    }
+
+    if (input.slot === 3) {
+      const err = trySpendMana(actor, 2);
+      if (err) {
+        return { status: 'reject', message: err };
+      }
+      const victim = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+      if (!victim) {
+        return { status: 'reject', message: 'Цель не найдена' };
+      }
+      if (hasEffect(victim, 'MIND_WARD')) {
+        state.log.push(`${victim.displayName} защищён от помрачения.`);
+        return { status: 'done' };
+      }
+      const allies = alliesOf(state, victim).filter((unit) => unit.id !== victim.id);
+      if (allies.length === 0) {
+        state.log.push(`Для ${victim.displayName} нет целей атаки.`);
+        return { status: 'done' };
+      }
+      if (randInt(1, 100) <= 85) {
+        const target = allies[randInt(0, allies.length - 1)]!;
+        const dmg = dealDamage(victim, target, { damageMult: 1, armorIgnore: 0 }, state);
+        state.log.push(
+          `${actor.displayName} подчиняет ${victim.displayName} → ${target.displayName} (${dmg}).`
+        );
+        markDeadIfNeeded(state, target);
+      } else {
+        state.log.push(`${actor.displayName}: помрачение не удалось.`);
+      }
+      return { status: 'done' };
+    }
+
+    if (input.slot === 4) {
+      const summon = createSummon(state, {
+        summoner: actor,
+        heroCode: 'Ectoplasm',
+        row: actor.row,
+      });
+      if (!summon) {
+        return { status: 'reject', message: 'Не удалось призвать' };
+      }
+      state.log.push(`${actor.displayName} призывает эктоплазму.`);
+      return { status: 'done' };
+    }
+
+    // slot 5
+    const err = trySpendMana(actor, 3);
+    if (err) {
+      return { status: 'reject', message: err };
+    }
+    state.log.push(
+      `${actor.displayName} творит философский камень (предмет — позже).`
+    );
+    if (randInt(1, 100) <= 8 * PILOT_LVL) {
+      state.log.push(`${actor.displayName} сохраняет ход.`);
+      return { status: 'done', keepTurn: true };
+    }
+    return { status: 'done' };
+  },
+};

@@ -102,3 +102,13 @@ export function meleeOrAll(
 export function moveToOtherRow(unit: BattleUnit): void {
   unit.row = unit.row === ROW_FRONT ? 1 : 0;
 }
+
+/**
+ * «Лидер» вражеской команды: стабильная эвристика (мин. column, затем id).
+ */
+export function enemyTeamLeader(state: BattleState, actor: BattleUnit): BattleUnit | null {
+  const enemies = state.units
+    .filter((unit) => unit.alive && unit.team !== actor.team)
+    .sort((a, b) => a.column - b.column || a.id.localeCompare(b.id));
+  return enemies[0] ?? null;
+}

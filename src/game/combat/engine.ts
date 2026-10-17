@@ -159,6 +159,9 @@ function buildTeamUnits(
         forbiddenResurrect: false,
         polymorphSavedArmor: -1,
         transformParentCode: null,
+        critBank: 0,
+        enslavedOriginTeam: null,
+        enslavedOriginPlayerId: null,
       };
       initPilotFlags(unit);
       units.push(unit);
@@ -367,7 +370,12 @@ export function applyAction(
 function settleAbility(
   state: BattleState,
   actor: BattleUnit,
-  outcome: { status: string; message?: string; keepTurn?: boolean }
+  outcome: {
+    status: string;
+    message?: string;
+    keepTurn?: boolean;
+    extraTurnForUnitId?: string;
+  }
 ): { ok: true } | { ok: false; message: string } {
   if (outcome.status === 'reject') {
     return { ok: false, message: outcome.message ?? 'Способность недоступна' };
@@ -376,6 +384,12 @@ function settleAbility(
     return { ok: true };
   }
   maybeKillHorse(actor, state);
+  if (outcome.extraTurnForUnitId) {
+    state.doneIds = state.doneIds.filter((id) => id !== outcome.extraTurnForUnitId);
+    state.preChoiceDoneIds = state.preChoiceDoneIds.filter(
+      (id) => id !== outcome.extraTurnForUnitId
+    );
+  }
   if (outcome.keepTurn) {
     resolveOutcome(state);
     return { ok: true };
@@ -397,9 +411,6 @@ function applySkillAction(
   if (skill.kind === 'heal_self') {
     const base = Math.max(1, Math.round(actor.maxHp * skill.healFraction));
     const healed = healUnit(actor, base);
-    if (actor.heroClassCode === 'GoldGolem') {
-      actor.defending = true;
-    }
     state.log.push(`${actor.displayName}: ${skill.label} (+${healed} ОЗ).`);
     finishUnitTurn(state, actor);
     return { ok: true };

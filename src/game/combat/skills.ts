@@ -146,15 +146,6 @@ export function classSkill(code: string): ClassSkillDef {
         ignoreMelee: false,
         healFraction: 0.3,
       };
-    case 'GoldGolem':
-      return {
-        kind: 'heal_self',
-        label: 'Каменная кожа',
-        needsTarget: false,
-        damageMult: 0,
-        ignoreMelee: false,
-        healFraction: 0.2,
-      };
     case 'Inquisitor':
       return {
         kind: 'heavy',
@@ -179,24 +170,6 @@ export function classSkill(code: string): ClassSkillDef {
         label: 'Смертный шторм',
         needsTarget: false,
         damageMult: 0.55,
-        ignoreMelee: true,
-        healFraction: 0,
-      };
-    case 'BeerElemental':
-      return {
-        kind: 'heal_ally',
-        label: 'Кружка силы',
-        needsTarget: true,
-        damageMult: 0,
-        ignoreMelee: false,
-        healFraction: 0.25,
-      };
-    case 'EvilTree':
-      return {
-        kind: 'pierce',
-        label: 'Корни',
-        needsTarget: true,
-        damageMult: 0.9,
         ignoreMelee: true,
         healFraction: 0,
       };

@@ -32,7 +32,13 @@ export type EffectId =
   | 'WEAKNESS'
   | 'UNLUCKY'
   | 'GALL'
-  | 'SANCTUM';
+  | 'SANCTUM'
+  | 'FIREDWEAPON'
+  | 'MIND_WARD'
+  | 'INVISIBLE'
+  | 'INTERDICT'
+  | 'MAGIC_SHACKLES'
+  | 'ENSLAVED';
 
 export type BattleEffect = {
   id: EffectId;
@@ -66,8 +72,10 @@ export type PendingPrompt = {
 
 export type BattleUnit = {
   readonly id: string;
-  readonly playerId: string;
-  readonly team: 0 | 1;
+  /** Mutable: Mermaid ENSLAVED flips controller. */
+  playerId: string;
+  /** Mutable: Mermaid ENSLAVED flips side. */
+  team: 0 | 1;
   /** Mutable: Marauder ↔ Werewolf transform. */
   heroClassCode: string;
   displayName: string;
@@ -113,6 +121,12 @@ export type BattleUnit = {
   polymorphSavedArmor: number;
   /** Код класса до transform (Werewolf → Marauder). */
   transformParentCode: string | null;
+  /** BeerElemental: гарант-криты. */
+  critBank: number;
+  /** Mermaid ENSLAVED: исходная команда до порабощения. */
+  enslavedOriginTeam: 0 | 1 | null;
+  /** Mermaid ENSLAVED: исходный playerId до порабощения. */
+  enslavedOriginPlayerId: string | null;
 };
 
 export type BattleState = {

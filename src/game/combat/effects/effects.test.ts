@@ -43,6 +43,9 @@ const unit = (overrides: Partial<BattleUnit> = {}): BattleUnit => ({
   forbiddenResurrect: false,
   polymorphSavedArmor: -1,
   transformParentCode: null,
+  critBank: 0,
+  enslavedOriginTeam: null,
+  enslavedOriginPlayerId: null,
   ...overrides,
 });
 

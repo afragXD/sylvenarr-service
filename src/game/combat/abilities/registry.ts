@@ -2,14 +2,25 @@ import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types
 import { abbessAbilities } from './abbess';
 import { archlichAbilities } from './archlich';
 import { assassinAbilities } from './assassin';
+import { demiurgeAbilities } from './demiurge';
 import { demonLordAbilities } from './demon-lord';
+import { detectiveAbilities } from './detective';
+import { beerElementalAbilities } from './beer-elemental';
+import { dracolichAbilities } from './dracolich';
+import { evilTreeAbilities } from './evil-tree';
+import { ghostWarriorAbilities } from './ghost-warrior';
+import { goldGolemAbilities } from './gold-golem';
 import { herbalistAbilities } from './herbalist';
 import { inquisitorAbilities } from './inquisitor';
 import { knightAbilities } from './knight';
 import { marauderAbilities } from './marauder';
+import { mermaidAbilities } from './mermaid';
+import { oracleAbilities } from './oracle';
 import { orcKingAbilities } from './orc-king';
 import { paladinAbilities } from './paladin';
 import { patriarchAbilities } from './patriarch';
+import { pyroAbilities } from './pyro';
+import { specterAbilities } from './specter';
 import { witchAbilities } from './witch';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
@@ -27,6 +38,17 @@ const PILOT_HANDLERS: Record<string, AbilityHandler> = {
   Werewolf: marauderAbilities,
   Herbalist: herbalistAbilities,
   Patriarch: patriarchAbilities,
+  Oracle: oracleAbilities,
+  Demiurge: demiurgeAbilities,
+  Pyro: pyroAbilities,
+  Specter: specterAbilities,
+  Detective: detectiveAbilities,
+  GhostWarrior: ghostWarriorAbilities,
+  GoldGolem: goldGolemAbilities,
+  BeerElemental: beerElementalAbilities,
+  EvilTree: evilTreeAbilities,
+  Mermaid: mermaidAbilities,
+  Dracolich: dracolichAbilities,
 };
 
 /**
@@ -114,6 +136,28 @@ export function initPilotFlags(unit: BattleUnit): void {
       unit.ultaCharges = 1;
       break;
     case 'Patriarch':
+      unit.ultaCharges = 1;
+      break;
+    case 'Oracle':
+      unit.ultaCharges = 1;
+      break;
+    case 'Demiurge':
+      unit.maxSummons = 1;
+      break;
+    case 'Detective':
+      unit.gun = 1;
+      unit.ultaCharges = 2;
+      break;
+    case 'GhostWarrior':
+      unit.ultaCharges = 1;
+      break;
+    case 'GoldGolem':
+      unit.forbiddenResurrect = true;
+      break;
+    case 'BeerElemental':
+      unit.ultaCharges = 3;
+      break;
+    case 'Mermaid':
       unit.ultaCharges = 1;
       break;
     default:

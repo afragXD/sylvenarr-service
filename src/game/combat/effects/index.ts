@@ -1,3 +1,4 @@
+import { PILOT_LVL } from '../settings';
 import type { BattleEffect, BattleUnit, EffectId } from '../types';
 
 /**
@@ -43,6 +44,8 @@ export const DEBUFF_EFFECT_IDS: readonly EffectId[] = [
   'WEAKNESS',
   'UNLUCKY',
   'GALL',
+  'INTERDICT',
+  'MAGIC_SHACKLES',
 ];
 
 /**
@@ -57,9 +60,12 @@ export function clearDebuffs(unit: BattleUnit): void {
 }
 
 /**
- * Лечение с учётом BLESSED (×(1 + power)).
+ * Лечение с учётом BLESSED (×(1 + power)); INTERDICT блокирует.
  */
 export function healUnit(unit: BattleUnit, amount: number): number {
+  if (hasEffect(unit, 'INTERDICT')) {
+    return 0;
+  }
   let healed = Math.max(0, amount);
   const blessed = unit.effects.find((effect) => effect.id === 'BLESSED');
   if (blessed) {
@@ -86,7 +92,7 @@ export function applyVampWeaponHeal(attacker: BattleUnit, damage: number): numbe
 }
 
 /**
- * Трата маны; SILENCE блокирует.
+ * Трата маны; SILENCE блокирует; MAGIC_SHACKLES жжёт ОЗ.
  * @returns сообщение об ошибке или null при успехе.
  */
 export function trySpendMana(unit: BattleUnit, cost: number): string | null {
@@ -97,7 +103,33 @@ export function trySpendMana(unit: BattleUnit, cost: number): string | null {
     return `Нужно ${cost} МР`;
   }
   unit.mana -= cost;
+  if (hasEffect(unit, 'MAGIC_SHACKLES') && cost > 0) {
+    const burn = Math.max(1, Math.round(cost * (10 + Math.floor(PILOT_LVL / 4))));
+    unit.health -= burn;
+  }
   return null;
+}
+
+/**
+ * Урон от MAGIC_SHACKLES за последнюю трату `cost` МР (для лога).
+ */
+export function shacklesBurnAmount(cost: number): number {
+  return Math.max(1, Math.round(cost * (10 + Math.floor(PILOT_LVL / 4))));
+}
+
+/**
+ * Порабощение: перенос в команду enslaver; откат при снятии ENSLAVED.
+ */
+export function enslaveUnit(target: BattleUnit, enslaver: BattleUnit): void {
+  if (hasEffect(target, 'ENSLAVED')) {
+    grantEffect(target, 'ENSLAVED', 1, 0);
+    return;
+  }
+  target.enslavedOriginTeam = target.team;
+  target.enslavedOriginPlayerId = target.playerId;
+  target.team = enslaver.team;
+  target.playerId = enslaver.playerId;
+  grantEffect(target, 'ENSLAVED', 1, 0);
 }
 
 /**
@@ -192,6 +224,9 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
     case 'FOCUSED':
       unit.accuracy += Math.round(effect.power || 15);
       break;
+    case 'INVISIBLE':
+      unit.dodge += Math.round(effect.power || 25);
+      break;
     case 'WEAKNESS':
       unit.damage = Math.max(1, unit.damage - Math.round(effect.power || 5));
       break;
@@ -200,6 +235,9 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
       break;
     case 'GALL':
       unit.armor = Math.max(0, unit.armor - Math.max(1, Math.round(effect.power || 2)));
+      break;
+    case 'ENSLAVED':
+    case 'MAGIC_SHACKLES':
       break;
     default:
       break;
@@ -257,6 +295,9 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect): void {
     case 'FOCUSED':
       unit.accuracy = Math.max(0, unit.accuracy - Math.round(effect.power || 15));
       break;
+    case 'INVISIBLE':
+      unit.dodge = Math.max(0, unit.dodge - Math.round(effect.power || 25));
+      break;
     case 'WEAKNESS':
       unit.damage += Math.round(effect.power || 5);
       break;
@@ -265,6 +306,18 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect): void {
       break;
     case 'GALL':
       unit.armor += Math.max(1, Math.round(effect.power || 2));
+      break;
+    case 'ENSLAVED':
+      if (unit.enslavedOriginTeam !== null) {
+        unit.team = unit.enslavedOriginTeam;
+      }
+      if (unit.enslavedOriginPlayerId !== null) {
+        unit.playerId = unit.enslavedOriginPlayerId;
+      }
+      unit.enslavedOriginTeam = null;
+      unit.enslavedOriginPlayerId = null;
+      break;
+    case 'MAGIC_SHACKLES':
       break;
     default:
       break;

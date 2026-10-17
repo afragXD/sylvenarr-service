@@ -3,7 +3,12 @@ import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types
 export type AbilityOutcome =
   | { status: 'reject'; message: string }
   | { status: 'pending' }
-  | { status: 'done'; keepTurn?: boolean };
+  | {
+      status: 'done';
+      keepTurn?: boolean;
+      /** Снять unitId из doneIds (доп. ход союзнику). */
+      extraTurnForUnitId?: string;
+    };
 
 export type AbilityHandler = {
   listAbilities: (state: BattleState, actor: BattleUnit) => AbilityInfo[];
