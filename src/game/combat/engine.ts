@@ -88,6 +88,7 @@ export function createBattleState(input: {
     units,
     doneIds: [],
     delayedIds: [],
+    delayedPhase: false,
     activeUnitId: null,
     turnPlayerId: null,
     log: ['Бой начался.'],
@@ -189,11 +190,13 @@ export function initiativeOrder(state: BattleState): BattleUnit[] {
  */
 export function advanceToNextUnit(state: BattleState): void {
   state.pendingPrompt = null;
+  state.delayedPhase = state.delayedPhase ?? false;
   let order = initiativeOrder(state);
   if (order.length === 0) {
     if (state.delayedIds.length > 0) {
       const delayedSet = new Set(state.delayedIds);
       state.delayedIds = [];
+      state.delayedPhase = true;
       state.preChoiceDoneIds = state.preChoiceDoneIds.filter((id) => !delayedSet.has(id));
       order = state.units
         .filter((unit) => unit.alive && delayedSet.has(unit.id) && !state.doneIds.includes(unit.id))
@@ -205,6 +208,7 @@ export function advanceToNextUnit(state: BattleState): void {
       state.stage += 1;
       state.doneIds = [];
       state.delayedIds = [];
+      state.delayedPhase = false;
       state.preChoiceDoneIds = [];
       for (const unit of state.units) {
         unit.defending = false;
@@ -302,6 +306,14 @@ export function applyAction(
   }
 
   if (input.action === 'wait') {
+    state.delayedPhase = state.delayedPhase ?? false;
+    if (state.delayedPhase) {
+      state.doneIds.push(actor.id);
+      state.preChoiceDoneIds = state.preChoiceDoneIds.filter((id) => id !== actor.id);
+      state.log.push(`${actor.displayName} ждёт.`);
+      advanceToNextUnit(state);
+      return { ok: true };
+    }
     if (!state.delayedIds.includes(actor.id)) {
       state.delayedIds.push(actor.id);
     }

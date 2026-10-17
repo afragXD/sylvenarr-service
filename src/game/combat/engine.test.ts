@@ -271,4 +271,53 @@ describe('combat engine', () => {
     resolveOutcome(state);
     expect(state.outcome).toBe('draw');
   });
+
+  test('second wait in delayed phase advances round', () => {
+    const heroes = catalogHeroes(hero('A', { initiative: 50 }), hero('B', { initiative: 10 }));
+    const state = createBattleState({
+      matchId: 'm1',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'A', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    expect(state.stage).toBe(1);
+
+    // First pass: both wait → enter delayed phase
+    for (let i = 0; i < 2; i++) {
+      const actorId = state.activeUnitId;
+      const playerId = state.turnPlayerId;
+      expect(actorId).toBeTruthy();
+      expect(playerId).toBeTruthy();
+      const result = applyAction(state, {
+        playerId: playerId!,
+        unitId: actorId!,
+        action: 'wait',
+      });
+      expect(result.ok).toBe(true);
+    }
+    expect(state.delayedPhase).toBe(true);
+    expect(state.stage).toBe(1);
+
+    // Second pass: both wait again → new round
+    for (let i = 0; i < 2; i++) {
+      const actorId = state.activeUnitId;
+      const playerId = state.turnPlayerId;
+      expect(actorId).toBeTruthy();
+      expect(playerId).toBeTruthy();
+      const result = applyAction(state, {
+        playerId: playerId!,
+        unitId: actorId!,
+        action: 'wait',
+      });
+      expect(result.ok).toBe(true);
+    }
+    expect(state.stage).toBe(2);
+    expect(state.log.some((line) => line === 'Раунд 2.')).toBe(true);
+    expect(state.delayedPhase).toBe(false);
+    expect(state.outcome).toBe('ongoing');
+  });
 });

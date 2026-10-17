@@ -11,10 +11,15 @@ export interface BattleStore {
 
 const memory = new Map<string, string>();
 
+function normalizeBattleState(state: BattleState): BattleState {
+  state.delayedPhase = state.delayedPhase ?? false;
+  return state;
+}
+
 class MemoryBattleStore implements BattleStore {
   async get(matchId: string): Promise<BattleState | null> {
     const raw = memory.get(matchId);
-    return raw ? (JSON.parse(raw) as BattleState) : null;
+    return raw ? normalizeBattleState(JSON.parse(raw) as BattleState) : null;
   }
 
   async set(state: BattleState): Promise<void> {
@@ -42,7 +47,7 @@ class RedisBattleStore implements BattleStore {
       await this.redis.connect();
     }
     const raw = await this.redis.get(this.key(matchId));
-    return raw ? (JSON.parse(raw) as BattleState) : null;
+    return raw ? normalizeBattleState(JSON.parse(raw) as BattleState) : null;
   }
 
   async set(state: BattleState): Promise<void> {

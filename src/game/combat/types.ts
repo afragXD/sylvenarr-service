@@ -140,6 +140,8 @@ export type BattleState = {
   units: BattleUnit[];
   doneIds: string[];
   delayedIds: string[];
+  /** true после flush delayedIds — вторая попытка в раунде; сбрасывается с новым раундом. */
+  delayedPhase: boolean;
   activeUnitId: string | null;
   turnPlayerId: string | null;
   log: string[];
