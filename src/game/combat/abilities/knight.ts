@@ -1,5 +1,5 @@
 import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
-import { delEffect, grantEffect } from '../effects';
+import { delEffect, grantEffect, hasEffect } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, meleeOrAll, neighbourBehind, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -76,7 +76,10 @@ export const knightAbilities: AbilityHandler = {
   preChoice(state, actor) {
     const bonus = PILOT_LVL + 1;
     for (const ally of ownRowAllies(state, actor)) {
-      ally.armor += bonus;
+      if (hasEffect(ally, 'ROW_FORTIFY')) {
+        delEffect(ally, 'ROW_FORTIFY');
+      }
+      grantEffect(ally, 'ROW_FORTIFY', 1, bonus);
     }
     state.log.push(
       `${actor.displayName} укрепляет доспехи ряда на ${bonus}.`

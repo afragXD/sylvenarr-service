@@ -9,7 +9,6 @@ export abstract class HeroesService {
     const playableOnly = query.playableOnly ?? true;
     const items = await prisma.heroClass.findMany({
       where: playableOnly ? { isPlayable: true } : undefined,
-      orderBy: { sortOrder: 'asc' },
       select: {
         code: true,
         displayName: true,
@@ -31,6 +30,7 @@ export abstract class HeroesService {
         sortOrder: true,
       },
     });
+    items.sort((a, b) => a.displayName.localeCompare(b.displayName, 'ru'));
     return { items };
   }
 

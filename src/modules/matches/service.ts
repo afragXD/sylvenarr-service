@@ -501,7 +501,7 @@ export abstract class MatchesService {
     readonly matchId: string;
     readonly playerId: string;
     readonly unitId: string;
-    readonly action: 'attack' | 'defend' | 'wait' | 'skill' | 'ability';
+    readonly action: 'attack' | 'defend' | 'wait' | 'skill' | 'ability' | 'move';
     readonly targetId?: string;
     readonly slot?: 1 | 2 | 3 | 4 | 5;
     readonly choice?: string;

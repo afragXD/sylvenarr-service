@@ -7,6 +7,9 @@ export const PILOT_LVL = 5;
 /** Потолок юнитов в команде (включая саммонов). */
 export const MAX_TEAM_SIZE = 6;
 
+/** Макс. живых юнитов на одном ряду (legacy MAX_ROW_SIZE). */
+export const MAX_ROW_SIZE = 3;
+
 /** Множитель стартового HP (legacy health_bonus). */
 export const HEALTH_BONUS = 0.5;
 

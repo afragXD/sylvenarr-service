@@ -1,4 +1,4 @@
-export type BattleAction = 'attack' | 'defend' | 'wait' | 'skill' | 'ability';
+export type BattleAction = 'attack' | 'defend' | 'wait' | 'skill' | 'ability' | 'move';
 
 export type AbilitySlot = 1 | 2 | 3 | 4 | 5;
 
@@ -38,7 +38,8 @@ export type EffectId =
   | 'INVISIBLE'
   | 'INTERDICT'
   | 'MAGIC_SHACKLES'
-  | 'ENSLAVED';
+  | 'ENSLAVED'
+  | 'ROW_FORTIFY';
 
 export type BattleEffect = {
   id: EffectId;

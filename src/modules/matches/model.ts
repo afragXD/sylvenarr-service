@@ -63,8 +63,28 @@ export namespace MatchesModel {
     isSummon: t.Boolean(),
     horseIsDead: t.Boolean(),
     mana: t.Number(),
+    damage: t.Number(),
+    armor: t.Number(),
+    initiative: t.Number(),
+    dodge: t.Number(),
+    luck: t.Number(),
+    accuracy: t.Number(),
+    power: t.Number(),
+    gold: t.Number(),
+    critBank: t.Number(),
+    ultaCharges: t.Number(),
   });
   export type battleUnit = typeof battleUnit.static;
+
+  export const turnOrderEntry = t.Object({
+    unitId: t.String(),
+    displayName: t.String(),
+    heroClassCode: t.String(),
+    team: t.Union([t.Literal(0), t.Literal(1)]),
+    alive: t.Boolean(),
+    isActive: t.Boolean(),
+  });
+  export type turnOrderEntry = typeof turnOrderEntry.static;
 
   export const abilityInfo = t.Object({
     slot: t.Union([
@@ -112,6 +132,7 @@ export namespace MatchesModel {
     ]),
     winnerPlayerId: t.Nullable(t.String()),
     log: t.Array(t.String()),
+    turnOrder: t.Array(turnOrderEntry),
     legalTargetIds: t.Array(t.String()),
     skillLabel: t.Nullable(t.String()),
     legalSkillTargetIds: t.Array(t.String()),
@@ -175,6 +196,7 @@ export namespace MatchesModel {
       t.Literal('wait'),
       t.Literal('skill'),
       t.Literal('ability'),
+      t.Literal('move'),
     ]),
     targetId: t.Optional(t.String()),
     slot: t.Optional(

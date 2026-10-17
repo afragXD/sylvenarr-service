@@ -8,10 +8,11 @@ import {
   runPreChoice,
 } from './abilities';
 import { maybeKillHorse } from './abilities/knight';
+import { moveToOtherRow } from './abilities/targets';
 import { resolveAttackStyle } from './attack-style';
 import { dealDamage, markDeadIfNeeded, randInt } from './damage';
 import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnStart } from './effects';
-import { HEALTH_BONUS, MAX_ROUNDS, ROW_FRONT } from './settings';
+import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, ROW_FRONT } from './settings';
 import {
   classAttackMods,
   classSkill,
@@ -319,6 +320,25 @@ export function applyAction(
     return { ok: true };
   }
 
+  if (input.action === 'move') {
+    if (hasEffect(actor, 'CHAINED')) {
+      return { ok: false, message: 'Обездвижен — нельзя сменить ряд' };
+    }
+    const targetRow = actor.row === ROW_FRONT ? 1 : 0;
+    const rowCount = state.units.filter(
+      (unit) => unit.alive && unit.team === actor.team && unit.row === targetRow
+    ).length;
+    if (rowCount >= MAX_ROW_SIZE) {
+      return { ok: false, message: 'На целевом ряду нет места' };
+    }
+    moveToOtherRow(actor);
+    state.log.push(
+      `${actor.displayName} переходит на ${targetRow === ROW_FRONT ? 'передний' : 'задний'} ряд.`
+    );
+    finishUnitTurn(state, actor);
+    return { ok: true };
+  }
+
   if (input.action === 'ability') {
     if (!isPilotClass(actor.heroClassCode)) {
       return { ok: false, message: 'У этого героя нет слотов способностей' };
@@ -576,6 +596,57 @@ export function resolveOutcome(state: BattleState): void {
 }
 
 /**
+ * Очередь ходов раунда для UI (активный → ожидающие → delayed → ходившие → мёртвые).
+ */
+export function buildTurnOrder(state: BattleState) {
+  const done = new Set(state.doneIds);
+  const delayed = new Set(state.delayedIds);
+  const byInit = (a: BattleUnit, b: BattleUnit) =>
+    b.initiative - a.initiative || a.id.localeCompare(b.id);
+
+  const pending = state.units
+    .filter((unit) => unit.alive && !done.has(unit.id) && !delayed.has(unit.id))
+    .sort(byInit);
+  const active =
+    state.activeUnitId != null
+      ? (state.units.find((unit) => unit.id === state.activeUnitId) ?? null)
+      : null;
+  const restPending = pending.filter((unit) => unit.id !== state.activeUnitId);
+  const delayedUnits = state.units
+    .filter((unit) => unit.alive && delayed.has(unit.id) && !done.has(unit.id))
+    .sort(byInit);
+  const doneUnits = state.units
+    .filter((unit) => unit.alive && done.has(unit.id))
+    .sort(byInit);
+  const dead = state.units.filter((unit) => !unit.alive).sort(byInit);
+
+  const sequence: BattleUnit[] = [
+    ...(active?.alive ? [active] : []),
+    ...restPending,
+    ...delayedUnits,
+    ...doneUnits,
+    ...dead,
+  ];
+  const seen = new Set<string>();
+  return sequence
+    .filter((unit) => {
+      if (seen.has(unit.id)) {
+        return false;
+      }
+      seen.add(unit.id);
+      return true;
+    })
+    .map((unit) => ({
+      unitId: unit.id,
+      displayName: unit.displayName,
+      heroClassCode: unit.heroClassCode,
+      team: unit.team as 0 | 1,
+      alive: unit.alive,
+      isActive: unit.id === state.activeUnitId,
+    }));
+}
+
+/**
  * Публичный снимок для API/клиента.
  */
 export function toBattleSummary(state: BattleState) {
@@ -598,7 +669,8 @@ export function toBattleSummary(state: BattleState) {
     turnPlayerId: state.turnPlayerId,
     outcome: state.outcome,
     winnerPlayerId: state.winnerPlayerId,
-    log: state.log.slice(-16),
+    log: state.log.slice(-40),
+    turnOrder: buildTurnOrder(state),
     legalTargetIds: targets,
     skillLabel: skill && skill.kind !== 'none' ? skill.label : null,
     legalSkillTargetIds: skillTargets,
@@ -632,6 +704,16 @@ export function toBattleSummary(state: BattleState) {
       isSummon: unit.isSummon,
       horseIsDead: unit.horseIsDead,
       mana: unit.mana,
+      damage: unit.damage,
+      armor: unit.armor,
+      initiative: unit.initiative,
+      dodge: unit.dodge,
+      luck: unit.luck,
+      accuracy: unit.accuracy,
+      power: unit.power,
+      gold: unit.gold,
+      critBank: unit.critBank,
+      ultaCharges: unit.ultaCharges,
     })),
   };
 }

@@ -1,3 +1,4 @@
+import { effectLogLabel } from '../effect-labels';
 import { PILOT_LVL } from '../settings';
 import type { BattleEffect, BattleUnit, EffectId } from '../types';
 
@@ -156,12 +157,16 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
     ) {
       const dot = Math.max(1, Math.round(effect.power || 3));
       unit.health -= dot;
-      log.push(`${unit.displayName} получает ${dot} урона от ${effect.id}.`);
+      log.push(
+        `${unit.displayName} получает ${dot} урона от ${effectLogLabel(effect.id)}.`
+      );
     }
     effect.rounds -= 1;
     if (effect.rounds <= 0) {
       delEffect(unit, effect.id);
-      log.push(`Эффект ${effect.id} спадает с ${unit.displayName}.`);
+      log.push(
+        `Эффект ${effectLogLabel(effect.id)} спадает с ${unit.displayName}.`
+      );
     }
   }
   return log;
@@ -235,6 +240,9 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
       break;
     case 'GALL':
       unit.armor = Math.max(0, unit.armor - Math.max(1, Math.round(effect.power || 2)));
+      break;
+    case 'ROW_FORTIFY':
+      unit.armor += Math.max(1, Math.round(effect.power || 1));
       break;
     case 'ENSLAVED':
     case 'MAGIC_SHACKLES':
@@ -316,6 +324,12 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect): void {
       }
       unit.enslavedOriginTeam = null;
       unit.enslavedOriginPlayerId = null;
+      break;
+    case 'ROW_FORTIFY':
+      unit.armor = Math.max(
+        0,
+        unit.armor - Math.max(1, Math.round(effect.power || 1))
+      );
       break;
     case 'MAGIC_SHACKLES':
       break;
