@@ -497,8 +497,10 @@ const rawHeroes: ReadonlyArray<RawHero> = [
   {
     code: 'GoblinTrapper',
     displayName: 'Гоблин-лучник',
-    description: '',
-    roleSummary: '',
+    description:
+      'Разведчик хана орков: лук, яд и лёгкие руки для чужого золота.',
+    roleSummary:
+      'Дальний бой с шансом отравления; кража золота и поддержка союзников. Призыв Хана орков.',
     health: 45,
     damage: 15,
     armor: 0,
@@ -514,8 +516,10 @@ const rawHeroes: ReadonlyArray<RawHero> = [
   {
     code: 'GoblinShaman',
     displayName: 'Гоблин-шаман',
-    description: '',
-    roleSummary: '',
+    description:
+      'Племенной колдун хана: буря по ряду врагов и ритуалы удачи ценой собственной жизни.',
+    roleSummary:
+      'Магия воздуха по ряду, баффы удачи/точности, жертва ради лечения хозяина. Призыв Хана орков.',
     health: 45,
     damage: 10,
     armor: 10,
@@ -531,8 +535,10 @@ const rawHeroes: ReadonlyArray<RawHero> = [
   {
     code: 'Zombie',
     displayName: 'Зомби',
-    description: '',
-    roleSummary: '',
+    description:
+      'Первая ступень нежити Архилича: медленный труп с заразным укусом.',
+    roleSummary:
+      'Ближний бой, снижение морали цели; стартовая форма для эволюции нежити.',
     health: 70,
     damage: 18,
     armor: 0,
@@ -548,8 +554,10 @@ const rawHeroes: ReadonlyArray<RawHero> = [
   {
     code: 'SkeletonChampion',
     displayName: 'Скелет-чемпион',
-    description: '',
-    roleSummary: '',
+    description:
+      'Усиленная нежить Архилича: костяной чемпион с молотом и охраной хозяина.',
+    roleSummary:
+      'Разбивает броню, метка и охрана лича. Средняя ступень эволюции нежити.',
     health: 120,
     damage: 30,
     armor: 15,
@@ -565,8 +573,10 @@ const rawHeroes: ReadonlyArray<RawHero> = [
   {
     code: 'Ectoplasm',
     displayName: 'Эктоплазма',
-    description: '',
-    roleSummary: '',
+    description:
+      'Сгусток слизи Демиурга: почти без физического урона, бьёт магией воды.',
+    roleSummary:
+      'Призыв Демиурга; варда от оружия, магический шлепок. Фантом-копия — отдельная способность.',
     health: 60,
     damage: 0,
     armor: 0,
