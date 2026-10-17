@@ -42,6 +42,7 @@ export namespace MatchesModel {
   export const battleEffect = t.Object({
     id: t.String(),
     rounds: t.Number(),
+    power: t.Number(),
   });
   export type battleEffect = typeof battleEffect.static;
 

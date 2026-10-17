@@ -1,5 +1,5 @@
 import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
-import { grantEffect } from '../effects';
+import { grantEffect, healUnit } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { availableSummonRows, createSummon } from './summon';
 import { alliesOf, enemiesOf } from './targets';
@@ -223,8 +223,7 @@ export const archlichAbilities: AbilityHandler = {
         target.armor += 1;
         target.power += 1;
         if (target.isLichSummon) {
-          const heal = PILOT_LVL * 5 + 10;
-          target.health = Math.min(target.maxHp, target.health + heal);
+          const heal = healUnit(target, PILOT_LVL * 5 + 10);
           state.log.push(
             `${actor.displayName} усиливает ${target.displayName} и лечит на ${heal}.`
           );
@@ -252,7 +251,6 @@ export const archlichAbilities: AbilityHandler = {
       }
       if (randInt(1, 100) <= 80) {
         grantEffect(target, 'FEAR', 2, 3);
-        target.damage = Math.max(1, target.damage - 3);
         state.log.push(`${target.displayName} охвачен ужасом.`);
       } else {
         state.log.push(`${target.displayName} не поддаётся провокациям лича.`);

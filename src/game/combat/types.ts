@@ -13,13 +13,41 @@ export type EffectId =
   | 'HAPPY'
   | 'CHAINED'
   | 'FEAR'
-  | 'VAMPWEAPON';
+  | 'VAMPWEAPON'
+  | 'REGENHP'
+  | 'HASTE'
+  | 'CHAMELEON'
+  | 'PETRIFIED'
+  | 'SLOW'
+  | 'STONEFLESH'
+  | 'CONTR'
+  | 'MARKED'
+  | 'DEATHSENTENCE'
+  | 'INTERFERENCE'
+  | 'SILENCE'
+  | 'IMPISH'
+  | 'LUCKY'
+  | 'FOCUSED'
+  | 'STUNNED'
+  | 'WEAKNESS'
+  | 'UNLUCKY'
+  | 'GALL'
+  | 'SANCTUM';
 
 export type BattleEffect = {
   id: EffectId;
   rounds: number;
   /** Числовой параметр эффекта (урон баффа, % и т.п.). */
   power: number;
+};
+
+/** Запись на кладбище для воскрешения. */
+export type GraveyardEntry = {
+  unitId: string;
+  team: 0 | 1;
+  heroClassCode: string;
+  displayName: string;
+  forbiddenResurrect: boolean;
 };
 
 export type PromptOption = {
@@ -40,11 +68,12 @@ export type BattleUnit = {
   readonly id: string;
   readonly playerId: string;
   readonly team: 0 | 1;
-  readonly heroClassCode: string;
-  readonly displayName: string;
+  /** Mutable: Marauder ↔ Werewolf transform. */
+  heroClassCode: string;
+  displayName: string;
   row: number;
   column: number;
-  readonly maxHp: number;
+  maxHp: number;
   health: number;
   damage: number;
   armor: number;
@@ -52,7 +81,7 @@ export type BattleUnit = {
   dodge: number;
   luck: number;
   accuracy: number;
-  readonly attackStyle: 'melee' | 'ranged' | 'magic';
+  attackStyle: 'melee' | 'ranged' | 'magic';
   power: number;
   mana: number;
   gold: number;
@@ -68,6 +97,22 @@ export type BattleUnit = {
   cumRage: number;
   lichGrade: number;
   isLichSummon: boolean;
+  /** Заряды ульты (DemonLord / Paladin / Marauder / Patriarch). */
+  ultaCharges: number;
+  /** Assassin: отравленные дротики. */
+  darts: number;
+  /** Assassin: шанс «тетради» (%). */
+  deathNote: number;
+  /** Assassin: кулдаун тетради в раундах. */
+  deathNoteCd: number;
+  /** Witch: патроны револьвера. */
+  gun: number;
+  /** Abbess: запрет воскрешения. */
+  forbiddenResurrect: boolean;
+  /** Witch polymorph: броня до превращения (−1 = нет). */
+  polymorphSavedArmor: number;
+  /** Код класса до transform (Werewolf → Marauder). */
+  transformParentCode: string | null;
 };
 
 export type BattleState = {
@@ -88,6 +133,8 @@ export type BattleState = {
   pendingPrompt: PendingPrompt | null;
   /** id юнитов, для которых preChoice уже сработал в этом «заходе» хода. */
   preChoiceDoneIds: string[];
+  /** Мёртвые не-саммоны для воскрешения. */
+  graveyard: GraveyardEntry[];
 };
 
 export type HeroClassStats = {

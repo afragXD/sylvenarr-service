@@ -2,7 +2,7 @@
  * Упрощённый стиль атаки по коду класса (до порта уникальных скиллов).
  */
 export function resolveAttackStyle(code: string): 'melee' | 'ranged' | 'magic' {
-  const ranged = new Set(['Assassin', 'GoblinArcher', 'Detective']);
+  const ranged = new Set(['Assassin', 'GoblinArcher', 'Detective', 'Marauder']);
   const magic = new Set([
     'Archlich',
     'Demiurge',

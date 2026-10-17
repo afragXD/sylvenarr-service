@@ -1,11 +1,14 @@
+import { hasEffect } from '../effects';
 import { ROW_FRONT } from '../settings';
 import type { BattleState, BattleUnit } from '../types';
 
 /**
- * Все живые враги.
+ * Все живые враги (без SANCTUM — нельзя выбрать целью).
  */
 export function enemiesOf(state: BattleState, actor: BattleUnit): BattleUnit[] {
-  return state.units.filter((unit) => unit.alive && unit.team !== actor.team);
+  return state.units.filter(
+    (unit) => unit.alive && unit.team !== actor.team && !hasEffect(unit, 'SANCTUM')
+  );
 }
 
 /**
@@ -23,6 +26,26 @@ export function ownRowAllies(state: BattleState, actor: BattleUnit): BattleUnit[
 }
 
 /**
+ * Живые юниты той же команды и того же ряда, что и `ref`.
+ */
+export function unitsOnSameRow(state: BattleState, ref: BattleUnit): BattleUnit[] {
+  return state.units.filter(
+    (unit) => unit.alive && unit.team === ref.team && unit.row === ref.row
+  );
+}
+
+/**
+ * Враги в той же колонке, что и `ref` (с фильтром SANCTUM).
+ */
+export function enemiesInColumn(
+  state: BattleState,
+  actor: BattleUnit,
+  ref: BattleUnit
+): BattleUnit[] {
+  return enemiesOf(state, actor).filter((unit) => unit.column === ref.column);
+}
+
+/**
  * Сосед по колонке позади цели.
  */
 export function neighbourBehind(state: BattleState, target: BattleUnit): BattleUnit | null {
@@ -32,7 +55,8 @@ export function neighbourBehind(state: BattleState, target: BattleUnit): BattleU
         unit.alive &&
         unit.team === target.team &&
         unit.column === target.column &&
-        unit.row === target.row + 1
+        unit.row === target.row + 1 &&
+        !hasEffect(unit, 'SANCTUM')
     ) ?? null
   );
 }

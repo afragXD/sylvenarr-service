@@ -10,7 +10,7 @@ import {
 import { maybeKillHorse } from './abilities/knight';
 import { resolveAttackStyle } from './attack-style';
 import { dealDamage, markDeadIfNeeded, randInt } from './damage';
-import { tickEffectsOnTurnStart } from './effects';
+import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnStart } from './effects';
 import { HEALTH_BONUS, MAX_ROUNDS, ROW_FRONT } from './settings';
 import {
   classAttackMods,
@@ -27,6 +27,29 @@ import type {
 } from './types';
 
 export { listAttackTargets } from './abilities';
+
+/**
+ * Классовые пассивы при защите (пилоты 3.8).
+ */
+function applyDefendPassives(actor: BattleUnit): void {
+  switch (actor.heroClassCode) {
+    case 'Abbess':
+      grantEffect(actor, 'LUCKY', 2, 20);
+      break;
+    case 'Witch':
+      grantEffect(actor, 'FOCUSED', 2, 15);
+      actor.mana += 3;
+      break;
+    case 'Inquisitor':
+      grantEffect(actor, 'CONTR', 2, 0);
+      break;
+    case 'Marauder':
+      actor.dodge += 1;
+      break;
+    default:
+      break;
+  }
+}
 
 /**
  * Создаёт юнитов команд из draft picks + статов классов.
@@ -71,6 +94,7 @@ export function createBattleState(input: {
     winnerPlayerId: null,
     pendingPrompt: null,
     preChoiceDoneIds: [],
+    graveyard: [],
   };
   advanceToNextUnit(state);
   return state;
@@ -127,6 +151,14 @@ function buildTeamUnits(
         cumRage: 0,
         lichGrade: 0,
         isLichSummon: false,
+        ultaCharges: 0,
+        darts: 0,
+        deathNote: 0,
+        deathNoteCd: 0,
+        gun: 0,
+        forbiddenResurrect: false,
+        polymorphSavedArmor: -1,
+        transformParentCode: null,
       };
       initPilotFlags(unit);
       units.push(unit);
@@ -193,9 +225,21 @@ export function advanceToNextUnit(state: BattleState): void {
     return;
   }
 
+  const stunned = hasEffect(next, 'STUNNED');
   const tickLog = tickEffectsOnTurnStart(next);
   state.log.push(...tickLog);
+  markDeadIfNeeded(state, next);
   if (!next.alive) {
+    state.doneIds.push(next.id);
+    resolveOutcome(state);
+    if (state.outcome === 'ongoing') {
+      advanceToNextUnit(state);
+    }
+    return;
+  }
+
+  if (stunned) {
+    state.log.push(`${next.displayName} оглушён и пропускает ход.`);
     state.doneIds.push(next.id);
     resolveOutcome(state);
     if (state.outcome === 'ongoing') {
@@ -265,6 +309,7 @@ export function applyAction(
 
   if (input.action === 'defend') {
     actor.defending = true;
+    applyDefendPassives(actor);
     state.doneIds.push(actor.id);
     state.log.push(`${actor.displayName} встаёт в защиту.`);
     advanceToNextUnit(state);
@@ -350,8 +395,8 @@ function applySkillAction(
   }
 
   if (skill.kind === 'heal_self') {
-    const healed = Math.max(1, Math.round(actor.maxHp * skill.healFraction));
-    actor.health = Math.min(actor.maxHp, actor.health + healed);
+    const base = Math.max(1, Math.round(actor.maxHp * skill.healFraction));
+    const healed = healUnit(actor, base);
     if (actor.heroClassCode === 'GoldGolem') {
       actor.defending = true;
     }
@@ -387,8 +432,8 @@ function applySkillAction(
   }
 
   if (skill.kind === 'heal_ally') {
-    const healed = Math.max(1, Math.round(target.maxHp * skill.healFraction));
-    target.health = Math.min(target.maxHp, target.health + healed);
+    const base = Math.max(1, Math.round(target.maxHp * skill.healFraction));
+    const healed = healUnit(target, base);
     state.log.push(
       `${actor.displayName}: ${skill.label} → ${target.displayName} (+${healed} ОЗ).`
     );
@@ -429,8 +474,7 @@ function resolveAttackWithClassMods(
       `${actor.displayName} бьёт ${target.displayName} на ${damage}. Осталось ${Math.max(0, target.health)} ОЗ.`
     );
     if (mods.lifesteal > 0) {
-      const heal = Math.max(1, Math.round(damage * mods.lifesteal));
-      actor.health = Math.min(actor.maxHp, actor.health + heal);
+      const heal = healUnit(actor, Math.max(1, Math.round(damage * mods.lifesteal)));
       state.log.push(`${actor.displayName} восстанавливает ${heal} ОЗ.`);
     }
   }
@@ -572,6 +616,7 @@ export function toBattleSummary(state: BattleState) {
       effects: unit.effects.map((effect) => ({
         id: effect.id,
         rounds: effect.rounds,
+        power: effect.power,
       })),
       isSummon: unit.isSummon,
       horseIsDead: unit.horseIsDead,

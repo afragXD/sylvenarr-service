@@ -1,13 +1,32 @@
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
+import { abbessAbilities } from './abbess';
 import { archlichAbilities } from './archlich';
+import { assassinAbilities } from './assassin';
+import { demonLordAbilities } from './demon-lord';
+import { herbalistAbilities } from './herbalist';
+import { inquisitorAbilities } from './inquisitor';
 import { knightAbilities } from './knight';
+import { marauderAbilities } from './marauder';
 import { orcKingAbilities } from './orc-king';
+import { paladinAbilities } from './paladin';
+import { patriarchAbilities } from './patriarch';
+import { witchAbilities } from './witch';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 const PILOT_HANDLERS: Record<string, AbilityHandler> = {
   Knight: knightAbilities,
   OrcKing: orcKingAbilities,
   Archlich: archlichAbilities,
+  DemonLord: demonLordAbilities,
+  Assassin: assassinAbilities,
+  Paladin: paladinAbilities,
+  Abbess: abbessAbilities,
+  Witch: witchAbilities,
+  Inquisitor: inquisitorAbilities,
+  Marauder: marauderAbilities,
+  Werewolf: marauderAbilities,
+  Herbalist: herbalistAbilities,
+  Patriarch: patriarchAbilities,
 };
 
 /**
@@ -76,6 +95,26 @@ export function initPilotFlags(unit: BattleUnit): void {
       break;
     case 'Archlich':
       unit.maxSummons = 2;
+      break;
+    case 'DemonLord':
+      unit.ultaCharges = 2;
+      break;
+    case 'Assassin':
+      unit.darts = 2;
+      unit.deathNote = 15;
+      unit.deathNoteCd = 0;
+      break;
+    case 'Paladin':
+      unit.ultaCharges = 2;
+      break;
+    case 'Witch':
+      unit.gun = 4;
+      break;
+    case 'Marauder':
+      unit.ultaCharges = 1;
+      break;
+    case 'Patriarch':
+      unit.ultaCharges = 1;
       break;
     default:
       break;

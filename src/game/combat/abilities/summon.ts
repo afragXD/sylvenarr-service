@@ -82,6 +82,14 @@ export function createSummon(
     cumRage: 0,
     lichGrade: 0,
     isLichSummon: input.isLichSummon ?? false,
+    ultaCharges: 0,
+    darts: 0,
+    deathNote: 0,
+    deathNoteCd: 0,
+    gun: 0,
+    forbiddenResurrect: false,
+    polymorphSavedArmor: -1,
+    transformParentCode: null,
   };
   state.units.push(unit);
   return unit;

@@ -33,6 +33,7 @@ const summonCodes = new Set([
   'SkeletonChampion',
   'Ectoplasm',
   'Imp',
+  'Werewolf',
 ]);
 
 type RawHero = Omit<HeroSeed, 'isPlayable' | 'sortOrder' | 'size'>;
