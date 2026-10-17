@@ -97,7 +97,9 @@ export const demiurgeAbilities: AbilityHandler = {
     }
     const ally = others[randInt(0, others.length - 1)]!;
     grantEffect(ally, 'GUARDED', 2, 3);
-    state.log.push(`${actor.displayName}: воздушный щит → ${ally.displayName} (GUARDED).`);
+    state.log.push(
+      `${actor.displayName}: воздушный щит → ${ally.displayName} (Под охраной).`
+    );
   },
 
   apply(state, actor, input): AbilityOutcome {

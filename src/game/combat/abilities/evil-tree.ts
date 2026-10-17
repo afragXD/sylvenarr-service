@@ -1,4 +1,5 @@
 import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { effectLogLabel } from '../effect-labels';
 import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, ownRowAllies } from './targets';
@@ -164,7 +165,7 @@ export const evilTreeAbilities: AbilityHandler = {
             : 20;
       grantEffect(target, buff, 2, power);
       state.log.push(
-        `${actor.displayName}: мудрость — ${target.displayName} получает ${buff}.`
+        `${actor.displayName}: мудрость — ${target.displayName} получает «${effectLogLabel(buff)}».`
       );
       return { status: 'done' };
     }
