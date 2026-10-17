@@ -60,6 +60,8 @@ export type GraveyardEntry = {
 export type PromptOption = {
   id: string;
   label: string;
+  /** Краткое описание варианта (эволюция и т.п.). */
+  description?: string;
 };
 
 export type PendingPrompt = {

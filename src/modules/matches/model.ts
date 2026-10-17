@@ -115,6 +115,7 @@ export namespace MatchesModel {
       t.Object({
         id: t.String(),
         label: t.String(),
+        description: t.Optional(t.String()),
       })
     ),
   });

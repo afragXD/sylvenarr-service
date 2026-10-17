@@ -56,4 +56,52 @@ describe('createSummon', () => {
     });
     expect(second).toBeNull();
   });
+
+  test('replaceUnitId removes old unit instead of leaving a corpse', () => {
+    const heroes = new Map([
+      ['Archlich', hero('Archlich')],
+      ['B', hero('B')],
+      ['Zombie', hero('Zombie', { health: 40 })],
+      ['SkeletonChampion', hero('SkeletonChampion', { health: 80 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm1',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Archlich', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const lich = state.units.find((unit) => unit.id === 'p1');
+    if (!lich) {
+      throw new Error('missing lich');
+    }
+    lich.maxSummons = 2;
+    const zombie = createSummon(state, {
+      summoner: lich,
+      heroCode: 'Zombie',
+      row: 0,
+      column: 1,
+      isLichSummon: true,
+    });
+    expect(zombie).toBeTruthy();
+    const zombieId = zombie!.id;
+    state.doneIds.push(zombieId);
+
+    const skeleton = createSummon(state, {
+      summoner: lich,
+      heroCode: 'SkeletonChampion',
+      row: 0,
+      column: 1,
+      isLichSummon: true,
+      replaceUnitId: zombieId,
+    });
+    expect(skeleton).toBeTruthy();
+    expect(state.units.some((unit) => unit.id === zombieId)).toBe(false);
+    expect(state.doneIds.includes(zombieId)).toBe(false);
+    expect(skeleton!.alive).toBe(true);
+    expect(skeleton!.heroClassCode).toBe('SkeletonChampion');
+  });
 });

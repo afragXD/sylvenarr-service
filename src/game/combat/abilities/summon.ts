@@ -23,10 +23,17 @@ export function createSummon(
   }
 
   if (input.replaceUnitId) {
-    const old = state.units.find((unit) => unit.id === input.replaceUnitId);
-    if (old) {
-      old.alive = false;
-      old.health = 0;
+    const replaceId = input.replaceUnitId;
+    const oldIndex = state.units.findIndex((unit) => unit.id === replaceId);
+    if (oldIndex >= 0) {
+      // Эволюция: убрать прошлую форму с доски, не оставлять труп.
+      state.units.splice(oldIndex, 1);
+      state.doneIds = state.doneIds.filter((id) => id !== replaceId);
+      state.delayedIds = state.delayedIds.filter((id) => id !== replaceId);
+      state.preChoiceDoneIds = state.preChoiceDoneIds.filter((id) => id !== replaceId);
+      if (state.activeUnitId === replaceId) {
+        state.activeUnitId = null;
+      }
     }
   } else {
     const teamAlive = state.units.filter(

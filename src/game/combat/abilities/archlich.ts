@@ -195,8 +195,18 @@ export const archlichAbilities: AbilityHandler = {
           kind: 'lich_final_form',
           slot: 2,
           options: [
-            { id: 'ghost', label: 'Воин-призрак' },
-            { id: 'tree', label: 'Хуорн' },
+            {
+              id: 'ghost',
+              label: 'Воин-призрак',
+              description:
+                'Сопротивление оружию, парализующий клинок, вампиризм; урон растёт со смертями союзников.',
+            },
+            {
+              id: 'tree',
+              label: 'Злое дерево',
+              description:
+                'Хуорн / злое древо: поддержка точности и критов, корни, сопротивление оружию ряду, обучение перку.',
+            },
           ],
           context: {
             targetId: target.id,
