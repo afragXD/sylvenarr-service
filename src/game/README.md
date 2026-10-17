@@ -1,5 +1,8 @@
 # Game engine
 
+Механика драфта и боя — порт/референс оригинального VK-бота
+[arenamsterbot](https://github.com/enlacroix/arenamsterbot) ([enlacroix](https://github.com/enlacroix)).
+
 ## Фаза 2 — Draft
 
 - `draft/settings.ts` — лимиты из legacy (`INITIAL_TEAM_SIZE`, `MAX_ROW_SIZE`)
