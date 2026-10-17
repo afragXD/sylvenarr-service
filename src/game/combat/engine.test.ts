@@ -1,6 +1,13 @@
 import { describe, expect, test } from 'bun:test';
 
-import { applyAction, createBattleState, resolveOutcome } from './engine';
+import {
+  advanceToNextUnit,
+  applyAction,
+  createBattleState,
+  resolveOutcome,
+  toBattleSummary,
+} from './engine';
+import { grantEffect } from './effects';
 import type { HeroClassStats } from './types';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
@@ -14,16 +21,32 @@ const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassS
   luck: 5,
   accuracy: 90,
   power: 15,
-  mana: 0,
+  mana: 10,
+  gold: 200,
+  size: 1,
   ...overrides,
 });
 
+const catalogHeroes = (...entries: HeroClassStats[]) => {
+  const map = new Map(entries.map((item) => [item.code, item]));
+  for (const code of [
+    'GoblinShaman',
+    'GoblinTrapper',
+    'Zombie',
+    'SkeletonChampion',
+    'GhostWarrior',
+    'EvilTree',
+  ]) {
+    if (!map.has(code)) {
+      map.set(code, hero(code, { health: 60, damage: 10, initiative: 20 }));
+    }
+  }
+  return map;
+};
+
 describe('combat engine', () => {
   test('creates units and picks first actor', () => {
-    const heroes = new Map([
-      ['A', hero('A', { initiative: 50 })],
-      ['B', hero('B', { initiative: 10 })],
-    ]);
+    const heroes = catalogHeroes(hero('A', { initiative: 50 }), hero('B', { initiative: 10 }));
     const state = createBattleState({
       matchId: 'm1',
       hostPlayerId: 'h',
@@ -37,13 +60,14 @@ describe('combat engine', () => {
     expect(state.units).toHaveLength(2);
     expect(state.activeUnitId).toBeTruthy();
     expect(state.outcome).toBe('ongoing');
+    expect(state.pendingPrompt).toBeNull();
   });
 
   test('attack can finish the battle', () => {
-    const heroes = new Map([
-      ['A', hero('A', { damage: 200, initiative: 99, accuracy: 100, luck: 0 })],
-      ['B', hero('B', { health: 10, initiative: 1 })],
-    ]);
+    const heroes = catalogHeroes(
+      hero('A', { damage: 200, initiative: 99, accuracy: 100, luck: 0 }),
+      hero('B', { health: 10, initiative: 1 })
+    );
     const state = createBattleState({
       matchId: 'm1',
       hostPlayerId: 'h',
@@ -54,7 +78,6 @@ describe('combat engine', () => {
       ],
       heroes,
     });
-    // Force host unit active.
     state.activeUnitId = 'p1';
     state.turnPlayerId = 'h';
     const result = applyAction(state, {
@@ -69,11 +92,11 @@ describe('combat engine', () => {
     ).toBe(true);
   });
 
-  test('Knight skill can pierce back row', () => {
-    const heroes = new Map([
-      ['Knight', hero('Knight', { damage: 30, initiative: 99, accuracy: 100, luck: 0 })],
-      ['B', hero('B', { health: 80, initiative: 1 })],
-    ]);
+  test('Knight ability slot 2 pierces back row', () => {
+    const heroes = catalogHeroes(
+      hero('Knight', { damage: 30, initiative: 99, accuracy: 100, luck: 0 }),
+      hero('B', { health: 80, initiative: 1 })
+    );
     const state = createBattleState({
       matchId: 'm1',
       hostPlayerId: 'h',
@@ -90,7 +113,8 @@ describe('combat engine', () => {
     const result = applyAction(state, {
       playerId: 'h',
       unitId: 'p1',
-      action: 'skill',
+      action: 'ability',
+      slot: 2,
       targetId: 'p2',
     });
     expect(result.ok).toBe(true);
@@ -98,8 +122,138 @@ describe('combat engine', () => {
     expect(back && back.health < back.maxHp).toBe(true);
   });
 
+  test('Knight slot 2 rejected when horse is dead', () => {
+    const heroes = catalogHeroes(
+      hero('Knight', { initiative: 99 }),
+      hero('B', { initiative: 1 })
+    );
+    const state = createBattleState({
+      matchId: 'm1',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Knight', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const knight = state.units.find((unit) => unit.id === 'p1');
+    if (!knight) {
+      throw new Error('missing knight');
+    }
+    knight.horseIsDead = true;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const result = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 2,
+      targetId: 'p2',
+    });
+    expect(result.ok).toBe(false);
+    expect(state.doneIds.includes('p1')).toBe(false);
+  });
+
+  test('OrcKing summon prompt flow', () => {
+    const heroes = catalogHeroes(
+      hero('OrcKing', { initiative: 99 }),
+      hero('B', { initiative: 1 })
+    );
+    const state = createBattleState({
+      matchId: 'm1',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'OrcKing', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const start = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 2,
+    });
+    expect(start.ok).toBe(true);
+    expect(state.pendingPrompt?.kind).toBe('orc_goblin_type');
+    expect(state.doneIds.includes('p1')).toBe(false);
+
+    const typeChoice = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      choice: 'shaman',
+    });
+    expect(typeChoice.ok).toBe(true);
+    expect(state.pendingPrompt?.kind).toBe('orc_goblin_row');
+
+    const rowChoice = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      choice: '1',
+    });
+    expect(rowChoice.ok).toBe(true);
+    expect(state.pendingPrompt).toBeNull();
+    expect(state.units.some((unit) => unit.isSummon && unit.heroClassCode === 'GoblinShaman')).toBe(
+      true
+    );
+  });
+
+  test('effect tick damages and expires', () => {
+    const heroes = catalogHeroes(hero('A', { initiative: 99 }), hero('B', { initiative: 1 }));
+    const state = createBattleState({
+      matchId: 'm1',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'A', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const unit = state.units.find((item) => item.id === 'p1');
+    if (!unit) {
+      throw new Error('missing unit');
+    }
+    const before = unit.health;
+    grantEffect(unit, 'POISON', 1, 5);
+    state.doneIds = ['p2'];
+    state.delayedIds = [];
+    state.preChoiceDoneIds = [];
+    advanceToNextUnit(state);
+    expect(unit.health).toBeLessThan(before);
+    expect(unit.effects.some((effect) => effect.id === 'POISON')).toBe(false);
+  });
+
+  test('summary exposes pilot abilities', () => {
+    const heroes = catalogHeroes(
+      hero('Archlich', { initiative: 99, mana: 12 }),
+      hero('B', { initiative: 1 })
+    );
+    const state = createBattleState({
+      matchId: 'm1',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Archlich', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const summary = toBattleSummary(state);
+    expect(summary.abilities).toHaveLength(5);
+    expect(summary.abilities[0]?.slot).toBe(1);
+  });
+
   test('resolveOutcome draw when both dead', () => {
-    const heroes = new Map([['A', hero('A')]]);
+    const heroes = catalogHeroes(hero('A'));
     const state = createBattleState({
       matchId: 'm1',
       hostPlayerId: 'h',

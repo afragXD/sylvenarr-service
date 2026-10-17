@@ -1,15 +1,32 @@
+import {
+  applyAbility,
+  initPilotFlags,
+  isPilotClass,
+  listAttackTargets,
+  listPilotAbilities,
+  neighbourBehind,
+  runPreChoice,
+} from './abilities';
+import { maybeKillHorse } from './abilities/knight';
 import { resolveAttackStyle } from './attack-style';
+import { dealDamage, markDeadIfNeeded, randInt } from './damage';
+import { tickEffectsOnTurnStart } from './effects';
 import { HEALTH_BONUS, MAX_ROUNDS, ROW_FRONT } from './settings';
 import {
   classAttackMods,
   classSkill,
-  neighbourBehind,
   listSkillTargets,
 } from './skills';
-import type { BattleAction, BattleState, BattleUnit, DraftPickSeed, HeroClassStats } from './types';
+import type {
+  AbilitySlot,
+  BattleAction,
+  BattleState,
+  BattleUnit,
+  DraftPickSeed,
+  HeroClassStats,
+} from './types';
 
-const randInt = (min: number, max: number): number =>
-  min + Math.floor(Math.random() * (max - min + 1));
+export { listAttackTargets } from './abilities';
 
 /**
  * Создаёт юнитов команд из draft picks + статов классов.
@@ -28,6 +45,11 @@ export function createBattleState(input: {
     .filter((pick) => pick.playerId === input.guestPlayerId)
     .sort((a, b) => a.pickOrder - b.pickOrder);
 
+  const catalog: Record<string, HeroClassStats> = {};
+  for (const [code, stats] of input.heroes) {
+    catalog[code] = stats;
+  }
+
   const units: BattleUnit[] = [
     ...buildTeamUnits(hostPicks, input.hostPlayerId, 0, input.heroes),
     ...buildTeamUnits(guestPicks, input.guestPlayerId, 1, input.heroes),
@@ -37,6 +59,7 @@ export function createBattleState(input: {
     matchId: input.matchId,
     hostPlayerId: input.hostPlayerId,
     guestPlayerId: input.guestPlayerId,
+    catalog,
     stage: 1,
     units,
     doneIds: [],
@@ -46,6 +69,8 @@ export function createBattleState(input: {
     log: ['Бой начался.'],
     outcome: 'ongoing',
     winnerPlayerId: null,
+    pendingPrompt: null,
+    preChoiceDoneIds: [],
   };
   advanceToNextUnit(state);
   return state;
@@ -71,7 +96,7 @@ function buildTeamUnits(
         return;
       }
       const maxHp = Math.max(1, Math.round(hero.health * HEALTH_BONUS));
-      units.push({
+      const unit: BattleUnit = {
         id: pick.id,
         playerId,
         team,
@@ -89,9 +114,22 @@ function buildTeamUnits(
         accuracy: hero.accuracy,
         attackStyle: resolveAttackStyle(hero.code),
         power: hero.power,
+        mana: hero.mana,
+        gold: hero.gold,
         defending: false,
         alive: true,
-      });
+        effects: [],
+        isSummon: false,
+        summonerId: null,
+        horseIsDead: false,
+        authority: 0,
+        maxSummons: 0,
+        cumRage: 0,
+        lichGrade: 0,
+        isLichSummon: false,
+      };
+      initPilotFlags(unit);
+      units.push(unit);
     });
   }
   return units;
@@ -114,12 +152,13 @@ export function initiativeOrder(state: BattleState): BattleUnit[] {
  * Переходит к следующему юниту / раунду.
  */
 export function advanceToNextUnit(state: BattleState): void {
+  state.pendingPrompt = null;
   let order = initiativeOrder(state);
   if (order.length === 0) {
-    // Раунд закончен — delayed получают ход, затем новый раунд.
     if (state.delayedIds.length > 0) {
       const delayedSet = new Set(state.delayedIds);
       state.delayedIds = [];
+      state.preChoiceDoneIds = state.preChoiceDoneIds.filter((id) => !delayedSet.has(id));
       order = state.units
         .filter((unit) => unit.alive && delayedSet.has(unit.id) && !state.doneIds.includes(unit.id))
         .map((unit) => ({ unit, roll: unit.initiative + randInt(1, 5) }))
@@ -130,6 +169,7 @@ export function advanceToNextUnit(state: BattleState): void {
       state.stage += 1;
       state.doneIds = [];
       state.delayedIds = [];
+      state.preChoiceDoneIds = [];
       for (const unit of state.units) {
         unit.defending = false;
       }
@@ -152,29 +192,25 @@ export function advanceToNextUnit(state: BattleState): void {
     state.turnPlayerId = null;
     return;
   }
+
+  const tickLog = tickEffectsOnTurnStart(next);
+  state.log.push(...tickLog);
+  if (!next.alive) {
+    state.doneIds.push(next.id);
+    resolveOutcome(state);
+    if (state.outcome === 'ongoing') {
+      advanceToNextUnit(state);
+    }
+    return;
+  }
+
   state.activeUnitId = next.id;
   state.turnPlayerId = next.playerId;
-}
 
-/**
- * Доступные цели для атаки.
- */
-export function listAttackTargets(state: BattleState, attacker: BattleUnit): BattleUnit[] {
-  const enemies = state.units.filter((unit) => unit.alive && unit.team !== attacker.team);
-  if (attacker.attackStyle !== 'melee') {
-    return enemies;
+  if (isPilotClass(next.heroClassCode) && !state.preChoiceDoneIds.includes(next.id)) {
+    runPreChoice(state, next);
+    state.preChoiceDoneIds.push(next.id);
   }
-  const enemyFront = enemies.filter((unit) => unit.row === ROW_FRONT);
-  const ownFrontAlive = state.units.some(
-    (unit) => unit.alive && unit.team === attacker.team && unit.row === ROW_FRONT
-  );
-  if (attacker.row === 1 && ownFrontAlive) {
-    return [];
-  }
-  if (enemyFront.length > 0) {
-    return enemyFront;
-  }
-  return enemies;
 }
 
 /**
@@ -187,6 +223,8 @@ export function applyAction(
     readonly unitId: string;
     readonly action: BattleAction;
     readonly targetId?: string;
+    readonly slot?: AbilitySlot;
+    readonly choice?: string;
   }
 ): { ok: true } | { ok: false; message: string } {
   if (state.outcome !== 'ongoing') {
@@ -200,10 +238,26 @@ export function applyAction(
     return { ok: false, message: 'Юнит недоступен' };
   }
 
+  if (state.pendingPrompt) {
+    if (state.pendingPrompt.unitId !== actor.id) {
+      return { ok: false, message: 'Ожидается другой выбор' };
+    }
+    if (input.action !== 'ability' || !input.choice) {
+      return { ok: false, message: 'Нужно завершить выбор способности' };
+    }
+    const outcome = applyAbility(state, actor, {
+      slot: state.pendingPrompt.slot,
+      targetId: input.targetId,
+      choice: input.choice,
+    });
+    return settleAbility(state, actor, outcome);
+  }
+
   if (input.action === 'wait') {
     if (!state.delayedIds.includes(actor.id)) {
       state.delayedIds.push(actor.id);
     }
+    state.preChoiceDoneIds = state.preChoiceDoneIds.filter((id) => id !== actor.id);
     state.log.push(`${actor.displayName} ждёт.`);
     advanceToNextUnit(state);
     return { ok: true };
@@ -217,22 +271,70 @@ export function applyAction(
     return { ok: true };
   }
 
+  if (input.action === 'ability') {
+    if (!isPilotClass(actor.heroClassCode)) {
+      return { ok: false, message: 'У этого героя нет слотов способностей' };
+    }
+    const slot = input.slot;
+    if (!slot || slot < 1 || slot > 5) {
+      return { ok: false, message: 'Нужен слот 1–5' };
+    }
+    const outcome = applyAbility(state, actor, {
+      slot,
+      targetId: input.targetId,
+      choice: input.choice,
+    });
+    return settleAbility(state, actor, outcome);
+  }
+
   if (input.action === 'skill') {
+    if (isPilotClass(actor.heroClassCode)) {
+      return { ok: false, message: 'Используйте слоты способностей' };
+    }
     return applySkillAction(state, actor, input.targetId);
   }
 
-  // attack
+  // attack — для пилотов = слот 1
+  if (isPilotClass(actor.heroClassCode)) {
+    const outcome = applyAbility(state, actor, {
+      slot: 1,
+      targetId: input.targetId,
+    });
+    return settleAbility(state, actor, outcome);
+  }
+
   const targets = listAttackTargets(state, actor);
   if (targets.length === 0) {
     return { ok: false, message: 'Нет доступных целей для атаки' };
   }
   const target =
-    (input.targetId ? targets.find((unit) => unit.id === input.targetId) : undefined) ?? targets[0];
+    (input.targetId ? targets.find((unit) => unit.id === input.targetId) : undefined) ??
+    targets[0];
   if (!target) {
     return { ok: false, message: 'Цель не найдена' };
   }
 
   resolveAttackWithClassMods(state, actor, target);
+  finishUnitTurn(state, actor);
+  return { ok: true };
+}
+
+function settleAbility(
+  state: BattleState,
+  actor: BattleUnit,
+  outcome: { status: string; message?: string; keepTurn?: boolean }
+): { ok: true } | { ok: false; message: string } {
+  if (outcome.status === 'reject') {
+    return { ok: false, message: outcome.message ?? 'Способность недоступна' };
+  }
+  if (outcome.status === 'pending') {
+    return { ok: true };
+  }
+  maybeKillHorse(actor, state);
+  if (outcome.keepTurn) {
+    resolveOutcome(state);
+    return { ok: true };
+  }
   finishUnitTurn(state, actor);
   return { ok: true };
 }
@@ -384,47 +486,11 @@ function resolveAttackWithClassMods(
 
 function finishUnitTurn(state: BattleState, actor: BattleUnit): void {
   state.doneIds.push(actor.id);
+  state.pendingPrompt = null;
   resolveOutcome(state);
   if (state.outcome === 'ongoing') {
     advanceToNextUnit(state);
   }
-}
-
-function markDeadIfNeeded(state: BattleState, unit: BattleUnit): void {
-  if (unit.health <= 0) {
-    unit.alive = false;
-    unit.health = 0;
-    state.log.push(`${unit.displayName} погибает.`);
-  }
-}
-
-function dealDamage(
-  attacker: BattleUnit,
-  defender: BattleUnit,
-  opts: { readonly damageMult: number; readonly armorIgnore: number }
-): number {
-  const hitChance = Math.min(95, Math.max(20, attacker.accuracy - defender.dodge / 2));
-  if (randInt(1, 100) > hitChance) {
-    return 0;
-  }
-  let armor = defender.armor * (1 - Math.min(1, Math.max(0, opts.armorIgnore)));
-  if (defender.defending) {
-    armor = Math.round(armor * 1.5);
-  }
-  let raw: number;
-  if (attacker.attackStyle === 'magic') {
-    raw = Math.max(1, Math.round(attacker.power * 0.8 + randInt(-3, 3) - armor * 0.15));
-  } else if (attacker.attackStyle === 'ranged') {
-    raw = Math.max(1, Math.round(attacker.damage - armor * 0.5 + randInt(0, 2)));
-  } else {
-    raw = Math.max(1, Math.round(attacker.damage - armor + randInt(0, 2)));
-  }
-  raw = Math.max(1, Math.round(raw * opts.damageMult));
-  if (randInt(1, 100) <= Math.min(40, attacker.luck)) {
-    raw = Math.round(raw * 1.5);
-  }
-  defender.health -= raw;
-  return raw;
 }
 
 /**
@@ -451,6 +517,7 @@ export function resolveOutcome(state: BattleState): void {
   }
   state.activeUnitId = null;
   state.turnPlayerId = null;
+  state.pendingPrompt = null;
 }
 
 /**
@@ -458,8 +525,14 @@ export function resolveOutcome(state: BattleState): void {
  */
 export function toBattleSummary(state: BattleState) {
   const active = state.units.find((unit) => unit.id === state.activeUnitId) ?? null;
-  const targets = active?.alive ? listAttackTargets(state, active).map((unit) => unit.id) : [];
-  const skill = active ? classSkill(active.heroClassCode) : null;
+  const pilot = active ? isPilotClass(active.heroClassCode) : false;
+  const abilities =
+    active?.alive && pilot ? listPilotAbilities(state, active) : [];
+  const targets =
+    active?.alive && !pilot
+      ? listAttackTargets(state, active).map((unit) => unit.id)
+      : abilities.find((ability) => ability.slot === 1)?.legalTargetIds ?? [];
+  const skill = active && !pilot ? classSkill(active.heroClassCode) : null;
   const skillTargets =
     active?.alive && skill && skill.kind !== 'none'
       ? listSkillTargets(state, active).map((unit) => unit.id)
@@ -470,10 +543,19 @@ export function toBattleSummary(state: BattleState) {
     turnPlayerId: state.turnPlayerId,
     outcome: state.outcome,
     winnerPlayerId: state.winnerPlayerId,
-    log: state.log.slice(-12),
+    log: state.log.slice(-16),
     legalTargetIds: targets,
     skillLabel: skill && skill.kind !== 'none' ? skill.label : null,
     legalSkillTargetIds: skillTargets,
+    abilities,
+    pendingPrompt: state.pendingPrompt
+      ? {
+          unitId: state.pendingPrompt.unitId,
+          kind: state.pendingPrompt.kind,
+          slot: state.pendingPrompt.slot,
+          options: state.pendingPrompt.options,
+        }
+      : null,
     units: state.units.map((unit) => ({
       id: unit.id,
       playerId: unit.playerId,
@@ -487,6 +569,13 @@ export function toBattleSummary(state: BattleState) {
       alive: unit.alive,
       defending: unit.defending,
       attackStyle: unit.attackStyle,
+      effects: unit.effects.map((effect) => ({
+        id: effect.id,
+        rounds: effect.rounds,
+      })),
+      isSummon: unit.isSummon,
+      horseIsDead: unit.horseIsDead,
+      mana: unit.mana,
     })),
   };
 }

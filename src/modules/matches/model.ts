@@ -39,6 +39,12 @@ export namespace MatchesModel {
   });
   export type draftState = typeof draftState.static;
 
+  export const battleEffect = t.Object({
+    id: t.String(),
+    rounds: t.Number(),
+  });
+  export type battleEffect = typeof battleEffect.static;
+
   export const battleUnit = t.Object({
     id: t.String(),
     playerId: t.String(),
@@ -52,8 +58,46 @@ export namespace MatchesModel {
     alive: t.Boolean(),
     defending: t.Boolean(),
     attackStyle: t.Union([t.Literal('melee'), t.Literal('ranged'), t.Literal('magic')]),
+    effects: t.Array(battleEffect),
+    isSummon: t.Boolean(),
+    horseIsDead: t.Boolean(),
+    mana: t.Number(),
   });
   export type battleUnit = typeof battleUnit.static;
+
+  export const abilityInfo = t.Object({
+    slot: t.Union([
+      t.Literal(1),
+      t.Literal(2),
+      t.Literal(3),
+      t.Literal(4),
+      t.Literal(5),
+    ]),
+    label: t.String(),
+    needsTarget: t.Boolean(),
+    disabledReason: t.Nullable(t.String()),
+    legalTargetIds: t.Array(t.String()),
+  });
+  export type abilityInfo = typeof abilityInfo.static;
+
+  export const pendingPrompt = t.Object({
+    unitId: t.String(),
+    kind: t.String(),
+    slot: t.Union([
+      t.Literal(1),
+      t.Literal(2),
+      t.Literal(3),
+      t.Literal(4),
+      t.Literal(5),
+    ]),
+    options: t.Array(
+      t.Object({
+        id: t.String(),
+        label: t.String(),
+      })
+    ),
+  });
+  export type pendingPrompt = typeof pendingPrompt.static;
 
   export const battleState = t.Object({
     stage: t.Number(),
@@ -70,6 +114,8 @@ export namespace MatchesModel {
     legalTargetIds: t.Array(t.String()),
     skillLabel: t.Nullable(t.String()),
     legalSkillTargetIds: t.Array(t.String()),
+    abilities: t.Array(abilityInfo),
+    pendingPrompt: t.Nullable(pendingPrompt),
     units: t.Array(battleUnit),
   });
   export type battleState = typeof battleState.static;
@@ -127,8 +173,13 @@ export namespace MatchesModel {
       t.Literal('defend'),
       t.Literal('wait'),
       t.Literal('skill'),
+      t.Literal('ability'),
     ]),
     targetId: t.Optional(t.String()),
+    slot: t.Optional(
+      t.Union([t.Literal(1), t.Literal(2), t.Literal(3), t.Literal(4), t.Literal(5)])
+    ),
+    choice: t.Optional(t.String()),
   });
   export type battleActionBody = typeof battleActionBody.static;
 

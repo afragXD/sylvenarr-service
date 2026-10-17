@@ -264,21 +264,6 @@ export function describeActions(unit: BattleUnit): string[] {
 }
 
 /**
- * Сосед по колонке позади цели (тот же column, ряд дальше от атакующего фронта = выше row).
- */
-export function neighbourBehind(state: BattleState, target: BattleUnit): BattleUnit | null {
-  return (
-    state.units.find(
-      (unit) =>
-        unit.alive &&
-        unit.team === target.team &&
-        unit.column === target.column &&
-        unit.row === target.row + 1
-    ) ?? null
-  );
-}
-
-/**
  * Цели для навыка класса.
  */
 export function listSkillTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {

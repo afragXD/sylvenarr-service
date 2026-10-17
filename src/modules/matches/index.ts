@@ -191,6 +191,8 @@ export const matchesController = new Elysia({ prefix: '/matches', tags: ['Matche
         unitId: body.unitId,
         action: body.action,
         targetId: body.targetId,
+        slot: body.slot,
+        choice: body.choice,
       });
       if (!result.ok) {
         return status(result.status, { message: result.message });

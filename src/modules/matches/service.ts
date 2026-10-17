@@ -307,8 +307,7 @@ export abstract class MatchesService {
       where: { matchId: input.matchId },
       orderBy: { pickOrder: 'asc' },
     });
-    const codes = [...new Set(picks.map((pick) => pick.heroClassCode))];
-    const heroes = await prisma.heroClass.findMany({ where: { code: { in: codes } } });
+    const heroes = await prisma.heroClass.findMany();
     const heroMap = new Map<string, HeroClassStats>(
       heroes.map((hero) => [
         hero.code,
@@ -324,6 +323,8 @@ export abstract class MatchesService {
           accuracy: hero.accuracy,
           power: hero.power,
           mana: hero.mana,
+          gold: hero.gold,
+          size: hero.size,
         },
       ])
     );
@@ -500,8 +501,10 @@ export abstract class MatchesService {
     readonly matchId: string;
     readonly playerId: string;
     readonly unitId: string;
-    readonly action: 'attack' | 'defend' | 'wait' | 'skill';
+    readonly action: 'attack' | 'defend' | 'wait' | 'skill' | 'ability';
     readonly targetId?: string;
+    readonly slot?: 1 | 2 | 3 | 4 | 5;
+    readonly choice?: string;
   }): Promise<
     | { ok: true; match: MatchesModel.match }
     | { ok: false; message: string; status: 400 | 403 | 404 }
@@ -531,6 +534,8 @@ export abstract class MatchesService {
       unitId: input.unitId,
       action: input.action,
       targetId: input.targetId,
+      slot: input.slot,
+      choice: input.choice,
     });
     if (!result.ok) {
       return { ok: false, message: result.message, status: 400 };

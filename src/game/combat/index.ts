@@ -18,4 +18,11 @@ export {
   describeActions,
 } from './skills';
 export { getBattleStore, resetBattleStoreForTests } from './store';
-export type { BattleAction, BattleState, HeroClassStats } from './types';
+export type {
+  AbilityInfo,
+  AbilitySlot,
+  BattleAction,
+  BattleState,
+  HeroClassStats,
+} from './types';
+export { isPilotClass, listPilotAbilities } from './abilities';
