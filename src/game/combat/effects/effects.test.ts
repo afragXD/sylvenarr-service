@@ -24,6 +24,7 @@ const unit = (overrides: Partial<BattleUnit> = {}): BattleUnit => ({
   power: 10,
   mana: 5,
   gold: 0,
+  lvl: 1,
   defending: false,
   alive: true,
   effects: [],
@@ -76,7 +77,11 @@ describe('effects', () => {
       armor: 0,
       dodge: 0,
     });
-    const dmg = dealDamage(attacker, defender, { damageMult: 1, armorIgnore: 0 });
+    const dmg = dealDamage(attacker, defender, {
+      damageMult: 1,
+      armorIgnore: 0,
+      forceHit: true,
+    });
     expect(dmg).toBeGreaterThan(0);
     expect(attacker.health).toBeGreaterThan(40);
   });

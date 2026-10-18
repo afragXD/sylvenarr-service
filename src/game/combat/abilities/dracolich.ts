@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, hasEffect, healUnit } from '../effects';
 import { isUndeadClass } from '../races';
 import { ROW_FRONT } from '../settings';
@@ -184,8 +184,8 @@ export const dracolichAbilities: AbilityHandler = {
         state.log.push(
           `${actor.displayName}: дыхание смерти → ${enemy.displayName} (${damage}).`
         );
-        if (randInt(1, 100) <= 70 + PILOT_LVL) {
-          grantEffect(enemy, 'POISON', 2, 1.3 + PILOT_LVL * 0.03);
+        if (randInt(1, 100) <= 70 + actor.lvl) {
+          grantEffect(enemy, 'POISON', 2, 1.3 + actor.lvl * 0.03);
         }
         markDeadIfNeeded(state, enemy);
       }
@@ -202,7 +202,7 @@ export const dracolichAbilities: AbilityHandler = {
         (unit) =>
           unit.alive && unit.team === target.team && unit.row === target.row
       );
-      const unluckyPower = 7 + PILOT_LVL * 2;
+      const unluckyPower = 7 + actor.lvl * 2;
       for (const enemy of row) {
         grantEffect(enemy, 'UNLUCKY', 2, unluckyPower);
         if (randInt(1, 100) <= 85) {

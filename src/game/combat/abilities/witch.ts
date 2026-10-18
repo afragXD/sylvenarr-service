@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll } from './targets';
@@ -117,7 +117,7 @@ export const witchAbilities: AbilityHandler = {
           actor.gun -= 1;
         };
         fire('Револьвер');
-        // AM: lvl>8 && 75%; при PILOT_LVL=5 — 25% proxy «двойного выстрела»
+        // AM: lvl>8 && 75%; при actor.lvl=5 — 25% proxy «двойного выстрела»
         if (actor.gun > 0 && target.alive && randInt(1, 100) <= 25) {
           fire('Второй выстрел');
         }
@@ -179,8 +179,8 @@ export const witchAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      grantEffect(target, 'MARKED', 2 + Math.floor(PILOT_LVL / 6), 0);
-      grantEffect(target, 'DEATHSENTENCE', 2, 5 + Math.floor((25 + PILOT_LVL * 2) / 10));
+      grantEffect(target, 'MARKED', 2 + Math.floor(actor.lvl / 6), 0);
+      grantEffect(target, 'DEATHSENTENCE', 2, 5 + Math.floor((25 + actor.lvl * 2) / 10));
       state.log.push(`${actor.displayName} выносит смертный приговор ${target.displayName}.`);
       return { status: 'done' };
     }
@@ -194,8 +194,8 @@ export const witchAbilities: AbilityHandler = {
       if (!target || hasEffect(target, 'GUARDED')) {
         return { status: 'reject', message: 'Цель недоступна' };
       }
-      if (randInt(1, 100) <= 70 + PILOT_LVL * 2) {
-        const n = Math.floor(PILOT_LVL / 6) + 1;
+      if (randInt(1, 100) <= 70 + actor.lvl * 2) {
+        const n = Math.floor(actor.lvl / 6) + 1;
         target.damage = Math.max(1, target.damage - n * 3);
         target.power = Math.max(0, target.power - n * 2);
         state.log.push(
@@ -216,7 +216,7 @@ export const witchAbilities: AbilityHandler = {
     if (!target || hasEffect(target, 'GUARDED')) {
       return { status: 'reject', message: 'Цель недоступна' };
     }
-    if (randInt(1, 100) <= 65 + PILOT_LVL) {
+    if (randInt(1, 100) <= 65 + actor.lvl) {
       grantEffect(target, 'IMPISH', 2, 5);
       state.log.push(`${actor.displayName} превращает ${target.displayName} в беса.`);
     } else {

@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { effectLogLabel } from '../effect-labels';
 import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -78,7 +78,7 @@ export const evilTreeAbilities: AbilityHandler = {
   },
 
   preChoice(state, actor) {
-    const bonus = 2 + Math.floor(PILOT_LVL / 5);
+    const bonus = 2 + Math.floor(actor.lvl / 5);
     for (const ally of ownRowAllies(state, actor)) {
       if (hasEffect(ally, 'ROW_FORTIFY')) {
         delEffect(ally, 'ROW_FORTIFY');
@@ -99,8 +99,8 @@ export const evilTreeAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      grantEffect(target, 'FOCUSED', 1 + Math.floor(PILOT_LVL / 4), 20 + PILOT_LVL * 2);
-      grantEffect(target, 'LUCKY', 1 + Math.floor(PILOT_LVL / 5), 10 + PILOT_LVL * 2);
+      grantEffect(target, 'FOCUSED', 1 + Math.floor(actor.lvl / 4), 20 + actor.lvl * 2);
+      grantEffect(target, 'LUCKY', 1 + Math.floor(actor.lvl / 5), 10 + actor.lvl * 2);
       state.log.push(
         `${actor.displayName}: шёпот леса — ${target.displayName} сосредоточен и удачлив.`
       );
@@ -144,7 +144,7 @@ export const evilTreeAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      grantEffect(target, 'INTERDICT', 2 + Math.floor(PILOT_LVL / 4), 1);
+      grantEffect(target, 'INTERDICT', 2 + Math.floor(actor.lvl / 4), 1);
       state.log.push(
         `${actor.displayName}: запретное слово — ${target.displayName} не получает лечения.`
       );
@@ -164,9 +164,9 @@ export const evilTreeAbilities: AbilityHandler = {
       const buff = WISDOM_BUFFS[randInt(0, WISDOM_BUFFS.length - 1)]!;
       const power =
         buff === 'STRENGTH'
-          ? 20 + PILOT_LVL * 2
+          ? 20 + actor.lvl * 2
           : buff === 'HAPPY'
-            ? 15 + PILOT_LVL * 2
+            ? 15 + actor.lvl * 2
             : 20;
       grantEffect(target, buff, 2, power);
       state.log.push(

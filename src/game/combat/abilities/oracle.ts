@@ -1,4 +1,4 @@
-import { PILOT_LVL, randInt } from '../damage';
+import { randInt } from '../damage';
 import { grantEffect, healUnit, trySpendMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, ownRowAllies } from './targets';
@@ -94,7 +94,7 @@ export const oracleAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Нужен союзник' };
       }
-      const amount = randInt(35 + PILOT_LVL, 50 + PILOT_LVL * 4);
+      const amount = randInt(35 + actor.lvl, 50 + actor.lvl * 4);
       const healed = healUnit(target, amount);
       target.maxHp = Math.round(target.maxHp * 1.15);
       target.health = Math.min(target.maxHp, target.health);
@@ -113,7 +113,7 @@ export const oracleAbilities: AbilityHandler = {
       if (!target || !state.doneIds.includes(target.id)) {
         return { status: 'reject', message: 'Цель ещё не ходила' };
       }
-      if (randInt(1, 100) <= 70 + PILOT_LVL * 3) {
+      if (randInt(1, 100) <= 70 + actor.lvl * 3) {
         state.log.push(`${actor.displayName} даёт доп. ход ${target.displayName}.`);
         return { status: 'done', extraTurnForUnitId: target.id };
       }
@@ -127,7 +127,7 @@ export const oracleAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Нужен союзник' };
       }
       grantEffect(target, 'MIND_WARD', 2, 0);
-      grantEffect(target, 'HAPPY', 2, PILOT_LVL * 2);
+      grantEffect(target, 'HAPPY', 2, actor.lvl * 2);
       state.log.push(
         `${actor.displayName}: знамение защищает разум ${target.displayName}.`
       );

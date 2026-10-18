@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import {
   clearAllEffects,
   grantEffect,
@@ -117,11 +117,11 @@ export const abbessAbilities: AbilityHandler = {
         state.log.push(
           `${actor.displayName} поражает ${target.displayName} Копьём Солнца (${damage}).`
         );
-        if (randInt(1, 100) <= 75 + PILOT_LVL) {
-          grantEffect(target, 'SLOW', 2, 15 + PILOT_LVL);
+        if (randInt(1, 100) <= 75 + actor.lvl) {
+          grantEffect(target, 'SLOW', 2, 15 + actor.lvl);
           state.log.push(`${target.displayName} замедлен.`);
         }
-        if (randInt(1, 100) <= 25 + PILOT_LVL) {
+        if (randInt(1, 100) <= 25 + actor.lvl) {
           target.forbiddenResurrect = true;
           state.log.push(`${target.displayName} нельзя воскресить.`);
         }
@@ -136,7 +136,7 @@ export const abbessAbilities: AbilityHandler = {
         return { status: 'reject', message: err };
       }
       for (const ally of alliesOf(state, actor)) {
-        const amount = actor.power + PILOT_LVL + randInt(1, 15);
+        const amount = actor.power + actor.lvl + randInt(1, 15);
         const healed = healUnit(ally, amount);
         state.log.push(`${ally.displayName} восстанавливает ${healed} ОЗ.`);
       }
@@ -152,7 +152,7 @@ export const abbessAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Нужен союзник' };
       }
-      grantEffect(target, 'STONEFLESH', 2 + Math.floor(PILOT_LVL / 4), 20 + PILOT_LVL * 2);
+      grantEffect(target, 'STONEFLESH', 2 + Math.floor(actor.lvl / 4), 20 + actor.lvl * 2);
       state.log.push(
         `${actor.displayName} дарует святую броню ${target.displayName} (варды — позже).`
       );
@@ -177,7 +177,7 @@ export const abbessAbilities: AbilityHandler = {
       return { status: 'reject', message: 'Нужен союзник' };
     }
     for (const ally of unitsOnSameRow(state, target)) {
-      grantEffect(ally, 'CONTR', 2 + Math.floor(PILOT_LVL / 4), 0);
+      grantEffect(ally, 'CONTR', 2 + Math.floor(actor.lvl / 4), 0);
     }
     state.log.push(`${actor.displayName} призывает ряд к оружию!`);
     return { status: 'done' };

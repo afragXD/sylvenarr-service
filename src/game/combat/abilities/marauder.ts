@@ -1,5 +1,5 @@
 import { resolveAttackStyle } from '../attack-style';
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { resistsForClass } from '../defaultResists';
 import { grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import { HEALTH_BONUS, ROW_BACK, ROW_FRONT } from '../settings';
@@ -203,9 +203,9 @@ function applyMarauder(
       );
       if (damage > 0) {
         state.log.push(`${actor.displayName}: подавляющий огонь → ${enemy.displayName} (${damage}).`);
-        if (randInt(1, 100) <= 60 + PILOT_LVL) {
-          grantEffect(enemy, 'UNLUCKY', 1 + Math.floor(PILOT_LVL / 5), 20);
-          grantEffect(enemy, 'SLOW', 1 + Math.floor(PILOT_LVL / 5), 15);
+        if (randInt(1, 100) <= 60 + actor.lvl) {
+          grantEffect(enemy, 'UNLUCKY', 1 + Math.floor(actor.lvl / 5), 20);
+          grantEffect(enemy, 'SLOW', 1 + Math.floor(actor.lvl / 5), 15);
         }
         markDeadIfNeeded(state, enemy);
       }
@@ -296,7 +296,7 @@ function applyWerewolf(
       state.log.push(`${actor.displayName}: промах.`);
     } else {
       state.log.push(`${actor.displayName} рвёт ${target.displayName} (${damage}).`);
-      if (randInt(1, 100) <= 71 + PILOT_LVL * 2) {
+      if (randInt(1, 100) <= 71 + actor.lvl * 2) {
         const lose = Math.max(1, Math.round(target.damage * 0.5));
         grantEffect(target, 'WEAKNESS', 2, lose);
       }
@@ -316,7 +316,7 @@ function applyWerewolf(
     } else {
       const vamp = Math.max(
         1,
-        Math.round((actor.health / actor.maxHp + 0.2 + PILOT_LVL * 0.03) * damage)
+        Math.round((actor.health / actor.maxHp + 0.2 + actor.lvl * 0.03) * damage)
       );
       const healed = healUnit(actor, vamp);
       actor.mana += Math.floor(vamp / 5);
@@ -334,7 +334,7 @@ function applyWerewolf(
       return { status: 'reject', message: 'Не удалось вернуть форму' };
     }
     actor.transformParentCode = null;
-    const healed = healUnit(actor, 20 + PILOT_LVL * 5);
+    const healed = healUnit(actor, 20 + actor.lvl * 5);
     state.log.push(`${actor.displayName} успокаивается (+${healed} ОЗ).`);
     return { status: 'done' };
   }
@@ -344,9 +344,9 @@ function applyWerewolf(
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }
-    const power = 1 + Math.floor(PILOT_LVL * 0.05) + 2;
+    const power = 1 + Math.floor(actor.lvl * 0.05) + 2;
     for (const enemy of enemiesInColumn(state, actor, target)) {
-      grantEffect(enemy, 'GALL', 2 + Math.floor(PILOT_LVL / 5), power);
+      grantEffect(enemy, 'GALL', 2 + Math.floor(actor.lvl / 5), power);
     }
     state.log.push(`${actor.displayName} обливает колонну желчью.`);
     return { status: 'done' };

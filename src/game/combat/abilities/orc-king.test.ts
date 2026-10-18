@@ -42,6 +42,7 @@ describe('OrcKing preChoice', () => {
     if (!orc || !foe) {
       throw new Error('missing units');
     }
+    orc.lvl = 5;
     const before = foe.luck;
     runPreChoice(state, orc);
     expect(foe.luck).toBeLessThan(before);

@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll } from './targets';
@@ -106,7 +106,7 @@ export const assassinAbilities: AbilityHandler = {
       );
       const sample = others[randInt(0, Math.max(0, others.length - 1))];
       const name = sample?.displayName ?? 'неизвестный облик';
-      grantEffect(actor, 'HAPPY', 2, PILOT_LVL + 3);
+      grantEffect(actor, 'HAPPY', 2, actor.lvl + 3);
       actor.damage += 2;
       state.log.push(
         `${actor.displayName} на миг принимает облик ${name} (+мораль/удача).`
@@ -144,7 +144,7 @@ export const assassinAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       actor.darts -= 1;
-      const poke = randInt(1, 5) + PILOT_LVL;
+      const poke = randInt(1, 5) + actor.lvl;
       target.health -= poke;
       grantEffect(target, 'POISON', 2, 4);
       state.log.push(

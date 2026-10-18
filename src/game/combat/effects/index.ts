@@ -1,5 +1,4 @@
 import { effectLogLabel } from '../effect-labels';
-import { PILOT_LVL } from '../settings';
 import type { BattleEffect, BattleUnit, EffectId } from '../types';
 
 /**
@@ -105,7 +104,7 @@ export function trySpendMana(unit: BattleUnit, cost: number): string | null {
   }
   unit.mana -= cost;
   if (hasEffect(unit, 'MAGIC_SHACKLES') && cost > 0) {
-    const burn = Math.max(1, Math.round(cost * (10 + Math.floor(PILOT_LVL / 4))));
+    const burn = Math.max(1, Math.round(cost * (10 + Math.floor(unit.lvl / 4))));
     unit.health -= burn;
   }
   return null;
@@ -114,8 +113,8 @@ export function trySpendMana(unit: BattleUnit, cost: number): string | null {
 /**
  * Урон от MAGIC_SHACKLES за последнюю трату `cost` МР (для лога).
  */
-export function shacklesBurnAmount(cost: number): number {
-  return Math.max(1, Math.round(cost * (10 + Math.floor(PILOT_LVL / 4))));
+export function shacklesBurnAmount(cost: number, lvl = 1): number {
+  return Math.max(1, Math.round(cost * (10 + Math.floor(lvl / 4))));
 }
 
 /**

@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, hasEffect, trySpendMana } from '../effects';
 import { ROW_BACK } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -130,8 +130,8 @@ export const inquisitorAbilities: AbilityHandler = {
       if (damage === 0) {
         state.log.push(`${actor.displayName}: молния — промах.`);
       } else {
-        const lose = Math.max(1, Math.round(target.power * (0.25 + 0.02 * PILOT_LVL)));
-        grantEffect(target, 'INTERFERENCE', 1 + Math.floor(PILOT_LVL / 6), lose);
+        const lose = Math.max(1, Math.round(target.power * (0.25 + 0.02 * actor.lvl)));
+        grantEffect(target, 'INTERFERENCE', 1 + Math.floor(actor.lvl / 6), lose);
         state.log.push(
           `${actor.displayName} пыточной молнией бьёт ${target.displayName} (${damage}).`
         );
@@ -149,7 +149,7 @@ export const inquisitorAbilities: AbilityHandler = {
       if (!target || hasEffect(target, 'GUARDED')) {
         return { status: 'reject', message: 'Цель недоступна' };
       }
-      if (randInt(1, 100) <= 75 + PILOT_LVL) {
+      if (randInt(1, 100) <= 75 + actor.lvl) {
         const before = target.row;
         moveToOtherRow(target);
         state.log.push(
@@ -173,7 +173,7 @@ export const inquisitorAbilities: AbilityHandler = {
         state.log.push(
           `${actor.displayName} мощным ударом бьёт ${target.displayName} (${damage}).`
         );
-        if (randInt(1, 100) <= 62 + PILOT_LVL) {
+        if (randInt(1, 100) <= 62 + actor.lvl) {
           grantEffect(target, 'STUNNED', 1, 0);
           state.log.push(`${target.displayName} оглушён.`);
         } else {
@@ -202,7 +202,7 @@ export const inquisitorAbilities: AbilityHandler = {
       state.log.push(
         `${actor.displayName} обрушивает кристаллы на ${target.displayName} (${damage}).`
       );
-      if (randInt(1, 100) <= 50 + PILOT_LVL * 3) {
+      if (randInt(1, 100) <= 50 + actor.lvl * 3) {
         grantEffect(target, 'SILENCE', 2, 0);
         state.log.push(`${target.displayName} нем.`);
       }

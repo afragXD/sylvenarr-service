@@ -73,6 +73,7 @@ export namespace MatchesModel {
     gold: t.Number(),
     critBank: t.Number(),
     ultaCharges: t.Number(),
+    lvl: t.Number(),
   });
   export type battleUnit = typeof battleUnit.static;
 
@@ -90,6 +91,7 @@ export namespace MatchesModel {
       t.Literal('delayed'),
       t.Literal('dead'),
     ]),
+    lvl: t.Number(),
   });
   export type turnOrderEntry = typeof turnOrderEntry.static;
 

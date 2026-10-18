@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, hasEffect } from '../effects';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -114,7 +114,7 @@ export const pyroAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const bonus = hasEffect(target, 'BURNING') ? 10 + PILOT_LVL : 0;
+      const bonus = hasEffect(target, 'BURNING') ? 10 + actor.lvl : 0;
       const mult = 1 + bonus / 40;
       const damage = dealDamage(
         actor,
@@ -125,7 +125,7 @@ export const pyroAbilities: AbilityHandler = {
       if (damage === 0) {
         state.log.push(`${actor.displayName}: арбалет — промах.`);
       } else {
-        const broken = randInt(2, 6 + PILOT_LVL);
+        const broken = randInt(2, 6 + actor.lvl);
         target.armor = Math.max(0, target.armor - broken);
         state.log.push(
           `${actor.displayName}: паровой болт → ${target.displayName} (${damage}, −${broken} брони).`
@@ -140,7 +140,7 @@ export const pyroAbilities: AbilityHandler = {
         (unit) => unit.alive && unit.row === ROW_FRONT
       );
       for (const unit of fronts) {
-        grantEffect(unit, 'BURNING', 2 + Math.floor(PILOT_LVL / 7), 3);
+        grantEffect(unit, 'BURNING', 2 + Math.floor(actor.lvl / 7), 3);
       }
       const enemies = state.units.filter(
         (unit) => unit.alive && unit.team !== actor.team
@@ -166,7 +166,7 @@ export const pyroAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Нужен союзник' };
       }
-      grantEffect(target, 'FIREDWEAPON', 1 + Math.floor(PILOT_LVL / 6), 0);
+      grantEffect(target, 'FIREDWEAPON', 1 + Math.floor(actor.lvl / 6), 0);
       state.log.push(
         `${actor.displayName} зачаровывает оружие ${target.displayName} пламенем.`
       );
@@ -181,7 +181,7 @@ export const pyroAbilities: AbilityHandler = {
     actor.health = 0;
     markDeadIfNeeded(state, actor);
     grantEffect(target, 'FEAR', 2, 3);
-    grantEffect(target, 'UNLUCKY', 2, PILOT_LVL * 2);
+    grantEffect(target, 'UNLUCKY', 2, actor.lvl * 2);
     const leader =
       alliesOf(state, actor)
         .filter((unit) => unit.id !== actor.id)

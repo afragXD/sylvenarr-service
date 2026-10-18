@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { availableSummonRows, createSummon } from './summon';
@@ -77,7 +77,7 @@ export const orcKingAbilities: AbilityHandler = {
     if (enemies.length === 0) {
       return;
     }
-    const delta = actor.luck < -10 ? PILOT_LVL - 1 : 0;
+    const delta = actor.luck < -10 ? actor.lvl - 1 : 0;
     if (delta <= 0) {
       return;
     }
@@ -152,11 +152,11 @@ export const orcKingAbilities: AbilityHandler = {
         `${actor.displayName} бьёт кастетом ${target.displayName} на ${damage}.`
       );
       markDeadIfNeeded(state, target);
-      if (target.alive && randInt(1, 100) <= 60 + PILOT_LVL) {
+      if (target.alive && randInt(1, 100) <= 60 + actor.lvl) {
         moveToOtherRow(target);
         state.log.push(`${target.displayName} отброшен на другой ряд.`);
       }
-      if (target.alive && randInt(1, 100) <= 20 + Math.round(PILOT_LVL * 1.5)) {
+      if (target.alive && randInt(1, 100) <= 20 + Math.round(actor.lvl * 1.5)) {
         grantEffect(target, 'CHAINED', 2, 0);
         state.log.push(`${target.displayName} скован.`);
       }
@@ -187,9 +187,9 @@ export const orcKingAbilities: AbilityHandler = {
 
     // slot 5
     for (const ally of ownRowAllies(state, actor)) {
-      grantEffect(ally, 'HAPPY', 2, 15 + PILOT_LVL * 2);
+      grantEffect(ally, 'HAPPY', 2, 15 + actor.lvl * 2);
     }
-    const armorDelta = randInt(2 * PILOT_LVL, 3 * PILOT_LVL + 7);
+    const armorDelta = randInt(2 * actor.lvl, 3 * actor.lvl + 7);
     actor.armor += armorDelta;
     actor.cumRage = Math.max(-0.5, actor.cumRage - 0.06);
     state.log.push(
@@ -275,8 +275,8 @@ function throwAxe(state: BattleState, actor: BattleUnit, target: BattleUnit): vo
     `Метательный топор ${actor.displayName} попадает в ${target.displayName} на ${damage}.`
   );
   markDeadIfNeeded(state, target);
-  if (target.alive && randInt(1, 100) <= 60 + PILOT_LVL) {
-    grantEffect(target, 'FATMAN', 2, 15 + PILOT_LVL);
+  if (target.alive && randInt(1, 100) <= 60 + actor.lvl) {
+    grantEffect(target, 'FATMAN', 2, 15 + actor.lvl);
   }
 }
 

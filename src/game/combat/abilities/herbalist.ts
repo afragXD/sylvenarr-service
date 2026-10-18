@@ -1,4 +1,3 @@
-import { PILOT_LVL } from '../damage';
 import { clearDebuffs, grantEffect, healUnit, trySpendMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, ownRowAllies } from './targets';
@@ -76,8 +75,8 @@ export const herbalistAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Нужен союзник' };
       }
-      const atk = Math.max(1, Math.round(target.damage * (0.5 + 0.05 * PILOT_LVL)));
-      grantEffect(target, 'STRENGTH', 1 + Math.floor(PILOT_LVL / 6), atk);
+      const atk = Math.max(1, Math.round(target.damage * (0.5 + 0.05 * actor.lvl)));
+      grantEffect(target, 'STRENGTH', 1 + Math.floor(actor.lvl / 6), atk);
       state.log.push(`${actor.displayName} усиливает ${target.displayName}.`);
       return { status: 'done' };
     }
@@ -90,7 +89,7 @@ export const herbalistAbilities: AbilityHandler = {
       for (const ally of ownRowAllies(state, actor)) {
         const atk = Math.max(1, Math.round(ally.damage * 0.2));
         grantEffect(ally, 'STRENGTH', 2, atk);
-        grantEffect(ally, 'FOCUSED', 2, 20 + PILOT_LVL);
+        grantEffect(ally, 'FOCUSED', 2, 20 + actor.lvl);
       }
       state.log.push(`${actor.displayName}: укрепляющие пары на ряд.`);
       return { status: 'done' };
@@ -107,7 +106,7 @@ export const herbalistAbilities: AbilityHandler = {
     }
 
     if (input.slot === 4) {
-      const healed = healUnit(actor, 5 + PILOT_LVL);
+      const healed = healUnit(actor, 5 + actor.lvl);
       state.log.push(
         `${actor.displayName} варит зелье поддержки (+${healed} ОЗ; инвентарь — позже).`
       );

@@ -110,6 +110,8 @@ export type BattleUnit = {
   power: number;
   mana: number;
   gold: number;
+  /** Уровень юнита в бою (legacy Hero.lvl); старт 1. */
+  lvl: number;
   defending: boolean;
   alive: boolean;
   effects: BattleEffect[];

@@ -1,4 +1,4 @@
-import { markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, enemyTeamLeader } from './targets';
@@ -62,7 +62,7 @@ function abilityMeta(
 }
 
 function ghostParalysis(state: BattleState, actor: BattleUnit, target: BattleUnit): void {
-  const chance = Math.min(95, actor.accuracy + PILOT_LVL);
+  const chance = Math.min(95, actor.accuracy + actor.lvl);
   if (randInt(1, 100) <= chance) {
     grantEffect(target, 'STUNNED', 1, 0);
     state.log.push(`${actor.displayName} парализует ${target.displayName}.`);
@@ -151,7 +151,7 @@ export const specterAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       grantEffect(actor, 'GUARDED', 2, 3);
-      const loss = 3 * PILOT_LVL + 15;
+      const loss = 3 * actor.lvl + 15;
       target.health -= loss;
       state.log.push(
         `${actor.displayName}: тёмный ритуал — ${target.displayName} −${loss} ОЗ; вард оружия на себе.`
@@ -165,8 +165,8 @@ export const specterAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      grantEffect(target, 'MARKED', 1 + Math.floor(PILOT_LVL / 4), 0);
-      grantEffect(target, 'UNLUCKY', 2, PILOT_LVL + 3);
+      grantEffect(target, 'MARKED', 1 + Math.floor(actor.lvl / 4), 0);
+      grantEffect(target, 'UNLUCKY', 2, actor.lvl + 3);
       state.log.push(`${actor.displayName} отмечает ${target.displayName} сглазом.`);
       return { status: 'done' };
     }
@@ -177,7 +177,7 @@ export const specterAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       if (randInt(1, 100) <= 80) {
-        grantEffect(target, 'BLEEDING', 2, Math.max(1, Math.round(1 + PILOT_LVL * 0.06)));
+        grantEffect(target, 'BLEEDING', 2, Math.max(1, Math.round(1 + actor.lvl * 0.06)));
         state.log.push(`${actor.displayName}: кровотечение на ${target.displayName}.`);
       } else {
         state.log.push(`${actor.displayName}: кровавая трава не сработала.`);

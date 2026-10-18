@@ -12,6 +12,7 @@ export type MatchUnitSnap = {
   damage: number;
   armor: number;
   initiative: number;
+  lvl: number;
 };
 
 export type MatchTeamSnap = {
@@ -78,6 +79,7 @@ function toUnitSnap(unit: BattleUnit): MatchUnitSnap {
     damage: unit.damage,
     armor: unit.armor,
     initiative: unit.initiative,
+    lvl: unit.lvl,
   };
 }
 

@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, healUnit, trySpendMana } from '../effects';
 import { ROW_BACK } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -178,7 +178,7 @@ export const patriarchAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Нужен союзник' };
       }
-      const amount = PILOT_LVL * 7 + Math.floor(actor.power / 3);
+      const amount = actor.lvl * 7 + Math.floor(actor.power / 3);
       const healed = healUnit(target, amount);
       state.log.push(`${actor.displayName} исцеляет ${target.displayName} (+${healed}).`);
       return { status: 'done' };
@@ -215,7 +215,7 @@ export const patriarchAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Нужен союзник' };
       }
       actor.ultaCharges -= 1;
-      grantEffect(target, 'SANCTUM', 2 + Math.floor(PILOT_LVL / 5), 0);
+      grantEffect(target, 'SANCTUM', 2 + Math.floor(actor.lvl / 5), 0);
       state.log.push(`${target.displayName} под святилищем.`);
       return { status: 'done' };
     }

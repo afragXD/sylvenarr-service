@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, healUnit } from '../effects';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -109,7 +109,7 @@ export const paladinAbilities: AbilityHandler = {
 
     if (input.slot === 2) {
       actor.ultaCharges -= 1;
-      grantEffect(actor, 'STRENGTH', 2 + Math.floor(PILOT_LVL / 5), 8);
+      grantEffect(actor, 'STRENGTH', 2 + Math.floor(actor.lvl / 5), 8);
       grantEffect(actor, 'GUARDED', 2, 2);
       state.log.push(`${actor.displayName} разжигает пламя на клинках.`);
       return { status: 'done' };
@@ -139,7 +139,7 @@ export const paladinAbilities: AbilityHandler = {
       );
       markDeadIfNeeded(state, target);
       if (target.alive && randInt(1, 100) <= 70) {
-        const n = 1 + Math.floor(PILOT_LVL / 5);
+        const n = 1 + Math.floor(actor.lvl / 5);
         target.damage = Math.max(1, target.damage - n);
         target.power = Math.max(0, target.power - n);
         actor.damage += n;
@@ -187,7 +187,7 @@ export const paladinAbilities: AbilityHandler = {
       return { status: 'reject', message: 'Нужно 3 МР' };
     }
     actor.mana -= 3;
-    grantEffect(actor, 'REGENHP', 2 + Math.floor(PILOT_LVL / 5), 1.1);
+    grantEffect(actor, 'REGENHP', 2 + Math.floor(actor.lvl / 5), 1.1);
     grantEffect(actor, 'GUARDED', 3, 4);
     moveToOtherRow(actor);
     const hush = healUnit(actor, randInt(5, 12));

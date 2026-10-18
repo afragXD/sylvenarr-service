@@ -1,4 +1,4 @@
-import { PILOT_LVL, randInt } from '../damage';
+import { randInt } from '../damage';
 import { enslaveUnit, grantEffect, healUnit, trySpendMana } from '../effects';
 import { resistsEnslave } from '../races';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -92,9 +92,9 @@ export const mermaidAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       const bonusForLowHp = Math.round(20 * (2 - target.health / target.maxHp));
-      const amount = PILOT_LVL * 5 + bonusForLowHp;
+      const amount = actor.lvl * 5 + bonusForLowHp;
       const healed = healUnit(target, amount);
-      const accGain = PILOT_LVL * 2 + 2;
+      const accGain = actor.lvl * 2 + 2;
       target.accuracy += accGain;
       state.log.push(
         `${actor.displayName}: морской бриз — ${target.displayName} +${healed} ОЗ, +${accGain} точности.`
@@ -108,7 +108,7 @@ export const mermaidAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       const row = unitsOnSameRow(state, target);
-      const chance = 38 + PILOT_LVL;
+      const chance = 38 + actor.lvl;
       for (const enemy of row) {
         if (randInt(1, 100) <= chance) {
           grantEffect(enemy, 'STUNNED', 1, 0);
@@ -129,7 +129,7 @@ export const mermaidAbilities: AbilityHandler = {
       const allies = alliesOf(state, actor);
       if (allies.length > 0) {
         const ally = allies[randInt(0, allies.length - 1)]!;
-        grantEffect(ally, 'REGENHP', 2, 1 + PILOT_LVL * 0.2);
+        grantEffect(ally, 'REGENHP', 2, 1 + actor.lvl * 0.2);
         state.log.push(`${actor.displayName}: регенерация на ${ally.displayName}.`);
       }
       if (resistsEnslave(target.heroClassCode)) {
@@ -155,7 +155,7 @@ export const mermaidAbilities: AbilityHandler = {
         actor.mana += 2;
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      grantEffect(target, 'MAGIC_SHACKLES', 2 + Math.floor(PILOT_LVL / 6), 0);
+      grantEffect(target, 'MAGIC_SHACKLES', 2 + Math.floor(actor.lvl / 6), 0);
       state.log.push(
         `${actor.displayName}: волшебные оковы на ${target.displayName}.`
       );

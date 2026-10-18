@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, meleeOrAll } from './targets';
@@ -97,7 +97,7 @@ export const goldGolemAbilities: AbilityHandler = {
         state.log.push(
           `${actor.displayName} бьёт апперкотом ${target.displayName} (${damage}).`
         );
-        if (randInt(1, 100) <= 20 + PILOT_LVL) {
+        if (randInt(1, 100) <= 20 + actor.lvl) {
           grantEffect(target, 'STUNNED', 1, 0);
           state.log.push(`${target.displayName} в нокауте.`);
         }
@@ -115,13 +115,13 @@ export const goldGolemAbilities: AbilityHandler = {
         const drained = randInt(2, 3);
         target.mana = Math.max(0, target.mana - drained);
         actor.mana += drained;
-        const lose = Math.max(1, Math.round(target.power * (0.25 + PILOT_LVL * 0.05)));
+        const lose = Math.max(1, Math.round(target.power * (0.25 + actor.lvl * 0.05)));
         grantEffect(target, 'INTERFERENCE', 1, lose);
         state.log.push(
           `${actor.displayName}: загадки — ${target.displayName} −${drained} МР и помехи.`
         );
       } else {
-        grantEffect(target, 'HAPPY', 2, 10 + PILOT_LVL);
+        grantEffect(target, 'HAPPY', 2, 10 + actor.lvl);
         state.log.push(
           `${actor.displayName}: загадки провалены — ${target.displayName} в радости.`
         );
@@ -134,14 +134,14 @@ export const goldGolemAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      grantEffect(target, 'STONEFLESH', 2 + Math.floor(PILOT_LVL / 4), 40 + PILOT_LVL);
+      grantEffect(target, 'STONEFLESH', 2 + Math.floor(actor.lvl / 4), 40 + actor.lvl);
       state.log.push(`${actor.displayName}: блестящее покрытие на ${target.displayName}.`);
       return { status: 'done' };
     }
 
     if (input.slot === 4) {
       const allies = alliesOf(state, actor).filter((unit) => unit.id !== actor.id);
-      const frac = 0.25 + PILOT_LVL * 0.05;
+      const frac = 0.25 + actor.lvl * 0.05;
       for (const ally of allies) {
         const bonus = Math.max(1, Math.round(ally.power * frac));
         ally.power += bonus;

@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { delEffect, grantEffect, hasEffect } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, meleeOrAll, neighbourBehind, ownRowAllies } from './targets';
@@ -35,7 +35,7 @@ function abilityMeta(
       };
     }
     case 3: {
-      const cost = 100 + PILOT_LVL * 2;
+      const cost = 100 + actor.lvl * 2;
       return {
         slot: 3,
         label: 'Баллада',
@@ -74,7 +74,7 @@ export const knightAbilities: AbilityHandler = {
   },
 
   preChoice(state, actor) {
-    const bonus = PILOT_LVL + 1;
+    const bonus = actor.lvl + 1;
     for (const ally of ownRowAllies(state, actor)) {
       if (hasEffect(ally, 'ROW_FORTIFY')) {
         delEffect(ally, 'ROW_FORTIFY');
@@ -106,7 +106,7 @@ export const knightAbilities: AbilityHandler = {
         );
         markDeadIfNeeded(state, target);
         maybeKillHorse(actor, state);
-        if (target.alive && randInt(1, 100) <= 50 + PILOT_LVL * 2) {
+        if (target.alive && randInt(1, 100) <= 50 + actor.lvl * 2) {
           const behind = neighbourBehind(state, target);
           if (behind) {
             const splash = dealDamage(actor, behind, { damageMult: 0.6, armorIgnore: 0 });
@@ -142,12 +142,12 @@ export const knightAbilities: AbilityHandler = {
     }
 
     if (input.slot === 3) {
-      const cost = 100 + PILOT_LVL * 2;
+      const cost = 100 + actor.lvl * 2;
       actor.gold -= cost;
-      const atk = 20 + PILOT_LVL * 2;
+      const atk = 20 + actor.lvl * 2;
       for (const ally of ownRowAllies(state, actor)) {
-        grantEffect(ally, 'STRENGTH', 1 + Math.floor(PILOT_LVL / 5), atk);
-        grantEffect(ally, 'BLESSED', 1 + Math.floor(PILOT_LVL / 6), 0.5);
+        grantEffect(ally, 'STRENGTH', 1 + Math.floor(actor.lvl / 5), atk);
+        grantEffect(ally, 'BLESSED', 1 + Math.floor(actor.lvl / 6), 0.5);
       }
       state.log.push(
         `${actor.displayName} исполняет боевую балладу (−${cost} золота, +атака ряду).`
@@ -170,7 +170,7 @@ export const knightAbilities: AbilityHandler = {
     delEffect(actor, 'POISON');
     delEffect(actor, 'BURNING');
     state.log.push(`${actor.displayName} снимает яд, ожог и кровоток.`);
-    if (randInt(1, 100) <= 5 * PILOT_LVL) {
+    if (randInt(1, 100) <= 5 * actor.lvl) {
       state.log.push(`${actor.displayName} сохраняет ход!`);
       return { status: 'done', keepTurn: true };
     }

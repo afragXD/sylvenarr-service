@@ -12,6 +12,7 @@ import { moveToOtherRow } from './abilities/targets';
 import { resolveAttackStyle } from './attack-style';
 import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt } from './damage';
 import { resistsForClass } from './defaultResists';
+import { levelUpLivingUnits } from './level';
 import { summarizeResists } from './resists';
 import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnStart } from './effects';
 import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, ROW_FRONT } from './settings';
@@ -144,6 +145,7 @@ function buildTeamUnits(
         power: hero.power,
         mana: hero.mana,
         gold: hero.gold,
+        lvl: 1,
         defending: false,
         alive: true,
         effects: [],
@@ -224,7 +226,11 @@ export function advanceToNextUnit(state: BattleState): void {
         state.log.push(`Лимит раундов (${MAX_ROUNDS}) — ничья.`);
         return;
       }
+      const maxLvl = levelUpLivingUnits(state);
       state.log.push(`Раунд ${state.stage}.`);
+      if (maxLvl > 0) {
+        state.log.push(`Отряд становится сильнее (ур. ${maxLvl}).`);
+      }
       order = initiativeOrder(state);
     }
   }
@@ -698,6 +704,7 @@ export function buildTurnOrder(state: BattleState) {
       alive: unit.alive,
       isActive: unit.id === state.activeUnitId,
       phase,
+      lvl: unit.lvl,
     }));
 }
 
@@ -769,6 +776,7 @@ export function toBattleSummary(state: BattleState) {
       gold: unit.gold,
       critBank: unit.critBank,
       ultaCharges: unit.ultaCharges,
+      lvl: unit.lvl,
       resists: summarizeResists(unit),
     })),
   };

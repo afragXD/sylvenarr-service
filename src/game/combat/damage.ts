@@ -2,13 +2,10 @@ import { applyVampWeaponHeal, grantEffect, hasEffect } from './effects';
 import type { DamageSource } from './damageSources';
 import { sourceFromAttackStyle } from './damageSources';
 import { applyResistMultiplier } from './resists';
-import { PILOT_LVL } from './settings';
 import type { BattleState, BattleUnit } from './types';
 
 export const randInt = (min: number, max: number): number =>
   min + Math.floor(Math.random() * (max - min + 1));
-
-export { PILOT_LVL };
 
 /** Защита от рекурсии CONTR ↔ CONTR. */
 let counterDepth = 0;
@@ -121,7 +118,7 @@ export function dealDamage(
     hasEffect(attacker, 'FIREDWEAPON') &&
     randInt(1, 100) <= 55
   ) {
-    grantEffect(defender, 'BURNING', 2, Math.max(2, Math.round(3 + PILOT_LVL * 0.2)));
+    grantEffect(defender, 'BURNING', 2, Math.max(2, Math.round(3 + attacker.lvl * 0.2)));
     if (state) {
       state.log.push(`${defender.displayName} загорается от огненного оружия.`);
     }

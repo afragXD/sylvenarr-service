@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, hasEffect, trySpendMana } from '../effects';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -219,7 +219,7 @@ export const demiurgeAbilities: AbilityHandler = {
     state.log.push(
       `${actor.displayName} творит философский камень (предмет — позже).`
     );
-    if (randInt(1, 100) <= 8 * PILOT_LVL) {
+    if (randInt(1, 100) <= 8 * actor.lvl) {
       state.log.push(`${actor.displayName} сохраняет ход.`);
       return { status: 'done', keepTurn: true };
     }

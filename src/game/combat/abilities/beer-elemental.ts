@@ -1,4 +1,4 @@
-import { PILOT_LVL, randInt } from '../damage';
+import { randInt } from '../damage';
 import { grantEffect } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf } from './targets';
@@ -91,7 +91,7 @@ export const beerElementalAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const power = target.luck < 5 ? 10 + PILOT_LVL * 2 : 5;
+      const power = target.luck < 5 ? 10 + actor.lvl * 2 : 5;
       grantEffect(target, 'HAPPY', 2, power);
       state.log.push(
         `${actor.displayName}: кружка для ${target.displayName} (+${power} удачи).`
@@ -104,8 +104,8 @@ export const beerElementalAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      if (randInt(1, 100) <= 70 + PILOT_LVL * 2) {
-        grantEffect(target, 'FATMAN', 2, 20 + PILOT_LVL);
+      if (randInt(1, 100) <= 70 + actor.lvl * 2) {
+        grantEffect(target, 'FATMAN', 2, 20 + actor.lvl);
         state.log.push(`${actor.displayName}: ${target.displayName} пьян и шатается.`);
       } else {
         state.log.push(`${actor.displayName}: опьянение провалилось.`);
@@ -118,7 +118,7 @@ export const beerElementalAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const bank = 1 + Math.floor(PILOT_LVL / 5);
+      const bank = 1 + Math.floor(actor.lvl / 5);
       target.critBank += bank;
       state.log.push(
         `${actor.displayName}: ${target.displayName} получает ${bank} гарант-крит(а).`

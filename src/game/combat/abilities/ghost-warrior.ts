@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, healUnit } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { meleeOrAll, ownRowAllies } from './targets';
@@ -93,7 +93,7 @@ export const ghostWarriorAbilities: AbilityHandler = {
         state.log.push(
           `${actor.displayName} рубит катаной ${target.displayName} (${damage}, ×${mult}).`
         );
-        if (randInt(1, 100) <= 65 + PILOT_LVL) {
+        if (randInt(1, 100) <= 65 + actor.lvl) {
           grantEffect(target, 'STUNNED', 1, 0);
           state.log.push(`${target.displayName} парализован.`);
         }
@@ -103,13 +103,13 @@ export const ghostWarriorAbilities: AbilityHandler = {
     }
 
     if (input.slot === 2) {
-      grantEffect(actor, 'VAMPWEAPON', 2 + Math.floor(PILOT_LVL / 5), 0.5 + 0.08 * PILOT_LVL);
+      grantEffect(actor, 'VAMPWEAPON', 2 + Math.floor(actor.lvl / 5), 0.5 + 0.08 * actor.lvl);
       state.log.push(`${actor.displayName}: катана вампиризирует удары.`);
       return { status: 'done' };
     }
 
     if (input.slot === 3) {
-      const power = 3 + Math.floor(PILOT_LVL / 4);
+      const power = 3 + Math.floor(actor.lvl / 4);
       for (const ally of ownRowAllies(state, actor)) {
         grantEffect(ally, 'STRENGTH', 2, power);
       }

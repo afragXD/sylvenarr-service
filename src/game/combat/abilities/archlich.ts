@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, healUnit } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { availableSummonRows, createSummon } from './summon';
@@ -110,7 +110,7 @@ export const archlichAbilities: AbilityHandler = {
       const extras = enemiesOf(state, actor)
         .filter((unit) => unit.id !== target.id)
         .sort(() => Math.random() - 0.5)
-        .slice(0, Math.max(1, Math.floor(PILOT_LVL / 5) + 1));
+        .slice(0, Math.max(1, Math.floor(actor.lvl / 5) + 1));
       for (const extra of extras) {
         if (!spendMana(actor, 1, state, true)) {
           break;
@@ -243,7 +243,7 @@ export const archlichAbilities: AbilityHandler = {
         target.armor += 1;
         target.power += 1;
         if (target.isLichSummon) {
-          const heal = healUnit(target, PILOT_LVL * 5 + 10);
+          const heal = healUnit(target, actor.lvl * 5 + 10);
           state.log.push(
             `${actor.displayName} усиливает ${target.displayName} и лечит на ${heal}.`
           );
@@ -251,7 +251,7 @@ export const archlichAbilities: AbilityHandler = {
           state.log.push(`${actor.displayName} усиливает ${target.displayName}.`);
         }
       } else {
-        grantEffect(target, 'VAMPWEAPON', 1 + Math.floor(PILOT_LVL / 7), 0.5 + PILOT_LVL / 25);
+        grantEffect(target, 'VAMPWEAPON', 1 + Math.floor(actor.lvl / 7), 0.5 + actor.lvl / 25);
         state.log.push(`${actor.displayName} накладывает вампиризм на ${target.displayName}.`);
       }
       return { status: 'done' };
@@ -285,7 +285,7 @@ export const archlichAbilities: AbilityHandler = {
     }
     const manaBoost = Math.max(1, Math.round(victim.health / 30));
     actor.mana += manaBoost;
-    actor.power += Math.max(1, Math.round(PILOT_LVL * 0.75));
+    actor.power += Math.max(1, Math.round(actor.lvl * 0.75));
     actor.damage += 2;
     victim.alive = false;
     victim.health = 0;

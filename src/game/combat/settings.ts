@@ -1,9 +1,6 @@
 /** Лимит раундов → ничья (legacy MAX_ROUNDS). */
 export const MAX_ROUNDS = 20;
 
-/** Условный уровень пилотов (без полноценной системы lvl). */
-export const PILOT_LVL = 5;
-
 /** Потолок юнитов в команде (включая саммонов). */
 export const MAX_TEAM_SIZE = 6;
 

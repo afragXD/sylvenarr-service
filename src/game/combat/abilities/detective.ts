@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, hasEffect } from '../effects';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -149,7 +149,7 @@ export const detectiveAbilities: AbilityHandler = {
       if (damage === 0) {
         state.log.push(`${actor.displayName}: выпад — промах.`);
       } else {
-        grantEffect(actor, 'CONTR', 2 + Math.floor(PILOT_LVL / 6), 0);
+        grantEffect(actor, 'CONTR', 2 + Math.floor(actor.lvl / 6), 0);
         state.log.push(
           `${actor.displayName}: выпад дуэлянта → ${target.displayName} (${damage}).`
         );
@@ -160,7 +160,7 @@ export const detectiveAbilities: AbilityHandler = {
 
     // slot 5
     if (actor.gun <= 0) {
-      const bonus = randInt(1, 4) + Math.floor(PILOT_LVL / 4);
+      const bonus = randInt(1, 4) + Math.floor(actor.lvl / 4);
       actor.luck += bonus;
       actor.gun = 1;
       state.log.push(`${actor.displayName} перезаряжает оружие (+${bonus} удачи).`);

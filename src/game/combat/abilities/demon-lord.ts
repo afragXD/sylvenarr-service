@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, healUnit } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, meleeOrAll } from './targets';
@@ -125,7 +125,7 @@ export const demonLordAbilities: AbilityHandler = {
         `${actor.displayName} обрушивает клинок Бездны на ${target.displayName} (${damage}).`
       );
       markDeadIfNeeded(state, target);
-      if (target.alive && randInt(1, 100) <= 70 + PILOT_LVL) {
+      if (target.alive && randInt(1, 100) <= 70 + actor.lvl) {
         grantEffect(target, 'PETRIFIED', 2, 15);
         grantEffect(target, 'CHAINED', 2, 0);
         state.log.push(`${target.displayName} обращается в камень.`);
@@ -154,7 +154,7 @@ export const demonLordAbilities: AbilityHandler = {
       markDeadIfNeeded(state, target);
       if (target.alive && randInt(1, 100) <= 75) {
         const strip = Math.max(1, Math.round(damage * 0.4));
-        target.armor = Math.max(-15 - PILOT_LVL, target.armor - strip);
+        target.armor = Math.max(-15 - actor.lvl, target.armor - strip);
         state.log.push(`Доспехи ${target.displayName} уничтожены на ${strip}.`);
       }
       return { status: 'done' };
@@ -166,7 +166,7 @@ export const demonLordAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Нужен союзник' };
       }
       grantEffect(actor, 'GUARDED', 2, 5);
-      grantEffect(ally, 'REGENHP', 2 + Math.floor(PILOT_LVL / 5), 1.25);
+      grantEffect(ally, 'REGENHP', 2 + Math.floor(actor.lvl / 5), 1.25);
       state.log.push(
         `${actor.displayName} окутывает себя огненным щитом и дарует регенерацию ${ally.displayName}.`
       );
@@ -175,7 +175,7 @@ export const demonLordAbilities: AbilityHandler = {
 
     // slot 5
     actor.ultaCharges -= 1;
-    const flat = 15 + PILOT_LVL;
+    const flat = 15 + actor.lvl;
     for (const enemy of enemiesOf(state, actor)) {
       enemy.health -= flat;
       state.log.push(`Катавасия сотрясает ${enemy.displayName} (−${flat} ОЗ).`);
