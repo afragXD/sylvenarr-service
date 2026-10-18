@@ -112,6 +112,11 @@ export type BattleUnit = {
   gold: number;
   /** Уровень юнита в бою (legacy Hero.lvl); старт 1. */
   lvl: number;
+  /**
+   * Скрытый уровень для вех приростов (legacy Hero.hidden_lvl); старт 1.
+   * Растёт только при ind > 0; GoblinTrapper не обновляет.
+   */
+  hiddenLvl: number;
   defending: boolean;
   alive: boolean;
   effects: BattleEffect[];
@@ -144,6 +149,10 @@ export type BattleUnit = {
   transformParentCode: string | null;
   /** BeerElemental: гарант-криты. */
   critBank: number;
+  /** DemonLord / перки: доля игнора брони (legacy armor_penetration). */
+  armorPenetration: number;
+  /** Abbess / перки: банк гарантированных уклонений (legacy dodge_bank). */
+  dodgeBank: number;
   /** Mermaid ENSLAVED: исходная команда до порабощения. */
   enslavedOriginTeam: 0 | 1 | null;
   /** Mermaid ENSLAVED: исходный playerId до порабощения. */

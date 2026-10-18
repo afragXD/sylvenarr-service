@@ -146,6 +146,7 @@ function buildTeamUnits(
         mana: hero.mana,
         gold: hero.gold,
         lvl: 1,
+        hiddenLvl: 1,
         defending: false,
         alive: true,
         effects: [],
@@ -167,6 +168,8 @@ function buildTeamUnits(
         polymorphSavedArmor: -1,
         transformParentCode: null,
         critBank: 0,
+        armorPenetration: 0,
+        dodgeBank: 0,
         enslavedOriginTeam: null,
         enslavedOriginPlayerId: null,
       };

@@ -81,6 +81,7 @@ export function createSummon(
     mana: hero.mana,
     gold: hero.gold,
     lvl: Math.max(1, input.summoner.lvl),
+    hiddenLvl: 1,
     defending: false,
     alive: true,
     effects: [],
@@ -102,6 +103,8 @@ export function createSummon(
     polymorphSavedArmor: -1,
     transformParentCode: null,
     critBank: 0,
+    armorPenetration: 0,
+    dodgeBank: 0,
     enslavedOriginTeam: null,
     enslavedOriginPlayerId: null,
   };
@@ -157,6 +160,7 @@ export function createPhantomCopy(
     mana: 0,
     gold: 0,
     lvl: Math.max(1, template.lvl),
+    hiddenLvl: 1,
     defending: false,
     alive: true,
     effects: [],
@@ -178,6 +182,8 @@ export function createPhantomCopy(
     polymorphSavedArmor: -1,
     transformParentCode: null,
     critBank: 0,
+    armorPenetration: 0,
+    dodgeBank: 0,
     enslavedOriginTeam: null,
     enslavedOriginPlayerId: null,
   };
