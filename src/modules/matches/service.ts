@@ -63,6 +63,7 @@ function draftLimitsOf(row: { rules: unknown }): DraftLimits {
   return {
     initialTeamSize: rules.initialTeamSize,
     maxRowSize: rules.maxRowSize,
+    heroDupes: rules.heroDupes,
   };
 }
 

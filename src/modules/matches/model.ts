@@ -49,6 +49,11 @@ export namespace MatchesModel {
     fairFrequency: t.Number(),
     shopSize: t.Number(),
     goldBonus: t.Number(),
+    heroDupes: t.Union([
+      t.Literal('allow'),
+      t.Literal('uniqueTeam'),
+      t.Literal('uniqueMatch'),
+    ]),
   });
   export type matchRules = typeof matchRules.static;
 

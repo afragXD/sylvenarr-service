@@ -93,4 +93,46 @@ describe('draft rules', () => {
     ];
     expect(validateMovePick({ picks, pickId: 'a', playerId: 'h', row: 1 }).ok).toBe(true);
   });
+
+  test('uniqueTeam rejects own duplicate class', () => {
+    const picks = [pick({ playerId: 'h', size: 1, row: 0, heroClassCode: 'Assassin' })];
+    const result = validatePick({
+      picks,
+      playerId: 'h',
+      hero: { code: 'Assassin', displayName: 'Ассасин', size: 1, isPlayable: true },
+      row: 1,
+      limits: { initialTeamSize: 3, maxRowSize: 3, heroDupes: 'uniqueTeam' },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.message).toContain('вашем отряде');
+    }
+  });
+
+  test('uniqueTeam allows opponent same class', () => {
+    const picks = [pick({ playerId: 'g', size: 1, row: 0, heroClassCode: 'Assassin' })];
+    const result = validatePick({
+      picks,
+      playerId: 'h',
+      hero: { code: 'Assassin', displayName: 'Ассасин', size: 1, isPlayable: true },
+      row: 0,
+      limits: { initialTeamSize: 3, maxRowSize: 3, heroDupes: 'uniqueTeam' },
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  test('uniqueMatch rejects any duplicate class', () => {
+    const picks = [pick({ playerId: 'g', size: 1, row: 0, heroClassCode: 'Assassin' })];
+    const result = validatePick({
+      picks,
+      playerId: 'h',
+      hero: { code: 'Assassin', displayName: 'Ассасин', size: 1, isPlayable: true },
+      row: 0,
+      limits: { initialTeamSize: 3, maxRowSize: 3, heroDupes: 'uniqueMatch' },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.message).toContain('матче');
+    }
+  });
 });

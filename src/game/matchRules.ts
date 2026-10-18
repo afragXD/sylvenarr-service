@@ -6,6 +6,14 @@ import {
 } from './combat/settings';
 import { INITIAL_TEAM_SIZE } from './draft/settings';
 
+export type HeroDupesMode = 'allow' | 'uniqueTeam' | 'uniqueMatch';
+
+const HERO_DUPES_MODES: ReadonlySet<string> = new Set([
+  'allow',
+  'uniqueTeam',
+  'uniqueMatch',
+]);
+
 /** Полный снимок правил матча (legacy settings.py + резерв ярмарки). */
 export type MatchRules = {
   readonly initialTeamSize: number;
@@ -18,6 +26,8 @@ export type MatchRules = {
   readonly fairFrequency: number;
   readonly shopSize: number;
   readonly goldBonus: number;
+  /** Дубли классов в draft (не касается саммонов/эволюций). */
+  readonly heroDupes: HeroDupesMode;
 };
 
 export const DEFAULT_MATCH_RULES: MatchRules = {
@@ -30,6 +40,7 @@ export const DEFAULT_MATCH_RULES: MatchRules = {
   fairFrequency: 5,
   shopSize: 8,
   goldBonus: 1,
+  heroDupes: 'allow',
 };
 
 export const MATCH_RULES_LIMITS = {
@@ -59,6 +70,12 @@ function clampFloat(value: number, min: number, max: number, step: number): numb
   const clamped = Math.min(max, Math.max(min, value));
   const steps = Math.round((clamped - min) / step);
   return Math.round((min + steps * step) * 1000) / 1000;
+}
+
+function parseHeroDupes(value: unknown): HeroDupesMode {
+  return typeof value === 'string' && HERO_DUPES_MODES.has(value)
+    ? (value as HeroDupesMode)
+    : DEFAULT_MATCH_RULES.heroDupes;
 }
 
 /**
@@ -117,6 +134,7 @@ export function parseMatchRules(input: unknown): ParseMatchRulesResult {
     MATCH_RULES_LIMITS.goldBonus.max,
     MATCH_RULES_LIMITS.goldBonus.step
   );
+  const heroDupes = parseHeroDupes(raw.heroDupes);
 
   if (initialTeamSize > maxTeamSize) {
     return {
@@ -143,6 +161,7 @@ export function parseMatchRules(input: unknown): ParseMatchRulesResult {
       fairFrequency,
       shopSize,
       goldBonus,
+      heroDupes,
     },
   };
 }

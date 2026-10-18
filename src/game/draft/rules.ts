@@ -1,14 +1,17 @@
+import type { HeroDupesMode } from '../matchRules';
 import { INITIAL_TEAM_SIZE, MAX_ROW_SIZE, ROW_BACK, ROW_FRONT } from './settings';
 import type { DraftHeroRef, DraftPick } from './types';
 
 export type DraftLimits = {
   readonly initialTeamSize: number;
   readonly maxRowSize: number;
+  readonly heroDupes: HeroDupesMode;
 };
 
 const DEFAULT_LIMITS: DraftLimits = {
   initialTeamSize: INITIAL_TEAM_SIZE,
   maxRowSize: MAX_ROW_SIZE,
+  heroDupes: 'allow',
 };
 
 function limitsOrDefault(limits?: DraftLimits): DraftLimits {
@@ -78,7 +81,7 @@ export function isDraftComplete(
 export type PickValidation = { ok: true } | { ok: false; message: string };
 
 /**
- * Валидация пика: квота size и место в ряду.
+ * Валидация пика: квота size, место в ряду, дубли классов.
  */
 export function validatePick(input: {
   readonly picks: ReadonlyArray<DraftPick>;
@@ -87,7 +90,7 @@ export function validatePick(input: {
   readonly row: number;
   readonly limits?: DraftLimits;
 }): PickValidation {
-  const { initialTeamSize, maxRowSize } = limitsOrDefault(input.limits);
+  const { initialTeamSize, maxRowSize, heroDupes } = limitsOrDefault(input.limits);
   if (!input.hero.isPlayable) {
     return { ok: false, message: 'Этот класс нельзя выбрать в draft' };
   }
@@ -103,6 +106,20 @@ export function validatePick(input: {
   ).length;
   if (rowCount + 1 > maxRowSize) {
     return { ok: false, message: 'На этом ряду нет места' };
+  }
+  if (heroDupes === 'uniqueTeam') {
+    const ownHas = input.picks.some(
+      (pick) => pick.playerId === input.playerId && pick.heroClassCode === input.hero.code
+    );
+    if (ownHas) {
+      return { ok: false, message: 'Этот класс уже есть в вашем отряде' };
+    }
+  }
+  if (heroDupes === 'uniqueMatch') {
+    const matchHas = input.picks.some((pick) => pick.heroClassCode === input.hero.code);
+    if (matchHas) {
+      return { ok: false, message: 'Этот класс уже выбран в матче' };
+    }
   }
   return { ok: true };
 }

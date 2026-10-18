@@ -58,4 +58,28 @@ describe('parseMatchRules', () => {
     });
     expect(rules).toEqual(DEFAULT_MATCH_RULES);
   });
+
+  test('missing heroDupes → allow', () => {
+    const result = parseMatchRules({ initialTeamSize: 3 });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.rules.heroDupes).toBe('allow');
+    }
+  });
+
+  test('accepts heroDupes uniqueMatch', () => {
+    const result = parseMatchRules({ heroDupes: 'uniqueMatch' });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.rules.heroDupes).toBe('uniqueMatch');
+    }
+  });
+
+  test('unknown heroDupes → allow', () => {
+    const result = parseMatchRules({ heroDupes: 'nope' });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.rules.heroDupes).toBe('allow');
+    }
+  });
 });
