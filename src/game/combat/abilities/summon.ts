@@ -1,5 +1,4 @@
 import { resolveAttackStyle } from '../attack-style';
-import { HEALTH_BONUS, MAX_TEAM_SIZE } from '../settings';
 import { resistsForClass } from '../defaultResists';
 import { cloneResists } from '../resists';
 import type { BattleState, BattleUnit } from '../types';
@@ -41,7 +40,7 @@ export function createSummon(
     const teamAlive = state.units.filter(
       (unit) => unit.alive && unit.team === input.summoner.team
     ).length;
-    if (teamAlive >= MAX_TEAM_SIZE) {
+    if (teamAlive >= state.rules.maxTeamSize) {
       state.log.push('В команде нет места для саммона.');
       return null;
     }
@@ -59,7 +58,7 @@ export function createSummon(
     input.column ??
     state.units.filter((unit) => unit.alive && unit.team === input.summoner.team && unit.row === row)
       .length;
-  const maxHp = Math.max(1, Math.round(hero.health * HEALTH_BONUS));
+  const maxHp = Math.max(1, Math.round(hero.health * state.rules.healthBonus));
   const unit: BattleUnit = {
     id: `summon-${input.summoner.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     playerId: input.summoner.playerId,
@@ -124,7 +123,7 @@ export function createPhantomCopy(
   const teamAlive = state.units.filter(
     (unit) => unit.alive && unit.team === summoner.team
   ).length;
-  if (teamAlive >= MAX_TEAM_SIZE) {
+  if (teamAlive >= state.rules.maxTeamSize) {
     state.log.push('В команде нет места для фантома.');
     return null;
   }
@@ -198,7 +197,7 @@ export function availableSummonRows(state: BattleState, summoner: BattleUnit): n
   const teamAlive = state.units.filter(
     (unit) => unit.alive && unit.team === summoner.team
   ).length;
-  if (teamAlive >= MAX_TEAM_SIZE) {
+  if (teamAlive >= state.rules.maxTeamSize) {
     return [];
   }
   return [0, 1];

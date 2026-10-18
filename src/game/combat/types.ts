@@ -159,12 +159,22 @@ export type BattleUnit = {
   enslavedOriginPlayerId: string | null;
 };
 
+/** Активные правила боя из Match.rules (без ярмарки). */
+export type BattleRules = {
+  readonly maxTeamSize: number;
+  readonly maxRowSize: number;
+  readonly maxRounds: number;
+  readonly healthBonus: number;
+};
+
 export type BattleState = {
   readonly matchId: string;
   readonly hostPlayerId: string;
   readonly guestPlayerId: string;
   /** Каталог статов классов для саммонов. */
   catalog: Record<string, HeroClassStats>;
+  /** Лимиты матча (снимок при старте боя). */
+  readonly rules: BattleRules;
   stage: number;
   units: BattleUnit[];
   doneIds: string[];

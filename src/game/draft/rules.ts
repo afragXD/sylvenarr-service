@@ -1,6 +1,20 @@
 import { INITIAL_TEAM_SIZE, MAX_ROW_SIZE, ROW_BACK, ROW_FRONT } from './settings';
 import type { DraftHeroRef, DraftPick } from './types';
 
+export type DraftLimits = {
+  readonly initialTeamSize: number;
+  readonly maxRowSize: number;
+};
+
+const DEFAULT_LIMITS: DraftLimits = {
+  initialTeamSize: INITIAL_TEAM_SIZE,
+  maxRowSize: MAX_ROW_SIZE,
+};
+
+function limitsOrDefault(limits?: DraftLimits): DraftLimits {
+  return limits ?? DEFAULT_LIMITS;
+}
+
 /**
  * Сумма size пиков игрока.
  */
@@ -13,8 +27,13 @@ export function teamSize(picks: ReadonlyArray<DraftPick>, playerId: string): num
 /**
  * Может ли игрок выбрать ещё героя.
  */
-export function canPickMore(picks: ReadonlyArray<DraftPick>, playerId: string): boolean {
-  return teamSize(picks, playerId) < INITIAL_TEAM_SIZE;
+export function canPickMore(
+  picks: ReadonlyArray<DraftPick>,
+  playerId: string,
+  limits?: DraftLimits
+): boolean {
+  const { initialTeamSize } = limitsOrDefault(limits);
+  return teamSize(picks, playerId) < initialTeamSize;
 }
 
 /**
@@ -23,10 +42,11 @@ export function canPickMore(picks: ReadonlyArray<DraftPick>, playerId: string): 
 export function resolveTurnPlayerId(
   picks: ReadonlyArray<DraftPick>,
   hostId: string,
-  guestId: string
+  guestId: string,
+  limits?: DraftLimits
 ): string | null {
-  const hostCan = canPickMore(picks, hostId);
-  const guestCan = canPickMore(picks, guestId);
+  const hostCan = canPickMore(picks, hostId, limits);
+  const guestCan = canPickMore(picks, guestId, limits);
   if (!hostCan && !guestCan) {
     return null;
   }
@@ -49,9 +69,10 @@ export function resolveTurnPlayerId(
 export function isDraftComplete(
   picks: ReadonlyArray<DraftPick>,
   hostId: string,
-  guestId: string
+  guestId: string,
+  limits?: DraftLimits
 ): boolean {
-  return !canPickMore(picks, hostId) && !canPickMore(picks, guestId);
+  return !canPickMore(picks, hostId, limits) && !canPickMore(picks, guestId, limits);
 }
 
 export type PickValidation = { ok: true } | { ok: false; message: string };
@@ -64,7 +85,9 @@ export function validatePick(input: {
   readonly playerId: string;
   readonly hero: DraftHeroRef;
   readonly row: number;
+  readonly limits?: DraftLimits;
 }): PickValidation {
+  const { initialTeamSize, maxRowSize } = limitsOrDefault(input.limits);
   if (!input.hero.isPlayable) {
     return { ok: false, message: 'Этот класс нельзя выбрать в draft' };
   }
@@ -72,13 +95,13 @@ export function validatePick(input: {
     return { ok: false, message: 'Некорректный ряд' };
   }
   const currentSize = teamSize(input.picks, input.playerId);
-  if (currentSize + input.hero.size > INITIAL_TEAM_SIZE) {
+  if (currentSize + input.hero.size > initialTeamSize) {
     return { ok: false, message: 'У вас нет места в отряде для данного героя' };
   }
   const rowCount = input.picks.filter(
     (pick) => pick.playerId === input.playerId && pick.row === input.row
   ).length;
-  if (rowCount + 1 > MAX_ROW_SIZE) {
+  if (rowCount + 1 > maxRowSize) {
     return { ok: false, message: 'На этом ряду нет места' };
   }
   return { ok: true };
@@ -92,7 +115,9 @@ export function validateMovePick(input: {
   readonly pickId: string;
   readonly playerId: string;
   readonly row: number;
+  readonly limits?: DraftLimits;
 }): PickValidation {
+  const { maxRowSize } = limitsOrDefault(input.limits);
   if (input.row !== ROW_FRONT && input.row !== ROW_BACK) {
     return { ok: false, message: 'Некорректный ряд' };
   }
@@ -106,7 +131,7 @@ export function validateMovePick(input: {
   const rowCount = input.picks.filter(
     (item) => item.playerId === input.playerId && item.row === input.row && item.id !== input.pickId
   ).length;
-  if (rowCount + 1 > MAX_ROW_SIZE) {
+  if (rowCount + 1 > maxRowSize) {
     return { ok: false, message: 'На этом ряду нет места' };
   }
   return { ok: true };
@@ -120,6 +145,7 @@ export function pickRandomValid(input: {
   readonly playerId: string;
   readonly heroes: ReadonlyArray<DraftHeroRef>;
   readonly preferredRow?: number;
+  readonly limits?: DraftLimits;
 }): { hero: DraftHeroRef; row: number } | null {
   const playable = input.heroes.filter((hero) => hero.isPlayable);
   const shuffled = [...playable].sort(() => Math.random() - 0.5);
@@ -135,6 +161,7 @@ export function pickRandomValid(input: {
         playerId: input.playerId,
         hero,
         row,
+        limits: input.limits,
       });
       if (check.ok) {
         return { hero, row };

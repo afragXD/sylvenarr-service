@@ -15,7 +15,7 @@ import { resistsForClass } from './defaultResists';
 import { levelUpLivingUnits } from './level';
 import { summarizeResists } from './resists';
 import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnStart } from './effects';
-import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, ROW_FRONT } from './settings';
+import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, MAX_TEAM_SIZE, ROW_FRONT } from './settings';
 import {
   classAttackMods,
   classSkill,
@@ -24,11 +24,19 @@ import {
 import type {
   AbilitySlot,
   BattleAction,
+  BattleRules,
   BattleState,
   BattleUnit,
   DraftPickSeed,
   HeroClassStats,
 } from './types';
+
+const DEFAULT_BATTLE_RULES: BattleRules = {
+  maxTeamSize: MAX_TEAM_SIZE,
+  maxRowSize: MAX_ROW_SIZE,
+  maxRounds: MAX_ROUNDS,
+  healthBonus: HEALTH_BONUS,
+};
 
 export { listAttackTargets } from './abilities';
 
@@ -64,7 +72,9 @@ export function createBattleState(input: {
   readonly guestPlayerId: string;
   readonly picks: ReadonlyArray<DraftPickSeed>;
   readonly heroes: ReadonlyMap<string, HeroClassStats>;
+  readonly rules?: BattleRules;
 }): BattleState {
+  const rules = input.rules ?? DEFAULT_BATTLE_RULES;
   const hostPicks = input.picks
     .filter((pick) => pick.playerId === input.hostPlayerId)
     .sort((a, b) => a.pickOrder - b.pickOrder);
@@ -78,8 +88,8 @@ export function createBattleState(input: {
   }
 
   const units: BattleUnit[] = [
-    ...buildTeamUnits(hostPicks, input.hostPlayerId, 0, input.heroes),
-    ...buildTeamUnits(guestPicks, input.guestPlayerId, 1, input.heroes),
+    ...buildTeamUnits(hostPicks, input.hostPlayerId, 0, input.heroes, rules.healthBonus),
+    ...buildTeamUnits(guestPicks, input.guestPlayerId, 1, input.heroes, rules.healthBonus),
   ];
 
   const state: BattleState = {
@@ -87,6 +97,7 @@ export function createBattleState(input: {
     hostPlayerId: input.hostPlayerId,
     guestPlayerId: input.guestPlayerId,
     catalog,
+    rules,
     stage: 1,
     units,
     doneIds: [],
@@ -109,7 +120,8 @@ function buildTeamUnits(
   picks: ReadonlyArray<DraftPickSeed>,
   playerId: string,
   team: 0 | 1,
-  heroes: ReadonlyMap<string, HeroClassStats>
+  heroes: ReadonlyMap<string, HeroClassStats>,
+  healthBonus: number
 ): BattleUnit[] {
   const byRow = new Map<number, DraftPickSeed[]>();
   for (const pick of picks) {
@@ -124,7 +136,7 @@ function buildTeamUnits(
       if (!hero) {
         return;
       }
-      const maxHp = Math.max(1, Math.round(hero.health * HEALTH_BONUS));
+      const maxHp = Math.max(1, Math.round(hero.health * healthBonus));
       const unit: BattleUnit = {
         id: pick.id,
         playerId,
@@ -221,12 +233,12 @@ export function advanceToNextUnit(state: BattleState): void {
       for (const unit of state.units) {
         unit.defending = false;
       }
-      if (state.stage > MAX_ROUNDS) {
+      if (state.stage > state.rules.maxRounds) {
         state.outcome = 'draw';
         state.winnerPlayerId = null;
         state.activeUnitId = null;
         state.turnPlayerId = null;
-        state.log.push(`Лимит раундов (${MAX_ROUNDS}) — ничья.`);
+        state.log.push(`Лимит раундов (${state.rules.maxRounds}) — ничья.`);
         return;
       }
       const maxLvl = levelUpLivingUnits(state);
@@ -352,7 +364,7 @@ export function applyAction(
     const rowCount = state.units.filter(
       (unit) => unit.alive && unit.team === actor.team && unit.row === targetRow
     ).length;
-    if (rowCount >= MAX_ROW_SIZE) {
+    if (rowCount >= state.rules.maxRowSize) {
       return { ok: false, message: 'На целевом ряду нет места' };
     }
     moveToOtherRow(actor);

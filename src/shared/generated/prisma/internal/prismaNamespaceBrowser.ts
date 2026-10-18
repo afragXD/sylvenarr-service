@@ -137,6 +137,7 @@ export const MatchScalarFieldEnum = {
   fightingStartedAt: 'fightingStartedAt',
   finishedAt: 'finishedAt',
   resultSnapshot: 'resultSnapshot',
+  rules: 'rules',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

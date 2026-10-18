@@ -7,13 +7,19 @@ export const matchesController = new Elysia({ prefix: '/matches', tags: ['Matche
   .use(playerSessionPlugin)
   .post(
     '',
-    async ({ player }) => {
-      return await MatchesService.createMatch(player.id);
+    async ({ body, player, status }) => {
+      const result = await MatchesService.createMatch(player.id, body?.rules);
+      if (!result.ok) {
+        return status(400, { message: result.message });
+      }
+      return result.match;
     },
     {
       requireAuth: true,
+      body: t.Optional(MatchesModel.createBody),
       response: {
         200: MatchesModel.match,
+        400: MatchesModel.errorResponse,
         401: MatchesModel.errorResponse,
       },
       detail: {

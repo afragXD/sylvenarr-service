@@ -60,6 +60,7 @@ export type MatchCountAggregateOutputType = {
   fightingStartedAt: number
   finishedAt: number
   resultSnapshot: number
+  rules: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -102,6 +103,7 @@ export type MatchCountAggregateInputType = {
   fightingStartedAt?: true
   finishedAt?: true
   resultSnapshot?: true
+  rules?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -189,6 +191,7 @@ export type MatchGroupByOutputType = {
   fightingStartedAt: Date | null
   finishedAt: Date | null
   resultSnapshot: runtime.JsonValue | null
+  rules: runtime.JsonValue | null
   createdAt: Date
   updatedAt: Date
   _count: MatchCountAggregateOutputType | null
@@ -224,6 +227,7 @@ export type MatchWhereInput = {
   fightingStartedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   resultSnapshot?: Prisma.JsonNullableFilter<"Match">
+  rules?: Prisma.JsonNullableFilter<"Match">
   createdAt?: Prisma.DateTimeFilter<"Match"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Match"> | Date | string
   host?: Prisma.XOR<Prisma.PlayerScalarRelationFilter, Prisma.PlayerWhereInput>
@@ -241,6 +245,7 @@ export type MatchOrderByWithRelationInput = {
   fightingStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   resultSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
+  rules?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   host?: Prisma.PlayerOrderByWithRelationInput
@@ -261,6 +266,7 @@ export type MatchWhereUniqueInput = Prisma.AtLeast<{
   fightingStartedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   resultSnapshot?: Prisma.JsonNullableFilter<"Match">
+  rules?: Prisma.JsonNullableFilter<"Match">
   createdAt?: Prisma.DateTimeFilter<"Match"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Match"> | Date | string
   host?: Prisma.XOR<Prisma.PlayerScalarRelationFilter, Prisma.PlayerWhereInput>
@@ -278,6 +284,7 @@ export type MatchOrderByWithAggregationInput = {
   fightingStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   resultSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
+  rules?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.MatchCountOrderByAggregateInput
@@ -298,6 +305,7 @@ export type MatchScalarWhereWithAggregatesInput = {
   fightingStartedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Match"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Match"> | Date | string | null
   resultSnapshot?: Prisma.JsonNullableWithAggregatesFilter<"Match">
+  rules?: Prisma.JsonNullableWithAggregatesFilter<"Match">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Match"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Match"> | Date | string
 }
@@ -310,6 +318,7 @@ export type MatchCreateInput = {
   fightingStartedAt?: Date | string | null
   finishedAt?: Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   host: Prisma.PlayerCreateNestedOneWithoutHostedMatchesInput
@@ -327,6 +336,7 @@ export type MatchUncheckedCreateInput = {
   fightingStartedAt?: Date | string | null
   finishedAt?: Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   picks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutMatchInput
@@ -340,6 +350,7 @@ export type MatchUpdateInput = {
   fightingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   host?: Prisma.PlayerUpdateOneRequiredWithoutHostedMatchesNestedInput
@@ -357,6 +368,7 @@ export type MatchUncheckedUpdateInput = {
   fightingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   picks?: Prisma.MatchPickUncheckedUpdateManyWithoutMatchNestedInput
@@ -372,6 +384,7 @@ export type MatchCreateManyInput = {
   fightingStartedAt?: Date | string | null
   finishedAt?: Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -384,6 +397,7 @@ export type MatchUpdateManyMutationInput = {
   fightingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -398,6 +412,7 @@ export type MatchUncheckedUpdateManyInput = {
   fightingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -422,6 +437,7 @@ export type MatchCountOrderByAggregateInput = {
   fightingStartedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
   resultSnapshot?: Prisma.SortOrder
+  rules?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -571,6 +587,7 @@ export type MatchCreateWithoutHostInput = {
   fightingStartedAt?: Date | string | null
   finishedAt?: Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   guest?: Prisma.PlayerCreateNestedOneWithoutGuestMatchesInput
@@ -586,6 +603,7 @@ export type MatchUncheckedCreateWithoutHostInput = {
   fightingStartedAt?: Date | string | null
   finishedAt?: Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   picks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutMatchInput
@@ -609,6 +627,7 @@ export type MatchCreateWithoutGuestInput = {
   fightingStartedAt?: Date | string | null
   finishedAt?: Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   host: Prisma.PlayerCreateNestedOneWithoutHostedMatchesInput
@@ -624,6 +643,7 @@ export type MatchUncheckedCreateWithoutGuestInput = {
   fightingStartedAt?: Date | string | null
   finishedAt?: Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   picks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutMatchInput
@@ -668,6 +688,7 @@ export type MatchScalarWhereInput = {
   fightingStartedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   resultSnapshot?: Prisma.JsonNullableFilter<"Match">
+  rules?: Prisma.JsonNullableFilter<"Match">
   createdAt?: Prisma.DateTimeFilter<"Match"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Match"> | Date | string
 }
@@ -696,6 +717,7 @@ export type MatchCreateWithoutPicksInput = {
   fightingStartedAt?: Date | string | null
   finishedAt?: Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   host: Prisma.PlayerCreateNestedOneWithoutHostedMatchesInput
@@ -712,6 +734,7 @@ export type MatchUncheckedCreateWithoutPicksInput = {
   fightingStartedAt?: Date | string | null
   finishedAt?: Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -740,6 +763,7 @@ export type MatchUpdateWithoutPicksInput = {
   fightingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   host?: Prisma.PlayerUpdateOneRequiredWithoutHostedMatchesNestedInput
@@ -756,6 +780,7 @@ export type MatchUncheckedUpdateWithoutPicksInput = {
   fightingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -769,6 +794,7 @@ export type MatchCreateManyHostInput = {
   fightingStartedAt?: Date | string | null
   finishedAt?: Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -782,6 +808,7 @@ export type MatchCreateManyGuestInput = {
   fightingStartedAt?: Date | string | null
   finishedAt?: Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -794,6 +821,7 @@ export type MatchUpdateWithoutHostInput = {
   fightingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   guest?: Prisma.PlayerUpdateOneWithoutGuestMatchesNestedInput
@@ -809,6 +837,7 @@ export type MatchUncheckedUpdateWithoutHostInput = {
   fightingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   picks?: Prisma.MatchPickUncheckedUpdateManyWithoutMatchNestedInput
@@ -823,6 +852,7 @@ export type MatchUncheckedUpdateManyWithoutHostInput = {
   fightingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -835,6 +865,7 @@ export type MatchUpdateWithoutGuestInput = {
   fightingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   host?: Prisma.PlayerUpdateOneRequiredWithoutHostedMatchesNestedInput
@@ -850,6 +881,7 @@ export type MatchUncheckedUpdateWithoutGuestInput = {
   fightingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   picks?: Prisma.MatchPickUncheckedUpdateManyWithoutMatchNestedInput
@@ -864,6 +896,7 @@ export type MatchUncheckedUpdateManyWithoutGuestInput = {
   fightingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -909,6 +942,7 @@ export type MatchSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   fightingStartedAt?: boolean
   finishedAt?: boolean
   resultSnapshot?: boolean
+  rules?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   host?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
@@ -927,6 +961,7 @@ export type MatchSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   fightingStartedAt?: boolean
   finishedAt?: boolean
   resultSnapshot?: boolean
+  rules?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   host?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
@@ -943,6 +978,7 @@ export type MatchSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   fightingStartedAt?: boolean
   finishedAt?: boolean
   resultSnapshot?: boolean
+  rules?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   host?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
@@ -959,11 +995,12 @@ export type MatchSelectScalar = {
   fightingStartedAt?: boolean
   finishedAt?: boolean
   resultSnapshot?: boolean
+  rules?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type MatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "inviteCode" | "hostId" | "guestId" | "winnerPlayerId" | "fightingStartedAt" | "finishedAt" | "resultSnapshot" | "createdAt" | "updatedAt", ExtArgs["result"]["match"]>
+export type MatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "inviteCode" | "hostId" | "guestId" | "winnerPlayerId" | "fightingStartedAt" | "finishedAt" | "resultSnapshot" | "rules" | "createdAt" | "updatedAt", ExtArgs["result"]["match"]>
 export type MatchInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   host?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
   guest?: boolean | Prisma.Match$guestArgs<ExtArgs>
@@ -1002,6 +1039,10 @@ export type $MatchPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
      * Финальный снимок боя для истории (составы, статы, лог).
      */
     resultSnapshot: runtime.JsonValue | null
+    /**
+     * Снимок правил матча при create (квоты, раунды, HP%, резерв ярмарки).
+     */
+    rules: runtime.JsonValue | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["match"]>
@@ -1439,6 +1480,7 @@ export interface MatchFieldRefs {
   readonly fightingStartedAt: Prisma.FieldRef<"Match", 'DateTime'>
   readonly finishedAt: Prisma.FieldRef<"Match", 'DateTime'>
   readonly resultSnapshot: Prisma.FieldRef<"Match", 'Json'>
+  readonly rules: Prisma.FieldRef<"Match", 'Json'>
   readonly createdAt: Prisma.FieldRef<"Match", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Match", 'DateTime'>
 }

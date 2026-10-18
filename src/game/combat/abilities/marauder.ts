@@ -2,7 +2,7 @@ import { resolveAttackStyle } from '../attack-style';
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { resistsForClass } from '../defaultResists';
 import { grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
-import { HEALTH_BONUS, ROW_BACK, ROW_FRONT } from '../settings';
+import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesInColumn, enemiesOf, meleeOrAll, moveToOtherRow, unitsOnSameRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -135,7 +135,7 @@ function applyCatalogStats(state: BattleState, unit: BattleUnit, code: string): 
     return false;
   }
   const ratio = unit.maxHp > 0 ? unit.health / unit.maxHp : 1;
-  const maxHp = Math.max(1, Math.round(hero.health * HEALTH_BONUS));
+  const maxHp = Math.max(1, Math.round(hero.health * state.rules.healthBonus));
   unit.heroClassCode = hero.code;
   unit.displayName = hero.displayName;
   unit.maxHp = maxHp;

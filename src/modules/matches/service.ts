@@ -18,9 +18,14 @@ import {
   teamSize,
   validateMovePick,
   validatePick,
+  type DraftLimits,
 } from '../../game/draft/rules';
-import { INITIAL_TEAM_SIZE } from '../../game/draft/settings';
 import type { DraftPick } from '../../game/draft/types';
+import {
+  type MatchRules,
+  parseMatchRules,
+  resolveMatchRules,
+} from '../../game/matchRules';
 import { prisma } from '../../shared/db';
 import { createInviteCode } from '../../utils/create-invite-code';
 import type { MatchesModel } from './model';
@@ -43,10 +48,23 @@ type MatchRow = {
   winnerPlayerId: string | null;
   finishedAt: Date | null;
   createdAt: Date;
+  rules: unknown;
   host: { id: string; displayName: string };
   guest: { id: string; displayName: string } | null;
   picks: PickRow[];
 };
+
+function rulesOf(row: { rules: unknown }): MatchRules {
+  return resolveMatchRules(row.rules);
+}
+
+function draftLimitsOf(row: { rules: unknown }): DraftLimits {
+  const rules = rulesOf(row);
+  return {
+    initialTeamSize: rules.initialTeamSize,
+    maxRowSize: rules.maxRowSize,
+  };
+}
 
 const matchInclude = {
   host: { select: { id: true, displayName: true } },
@@ -85,12 +103,14 @@ export abstract class MatchesService {
    */
   static mapMatch(row: MatchRow, battle: BattleSummary | null = null): MatchesModel.match {
     const picks = MatchesService.toDraftPicks(row.picks);
+    const rules = rulesOf(row);
+    const limits = draftLimitsOf(row);
     const guestId = row.guestId ?? '';
     const hostSize = teamSize(picks, row.hostId);
     const guestSize = guestId ? teamSize(picks, guestId) : 0;
     const turnPlayerId =
       row.status === 'drafting' && row.guestId
-        ? resolveTurnPlayerId(picks, row.hostId, row.guestId)
+        ? resolveTurnPlayerId(picks, row.hostId, row.guestId, limits)
         : null;
 
     return {
@@ -102,13 +122,14 @@ export abstract class MatchesService {
       createdAt: row.createdAt.toISOString(),
       finishedAt: row.finishedAt?.toISOString() ?? null,
       winnerPlayerId: row.winnerPlayerId,
+      rules,
       draft: {
         turnPlayerId,
         hostPicks: picks.filter((pick) => pick.playerId === row.hostId),
         guestPicks: guestId ? picks.filter((pick) => pick.playerId === guestId) : [],
         hostSize,
         guestSize,
-        initialTeamSize: INITIAL_TEAM_SIZE,
+        initialTeamSize: rules.initialTeamSize,
       },
       battle,
     };
@@ -129,19 +150,29 @@ export abstract class MatchesService {
   }
 
   /**
-   * Создаёт лобби в статусе waiting.
+   * Создаёт лобби в статусе waiting с снимком правил.
    */
-  static async createMatch(hostId: string): Promise<MatchesModel.match> {
+  static async createMatch(
+    hostId: string,
+    rulesInput?: Partial<MatchRules> | null
+  ): Promise<
+    { ok: true; match: MatchesModel.match } | { ok: false; message: string }
+  > {
+    const parsed = parseMatchRules(rulesInput ?? {});
+    if (!parsed.ok) {
+      return { ok: false, message: parsed.message };
+    }
     const inviteCode = createInviteCode();
     const row = await prisma.match.create({
       data: {
         hostId,
         inviteCode,
         status: 'waiting',
+        rules: parsed.rules as Prisma.InputJsonValue,
       },
       include: matchInclude,
     });
-    return MatchesService.mapMatch(row);
+    return { ok: true, match: MatchesService.mapMatch(row) };
   }
 
   /**
@@ -233,7 +264,13 @@ export abstract class MatchesService {
     }
 
     const picks = MatchesService.toDraftPicks(existing.picks);
-    const turnPlayerId = resolveTurnPlayerId(picks, existing.hostId, existing.guestId);
+    const limits = draftLimitsOf(existing);
+    const turnPlayerId = resolveTurnPlayerId(
+      picks,
+      existing.hostId,
+      existing.guestId,
+      limits
+    );
     if (turnPlayerId !== input.playerId) {
       return { ok: false, message: 'Сейчас не ваш ход', status: 400 };
     }
@@ -251,6 +288,7 @@ export abstract class MatchesService {
       playerId: input.playerId,
       hero,
       row: input.row,
+      limits,
     });
     if (!validation.ok) {
       return { ok: false, message: validation.message, status: 400 };
@@ -279,12 +317,18 @@ export abstract class MatchesService {
         pickOrder: nextOrder,
       },
     ];
-    const drafted = isDraftComplete(afterPicks, existing.hostId, existing.guestId);
+    const drafted = isDraftComplete(
+      afterPicks,
+      existing.hostId,
+      existing.guestId,
+      limits
+    );
     if (drafted && existing.guestId) {
       await MatchesService.startBattle({
         matchId: existing.id,
         hostId: existing.hostId,
         guestId: existing.guestId,
+        rules: rulesOf(existing),
       });
     }
 
@@ -302,6 +346,7 @@ export abstract class MatchesService {
     readonly matchId: string;
     readonly hostId: string;
     readonly guestId: string;
+    readonly rules: MatchRules;
   }): Promise<void> {
     const picks = await prisma.matchPick.findMany({
       where: { matchId: input.matchId },
@@ -341,6 +386,12 @@ export abstract class MatchesService {
         pickOrder: pick.pickOrder,
       })),
       heroes: heroMap,
+      rules: {
+        maxTeamSize: input.rules.maxTeamSize,
+        maxRowSize: input.rules.maxRowSize,
+        maxRounds: input.rules.maxRounds,
+        healthBonus: input.rules.healthBonus,
+      },
     });
     await getBattleStore().set(state);
     await prisma.match.update({
@@ -377,11 +428,13 @@ export abstract class MatchesService {
     }
 
     const picks = MatchesService.toDraftPicks(existing.picks);
+    const limits = draftLimitsOf(existing);
     const validation = validateMovePick({
       picks,
       pickId: input.pickId,
       playerId: input.playerId,
       row: input.row,
+      limits,
     });
     if (!validation.ok) {
       return { ok: false, message: validation.message, status: 400 };
@@ -433,7 +486,13 @@ export abstract class MatchesService {
     }
 
     const picks = MatchesService.toDraftPicks(existing.picks);
-    const turnPlayerId = resolveTurnPlayerId(picks, existing.hostId, existing.guestId);
+    const limits = draftLimitsOf(existing);
+    const turnPlayerId = resolveTurnPlayerId(
+      picks,
+      existing.hostId,
+      existing.guestId,
+      limits
+    );
     if (turnPlayerId !== input.playerId) {
       return { ok: false, message: 'Сейчас не ваш ход', status: 400 };
     }
@@ -447,6 +506,7 @@ export abstract class MatchesService {
       playerId: input.playerId,
       heroes,
       preferredRow: input.preferredRow,
+      limits,
     });
     if (!chosen) {
       return { ok: false, message: 'Нет доступных героев для случайного выбора', status: 400 };

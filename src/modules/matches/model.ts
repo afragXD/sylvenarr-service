@@ -39,6 +39,24 @@ export namespace MatchesModel {
   });
   export type draftState = typeof draftState.static;
 
+  export const matchRules = t.Object({
+    initialTeamSize: t.Number(),
+    maxTeamSize: t.Number(),
+    maxRowSize: t.Number(),
+    maxRounds: t.Number(),
+    healthBonus: t.Number(),
+    fairEnabled: t.Boolean(),
+    fairFrequency: t.Number(),
+    shopSize: t.Number(),
+    goldBonus: t.Number(),
+  });
+  export type matchRules = typeof matchRules.static;
+
+  export const createBody = t.Object({
+    rules: t.Optional(t.Partial(matchRules)),
+  });
+  export type createBody = typeof createBody.static;
+
   export const battleEffect = t.Object({
     id: t.String(),
     rounds: t.Number(),
@@ -161,6 +179,7 @@ export namespace MatchesModel {
     createdAt: t.String(),
     finishedAt: t.Nullable(t.String()),
     winnerPlayerId: t.Nullable(t.String()),
+    rules: matchRules,
     draft: draftState,
     battle: t.Nullable(battleState),
   });
