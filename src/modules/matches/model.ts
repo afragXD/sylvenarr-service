@@ -237,6 +237,7 @@ export namespace MatchesModel {
     damage: t.Number(),
     armor: t.Number(),
     initiative: t.Number(),
+    lvl: t.Optional(t.Number()),
   });
   export type matchHistoryUnit = typeof matchHistoryUnit.static;
 

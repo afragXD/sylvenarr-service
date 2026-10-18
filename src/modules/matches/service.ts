@@ -757,5 +757,6 @@ function unitFromPick(pick: {
     damage: 0,
     armor: 0,
     initiative: 0,
+    lvl: 1,
   };
 }
