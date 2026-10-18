@@ -1,5 +1,6 @@
 import { resolveAttackStyle } from '../attack-style';
 import { dealDamage, markDeadIfNeeded, PILOT_LVL, randInt } from '../damage';
+import { resistsForClass } from '../defaultResists';
 import { grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import { HEALTH_BONUS, ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -148,6 +149,7 @@ function applyCatalogStats(state: BattleState, unit: BattleUnit, code: string): 
   unit.power = hero.power;
   unit.mana = Math.max(unit.mana, hero.mana);
   unit.attackStyle = resolveAttackStyle(hero.code);
+  unit.resists = resistsForClass(hero.code);
   return true;
 }
 
@@ -167,7 +169,12 @@ function applyMarauder(
       return { status: 'reject', message: 'Цель не найдена' };
     }
     const mult = hasEffect(target, 'MARKED') ? 1.25 : 1;
-    const damage = dealDamage(actor, target, { damageMult: mult, armorIgnore: 0.15 }, state);
+    const damage = dealDamage(
+      actor,
+      target,
+      { damageMult: mult, armorIgnore: 0.15, source: 'ARROWS' },
+      state
+    );
     if (damage === 0) {
       state.log.push(`${actor.displayName}: лук — промах.`);
     } else {
@@ -188,7 +195,12 @@ function applyMarauder(
       if (hasEffect(enemy, 'SANCTUM')) {
         continue;
       }
-      const damage = dealDamage(actor, enemy, { damageMult: 0.5, armorIgnore: 0.1 }, state);
+      const damage = dealDamage(
+        actor,
+        enemy,
+        { damageMult: 0.5, armorIgnore: 0.1, source: 'ARROWS' },
+        state
+      );
       if (damage > 0) {
         state.log.push(`${actor.displayName}: подавляющий огонь → ${enemy.displayName} (${damage}).`);
         if (randInt(1, 100) <= 60 + PILOT_LVL) {
@@ -210,7 +222,12 @@ function applyMarauder(
     grantEffect(actor, 'WEAKNESS', 2, lose);
     const savedLuck = actor.luck;
     actor.luck = Math.min(80, actor.luck * 2);
-    const damage = dealDamage(actor, target, { damageMult: 1.25, armorIgnore: 0.1 }, state);
+    const damage = dealDamage(
+      actor,
+      target,
+      { damageMult: 1.25, armorIgnore: 0.1, source: 'ARROWS' },
+      state
+    );
     actor.luck = savedLuck;
     if (damage === 0) {
       state.log.push(`${actor.displayName}: мощный выстрел — промах.`);

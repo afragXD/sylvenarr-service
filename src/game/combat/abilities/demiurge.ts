@@ -117,7 +117,12 @@ export const demiurgeAbilities: AbilityHandler = {
       if (!primary) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const d1 = dealDamage(actor, primary, { damageMult: 1, armorIgnore: 0.1 }, state);
+      const d1 = dealDamage(
+        actor,
+        primary,
+        { damageMult: 1, armorIgnore: 0.1, source: 'AIR' },
+        state
+      );
       if (d1 > 0) {
         state.log.push(`${actor.displayName}: молния → ${primary.displayName} (${d1}).`);
         markDeadIfNeeded(state, primary);
@@ -127,7 +132,12 @@ export const demiurgeAbilities: AbilityHandler = {
         const idx = randInt(0, pool.length - 1);
         const next = pool.splice(idx, 1)[0]!;
         const mult = 0.5 ** (i + 1);
-        const dmg = dealDamage(actor, next, { damageMult: mult, armorIgnore: 0.1 }, state);
+        const dmg = dealDamage(
+          actor,
+          next,
+          { damageMult: mult, armorIgnore: 0.1, source: 'AIR' },
+          state
+        );
         if (dmg > 0) {
           state.log.push(
             `${actor.displayName}: разряд → ${next.displayName} (${dmg}).`

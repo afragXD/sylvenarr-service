@@ -112,7 +112,12 @@ export const evilTreeAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 1, armorIgnore: 0.1 }, state);
+      const damage = dealDamage(
+        actor,
+        target,
+        { damageMult: 1, armorIgnore: 0.1, source: 'EARTH' },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: корни — промах.`);
         return { status: 'done' };

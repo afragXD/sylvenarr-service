@@ -81,7 +81,12 @@ export const ghostWarriorAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       const mult = hungerMult(state, actor);
-      const damage = dealDamage(actor, target, { damageMult: mult, armorIgnore: 0 }, state);
+      const damage = dealDamage(
+        actor,
+        target,
+        { damageMult: mult, armorIgnore: 0, source: 'WEAPON' },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: катана — промах.`);
       } else {

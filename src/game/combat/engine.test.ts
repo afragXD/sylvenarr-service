@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import {
   advanceToNextUnit,
   applyAction,
+  buildTurnOrder,
   createBattleState,
   resolveOutcome,
   toBattleSummary,
@@ -319,5 +320,62 @@ describe('combat engine', () => {
     expect(state.log.some((line) => line === 'Раунд 2.')).toBe(true);
     expect(state.delayedPhase).toBe(false);
     expect(state.outcome).toBe('ongoing');
+  });
+
+  test('buildTurnOrder is round timeline: acted before active', () => {
+    const heroes = catalogHeroes(
+      hero('A', { initiative: 40 }),
+      hero('B', { initiative: 30 }),
+      hero('C', { initiative: 20 })
+    );
+    const state = createBattleState({
+      matchId: 'm1',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'A', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+        { id: 'p3', playerId: 'g', heroClassCode: 'C', row: 1, pickOrder: 2 },
+      ],
+      heroes,
+    });
+    state.activeUnitId = 'p2';
+    state.doneIds = ['p1'];
+    state.delayedIds = ['p3'];
+    state.units.find((unit) => unit.id === 'p3')!.alive = true;
+
+    const order = buildTurnOrder(state);
+    const phases = order.map((entry) => entry.phase);
+    const ids = order.map((entry) => entry.unitId);
+
+    expect(phases).toEqual(['acted', 'active', 'delayed']);
+    expect(ids.indexOf('p1')).toBeLessThan(ids.indexOf('p2'));
+    expect(ids.indexOf('p2')).toBeLessThan(ids.indexOf('p3'));
+    expect(order.find((entry) => entry.unitId === 'p2')?.isActive).toBe(true);
+    expect(order.find((entry) => entry.unitId === 'p1')?.phase).toBe('acted');
+    expect(order.find((entry) => entry.unitId === 'p3')?.phase).toBe('delayed');
+  });
+
+  test('buildTurnOrder puts dead at the end', () => {
+    const heroes = catalogHeroes(hero('A', { initiative: 50 }), hero('B', { initiative: 10 }));
+    const state = createBattleState({
+      matchId: 'm1',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'A', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    state.activeUnitId = 'p1';
+    const foe = state.units.find((unit) => unit.id === 'p2')!;
+    foe.alive = false;
+    foe.health = 0;
+
+    const order = buildTurnOrder(state);
+    expect(order.at(-1)?.phase).toBe('dead');
+    expect(order.at(-1)?.unitId).toBe('p2');
+    expect(order[0]?.phase).toBe('active');
   });
 });

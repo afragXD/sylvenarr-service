@@ -83,6 +83,13 @@ export namespace MatchesModel {
     team: t.Union([t.Literal(0), t.Literal(1)]),
     alive: t.Boolean(),
     isActive: t.Boolean(),
+    phase: t.Union([
+      t.Literal('acted'),
+      t.Literal('active'),
+      t.Literal('waiting'),
+      t.Literal('delayed'),
+      t.Literal('dead'),
+    ]),
   });
   export type turnOrderEntry = typeof turnOrderEntry.static;
 

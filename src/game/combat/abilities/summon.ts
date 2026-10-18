@@ -1,5 +1,7 @@
 import { resolveAttackStyle } from '../attack-style';
 import { HEALTH_BONUS, MAX_TEAM_SIZE } from '../settings';
+import { resistsForClass } from '../defaultResists';
+import { cloneResists } from '../resists';
 import type { BattleState, BattleUnit } from '../types';
 
 /**
@@ -81,6 +83,7 @@ export function createSummon(
     defending: false,
     alive: true,
     effects: [],
+    resists: resistsForClass(hero.code),
     isSummon: true,
     summonerId: input.summoner.id,
     horseIsDead: false,
@@ -155,6 +158,7 @@ export function createPhantomCopy(
     defending: false,
     alive: true,
     effects: [],
+    resists: cloneResists(template.resists),
     isSummon: true,
     summonerId: summoner.id,
     horseIsDead: false,

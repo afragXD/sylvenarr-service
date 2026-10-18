@@ -93,7 +93,12 @@ export const archlichAbilities: AbilityHandler = {
       if (!spendMana(actor, 3, state)) {
         return { status: 'reject', message: 'Нужно 3 МР' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 1.1, armorIgnore: 0.15 });
+      const damage = dealDamage(
+        actor,
+        target,
+        { damageMult: 1.1, armorIgnore: 0.15, source: 'DEATH' },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: облако смерти — промах.`);
       } else {
@@ -110,7 +115,12 @@ export const archlichAbilities: AbilityHandler = {
         if (!spendMana(actor, 1, state, true)) {
           break;
         }
-        const splash = dealDamage(actor, extra, { damageMult: 0.55, armorIgnore: 0.1 });
+        const splash = dealDamage(
+          actor,
+          extra,
+          { damageMult: 0.55, armorIgnore: 0.1, source: 'DEATH' },
+          state
+        );
         if (splash > 0) {
           state.log.push(`Облако задевает ${extra.displayName} на ${splash}.`);
           markDeadIfNeeded(state, extra);

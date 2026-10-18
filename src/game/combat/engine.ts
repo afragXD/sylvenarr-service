@@ -10,7 +10,9 @@ import {
 import { maybeKillHorse } from './abilities/knight';
 import { moveToOtherRow } from './abilities/targets';
 import { resolveAttackStyle } from './attack-style';
-import { dealDamage, markDeadIfNeeded, randInt } from './damage';
+import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt } from './damage';
+import { resistsForClass } from './defaultResists';
+import { summarizeResists } from './resists';
 import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnStart } from './effects';
 import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, ROW_FRONT } from './settings';
 import {
@@ -145,6 +147,7 @@ function buildTeamUnits(
         defending: false,
         alive: true,
         effects: [],
+        resists: resistsForClass(hero.code),
         isSummon: false,
         summonerId: null,
         horseIsDead: false,
@@ -454,7 +457,12 @@ function applySkillAction(
       return { ok: false, message: 'Нет целей' };
     }
     for (const enemy of enemies) {
-      const damage = dealDamage(actor, enemy, { damageMult: skill.damageMult, armorIgnore: 0.2 });
+      const damage = dealDamage(
+        actor,
+        enemy,
+        { damageMult: skill.damageMult, armorIgnore: 0.2 },
+        state
+      );
       if (damage > 0) {
         state.log.push(`${actor.displayName}: ${skill.label} → ${enemy.displayName} (${damage}).`);
       }
@@ -484,13 +492,18 @@ function applySkillAction(
     return { ok: true };
   }
 
-  const damage = dealDamage(actor, target, {
-    damageMult: skill.damageMult * classAttackMods(actor.heroClassCode).damageMult,
-    armorIgnore: skill.kind === 'mark_strike' ? 0.3 : 0,
-  });
-  if (damage === 0) {
+  const damage = dealDamage(
+    actor,
+    target,
+    {
+      damageMult: skill.damageMult * classAttackMods(actor.heroClassCode).damageMult,
+      armorIgnore: skill.kind === 'mark_strike' ? 0.3 : 0,
+    },
+    state
+  );
+  if (lastDealDamageResult().missed) {
     state.log.push(`${actor.displayName}: ${skill.label} — промах по ${target.displayName}.`);
-  } else {
+  } else if (damage > 0) {
     state.log.push(
       `${actor.displayName}: ${skill.label} → ${target.displayName} на ${damage}. Осталось ${Math.max(0, target.health)} ОЗ.`
     );
@@ -506,13 +519,18 @@ function resolveAttackWithClassMods(
   target: BattleUnit
 ): void {
   const mods = classAttackMods(actor.heroClassCode);
-  const damage = dealDamage(actor, target, {
-    damageMult: mods.damageMult,
-    armorIgnore: mods.armorIgnore,
-  });
-  if (damage === 0) {
+  const damage = dealDamage(
+    actor,
+    target,
+    {
+      damageMult: mods.damageMult,
+      armorIgnore: mods.armorIgnore,
+    },
+    state
+  );
+  if (lastDealDamageResult().missed) {
     state.log.push(`${actor.displayName} промахнулся по ${target.displayName}.`);
-  } else {
+  } else if (damage > 0) {
     state.log.push(
       `${actor.displayName} бьёт ${target.displayName} на ${damage}. Осталось ${Math.max(0, target.health)} ОЗ.`
     );
@@ -524,10 +542,15 @@ function resolveAttackWithClassMods(
   markDeadIfNeeded(state, target);
 
   if (target.alive && mods.doubleStrikeChance > 0 && Math.random() < mods.doubleStrikeChance) {
-    const second = dealDamage(actor, target, {
-      damageMult: mods.damageMult * 0.7,
-      armorIgnore: mods.armorIgnore,
-    });
+    const second = dealDamage(
+      actor,
+      target,
+      {
+        damageMult: mods.damageMult * 0.7,
+        armorIgnore: mods.armorIgnore,
+      },
+      state
+    );
     if (second > 0) {
       state.log.push(`${actor.displayName} наносит повторный удар на ${second}.`);
       markDeadIfNeeded(state, target);
@@ -537,10 +560,15 @@ function resolveAttackWithClassMods(
   if (mods.splashChance > 0 && Math.random() < mods.splashChance) {
     const behind = neighbourBehind(state, target);
     if (behind) {
-      const splash = dealDamage(actor, behind, {
-        damageMult: mods.damageMult * mods.splashMult,
-        armorIgnore: 0,
-      });
+      const splash = dealDamage(
+        actor,
+        behind,
+        {
+          damageMult: mods.damageMult * mods.splashMult,
+          armorIgnore: 0,
+        },
+        state
+      );
       if (splash > 0) {
         state.log.push(
           `Атака задевает ${behind.displayName} на ${splash}. Осталось ${Math.max(0, behind.health)} ОЗ.`
@@ -559,10 +587,15 @@ function resolveAttackWithClassMods(
         unit.id !== target.id
     );
     for (const enemy of extras) {
-      const cleave = dealDamage(actor, enemy, {
-        damageMult: mods.damageMult * mods.cleaveMult,
-        armorIgnore: 0,
-      });
+      const cleave = dealDamage(
+        actor,
+        enemy,
+        {
+          damageMult: mods.damageMult * mods.cleaveMult,
+          armorIgnore: 0,
+        },
+        state
+      );
       if (cleave > 0) {
         state.log.push(`${actor.displayName} задевает ${enemy.displayName} на ${cleave}.`);
         markDeadIfNeeded(state, enemy);
@@ -607,8 +640,11 @@ export function resolveOutcome(state: BattleState): void {
   state.pendingPrompt = null;
 }
 
+export type TurnOrderPhase = 'acted' | 'active' | 'waiting' | 'delayed' | 'dead';
+
 /**
- * Очередь ходов раунда для UI (активный → ожидающие → delayed → ходившие → мёртвые).
+ * Шкала раунда для UI: ходившие → активный → ожидающие → delayed → мёртвые.
+ * Порядок waiting — оценка по статическому initiative (факт. ход снова бросает 1d5).
  */
 export function buildTurnOrder(state: BattleState) {
   const done = new Set(state.doneIds);
@@ -616,45 +652,52 @@ export function buildTurnOrder(state: BattleState) {
   const byInit = (a: BattleUnit, b: BattleUnit) =>
     b.initiative - a.initiative || a.id.localeCompare(b.id);
 
-  const pending = state.units
-    .filter((unit) => unit.alive && !done.has(unit.id) && !delayed.has(unit.id))
-    .sort(byInit);
   const active =
     state.activeUnitId != null
       ? (state.units.find((unit) => unit.id === state.activeUnitId) ?? null)
       : null;
-  const restPending = pending.filter((unit) => unit.id !== state.activeUnitId);
+  const acted = state.units
+    .filter((unit) => unit.alive && done.has(unit.id))
+    .sort(byInit);
+  const waiting = state.units
+    .filter(
+      (unit) =>
+        unit.alive &&
+        !done.has(unit.id) &&
+        !delayed.has(unit.id) &&
+        unit.id !== state.activeUnitId
+    )
+    .sort(byInit);
   const delayedUnits = state.units
     .filter((unit) => unit.alive && delayed.has(unit.id) && !done.has(unit.id))
     .sort(byInit);
-  const doneUnits = state.units
-    .filter((unit) => unit.alive && done.has(unit.id))
-    .sort(byInit);
   const dead = state.units.filter((unit) => !unit.alive).sort(byInit);
 
-  const sequence: BattleUnit[] = [
-    ...(active?.alive ? [active] : []),
-    ...restPending,
-    ...delayedUnits,
-    ...doneUnits,
-    ...dead,
+  type Row = { unit: BattleUnit; phase: TurnOrderPhase };
+  const sequence: Row[] = [
+    ...acted.map((unit) => ({ unit, phase: 'acted' as const })),
+    ...(active?.alive ? [{ unit: active, phase: 'active' as const }] : []),
+    ...waiting.map((unit) => ({ unit, phase: 'waiting' as const })),
+    ...delayedUnits.map((unit) => ({ unit, phase: 'delayed' as const })),
+    ...dead.map((unit) => ({ unit, phase: 'dead' as const })),
   ];
   const seen = new Set<string>();
   return sequence
-    .filter((unit) => {
-      if (seen.has(unit.id)) {
+    .filter((row) => {
+      if (seen.has(row.unit.id)) {
         return false;
       }
-      seen.add(unit.id);
+      seen.add(row.unit.id);
       return true;
     })
-    .map((unit) => ({
+    .map(({ unit, phase }) => ({
       unitId: unit.id,
       displayName: unit.displayName,
       heroClassCode: unit.heroClassCode,
       team: unit.team as 0 | 1,
       alive: unit.alive,
       isActive: unit.id === state.activeUnitId,
+      phase,
     }));
 }
 
@@ -726,6 +769,7 @@ export function toBattleSummary(state: BattleState) {
       gold: unit.gold,
       critBank: unit.critBank,
       ultaCharges: unit.ultaCharges,
+      resists: summarizeResists(unit),
     })),
   };
 }

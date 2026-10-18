@@ -1,4 +1,7 @@
 import { applyVampWeaponHeal, grantEffect, hasEffect } from './effects';
+import type { DamageSource } from './damageSources';
+import { sourceFromAttackStyle } from './damageSources';
+import { applyResistMultiplier } from './resists';
 import { PILOT_LVL } from './settings';
 import type { BattleState, BattleUnit } from './types';
 
@@ -10,15 +13,43 @@ export { PILOT_LVL };
 /** Защита от рекурсии CONTR ↔ CONTR. */
 let counterDepth = 0;
 
+export type DealDamageOpts = {
+  readonly damageMult: number;
+  readonly armorIgnore: number;
+  /** Источник урона; по умолчанию из attackStyle атакующего. */
+  readonly source?: DamageSource;
+  /** Пропуск проверки попадания (тесты / гарантированный удар). */
+  readonly forceHit?: boolean;
+};
+
+export type DealDamageResult = {
+  damage: number;
+  missed: boolean;
+  blocked: boolean;
+};
+
+let lastDeal: DealDamageResult = { damage: 0, missed: false, blocked: false };
+
+/** Метаданные последнего вызова dealDamage (промах / вард). */
+export function lastDealDamageResult(): DealDamageResult {
+  return lastDeal;
+}
+
 function computeRawDamage(
   attacker: BattleUnit,
   defender: BattleUnit,
-  opts: { readonly damageMult: number; readonly armorIgnore: number },
+  opts: {
+    readonly damageMult: number;
+    readonly armorIgnore: number;
+    readonly forceHit?: boolean;
+  },
   forceMelee = false
 ): number {
-  const hitChance = Math.min(95, Math.max(20, attacker.accuracy - defender.dodge / 2));
-  if (randInt(1, 100) > hitChance) {
-    return 0;
+  if (!opts.forceHit) {
+    const hitChance = Math.min(95, Math.max(20, attacker.accuracy - defender.dodge / 2));
+    if (randInt(1, 100) > hitChance) {
+      return 0;
+    }
   }
   let armor = defender.armor * (1 - Math.min(1, Math.max(0, opts.armorIgnore)));
   if (defender.defending) {
@@ -48,25 +79,43 @@ function computeRawDamage(
 }
 
 /**
- * Наносит урон с учётом стиля атаки, брони и удачи.
+ * Наносит урон с учётом стиля атаки, брони, удачи и сопротивлений.
  * При VAMPWEAPON на атакующем восстанавливает ОЗ.
  * При CONTR на защитнике — один контрудар ближнего боя.
  */
 export function dealDamage(
   attacker: BattleUnit,
   defender: BattleUnit,
-  opts: { readonly damageMult: number; readonly armorIgnore: number },
+  opts: DealDamageOpts,
   state?: BattleState
 ): number {
   const raw = computeRawDamage(attacker, defender, opts);
   if (raw <= 0) {
+    lastDeal = { damage: 0, missed: true, blocked: false };
     return 0;
   }
-  defender.health -= raw;
-  applyVampWeaponHeal(attacker, raw);
+
+  const source = opts.source ?? sourceFromAttackStyle(attacker.attackStyle);
+  const resist = applyResistMultiplier(defender, source);
+  if (resist.blocked) {
+    if (state && resist.blockReason) {
+      state.log.push(resist.blockReason);
+    }
+    lastDeal = { damage: 0, missed: false, blocked: true };
+    return 0;
+  }
+
+  const amount = Math.max(0, Math.round(raw * resist.multiplier));
+  if (amount <= 0) {
+    lastDeal = { damage: 0, missed: false, blocked: false };
+    return 0;
+  }
+
+  defender.health -= amount;
+  applyVampWeaponHeal(attacker, amount);
 
   if (
-    raw > 0 &&
+    amount > 0 &&
     defender.alive &&
     defender.health > 0 &&
     hasEffect(attacker, 'FIREDWEAPON') &&
@@ -86,27 +135,43 @@ export function dealDamage(
     attacker.alive
   ) {
     counterDepth += 1;
-    const counter = computeRawDamage(defender, attacker, { damageMult: 1, armorIgnore: 0 }, true);
-    if (counter > 0) {
-      attacker.health -= counter;
-      applyVampWeaponHeal(defender, counter);
-      if (state) {
-        state.log.push(
-          `${defender.displayName} отвечает контрударом по ${attacker.displayName} (${counter}).`
-        );
-      }
-      if (attacker.health <= 0) {
-        attacker.health = 0;
-        attacker.alive = false;
-        if (state) {
-          state.log.push(`${attacker.displayName} погибает.`);
+    const counterRaw = computeRawDamage(
+      defender,
+      attacker,
+      { damageMult: 1, armorIgnore: 0, forceHit: opts.forceHit },
+      true
+    );
+    if (counterRaw > 0) {
+      const counterResist = applyResistMultiplier(attacker, 'WEAPON');
+      if (counterResist.blocked) {
+        if (state && counterResist.blockReason) {
+          state.log.push(counterResist.blockReason);
+        }
+      } else {
+        const counter = Math.max(0, Math.round(counterRaw * counterResist.multiplier));
+        if (counter > 0) {
+          attacker.health -= counter;
+          applyVampWeaponHeal(defender, counter);
+          if (state) {
+            state.log.push(
+              `${defender.displayName} отвечает контрударом по ${attacker.displayName} (${counter}).`
+            );
+          }
+          if (attacker.health <= 0) {
+            attacker.health = 0;
+            attacker.alive = false;
+            if (state) {
+              state.log.push(`${attacker.displayName} погибает.`);
+            }
+          }
         }
       }
     }
     counterDepth -= 1;
   }
 
-  return raw;
+  lastDeal = { damage: amount, missed: false, blocked: false };
+  return amount;
 }
 
 /**

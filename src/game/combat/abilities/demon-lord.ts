@@ -83,7 +83,12 @@ export const demonLordAbilities: AbilityHandler = {
       const rowTargets = enemiesOf(state, actor).filter((unit) => unit.row === primary.row);
       let killed = false;
       for (const enemy of rowTargets) {
-        const damage = dealDamage(actor, enemy, { damageMult: 1.15, armorIgnore: 0 });
+        const damage = dealDamage(
+          actor,
+          enemy,
+          { damageMult: 1.15, armorIgnore: 0, source: 'WEAPON' },
+          state
+        );
         if (damage > 0) {
           state.log.push(
             `${actor.displayName} бьёт ${enemy.displayName} на ${damage} (трёхглавый удар).`
@@ -106,7 +111,12 @@ export const demonLordAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 2, armorIgnore: 0 });
+      const damage = dealDamage(
+        actor,
+        target,
+        { damageMult: 2, armorIgnore: 0, source: 'WEAPON' },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: клинок Бездны — промах.`);
         return { status: 'done' };
@@ -128,7 +138,12 @@ export const demonLordAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 1, armorIgnore: 0.2 });
+      const damage = dealDamage(
+        actor,
+        target,
+        { damageMult: 1, armorIgnore: 0.2, source: 'FIRE' },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: кислота — промах.`);
         return { status: 'done' };

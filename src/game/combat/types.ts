@@ -1,3 +1,5 @@
+import type { DamageSource } from './damageSources';
+
 export type BattleAction = 'attack' | 'defend' | 'wait' | 'skill' | 'ability' | 'move';
 
 export type AbilitySlot = 1 | 2 | 3 | 4 | 5;
@@ -73,6 +75,18 @@ export type PendingPrompt = {
   context: Record<string, string>;
 };
 
+export type ResistEntry = {
+  value: number;
+  /** Полный иммунитет к источнику. */
+  immune?: boolean;
+  /** Заряды варда (поглощают удар, затем тратятся). */
+  wardCharges?: number;
+};
+
+export type ResistMap = Partial<Record<DamageSource, ResistEntry>>;
+
+export type { DamageSource };
+
 export type BattleUnit = {
   readonly id: string;
   /** Mutable: Mermaid ENSLAVED flips controller. */
@@ -99,6 +113,8 @@ export type BattleUnit = {
   defending: boolean;
   alive: boolean;
   effects: BattleEffect[];
+  /** Сопротивления / варды / иммунитеты по источникам урона. */
+  resists: ResistMap;
   isSummon: boolean;
   summonerId: string | null;
   /** Пилотные runtime-флаги. */

@@ -153,7 +153,12 @@ export const patriarchAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       for (const enemy of enemiesInColumn(state, actor, target)) {
-        const damage = dealDamage(actor, enemy, { damageMult: 1, armorIgnore: 0.1 }, state);
+        const damage = dealDamage(
+          actor,
+          enemy,
+          { damageMult: 1, armorIgnore: 0.1, source: 'HOLY' },
+          state
+        );
         if (damage > 0) {
           state.log.push(
             `${actor.displayName}: гнев богов → ${enemy.displayName} (${damage}).`

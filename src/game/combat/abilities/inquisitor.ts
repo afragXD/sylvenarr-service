@@ -121,7 +121,12 @@ export const inquisitorAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 1, armorIgnore: 0.1 }, state);
+      const damage = dealDamage(
+        actor,
+        target,
+        { damageMult: 1, armorIgnore: 0.1, source: 'AIR' },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: молния — промах.`);
       } else {

@@ -92,7 +92,12 @@ export const pyroAbilities: AbilityHandler = {
     if (input.slot === 1) {
       const targets = pickRandom(enemiesOf(state, actor), 2);
       for (const enemy of targets) {
-        const damage = dealDamage(actor, enemy, { damageMult: 1, armorIgnore: 0.1 }, state);
+        const damage = dealDamage(
+          actor,
+          enemy,
+          { damageMult: 1, armorIgnore: 0.1, source: 'FIRE' },
+          state
+        );
         if (damage > 0) {
           state.log.push(`${actor.displayName}: огнемёт → ${enemy.displayName} (${damage}).`);
           if (randInt(1, 100) <= 50) {
@@ -111,7 +116,12 @@ export const pyroAbilities: AbilityHandler = {
       }
       const bonus = hasEffect(target, 'BURNING') ? 10 + PILOT_LVL : 0;
       const mult = 1 + bonus / 40;
-      const damage = dealDamage(actor, target, { damageMult: mult, armorIgnore: 0.2 }, state);
+      const damage = dealDamage(
+        actor,
+        target,
+        { damageMult: mult, armorIgnore: 0.2, source: 'FIRE' },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: арбалет — промах.`);
       } else {

@@ -27,6 +27,7 @@ const unit = (overrides: Partial<BattleUnit> = {}): BattleUnit => ({
   defending: false,
   alive: true,
   effects: [],
+  resists: {},
   isSummon: false,
   summonerId: null,
   horseIsDead: false,
@@ -100,7 +101,7 @@ describe('effects', () => {
       damage: 30,
     });
     grantEffect(defender, 'CONTR', 2, 0);
-    dealDamage(attacker, defender, { damageMult: 1, armorIgnore: 0 });
+    dealDamage(attacker, defender, { damageMult: 1, armorIgnore: 0, forceHit: true });
     expect(attacker.health).toBeLessThan(100);
   });
 

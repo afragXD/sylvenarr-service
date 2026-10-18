@@ -100,7 +100,12 @@ export const witchAbilities: AbilityHandler = {
           return { status: 'reject', message: 'Цель не найдена' };
         }
         const fire = (label: string) => {
-          const damage = dealDamage(actor, target, { damageMult: 1, armorIgnore: 0.2 }, state);
+          const damage = dealDamage(
+            actor,
+            target,
+            { damageMult: 1, armorIgnore: 0.2, source: 'ARROWS' },
+            state
+          );
           if (damage === 0) {
             state.log.push(`${actor.displayName}: ${label} — промах.`);
           } else {
@@ -122,7 +127,12 @@ export const witchAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 1, armorIgnore: 0.5 }, state);
+      const damage = dealDamage(
+        actor,
+        target,
+        { damageMult: 1, armorIgnore: 0.5, source: 'WEAPON' },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: каблучок — промах.`);
       } else {
@@ -143,7 +153,12 @@ export const witchAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 1, armorIgnore: 0.15 }, state);
+      const damage = dealDamage(
+        actor,
+        target,
+        { damageMult: 1, armorIgnore: 0.15, source: 'DEATH' },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: клыки — промах.`);
       } else {

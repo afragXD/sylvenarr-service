@@ -89,7 +89,12 @@ export const paladinAbilities: AbilityHandler = {
         if (!target.alive) {
           break;
         }
-        const damage = dealDamage(actor, target, { damageMult: 1.05, armorIgnore: 0 });
+        const damage = dealDamage(
+          actor,
+          target,
+          { damageMult: 1.05, armorIgnore: 0, source: 'WEAPON' },
+          state
+        );
         if (damage === 0) {
           state.log.push(`${actor.displayName}: клинок ${i + 1} — промах.`);
         } else {
@@ -119,7 +124,12 @@ export const paladinAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Нужно 2 МР' };
       }
       actor.mana -= 2;
-      const damage = dealDamage(actor, target, { damageMult: 1.1, armorIgnore: 0.15 });
+      const damage = dealDamage(
+        actor,
+        target,
+        { damageMult: 1.1, armorIgnore: 0.15, source: 'HOLY' },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: разбить душу — промах.`);
         return { status: 'done' };
@@ -155,10 +165,12 @@ export const paladinAbilities: AbilityHandler = {
         target.isLichSummon
           ? 1.25
           : 1;
-      const damage = dealDamage(actor, target, {
-        damageMult: undeadBonus,
-        armorIgnore: 0,
-      });
+      const damage = dealDamage(
+        actor,
+        target,
+        { damageMult: undeadBonus, armorIgnore: 0, source: 'HOLY' },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: святое копьё — промах.`);
       } else {

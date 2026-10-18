@@ -174,7 +174,7 @@ export const dracolichAbilities: AbilityHandler = {
         const damage = dealDamage(
           actor,
           enemy,
-          { damageMult: mult, armorIgnore: 0.15 },
+          { damageMult: mult, armorIgnore: 0.15, source: 'DEATH' },
           state
         );
         if (damage === 0) {
@@ -268,7 +268,7 @@ export const dracolichAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1, armorIgnore },
+        { damageMult: 1, armorIgnore, source: 'WEAPON' },
         state
       );
       if (damage === 0) {
