@@ -22,6 +22,8 @@ export type MatchRules = {
   readonly maxRounds: number;
   /** Множитель стартового HP (0.5 = 50%). */
   readonly healthBonus: number;
+  /** Стартовый уровень юнитов в бою (1–30). */
+  readonly startingLevel: number;
   readonly fairEnabled: boolean;
   readonly fairFrequency: number;
   readonly shopSize: number;
@@ -36,6 +38,7 @@ export const DEFAULT_MATCH_RULES: MatchRules = {
   maxRowSize: MAX_ROW_SIZE,
   maxRounds: MAX_ROUNDS,
   healthBonus: HEALTH_BONUS,
+  startingLevel: 1,
   fairEnabled: false,
   fairFrequency: 5,
   shopSize: 8,
@@ -49,6 +52,7 @@ export const MATCH_RULES_LIMITS = {
   maxRowSize: { min: 1, max: 4 },
   maxRounds: { min: 5, max: 40 },
   healthBonus: { min: 0.25, max: 1, step: 0.05 },
+  startingLevel: { min: 1, max: 30 },
   fairFrequency: { min: 3, max: 10 },
   shopSize: { min: 4, max: 12 },
   goldBonus: { min: 0.5, max: 2, step: 0.25 },
@@ -114,6 +118,11 @@ export function parseMatchRules(input: unknown): ParseMatchRulesResult {
     MATCH_RULES_LIMITS.healthBonus.max,
     MATCH_RULES_LIMITS.healthBonus.step
   );
+  const startingLevel = clampInt(
+    asNumber(raw.startingLevel, DEFAULT_MATCH_RULES.startingLevel),
+    MATCH_RULES_LIMITS.startingLevel.min,
+    MATCH_RULES_LIMITS.startingLevel.max
+  );
   const fairEnabled =
     typeof raw.fairEnabled === 'boolean'
       ? raw.fairEnabled
@@ -157,6 +166,7 @@ export function parseMatchRules(input: unknown): ParseMatchRulesResult {
       maxRowSize,
       maxRounds,
       healthBonus,
+      startingLevel,
       fairEnabled,
       fairFrequency,
       shopSize,

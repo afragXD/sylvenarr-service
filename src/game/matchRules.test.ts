@@ -22,6 +22,7 @@ describe('parseMatchRules', () => {
       maxRowSize: 99,
       maxRounds: 99,
       healthBonus: 2,
+      startingLevel: 99,
     });
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -30,6 +31,15 @@ describe('parseMatchRules', () => {
       expect(result.rules.maxRowSize).toBe(4);
       expect(result.rules.maxRounds).toBe(40);
       expect(result.rules.healthBonus).toBe(1);
+      expect(result.rules.startingLevel).toBe(30);
+    }
+  });
+
+  test('defaults startingLevel to 1', () => {
+    const result = parseMatchRules({});
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.rules.startingLevel).toBe(1);
     }
   });
 

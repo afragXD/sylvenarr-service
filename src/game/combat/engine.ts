@@ -12,7 +12,7 @@ import { moveToOtherRow } from './abilities/targets';
 import { resolveAttackStyle } from './attack-style';
 import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt } from './damage';
 import { resistsForClass } from './defaultResists';
-import { levelUpLivingUnits } from './level';
+import { levelUpLivingUnits, levelUpUnit } from './level';
 import { summarizeResists } from './resists';
 import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnStart } from './effects';
 import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, MAX_TEAM_SIZE, ROW_FRONT } from './settings';
@@ -36,6 +36,7 @@ const DEFAULT_BATTLE_RULES: BattleRules = {
   maxRowSize: MAX_ROW_SIZE,
   maxRounds: MAX_ROUNDS,
   healthBonus: HEALTH_BONUS,
+  startingLevel: 1,
 };
 
 export { listAttackTargets } from './abilities';
@@ -112,6 +113,16 @@ export function createBattleState(input: {
     preChoiceDoneIds: [],
     graveyard: [],
   };
+
+  const startLvls = Math.max(1, Math.min(30, Math.round(rules.startingLevel))) - 1;
+  if (startLvls > 0) {
+    for (const unit of state.units) {
+      levelUpUnit(unit, startLvls, state);
+      unit.health = unit.maxHp;
+    }
+    state.log.push(`Стартовый уровень: ${startLvls + 1}.`);
+  }
+
   advanceToNextUnit(state);
   return state;
 }
@@ -656,6 +667,22 @@ export function resolveOutcome(state: BattleState): void {
     state.winnerPlayerId = state.guestPlayerId;
     state.log.push('Победа игрока 2.');
   }
+  state.activeUnitId = null;
+  state.turnPlayerId = null;
+  state.pendingPrompt = null;
+}
+
+/**
+ * Принудительная сдача: победа оппонента.
+ */
+export function forceSurrender(state: BattleState, surrenderingPlayerId: string): void {
+  if (state.outcome !== 'ongoing') {
+    return;
+  }
+  const isHost = surrenderingPlayerId === state.hostPlayerId;
+  state.outcome = isHost ? 'guest_win' : 'host_win';
+  state.winnerPlayerId = isHost ? state.guestPlayerId : state.hostPlayerId;
+  state.log.push('Игрок сдался.');
   state.activeUnitId = null;
   state.turnPlayerId = null;
   state.pendingPrompt = null;

@@ -2,6 +2,7 @@ export {
   applyAction,
   type BattleSummary,
   createBattleState,
+  forceSurrender,
   listAttackTargets,
   toBattleSummary,
 } from './engine';

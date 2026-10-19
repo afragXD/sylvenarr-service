@@ -4,6 +4,7 @@ import {
   type BattleSummary,
   buildResultSnapshot,
   createBattleState,
+  forceSurrender,
   getBattleStore,
   type HeroClassStats,
   type MatchResultSnapshot,
@@ -392,6 +393,7 @@ export abstract class MatchesService {
         maxRowSize: input.rules.maxRowSize,
         maxRounds: input.rules.maxRounds,
         healthBonus: input.rules.healthBonus,
+        startingLevel: input.rules.startingLevel,
       },
     });
     await getBattleStore().set(state);
@@ -550,6 +552,57 @@ export abstract class MatchesService {
     const row = await prisma.match.update({
       where: { id: existing.id },
       data: { status: 'cancelled' },
+      include: matchInclude,
+    });
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+  }
+
+  /**
+   * Сдача в бою: поражение сдающегося, победа оппонента.
+   */
+  static async surrenderMatch(input: {
+    readonly matchId: string;
+    readonly playerId: string;
+  }): Promise<
+    | { ok: true; match: MatchesModel.match }
+    | { ok: false; message: string; status: 400 | 403 | 404 }
+  > {
+    const existing = await prisma.match.findUnique({
+      where: { id: input.matchId },
+      include: matchInclude,
+    });
+    if (!existing) {
+      return { ok: false, message: 'Матч не найден', status: 404 };
+    }
+    if (!MatchesService.isParticipant(existing, input.playerId)) {
+      return { ok: false, message: 'Вы не участник этого матча', status: 403 };
+    }
+    if (existing.status !== 'fighting') {
+      return { ok: false, message: 'Сдаться можно только во время боя', status: 400 };
+    }
+
+    const store = getBattleStore();
+    const state = await store.get(existing.id);
+    if (!state) {
+      return { ok: false, message: 'Состояние боя не найдено', status: 400 };
+    }
+    if (state.outcome !== 'ongoing') {
+      return { ok: false, message: 'Бой уже завершён', status: 400 };
+    }
+
+    forceSurrender(state, input.playerId);
+    await MatchesService.finalizeBattle({
+      matchId: existing.id,
+      winnerPlayerId: state.winnerPlayerId,
+      state,
+      hostDisplayName: existing.host.displayName,
+      guestDisplayName: existing.guest?.displayName ?? '—',
+    });
+    await store.set(state);
+    publishBattle(existing.id, 'battle:ended', toBattleSummary(state));
+
+    const row = await prisma.match.findUniqueOrThrow({
+      where: { id: existing.id },
       include: matchInclude,
     });
     return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };

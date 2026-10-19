@@ -1,5 +1,6 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
+import { levelUpUnit } from '../level';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -196,10 +197,9 @@ export const witchAbilities: AbilityHandler = {
       }
       if (randInt(1, 100) <= 70 + actor.lvl * 2) {
         const n = Math.floor(actor.lvl / 6) + 1;
-        target.damage = Math.max(1, target.damage - n * 3);
-        target.power = Math.max(0, target.power - n * 2);
+        levelUpUnit(target, -n, state);
         state.log.push(
-          `${actor.displayName}: деградация ${target.displayName} (−${n} «уровня»).`
+          `${actor.displayName}: деградация ${target.displayName} (−${n} уровня).`
         );
       } else {
         state.log.push(`${actor.displayName}: деградация не сработала.`);

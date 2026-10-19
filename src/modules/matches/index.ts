@@ -189,6 +189,33 @@ export const matchesController = new Elysia({ prefix: '/matches', tags: ['Matche
     }
   )
   .post(
+    '/:id/battle/surrender',
+    async ({ params, player, status }) => {
+      const result = await MatchesService.surrenderMatch({
+        matchId: params.id,
+        playerId: player.id,
+      });
+      if (!result.ok) {
+        return status(result.status, { message: result.message });
+      }
+      return result.match;
+    },
+    {
+      requireAuth: true,
+      params: MatchesModel.idParams,
+      response: {
+        200: MatchesModel.match,
+        400: MatchesModel.errorResponse,
+        401: MatchesModel.errorResponse,
+        403: MatchesModel.errorResponse,
+        404: MatchesModel.errorResponse,
+      },
+      detail: {
+        summary: 'Сдаться в бою',
+      },
+    }
+  )
+  .post(
     '/:id/battle/action',
     async ({ params, body, player, status }) => {
       const result = await MatchesService.battleAction({

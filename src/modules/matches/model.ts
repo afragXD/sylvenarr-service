@@ -45,6 +45,7 @@ export namespace MatchesModel {
     maxRowSize: t.Number(),
     maxRounds: t.Number(),
     healthBonus: t.Number(),
+    startingLevel: t.Number(),
     fairEnabled: t.Boolean(),
     fairFrequency: t.Number(),
     shopSize: t.Number(),

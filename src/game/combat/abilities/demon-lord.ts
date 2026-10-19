@@ -128,7 +128,8 @@ export const demonLordAbilities: AbilityHandler = {
       if (target.alive && randInt(1, 100) <= 70 + actor.lvl) {
         grantEffect(target, 'PETRIFIED', 2, 15);
         grantEffect(target, 'CHAINED', 2, 0);
-        state.log.push(`${target.displayName} обращается в камень.`);
+        grantEffect(target, 'STUNNED', 1 + Math.floor(actor.lvl / 8), 0);
+        state.log.push(`${target.displayName} обращается в камень и пропускает ход.`);
       }
       return { status: 'done' };
     }

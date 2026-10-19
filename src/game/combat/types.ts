@@ -165,6 +165,8 @@ export type BattleRules = {
   readonly maxRowSize: number;
   readonly maxRounds: number;
   readonly healthBonus: number;
+  /** Стартовый уровень юнитов (1–30). */
+  readonly startingLevel: number;
 };
 
 export type BattleState = {

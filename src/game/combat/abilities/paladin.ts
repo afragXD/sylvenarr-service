@@ -1,5 +1,6 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, healUnit } from '../effects';
+import { levelUpUnit } from '../level';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll, moveToOtherRow } from './targets';
@@ -140,11 +141,9 @@ export const paladinAbilities: AbilityHandler = {
       markDeadIfNeeded(state, target);
       if (target.alive && randInt(1, 100) <= 70) {
         const n = 1 + Math.floor(actor.lvl / 5);
-        target.damage = Math.max(1, target.damage - n);
-        target.power = Math.max(0, target.power - n);
-        actor.damage += n;
-        actor.power += n;
-        state.log.push(`${actor.displayName} поглощает ${n} «уровней» силы.`);
+        levelUpUnit(target, -n, state);
+        levelUpUnit(actor, n, state);
+        state.log.push(`${actor.displayName} поглощает ${n} уровней у ${target.displayName}.`);
       }
       return { status: 'done' };
     }

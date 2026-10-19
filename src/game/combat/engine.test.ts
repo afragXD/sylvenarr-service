@@ -5,6 +5,7 @@ import {
   applyAction,
   buildTurnOrder,
   createBattleState,
+  forceSurrender,
   resolveOutcome,
   toBattleSummary,
 } from './engine';
@@ -377,5 +378,44 @@ describe('combat engine', () => {
     expect(order.at(-1)?.phase).toBe('dead');
     expect(order.at(-1)?.unitId).toBe('p2');
     expect(order[0]?.phase).toBe('active');
+  });
+
+  test('startingLevel applies level-ups at battle start', () => {
+    const heroes = catalogHeroes(hero('A', { initiative: 50 }), hero('B', { initiative: 10 }));
+    const state = createBattleState({
+      matchId: 'm1',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'A', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+      rules: {
+        maxTeamSize: 6,
+        maxRowSize: 3,
+        maxRounds: 20,
+        healthBonus: 0.5,
+        startingLevel: 5,
+      },
+    });
+    expect(state.units.every((unit) => unit.lvl === 5)).toBe(true);
+  });
+
+  test('forceSurrender awards win to opponent', () => {
+    const heroes = catalogHeroes(hero('A'), hero('B'));
+    const state = createBattleState({
+      matchId: 'm1',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'A', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    forceSurrender(state, 'h');
+    expect(state.outcome).toBe('guest_win');
+    expect(state.winnerPlayerId).toBe('g');
   });
 });
