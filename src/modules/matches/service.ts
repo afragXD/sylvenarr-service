@@ -373,6 +373,7 @@ export abstract class MatchesService {
           mana: hero.mana,
           gold: hero.gold,
           size: hero.size,
+          morale: hero.morale,
         },
       ])
     );

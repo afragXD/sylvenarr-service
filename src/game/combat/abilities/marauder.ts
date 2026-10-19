@@ -2,6 +2,7 @@ import { resolveAttackStyle } from '../attack-style';
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { resistsForClass } from '../defaultResists';
 import { grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
+import { setWard } from '../resists';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesInColumn, enemiesOf, meleeOrAll, moveToOtherRow, unitsOnSameRow } from './targets';
@@ -244,12 +245,15 @@ function applyMarauder(
       moveToOtherRow(actor);
     }
     actor.transformParentCode = 'Marauder';
+    const oldName = actor.displayName;
     if (!applyCatalogStats(state, actor, 'Werewolf')) {
       actor.ultaCharges += 1;
       return { status: 'reject', message: 'Нет статов оборотня в каталоге' };
     }
+    // Вард от оружия при превращении (порт marauder_werewolf.py: lvl // 7 + 1).
+    setWard(actor, 'WEAPON', Math.floor(actor.lvl / 7) + 1);
     actor.initiative = Math.max(1, Math.floor(actor.initiative / 2));
-    state.log.push(`${actor.displayName} превращается в оборотня!`);
+    state.log.push(`${oldName} превращается в оборотня!`);
     return { status: 'done' };
   }
 
@@ -344,7 +348,8 @@ function applyWerewolf(
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }
-    const power = 1 + Math.floor(actor.lvl * 0.05) + 2;
+    // Множитель дота как в боте (1 + lvl * 0.05).
+    const power = 1 + actor.lvl * 0.05;
     for (const enemy of enemiesInColumn(state, actor, target)) {
       grantEffect(enemy, 'GALL', 2 + Math.floor(actor.lvl / 5), power);
     }

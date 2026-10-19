@@ -1,6 +1,7 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, healUnit } from '../effects';
+import { grantEffect, healUnit, tryLevelDrain } from '../effects';
 import { levelUpUnit } from '../level';
+import { setWard } from '../resists';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll, moveToOtherRow } from './targets';
@@ -110,9 +111,10 @@ export const paladinAbilities: AbilityHandler = {
 
     if (input.slot === 2) {
       actor.ultaCharges -= 1;
-      grantEffect(actor, 'STRENGTH', 2 + Math.floor(actor.lvl / 5), 8);
-      grantEffect(actor, 'GUARDED', 2, 2);
-      state.log.push(`${actor.displayName} разжигает пламя на клинках.`);
+      // Как в боте: пылающие мечи и вард от Огня на себя.
+      setWard(actor, 'FIRE', 1);
+      grantEffect(actor, 'FIREDWEAPON', 2 + Math.floor(actor.lvl / 5), 0);
+      state.log.push(`${actor.displayName}: клинки окутаны святым пламенем; вард от Огня.`);
       return { status: 'done' };
     }
 
@@ -139,7 +141,7 @@ export const paladinAbilities: AbilityHandler = {
         `${actor.displayName} разбивает душу ${target.displayName} (${damage}).`
       );
       markDeadIfNeeded(state, target);
-      if (target.alive && randInt(1, 100) <= 70) {
+      if (target.alive && randInt(1, 100) <= 70 && tryLevelDrain(state, target)) {
         const n = 1 + Math.floor(actor.lvl / 5);
         levelUpUnit(target, -n, state);
         levelUpUnit(actor, n, state);
@@ -187,11 +189,12 @@ export const paladinAbilities: AbilityHandler = {
     }
     actor.mana -= 3;
     grantEffect(actor, 'REGENHP', 2 + Math.floor(actor.lvl / 5), 1.1);
-    grantEffect(actor, 'GUARDED', 3, 4);
+    // Как в боте: STUNRESIST 3 р. power 50 — 50% сопротивление оглушению.
+    grantEffect(actor, 'STUN_IMMUNE', 3, 50);
     moveToOtherRow(actor);
     const hush = healUnit(actor, randInt(5, 12));
     state.log.push(
-      `${actor.displayName} читает молитву (регенерация, защита${hush > 0 ? `, +${hush} ОЗ` : ''}).`
+      `${actor.displayName} читает молитву (регенерация, защита от оглушения${hush > 0 ? `, +${hush} ОЗ` : ''}).`
     );
     return { status: 'done' };
   },

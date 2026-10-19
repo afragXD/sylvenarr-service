@@ -146,7 +146,7 @@ export const assassinAbilities: AbilityHandler = {
       actor.darts -= 1;
       const poke = randInt(1, 5) + actor.lvl;
       target.health -= poke;
-      grantEffect(target, 'POISON', 2, 4);
+      grantEffect(target, 'POISON', 2, 1.2);
       state.log.push(
         `${actor.displayName} бросает дротик в ${target.displayName} (${poke} + яд).`
       );

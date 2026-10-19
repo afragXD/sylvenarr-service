@@ -106,6 +106,7 @@ export function createSummon(
     dodgeBank: 0,
     enslavedOriginTeam: null,
     enslavedOriginPlayerId: null,
+    morale: hero.morale ?? 0,
   };
   state.units.push(unit);
   return unit;
@@ -185,6 +186,7 @@ export function createPhantomCopy(
     dodgeBank: 0,
     enslavedOriginTeam: null,
     enslavedOriginPlayerId: null,
+    morale: template.morale,
   };
   state.units.push(unit);
   return unit;

@@ -73,13 +73,14 @@ export function applyResistMultiplier(
   }
   if ((entry.wardCharges ?? 0) > 0) {
     entry.wardCharges = (entry.wardCharges ?? 1) - 1;
-    if (entry.wardCharges <= 0) {
+    const dissipated = entry.wardCharges <= 0;
+    if (dissipated) {
       entry.wardCharges = undefined;
     }
     return {
       multiplier: 0,
       blocked: true,
-      blockReason: `${unit.displayName}: вард «${DAMAGE_SOURCE_LABELS[source]}» поглощает удар.`,
+      blockReason: `${unit.displayName}: вард «${DAMAGE_SOURCE_LABELS[source]}» поглощает удар.${dissipated ? ' Вард рассеивается.' : ''}`,
     };
   }
   const value = entry.value;

@@ -224,12 +224,21 @@ describe('combat engine', () => {
       throw new Error('missing unit');
     }
     const before = unit.health;
-    grantEffect(unit, 'POISON', 1, 5);
+    // power — множитель дота (формула бота: (4–6 + rounds×6) × power).
+    grantEffect(unit, 'POISON', 1, 1.2);
     state.doneIds = ['p2'];
     state.delayedIds = [];
     state.preChoiceDoneIds = [];
     advanceToNextUnit(state);
+    // DoT наносит урон в начале хода, но эффект спадает только в конце хода.
     expect(unit.health).toBeLessThan(before);
+    expect(unit.effects.some((effect) => effect.id === 'POISON')).toBe(true);
+    const result = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'defend',
+    });
+    expect(result.ok).toBe(true);
     expect(unit.effects.some((effect) => effect.id === 'POISON')).toBe(false);
   });
 
@@ -358,7 +367,7 @@ describe('combat engine', () => {
     expect(order.find((entry) => entry.unitId === 'p3')?.phase).toBe('delayed');
   });
 
-  test('buildTurnOrder puts dead at the end', () => {
+  test('buildTurnOrder excludes dead units', () => {
     const heroes = catalogHeroes(hero('A', { initiative: 50 }), hero('B', { initiative: 10 }));
     const state = createBattleState({
       matchId: 'm1',
@@ -376,8 +385,8 @@ describe('combat engine', () => {
     foe.health = 0;
 
     const order = buildTurnOrder(state);
-    expect(order.at(-1)?.phase).toBe('dead');
-    expect(order.at(-1)?.unitId).toBe('p2');
+    expect(order.some((entry) => entry.unitId === 'p2')).toBe(false);
+    expect(order[0]?.unitId).toBe('p1');
     expect(order[0]?.phase).toBe('active');
   });
 

@@ -1,10 +1,12 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { DAMAGE_SOURCE_LABELS, type DamageSource } from '../damageSources';
 import {
   clearAllEffects,
   grantEffect,
   healUnit,
   trySpendMana,
 } from '../effects';
+import { setWard } from '../resists';
 import { ROW_BACK } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, unitsOnSameRow } from './targets';
@@ -153,8 +155,25 @@ export const abbessAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Нужен союзник' };
       }
       grantEffect(target, 'STONEFLESH', 2 + Math.floor(actor.lvl / 4), 20 + actor.lvl * 2);
+      // Как в боте: варды от двух разных случайных источников — себе и цели.
+      const pool: DamageSource[] = [
+        'FIRE',
+        'AIR',
+        'WEAPON',
+        'ARROWS',
+        'WEAPON',
+        'EARTH',
+        'WATER',
+        'MIND',
+        'DEATH',
+        'STUN',
+      ];
+      const first = pool.splice(randInt(0, pool.length - 1), 1)[0]!;
+      const second = pool.splice(randInt(0, pool.length - 1), 1)[0]!;
+      setWard(actor, first, 1);
+      setWard(target, second, 1);
       state.log.push(
-        `${actor.displayName} дарует святую броню ${target.displayName} (варды — позже).`
+        `${actor.displayName} дарует святую броню ${target.displayName}: себе — вард от «${DAMAGE_SOURCE_LABELS[first]}», цели — вард от «${DAMAGE_SOURCE_LABELS[second]}».`
       );
       return { status: 'done' };
     }

@@ -1,5 +1,6 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, healUnit } from '../effects';
+import { levelUpUnit } from '../level';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { availableSummonRows, createSummon } from './summon';
 import { alliesOf, enemiesOf } from './targets';
@@ -287,10 +288,13 @@ export const archlichAbilities: AbilityHandler = {
     actor.mana += manaBoost;
     actor.power += Math.max(1, Math.round(actor.lvl * 0.75));
     actor.damage += 2;
+    // Поглощение уровней души (порт lich.py: levelup(max(1, round(lvl * 0.75)))).
+    const levels = Math.max(1, Math.round(victim.lvl * 0.75));
+    levelUpUnit(actor, levels, state);
     victim.alive = false;
     victim.health = 0;
     state.log.push(
-      `${actor.displayName} поглощает душу ${victim.displayName} (+${manaBoost} МР).`
+      `${actor.displayName} поглощает душу ${victim.displayName} (+${manaBoost} МР, +${levels} ур.).`
     );
     return { status: 'done' };
   },

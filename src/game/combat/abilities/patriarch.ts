@@ -1,5 +1,5 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, healUnit, trySpendMana } from '../effects';
+import { dealDamage, markDeadIfNeeded } from '../damage';
+import { grantEffect, healUnit, resurrectUnit, trySpendMana } from '../effects';
 import { ROW_BACK } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesInColumn, enemiesOf } from './targets';
@@ -114,14 +114,10 @@ function resolveResurrect(
   if (!unit) {
     return { status: 'reject', message: 'Юнит не найден' };
   }
-  unit.alive = true;
-  unit.health = Math.max(1, Math.floor(unit.maxHp / 2));
-  unit.defending = false;
-  state.graveyard = state.graveyard.filter((item) => item.unitId !== unit.id);
-  if (randInt(1, 100) <= 50) {
-    unit.forbiddenResurrect = true;
-  }
-  state.log.push(`${actor.displayName} воскрешает ${unit.displayName}.`);
+  resurrectUnit(state, unit);
+  state.log.push(
+    `${actor.displayName} воскрешает ${unit.displayName} — тот возвращается ослабленным (½ max ОЗ, ½ инициативы).`
+  );
   return { status: 'done' };
 }
 

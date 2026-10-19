@@ -1,5 +1,5 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, healUnit } from '../effects';
+import { grantEffect, healUnit, tryStun } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, meleeOrAll } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -128,7 +128,7 @@ export const demonLordAbilities: AbilityHandler = {
       if (target.alive && randInt(1, 100) <= 70 + actor.lvl) {
         grantEffect(target, 'PETRIFIED', 2, 15);
         grantEffect(target, 'CHAINED', 2, 0);
-        grantEffect(target, 'STUNNED', 1 + Math.floor(actor.lvl / 8), 0);
+        tryStun(state, target, 1 + Math.floor(actor.lvl / 8));
         state.log.push(`${target.displayName} обращается в камень и пропускает ход.`);
       }
       return { status: 'done' };

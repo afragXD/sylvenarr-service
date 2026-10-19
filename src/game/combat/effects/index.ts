@@ -1,5 +1,39 @@
+import { DAMAGE_SOURCE_LABELS, type DamageSource } from '../damageSources';
 import { effectLogLabel } from '../effect-labels';
-import type { BattleEffect, BattleUnit, EffectId } from '../types';
+import { applyResistMultiplier } from '../resists';
+import type { BattleEffect, BattleState, BattleUnit, EffectId } from '../types';
+
+/** Локальный randInt — чтобы не тянуть damage.ts (цикл damage ↔ effects). */
+const randInt = (min: number, max: number): number =>
+  min + Math.floor(Math.random() * (max - min + 1));
+
+/** Источник урона DoT-эффектов (порт harmWithSRC из бота). */
+const DOT_SOURCES: Partial<Record<EffectId, DamageSource>> = {
+  POISON: 'DEATH',
+  BURNING: 'FIRE',
+  BLEEDING: 'DEATH',
+  GALL: 'WATER',
+};
+
+/**
+ * Урон DoT за тик по формулам бота (effects/valovertime.py):
+ * power — множитель, rounds — оставшиеся раунды на момент тика.
+ */
+function dotTickAmount(unit: BattleUnit, effect: BattleEffect): number {
+  const power = effect.power || 1;
+  switch (effect.id) {
+    case 'POISON':
+      return Math.max(1, Math.round((randInt(4, 6) + effect.rounds * 6) * power));
+    case 'BURNING':
+      return Math.max(1, Math.round((randInt(4, 6) + 15) * power));
+    case 'BLEEDING':
+      return Math.max(1, Math.round((4 + effect.rounds * 3 + unit.lvl) * power));
+    case 'GALL':
+      return Math.max(1, Math.round(20 * power));
+    default:
+      return 0;
+  }
+}
 
 /**
  * Снимает эффект и откатывает числовые баффы, если применимо.
@@ -118,6 +152,78 @@ export function shacklesBurnAmount(cost: number, lvl = 1): number {
 }
 
 /**
+ * Воскрешение (строгое): maxHp и инициатива режутся вдвое,
+ * повторно воскресить юнита нельзя (forbiddenResurrect всегда).
+ */
+export function resurrectUnit(state: BattleState, unit: BattleUnit): void {
+  unit.alive = true;
+  unit.maxHp = Math.max(1, Math.floor(unit.maxHp / 2));
+  unit.health = unit.maxHp;
+  unit.initiative = Math.max(1, Math.floor(unit.initiative / 2));
+  unit.defending = false;
+  unit.forbiddenResurrect = true;
+  state.graveyard = state.graveyard.filter((item) => item.unitId !== unit.id);
+}
+
+/**
+ * Оглушение с учётом иммунитета (STUN_IMMUNE, power = % сопротивления)
+ * и варда/иммунитета STUN.
+ * При успехе: STUNNED на rounds + STUN_IMMUNE на rounds + 2 (порт stunMyself из бота).
+ * @returns true, если цель оглушена.
+ */
+export function tryStun(state: BattleState, target: BattleUnit, rounds: number): boolean {
+  const stunImmune = target.effects.find((effect) => effect.id === 'STUN_IMMUNE');
+  if (stunImmune) {
+    const power = stunImmune.power || 100;
+    if (power >= 100 || randInt(1, 100) <= power) {
+      state.log.push(`${target.displayName} сопротивляется оглушению.`);
+      return false;
+    }
+  }
+  const stunResist = target.resists.STUN;
+  if (stunResist?.immune) {
+    state.log.push(`${target.displayName} иммунен к оглушению.`);
+    return false;
+  }
+  if ((stunResist?.wardCharges ?? 0) > 0 && stunResist) {
+    stunResist.wardCharges = (stunResist.wardCharges ?? 1) - 1;
+    if ((stunResist.wardCharges ?? 0) <= 0) {
+      stunResist.wardCharges = undefined;
+    }
+    state.log.push(
+      `${target.displayName}: вард «${DAMAGE_SOURCE_LABELS.STUN}» поглощает оглушение.`
+    );
+    return false;
+  }
+  grantEffect(target, 'STUNNED', rounds, 0);
+  grantEffect(target, 'STUN_IMMUNE', rounds + 2, 100);
+  return true;
+}
+
+/**
+ * Защита от понижения/кражи уровней (вард/иммунитет LOWERINGLEVEL, порт Chance extra=LOWERINGLEVEL).
+ * @returns true, если дрейн уровней разрешён.
+ */
+export function tryLevelDrain(state: BattleState, target: BattleUnit): boolean {
+  const entry = target.resists.LOWERINGLEVEL;
+  if (entry?.immune) {
+    state.log.push(`${target.displayName} иммунен к понижению уровня.`);
+    return false;
+  }
+  if ((entry?.wardCharges ?? 0) > 0 && entry) {
+    entry.wardCharges = (entry.wardCharges ?? 1) - 1;
+    if ((entry.wardCharges ?? 0) <= 0) {
+      entry.wardCharges = undefined;
+    }
+    state.log.push(
+      `${target.displayName}: вард «${DAMAGE_SOURCE_LABELS.LOWERINGLEVEL}» поглощает понижение уровня.`
+    );
+    return false;
+  }
+  return true;
+}
+
+/**
  * Порабощение: перенос в команду enslaver; откат при снятии ENSLAVED.
  */
 export function enslaveUnit(target: BattleUnit, enslaver: BattleUnit): void {
@@ -133,11 +239,13 @@ export function enslaveUnit(target: BattleUnit, enslaver: BattleUnit): void {
 }
 
 /**
- * Тик в начале хода юнита: regen, DoT и уменьшение rounds.
+ * Тик в начале хода юнита: regen и DoT (без уменьшения rounds).
+ * Также сбрасывает флаг fresh — эффекты, дожившие до своего хода, тикают в его конце.
  */
 export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
   const log: string[] = [];
   for (const effect of [...unit.effects]) {
+    effect.fresh = undefined;
     if (effect.id === 'REGENHP' && unit.alive) {
       const healed = healUnit(
         unit,
@@ -147,18 +255,35 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
         log.push(`${unit.displayName} восстанавливает ${healed} ОЗ (регенерация).`);
       }
     }
-    if (
-      (effect.id === 'POISON' ||
-        effect.id === 'BURNING' ||
-        effect.id === 'BLEEDING' ||
-        effect.id === 'GALL') &&
-      unit.alive
-    ) {
-      const dot = Math.max(1, Math.round(effect.power || 3));
-      unit.health -= dot;
-      log.push(
-        `${unit.displayName} получает ${dot} урона от ${effectLogLabel(effect.id)}.`
-      );
+    const dotSource = DOT_SOURCES[effect.id];
+    if (dotSource && unit.alive) {
+      const resist = applyResistMultiplier(unit, dotSource);
+      if (resist.blocked) {
+        if (resist.blockReason) {
+          log.push(resist.blockReason);
+        }
+      } else {
+        const raw = dotTickAmount(unit, effect);
+        const dot = Math.max(1, Math.round(raw * resist.multiplier));
+        unit.health -= dot;
+        log.push(
+          `${unit.displayName} получает ${dot} урона от ${effectLogLabel(effect.id)}.`
+        );
+      }
+    }
+  }
+  return log;
+}
+
+/**
+ * Тик в конце хода юнита: уменьшение rounds и спадание эффектов.
+ * Эффекты, наложенные в этот же ход (fresh), первый тик пропускают.
+ */
+export function tickEffectsOnTurnEnd(unit: BattleUnit): string[] {
+  const log: string[] = [];
+  for (const effect of [...unit.effects]) {
+    if (effect.fresh) {
+      continue;
     }
     effect.rounds -= 1;
     if (effect.rounds <= 0) {
@@ -346,6 +471,7 @@ export function hasEffect(unit: BattleUnit, id: EffectId): boolean {
 
 /**
  * Добавляет эффект с applyOnAdd (продлевает, если уже есть).
+ * Новый эффект помечается fresh — первый end-тик носителя его пропустит.
  */
 export function grantEffect(
   unit: BattleUnit,
@@ -358,7 +484,7 @@ export function grantEffect(
     existing.rounds += rounds;
     return;
   }
-  const effect: BattleEffect = { id, rounds, power };
+  const effect: BattleEffect = { id, rounds, power, fresh: true };
   unit.effects.push(effect);
   applyEffectOnAdd(unit, effect);
 }

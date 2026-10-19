@@ -1,6 +1,7 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { effectLogLabel } from '../effect-labels';
 import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
+import { levelUpUnit } from '../level';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -58,19 +59,26 @@ function abilityMeta(
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
-    case 5:
+    case 5: {
+      const allies = alliesOf(state, actor);
       return {
         slot: 5,
-        label: 'Базовые действия',
-        needsTarget: false,
-        disabledReason: 'Используйте защиту / ожидание',
-        legalTargetIds: [],
+        label: 'Взращивание',
+        needsTarget: true,
+        disabledReason:
+          actor.mana < 4
+            ? 'Нужно 4 МР'
+            : allies.length === 0
+              ? 'Нет союзников'
+              : null,
+        legalTargetIds: allies.map((unit) => unit.id),
       };
+    }
   }
 }
 
 /**
- * EvilTree: focus+lucky, root heal-share, INTERDICT, random buff; preChoice row armor.
+ * EvilTree: focus+lucky, root heal-share, INTERDICT, random buff, levelup grant; preChoice row armor.
  */
 export const evilTreeAbilities: AbilityHandler = {
   listAbilities(state, actor) {
@@ -171,6 +179,24 @@ export const evilTreeAbilities: AbilityHandler = {
       grantEffect(target, buff, 2, power);
       state.log.push(
         `${actor.displayName}: мудрость — ${target.displayName} получает «${effectLogLabel(buff)}».`
+      );
+      return { status: 'done' };
+    }
+
+    if (input.slot === 5) {
+      const err = trySpendMana(actor, 4);
+      if (err) {
+        return { status: 'reject', message: err };
+      }
+      const target = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
+      if (!target) {
+        actor.mana += 4;
+        return { status: 'reject', message: 'Цель не найдена' };
+      }
+      const levels = 2 + actor.lvl;
+      levelUpUnit(target, levels, state);
+      state.log.push(
+        `${actor.displayName}: взращивание — ${target.displayName} получает +${levels} уровней.`
       );
       return { status: 'done' };
     }

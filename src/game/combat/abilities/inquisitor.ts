@@ -1,5 +1,5 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, hasEffect, trySpendMana } from '../effects';
+import { grantEffect, hasEffect, trySpendMana, tryStun } from '../effects';
 import { ROW_BACK } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll, moveToOtherRow } from './targets';
@@ -173,8 +173,7 @@ export const inquisitorAbilities: AbilityHandler = {
         state.log.push(
           `${actor.displayName} мощным ударом бьёт ${target.displayName} (${damage}).`
         );
-        if (randInt(1, 100) <= 62 + actor.lvl) {
-          grantEffect(target, 'STUNNED', 1, 0);
+        if (randInt(1, 100) <= 62 + actor.lvl && tryStun(state, target, 1)) {
           state.log.push(`${target.displayName} оглушён.`);
         } else {
           const broken = Math.max(1, Math.round(damage * 0.25));

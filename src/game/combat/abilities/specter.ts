@@ -1,5 +1,6 @@
 import { markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect } from '../effects';
+import { grantEffect, tryStun } from '../effects';
+import { setWard } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, enemyTeamLeader } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -64,8 +65,10 @@ function abilityMeta(
 function ghostParalysis(state: BattleState, actor: BattleUnit, target: BattleUnit): void {
   const chance = Math.min(95, actor.accuracy + actor.lvl);
   if (randInt(1, 100) <= chance) {
-    grantEffect(target, 'STUNNED', 1, 0);
-    state.log.push(`${actor.displayName} парализует ${target.displayName}.`);
+    if (tryStun(state, target, 1)) {
+      state.log.push(`${actor.displayName} парализует ${target.displayName}.`);
+    }
+    return;
   } else {
     const dmg = Math.max(1, Math.round(actor.power * 0.5));
     target.health -= dmg;
@@ -150,11 +153,12 @@ export const specterAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      grantEffect(actor, 'GUARDED', 2, 3);
+      // Как в боте: цель получает настоящий вард от Оружия, но теряет ОЗ.
+      setWard(target, 'WEAPON', 1);
       const loss = 3 * actor.lvl + 15;
       target.health -= loss;
       state.log.push(
-        `${actor.displayName}: тёмный ритуал — ${target.displayName} −${loss} ОЗ; вард оружия на себе.`
+        `${actor.displayName}: тёмный ритуал — ${target.displayName} получает вард от Оружия, но теряет ${loss} ОЗ.`
       );
       markDeadIfNeeded(state, target);
       return { status: 'done' };
@@ -177,7 +181,8 @@ export const specterAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       if (randInt(1, 100) <= 80) {
-        grantEffect(target, 'BLEEDING', 2, Math.max(1, Math.round(1 + actor.lvl * 0.06)));
+        // Множитель дота как в боте (без округления до 1).
+        grantEffect(target, 'BLEEDING', 2, 1 + actor.lvl * 0.06);
         state.log.push(`${actor.displayName}: кровотечение на ${target.displayName}.`);
       } else {
         state.log.push(`${actor.displayName}: кровавая трава не сработала.`);

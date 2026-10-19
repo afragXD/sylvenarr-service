@@ -31,6 +31,7 @@ export type EffectId =
   | 'LUCKY'
   | 'FOCUSED'
   | 'STUNNED'
+  | 'STUN_IMMUNE'
   | 'WEAKNESS'
   | 'UNLUCKY'
   | 'GALL'
@@ -48,6 +49,11 @@ export type BattleEffect = {
   rounds: number;
   /** Числовой параметр эффекта (урон баффа, % и т.п.). */
   power: number;
+  /**
+   * Наложен в текущий ход носителя: end-тик пропускает (self-buffs не теряют ход).
+   * Сбрасывается start-тиком в начале следующего хода носителя.
+   */
+  fresh?: boolean;
 };
 
 /** Запись на кладбище для воскрешения. */
@@ -157,6 +163,8 @@ export type BattleUnit = {
   enslavedOriginTeam: 0 | 1 | null;
   /** Mermaid ENSLAVED: исходный playerId до порабощения. */
   enslavedOriginPlayerId: string | null;
+  /** Боевой дух из каталога (display-only; в формулах боя не участвует). */
+  morale: number;
 };
 
 /** Активные правила боя из Match.rules (без ярмарки). */
@@ -211,6 +219,8 @@ export type HeroClassStats = {
   readonly mana: number;
   readonly gold: number;
   readonly size: number;
+  /** Боевой дух (опционально в тестах; из БД приходит всегда). */
+  readonly morale?: number;
 };
 
 export type DraftPickSeed = {

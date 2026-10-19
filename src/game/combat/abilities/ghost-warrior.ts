@@ -1,5 +1,5 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, healUnit } from '../effects';
+import { grantEffect, healUnit, tryStun } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { meleeOrAll, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -93,8 +93,7 @@ export const ghostWarriorAbilities: AbilityHandler = {
         state.log.push(
           `${actor.displayName} рубит катаной ${target.displayName} (${damage}, ×${mult}).`
         );
-        if (randInt(1, 100) <= 65 + actor.lvl) {
-          grantEffect(target, 'STUNNED', 1, 0);
+        if (randInt(1, 100) <= 65 + actor.lvl && tryStun(state, target, 1)) {
           state.log.push(`${target.displayName} парализован.`);
         }
         markDeadIfNeeded(state, target);

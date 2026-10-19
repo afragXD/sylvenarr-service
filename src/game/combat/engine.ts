@@ -14,7 +14,7 @@ import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt } from './d
 import { resistsForClass } from './defaultResists';
 import { levelUpLivingUnits, levelUpUnit } from './level';
 import { summarizeResists } from './resists';
-import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnStart } from './effects';
+import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnEnd, tickEffectsOnTurnStart } from './effects';
 import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, MAX_TEAM_SIZE, ROW_FRONT } from './settings';
 import {
   classAttackMods,
@@ -196,6 +196,7 @@ function buildTeamUnits(
         dodgeBank: 0,
         enslavedOriginTeam: null,
         enslavedOriginPlayerId: null,
+        morale: hero.morale ?? 0,
       };
       initPilotFlags(unit);
       units.push(unit);
@@ -284,6 +285,8 @@ export function advanceToNextUnit(state: BattleState): void {
 
   if (stunned) {
     state.log.push(`${next.displayName} оглушён и пропускает ход.`);
+    const endLog = tickEffectsOnTurnEnd(next);
+    state.log.push(...endLog);
     state.doneIds.push(next.id);
     resolveOutcome(state);
     if (state.outcome === 'ongoing') {
@@ -344,6 +347,7 @@ export function applyAction(
   if (input.action === 'wait') {
     state.delayedPhase = state.delayedPhase ?? false;
     if (state.delayedPhase) {
+      state.log.push(...tickEffectsOnTurnEnd(actor));
       state.doneIds.push(actor.id);
       state.preChoiceDoneIds = state.preChoiceDoneIds.filter((id) => id !== actor.id);
       state.log.push(`${actor.displayName} ждёт.`);
@@ -354,6 +358,7 @@ export function applyAction(
       state.delayedIds.push(actor.id);
     }
     state.preChoiceDoneIds = state.preChoiceDoneIds.filter((id) => id !== actor.id);
+    state.log.push(...tickEffectsOnTurnEnd(actor));
     state.log.push(`${actor.displayName} ждёт.`);
     advanceToNextUnit(state);
     return { ok: true };
@@ -362,6 +367,7 @@ export function applyAction(
   if (input.action === 'defend') {
     actor.defending = true;
     applyDefendPassives(actor);
+    state.log.push(...tickEffectsOnTurnEnd(actor));
     state.doneIds.push(actor.id);
     state.log.push(`${actor.displayName} встаёт в защиту.`);
     advanceToNextUnit(state);
@@ -451,6 +457,8 @@ function settleAbility(
   if (outcome.status === 'pending') {
     return { ok: true };
   }
+  // Самоурон в свой ход (волшебные оковы и т.п.) — сразу помечаем смерть.
+  markDeadIfNeeded(state, actor);
   maybeKillHorse(actor, state);
   if (outcome.extraTurnForUnitId) {
     state.doneIds = state.doneIds.filter((id) => id !== outcome.extraTurnForUnitId);
@@ -638,6 +646,9 @@ function resolveAttackWithClassMods(
 }
 
 function finishUnitTurn(state: BattleState, actor: BattleUnit): void {
+  if (actor.alive) {
+    state.log.push(...tickEffectsOnTurnEnd(actor));
+  }
   state.doneIds.push(actor.id);
   state.pendingPrompt = null;
   resolveOutcome(state);
@@ -648,10 +659,13 @@ function finishUnitTurn(state: BattleState, actor: BattleUnit): void {
 
 /**
  * Проверяет победу / ничью.
+ * Порабощённые юниты считаются за свою исходную команду (enslavedOriginTeam) —
+ * порабощение последнего врага не должно мгновенно завершать бой.
  */
 export function resolveOutcome(state: BattleState): void {
-  const hostAlive = state.units.some((unit) => unit.alive && unit.team === 0);
-  const guestAlive = state.units.some((unit) => unit.alive && unit.team === 1);
+  const effectiveTeam = (unit: BattleUnit): 0 | 1 => unit.enslavedOriginTeam ?? unit.team;
+  const hostAlive = state.units.some((unit) => unit.alive && effectiveTeam(unit) === 0);
+  const guestAlive = state.units.some((unit) => unit.alive && effectiveTeam(unit) === 1);
   if (hostAlive && guestAlive) {
     return;
   }
@@ -710,7 +724,8 @@ export function forceDraw(state: BattleState): void {
 export type TurnOrderPhase = 'acted' | 'active' | 'waiting' | 'delayed' | 'dead';
 
 /**
- * Шкала раунда для UI: ходившие → активный → ожидающие → delayed → мёртвые.
+ * Шкала раунда для UI: ходившие → активный → ожидающие → delayed.
+ * Мёртвые юниты в шкалу не включаются.
  * Порядок waiting — оценка по статическому initiative (факт. ход снова бросает 1d5).
  */
 export function buildTurnOrder(state: BattleState) {
@@ -738,7 +753,6 @@ export function buildTurnOrder(state: BattleState) {
   const delayedUnits = state.units
     .filter((unit) => unit.alive && delayed.has(unit.id) && !done.has(unit.id))
     .sort(byInit);
-  const dead = state.units.filter((unit) => !unit.alive).sort(byInit);
 
   type Row = { unit: BattleUnit; phase: TurnOrderPhase };
   const sequence: Row[] = [
@@ -746,7 +760,6 @@ export function buildTurnOrder(state: BattleState) {
     ...(active?.alive ? [{ unit: active, phase: 'active' as const }] : []),
     ...waiting.map((unit) => ({ unit, phase: 'waiting' as const })),
     ...delayedUnits.map((unit) => ({ unit, phase: 'delayed' as const })),
-    ...dead.map((unit) => ({ unit, phase: 'dead' as const })),
   ];
   const seen = new Set<string>();
   return sequence
@@ -815,7 +828,7 @@ export function toBattleSummary(state: BattleState) {
       displayName: unit.displayName,
       row: unit.row,
       column: unit.column,
-      health: unit.health,
+      health: Math.max(0, unit.health),
       maxHp: unit.maxHp,
       alive: unit.alive,
       defending: unit.defending,
@@ -839,6 +852,7 @@ export function toBattleSummary(state: BattleState) {
       critBank: unit.critBank,
       ultaCharges: unit.ultaCharges,
       lvl: unit.lvl,
+      morale: unit.morale,
       resists: summarizeResists(unit),
     })),
   };

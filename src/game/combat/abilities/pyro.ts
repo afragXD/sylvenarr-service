@@ -92,16 +92,17 @@ export const pyroAbilities: AbilityHandler = {
     if (input.slot === 1) {
       const targets = pickRandom(enemiesOf(state, actor), 2);
       for (const enemy of targets) {
+        // Огнемёт бьёт магией огня от power (как MagicPattern в боте), а не от melee-урона.
         const damage = dealDamage(
           actor,
           enemy,
-          { damageMult: 1, armorIgnore: 0.1, source: 'FIRE' },
+          { damageMult: 1, armorIgnore: 0.1, source: 'FIRE', forceStyle: 'magic' },
           state
         );
         if (damage > 0) {
           state.log.push(`${actor.displayName}: огнемёт → ${enemy.displayName} (${damage}).`);
           if (randInt(1, 100) <= 50) {
-            grantEffect(enemy, 'BURNING', 2, 3);
+            grantEffect(enemy, 'BURNING', 2, 1.3);
           }
           markDeadIfNeeded(state, enemy);
         }
@@ -140,7 +141,7 @@ export const pyroAbilities: AbilityHandler = {
         (unit) => unit.alive && unit.row === ROW_FRONT
       );
       for (const unit of fronts) {
-        grantEffect(unit, 'BURNING', 2 + Math.floor(actor.lvl / 7), 3);
+        grantEffect(unit, 'BURNING', 2 + Math.floor(actor.lvl / 7), 1.3);
       }
       const enemies = state.units.filter(
         (unit) => unit.alive && unit.team !== actor.team

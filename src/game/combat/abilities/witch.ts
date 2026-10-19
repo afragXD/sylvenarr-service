@@ -1,5 +1,5 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
+import { grantEffect, hasEffect, healUnit, tryLevelDrain, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll } from './targets';
@@ -196,6 +196,9 @@ export const witchAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель недоступна' };
       }
       if (randInt(1, 100) <= 70 + actor.lvl * 2) {
+        if (!tryLevelDrain(state, target)) {
+          return { status: 'done' };
+        }
         const n = Math.floor(actor.lvl / 6) + 1;
         levelUpUnit(target, -n, state);
         state.log.push(

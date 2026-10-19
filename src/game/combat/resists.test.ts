@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { dealDamage } from './damage';
+import { dealDamage, markDeadIfNeeded } from './damage';
 import { resistsForClass } from './defaultResists';
 import {
   applyResistMultiplier,
@@ -58,6 +58,7 @@ const unit = (overrides: Partial<BattleUnit> = {}): BattleUnit => ({
   dodgeBank: 0,
   enslavedOriginTeam: null,
   enslavedOriginPlayerId: null,
+  morale: 0,
   ...overrides,
 });
 
@@ -91,14 +92,6 @@ describe('ResistManager', () => {
 
   test('negative resist amplifies damage', () => {
     const defender = unit({ resists: { FIRE: { value: -50 } } });
-    const attacker = unit({
-      id: 'a',
-      displayName: 'Маг',
-      attackStyle: 'magic',
-      power: 40,
-      accuracy: 100,
-      luck: 0,
-    });
     const applied = applyResistMultiplier(defender, 'FIRE');
     expect(applied.multiplier).toBe(1.5);
   });
@@ -163,5 +156,30 @@ describe('ResistManager', () => {
     expect(
       dealDamage(attacker, ecto, { damageMult: 1, armorIgnore: 1, forceHit: true }, state)
     ).toBeGreaterThan(0);
+  });
+
+  test('FINALSTRIKE ward: ведьма выживает с 1 ОЗ, заряд расходуется', () => {
+    const witch = unit({ displayName: 'Ведьма', health: 0, resists: resistsForClass('Witch') });
+    const state = emptyState();
+    markDeadIfNeeded(state, witch);
+    expect(witch.alive).toBe(true);
+    expect(witch.health).toBe(1);
+    expect(witch.resists.FINALSTRIKE?.wardCharges ?? 0).toBe(0);
+    expect(state.log.some((line) => line.includes('пороге смерти'))).toBe(true);
+    // Второй смертельный удар в тот же бой — без варда: ролл value 25 (может спасти).
+    // Детерминированно: value 0 → смерть.
+    witch.resists.FINALSTRIKE = { value: 0 };
+    witch.health = 0;
+    markDeadIfNeeded(state, witch);
+    expect(witch.alive).toBe(false);
+  });
+
+  test('FINALSTRIKE value: шанс спасения и деградация value −25', () => {
+    const u = unit({ health: -5, resists: { FINALSTRIKE: { value: 100 } } });
+    const state = emptyState();
+    markDeadIfNeeded(state, u);
+    expect(u.alive).toBe(true);
+    expect(u.health).toBe(1);
+    expect(u.resists.FINALSTRIKE?.value).toBe(75);
   });
 });

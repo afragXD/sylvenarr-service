@@ -1,5 +1,6 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect } from '../effects';
+import { grantEffect, tryStun } from '../effects';
+import { setWard } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, meleeOrAll } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -75,8 +76,9 @@ export const goldGolemAbilities: AbilityHandler = {
       return;
     }
     const ally = allies[randInt(0, allies.length - 1)]!;
-    grantEffect(ally, 'MIND_WARD', 2, 0);
-    state.log.push(`${actor.displayName}: вард разума на ${ally.displayName}.`);
+    // Как в боте: вард от понижения уровня случайному союзнику (не себе).
+    setWard(ally, 'LOWERINGLEVEL', 1);
+    state.log.push(`${actor.displayName}: вард от понижения уровня на ${ally.displayName}.`);
   },
 
   apply(state, actor, input): AbilityOutcome {
@@ -97,8 +99,7 @@ export const goldGolemAbilities: AbilityHandler = {
         state.log.push(
           `${actor.displayName} бьёт апперкотом ${target.displayName} (${damage}).`
         );
-        if (randInt(1, 100) <= 20 + actor.lvl) {
-          grantEffect(target, 'STUNNED', 1, 0);
+        if (randInt(1, 100) <= 20 + actor.lvl && tryStun(state, target, 1)) {
           state.log.push(`${target.displayName} в нокауте.`);
         }
         markDeadIfNeeded(state, target);

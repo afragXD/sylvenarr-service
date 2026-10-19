@@ -1,6 +1,6 @@
 import { applyVampWeaponHeal, grantEffect, hasEffect } from './effects';
 import type { DamageSource } from './damageSources';
-import { sourceFromAttackStyle } from './damageSources';
+import { DAMAGE_SOURCE_LABELS, sourceFromAttackStyle } from './damageSources';
 import { applyResistMultiplier } from './resists';
 import type { BattleState, BattleUnit } from './types';
 
@@ -15,6 +15,8 @@ export type DealDamageOpts = {
   readonly armorIgnore: number;
   /** Источник урона; по умолчанию из attackStyle атакующего. */
   readonly source?: DamageSource;
+  /** Принудительный стиль расчёта (огнемёт Pyro бьёт от power). */
+  readonly forceStyle?: 'melee' | 'ranged' | 'magic';
   /** Пропуск проверки попадания (тесты / гарантированный удар). */
   readonly forceHit?: boolean;
 };
@@ -23,14 +25,25 @@ export type DealDamageResult = {
   damage: number;
   missed: boolean;
   blocked: boolean;
+  crit: boolean;
+  critFail: boolean;
 };
 
-let lastDeal: DealDamageResult = { damage: 0, missed: false, blocked: false };
+let lastDeal: DealDamageResult = { damage: 0, missed: false, blocked: false, crit: false, critFail: false };
 
-/** Метаданные последнего вызова dealDamage (промах / вард). */
+/** Метаданные последнего вызова dealDamage (промах / вард / крит). */
 export function lastDealDamageResult(): DealDamageResult {
   return lastDeal;
 }
+
+type RawDamageResult = {
+  raw: number;
+  crit: boolean;
+  /** Крит получен из банка — заряд списывается только если урон не заблокирован. */
+  critFromBank: boolean;
+  /** Натуральный промах (ролл > 95) — критический провал. */
+  naturalMiss: boolean;
+};
 
 function computeRawDamage(
   attacker: BattleUnit,
@@ -38,14 +51,16 @@ function computeRawDamage(
   opts: {
     readonly damageMult: number;
     readonly armorIgnore: number;
+    readonly forceStyle?: 'melee' | 'ranged' | 'magic';
     readonly forceHit?: boolean;
   },
   forceMelee = false
-): number {
+): RawDamageResult {
   if (!opts.forceHit) {
     const hitChance = Math.min(95, Math.max(20, attacker.accuracy - defender.dodge / 2));
-    if (randInt(1, 100) > hitChance) {
-      return 0;
+    const roll = randInt(1, 100);
+    if (roll > hitChance) {
+      return { raw: 0, crit: false, critFromBank: false, naturalMiss: roll > 95 };
     }
   }
   let armor = defender.armor * (1 - Math.min(1, Math.max(0, opts.armorIgnore)));
@@ -53,7 +68,7 @@ function computeRawDamage(
     armor = Math.round(armor * 1.5);
   }
   let raw: number;
-  const style = forceMelee ? 'melee' : attacker.attackStyle;
+  const style = forceMelee ? 'melee' : (opts.forceStyle ?? attacker.attackStyle);
   if (style === 'magic') {
     raw = Math.max(1, Math.round(attacker.power * 0.8 + randInt(-3, 3) - armor * 0.15));
   } else if (style === 'ranged') {
@@ -63,16 +78,17 @@ function computeRawDamage(
   }
   raw = Math.max(1, Math.round(raw * opts.damageMult));
   let crit = false;
+  let critFromBank = false;
   if ((attacker.critBank ?? 0) > 0) {
-    attacker.critBank -= 1;
     crit = true;
+    critFromBank = true;
   } else if (randInt(1, 100) <= Math.min(40, attacker.luck)) {
     crit = true;
   }
   if (crit) {
     raw = Math.round(raw * 1.5);
   }
-  return raw;
+  return { raw, crit, critFromBank, naturalMiss: false };
 }
 
 /**
@@ -86,9 +102,12 @@ export function dealDamage(
   opts: DealDamageOpts,
   state?: BattleState
 ): number {
-  const raw = computeRawDamage(attacker, defender, opts);
-  if (raw <= 0) {
-    lastDeal = { damage: 0, missed: true, blocked: false };
+  const result = computeRawDamage(attacker, defender, opts);
+  if (result.raw <= 0) {
+    if (state && result.naturalMiss) {
+      state.log.push(`${attacker.displayName}: критический провал!`);
+    }
+    lastDeal = { damage: 0, missed: true, blocked: false, crit: false, critFail: result.naturalMiss };
     return 0;
   }
 
@@ -98,18 +117,29 @@ export function dealDamage(
     if (state && resist.blockReason) {
       state.log.push(resist.blockReason);
     }
-    lastDeal = { damage: 0, missed: false, blocked: true };
+    lastDeal = { damage: 0, missed: false, blocked: true, crit: false, critFail: false };
     return 0;
   }
 
-  const amount = Math.max(0, Math.round(raw * resist.multiplier));
+  // Крит-банк тратится только когда урон реально проходит.
+  if (result.critFromBank) {
+    attacker.critBank -= 1;
+  }
+  if (state && result.crit) {
+    state.log.push(`${attacker.displayName}: критический удар!`);
+  }
+
+  const amount = Math.max(0, Math.round(result.raw * resist.multiplier));
   if (amount <= 0) {
-    lastDeal = { damage: 0, missed: false, blocked: false };
+    lastDeal = { damage: 0, missed: false, blocked: false, crit: result.crit, critFail: false };
     return 0;
   }
 
   defender.health -= amount;
-  applyVampWeaponHeal(attacker, amount);
+  const vampHealed = applyVampWeaponHeal(attacker, amount);
+  if (state && vampHealed > 0) {
+    state.log.push(`${attacker.displayName} высасывает ${vampHealed} ОЗ.`);
+  }
 
   if (
     amount > 0 &&
@@ -118,7 +148,7 @@ export function dealDamage(
     hasEffect(attacker, 'FIREDWEAPON') &&
     randInt(1, 100) <= 55
   ) {
-    grantEffect(defender, 'BURNING', 2, Math.max(2, Math.round(3 + attacker.lvl * 0.2)));
+    grantEffect(defender, 'BURNING', 2, 1 + attacker.lvl * 0.04);
     if (state) {
       state.log.push(`${defender.displayName} загорается от огненного оружия.`);
     }
@@ -132,20 +162,23 @@ export function dealDamage(
     attacker.alive
   ) {
     counterDepth += 1;
-    const counterRaw = computeRawDamage(
+    const counterResult = computeRawDamage(
       defender,
       attacker,
       { damageMult: 1, armorIgnore: 0, forceHit: opts.forceHit },
       true
     );
-    if (counterRaw > 0) {
+    if (counterResult.raw > 0) {
       const counterResist = applyResistMultiplier(attacker, 'WEAPON');
       if (counterResist.blocked) {
         if (state && counterResist.blockReason) {
           state.log.push(counterResist.blockReason);
         }
       } else {
-        const counter = Math.max(0, Math.round(counterRaw * counterResist.multiplier));
+        if (counterResult.critFromBank) {
+          defender.critBank -= 1;
+        }
+        const counter = Math.max(0, Math.round(counterResult.raw * counterResist.multiplier));
         if (counter > 0) {
           attacker.health -= counter;
           applyVampWeaponHeal(defender, counter);
@@ -154,12 +187,11 @@ export function dealDamage(
               `${defender.displayName} отвечает контрударом по ${attacker.displayName} (${counter}).`
             );
           }
-          if (attacker.health <= 0) {
+          if (state) {
+            markDeadIfNeeded(state, attacker);
+          } else if (attacker.health <= 0) {
             attacker.health = 0;
             attacker.alive = false;
-            if (state) {
-              state.log.push(`${attacker.displayName} погибает.`);
-            }
           }
         }
       }
@@ -167,18 +199,53 @@ export function dealDamage(
     counterDepth -= 1;
   }
 
-  lastDeal = { damage: amount, missed: false, blocked: false };
+  lastDeal = { damage: amount, missed: false, blocked: false, crit: result.crit, critFail: false };
   return amount;
 }
 
 /**
+ * Спасение на пороге смерти вардом/резистом FINALSTRIKE (порт death() из бота):
+ * заряд варда → 1 ОЗ; иначе ролл value% → 1 ОЗ и value −25.
+ */
+function tryFinalStrikeSave(state: BattleState, unit: BattleUnit): boolean {
+  const entry = unit.resists.FINALSTRIKE;
+  if (!entry) {
+    return false;
+  }
+  if ((entry.wardCharges ?? 0) > 0) {
+    entry.wardCharges = (entry.wardCharges ?? 1) - 1;
+    if (entry.wardCharges <= 0) {
+      entry.wardCharges = undefined;
+    }
+    unit.health = 1;
+    state.log.push(
+      `${unit.displayName} на пороге смерти — вард «${DAMAGE_SOURCE_LABELS.FINALSTRIKE}» спасает (остаётся 1 ОЗ).`
+    );
+    return true;
+  }
+  if (entry.value > 0 && randInt(1, 100) <= entry.value) {
+    entry.value -= 25;
+    unit.health = 1;
+    state.log.push(
+      `${unit.displayName} на пороге смерти, но переживает удар (остаётся 1 ОЗ).`
+    );
+    return true;
+  }
+  return false;
+}
+
+/**
  * Помечает юнита мёртвым при HP ≤ 0 и кладёт на кладбище (не саммоны).
+ * Перед смертью проверяет спасение вардом/резистом FINALSTRIKE.
  */
 export function markDeadIfNeeded(state: BattleState, unit: BattleUnit): void {
   if (unit.health > 0) {
     return;
   }
   const wasAlive = unit.alive;
+  if (wasAlive && tryFinalStrikeSave(state, unit)) {
+    return;
+  }
   unit.alive = false;
   unit.health = 0;
   if (!wasAlive) {

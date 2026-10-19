@@ -27,6 +27,7 @@ const LABELS: Record<EffectId, string> = {
   LUCKY: 'Удача',
   FOCUSED: 'Сосредоточение',
   STUNNED: 'Оглушение',
+  STUN_IMMUNE: 'Сопротивление оглушению',
   WEAKNESS: 'Слабость',
   UNLUCKY: 'Неудача',
   GALL: 'Желчь',

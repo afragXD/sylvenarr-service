@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { dealDamage } from '../damage';
 import { applyAction, createBattleState } from '../engine';
-import { grantEffect, healUnit } from '../effects';
+import { healUnit } from '../effects';
 import type { HeroClassStats } from '../types';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
@@ -110,10 +110,11 @@ describe('phase 3.12 pilots', () => {
     const foe = state.units.find((unit) => unit.id === 'p2')!;
     beer.critBank = 1;
     beer.luck = 0;
-    const withBank = dealDamage(beer, foe, { damageMult: 1, armorIgnore: 1 }, state);
+    // forceHit — исключаем флаки натурального промаха (кап попадания 95%).
+    const withBank = dealDamage(beer, foe, { damageMult: 1, armorIgnore: 1, forceHit: true }, state);
     expect(beer.critBank).toBe(0);
     foe.health = 500;
-    const without = dealDamage(beer, foe, { damageMult: 1, armorIgnore: 1 }, state);
+    const without = dealDamage(beer, foe, { damageMult: 1, armorIgnore: 1, forceHit: true }, state);
     expect(withBank).toBeGreaterThan(without);
   });
 

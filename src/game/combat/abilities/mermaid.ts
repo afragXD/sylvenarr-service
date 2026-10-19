@@ -1,5 +1,5 @@
 import { randInt } from '../damage';
-import { enslaveUnit, grantEffect, healUnit, trySpendMana } from '../effects';
+import { enslaveUnit, grantEffect, healUnit, trySpendMana, tryStun } from '../effects';
 import { resistsEnslave } from '../races';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, unitsOnSameRow } from './targets';
@@ -111,8 +111,9 @@ export const mermaidAbilities: AbilityHandler = {
       const chance = 38 + actor.lvl;
       for (const enemy of row) {
         if (randInt(1, 100) <= chance) {
-          grantEffect(enemy, 'STUNNED', 1, 0);
-          state.log.push(`${actor.displayName}: ${enemy.displayName} обращён в лёд.`);
+          if (tryStun(state, enemy, 1)) {
+            state.log.push(`${actor.displayName}: ${enemy.displayName} обращён в лёд.`);
+          }
         } else {
           state.log.push(`${enemy.displayName} отразил обледенение.`);
         }

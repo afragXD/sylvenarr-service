@@ -126,7 +126,7 @@ export const detectiveAbilities: AbilityHandler = {
     if (input.slot === 2) {
       actor.ultaCharges -= 1;
       for (const enemy of enemiesOf(state, actor)) {
-        grantEffect(enemy, 'POISON', 2, 3);
+        grantEffect(enemy, 'POISON', 2, 0.8);
       }
       state.log.push(`${actor.displayName} отравляет вражеский отряд.`);
       return { status: 'done' };

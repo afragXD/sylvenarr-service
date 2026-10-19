@@ -1,5 +1,5 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, hasEffect, healUnit } from '../effects';
+import { grantEffect, hasEffect, healUnit, resurrectUnit } from '../effects';
 import { isUndeadClass } from '../races';
 import { ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -111,14 +111,10 @@ function resolveUndeadResurrect(
   if (!unit) {
     return { status: 'reject', message: 'Юнит не найден' };
   }
-  unit.alive = true;
-  unit.health = Math.max(1, Math.floor(unit.maxHp / 2));
-  unit.defending = false;
-  state.graveyard = state.graveyard.filter((item) => item.unitId !== unit.id);
-  if (randInt(1, 100) <= 80) {
-    unit.forbiddenResurrect = true;
-  }
-  state.log.push(`${actor.displayName} поднимает нежить: ${unit.displayName}.`);
+  resurrectUnit(state, unit);
+  state.log.push(
+    `${actor.displayName} поднимает нежить: ${unit.displayName} (½ max ОЗ, ½ инициативы).`
+  );
   return { status: 'done' };
 }
 
