@@ -165,6 +165,7 @@ export namespace MatchesModel {
       t.Literal('draw'),
     ]),
     winnerPlayerId: t.Nullable(t.String()),
+    drawOfferByPlayerId: t.Nullable(t.String()),
     log: t.Array(t.String()),
     turnOrder: t.Array(turnOrderEntry),
     legalTargetIds: t.Array(t.String()),

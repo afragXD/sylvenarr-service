@@ -2,6 +2,7 @@ export {
   applyAction,
   type BattleSummary,
   createBattleState,
+  forceDraw,
   forceSurrender,
   listAttackTargets,
   toBattleSummary,

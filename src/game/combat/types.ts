@@ -189,6 +189,8 @@ export type BattleState = {
   outcome: 'ongoing' | 'host_win' | 'guest_win' | 'draw';
   winnerPlayerId: string | null;
   pendingPrompt: PendingPrompt | null;
+  /** Кто предложил ничью (ожидает ответа соперника). */
+  drawOfferByPlayerId: string | null;
   /** id юнитов, для которых preChoice уже сработал в этом «заходе» хода. */
   preChoiceDoneIds: string[];
   /** Мёртвые не-саммоны для воскрешения. */

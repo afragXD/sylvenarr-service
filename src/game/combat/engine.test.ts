@@ -5,6 +5,7 @@ import {
   applyAction,
   buildTurnOrder,
   createBattleState,
+  forceDraw,
   forceSurrender,
   resolveOutcome,
   toBattleSummary,
@@ -417,5 +418,24 @@ describe('combat engine', () => {
     forceSurrender(state, 'h');
     expect(state.outcome).toBe('guest_win');
     expect(state.winnerPlayerId).toBe('g');
+  });
+
+  test('forceDraw ends as draw and clears offer', () => {
+    const heroes = catalogHeroes(hero('A'), hero('B'));
+    const state = createBattleState({
+      matchId: 'm1',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'A', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    state.drawOfferByPlayerId = 'h';
+    forceDraw(state);
+    expect(state.outcome).toBe('draw');
+    expect(state.winnerPlayerId).toBeNull();
+    expect(state.drawOfferByPlayerId).toBeNull();
   });
 });

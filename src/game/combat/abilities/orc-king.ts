@@ -9,6 +9,12 @@ function getRage(actor: BattleUnit): number {
   return Math.round((2 - actor.health / actor.maxHp + actor.cumRage) * 100) / 100;
 }
 
+function countOwnedSummons(state: BattleState, actor: BattleUnit): number {
+  return state.units.filter(
+    (unit) => unit.alive && unit.isSummon && unit.summonerId === actor.id
+  ).length;
+}
+
 function abilityMeta(
   state: BattleState,
   actor: BattleUnit,
@@ -25,14 +31,17 @@ function abilityMeta(
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
-    case 2:
+    case 2: {
+      const atSummonCap = countOwnedSummons(state, actor) >= actor.maxSummons;
       return {
         slot: 2,
         label: `Гоблины (${actor.authority})`,
         needsTarget: false,
-        disabledReason: actor.authority <= 0 ? 'Нет вызовов' : null,
+        disabledReason:
+          actor.authority <= 0 ? 'Нет вызовов' : atSummonCap ? 'Лимит саммонов' : null,
         legalTargetIds: [],
       };
+    }
     case 3: {
       const targets = meleeOrAll(state, actor, false);
       return {
@@ -131,6 +140,7 @@ export const orcKingAbilities: AbilityHandler = {
         options: [
           { id: 'shaman', label: 'Шаман' },
           { id: 'trapper', label: 'Разведчик' },
+          { id: 'cancel', label: 'Отмена' },
         ],
         context: {},
       };
@@ -208,6 +218,17 @@ function resolvePrompt(
   if (!prompt || !choice) {
     return { status: 'reject', message: 'Нужен выбор' };
   }
+
+  if (
+    choice === 'cancel' &&
+    (prompt.kind === 'orc_goblin_type' || prompt.kind === 'orc_goblin_row')
+  ) {
+    state.pendingPrompt = null;
+    actor.authority += 1;
+    state.log.push(`${actor.displayName} отменяет призыв.`);
+    return { status: 'done', keepTurn: true };
+  }
+
   if (!prompt.options.some((option) => option.id === choice)) {
     return { status: 'reject', message: 'Неверный выбор' };
   }
@@ -218,16 +239,20 @@ function resolvePrompt(
     if (rows.length === 0) {
       state.pendingPrompt = null;
       actor.authority += 1;
-      return { status: 'reject', message: 'Нет места для саммона' };
+      state.log.push(`${actor.displayName}: нет места для саммона.`);
+      return { status: 'done', keepTurn: true };
     }
     state.pendingPrompt = {
       unitId: actor.id,
       kind: 'orc_goblin_row',
       slot: 2,
-      options: rows.map((row) => ({
-        id: String(row),
-        label: row === 0 ? 'Передний ряд' : 'Задний ряд',
-      })),
+      options: [
+        ...rows.map((row) => ({
+          id: String(row),
+          label: row === 0 ? 'Передний ряд' : 'Задний ряд',
+        })),
+        { id: 'cancel', label: 'Отмена' },
+      ],
       context: { summonCode: code },
     };
     state.log.push(`${actor.displayName}: выберите ряд для гоблина.`);
@@ -238,14 +263,17 @@ function resolvePrompt(
     const code = prompt.context.summonCode;
     if (!code) {
       state.pendingPrompt = null;
-      return { status: 'reject', message: 'Нет кода саммона' };
+      actor.authority += 1;
+      state.log.push(`${actor.displayName}: призыв сорвался.`);
+      return { status: 'done', keepTurn: true };
     }
     const row = Number(choice);
     const summon = createSummon(state, { summoner: actor, heroCode: code, row });
     state.pendingPrompt = null;
     if (!summon) {
       actor.authority += 1;
-      return { status: 'reject', message: 'Не удалось призвать' };
+      state.log.push(`${actor.displayName}: не удалось призвать.`);
+      return { status: 'done', keepTurn: true };
     }
     state.log.push(`${actor.displayName} призывает ${summon.displayName}.`);
     return { status: 'done' };

@@ -110,6 +110,7 @@ export function createBattleState(input: {
     outcome: 'ongoing',
     winnerPlayerId: null,
     pendingPrompt: null,
+    drawOfferByPlayerId: null,
     preChoiceDoneIds: [],
     graveyard: [],
   };
@@ -670,6 +671,7 @@ export function resolveOutcome(state: BattleState): void {
   state.activeUnitId = null;
   state.turnPlayerId = null;
   state.pendingPrompt = null;
+  state.drawOfferByPlayerId = null;
 }
 
 /**
@@ -686,6 +688,23 @@ export function forceSurrender(state: BattleState, surrenderingPlayerId: string)
   state.activeUnitId = null;
   state.turnPlayerId = null;
   state.pendingPrompt = null;
+  state.drawOfferByPlayerId = null;
+}
+
+/**
+ * Ничья по согласию сторон.
+ */
+export function forceDraw(state: BattleState): void {
+  if (state.outcome !== 'ongoing') {
+    return;
+  }
+  state.outcome = 'draw';
+  state.winnerPlayerId = null;
+  state.log.push('Ничья по согласию.');
+  state.activeUnitId = null;
+  state.turnPlayerId = null;
+  state.pendingPrompt = null;
+  state.drawOfferByPlayerId = null;
 }
 
 export type TurnOrderPhase = 'acted' | 'active' | 'waiting' | 'delayed' | 'dead';
@@ -773,6 +792,7 @@ export function toBattleSummary(state: BattleState) {
     turnPlayerId: state.turnPlayerId,
     outcome: state.outcome,
     winnerPlayerId: state.winnerPlayerId,
+    drawOfferByPlayerId: state.drawOfferByPlayerId ?? null,
     log: state.log.slice(-40),
     turnOrder: buildTurnOrder(state),
     legalTargetIds: targets,

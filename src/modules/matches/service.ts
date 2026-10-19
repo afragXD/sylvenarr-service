@@ -4,6 +4,7 @@ import {
   type BattleSummary,
   buildResultSnapshot,
   createBattleState,
+  forceDraw,
   forceSurrender,
   getBattleStore,
   type HeroClassStats,
@@ -606,6 +607,164 @@ export abstract class MatchesService {
       include: matchInclude,
     });
     return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+  }
+
+  /**
+   * Предложить ничью. Повторный offer при чужом оффере = accept.
+   */
+  static async offerDraw(input: {
+    readonly matchId: string;
+    readonly playerId: string;
+  }): Promise<
+    | { ok: true; match: MatchesModel.match }
+    | { ok: false; message: string; status: 400 | 403 | 404 }
+  > {
+    const loaded = await MatchesService.loadFightingBattle(input);
+    if (!loaded.ok) {
+      return loaded;
+    }
+    const { existing, state, store } = loaded;
+
+    if (
+      state.drawOfferByPlayerId &&
+      state.drawOfferByPlayerId !== input.playerId
+    ) {
+      return MatchesService.acceptDraw(input);
+    }
+    if (state.drawOfferByPlayerId === input.playerId) {
+      const row = await prisma.match.findUniqueOrThrow({
+        where: { id: existing.id },
+        include: matchInclude,
+      });
+      return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+    }
+
+    state.drawOfferByPlayerId = input.playerId;
+    state.log.push('Предложена ничья.');
+    await store.set(state);
+    publishBattle(existing.id, 'battle:state', toBattleSummary(state));
+
+    const row = await prisma.match.findUniqueOrThrow({
+      where: { id: existing.id },
+      include: matchInclude,
+    });
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+  }
+
+  /**
+   * Принять предложение ничьей.
+   */
+  static async acceptDraw(input: {
+    readonly matchId: string;
+    readonly playerId: string;
+  }): Promise<
+    | { ok: true; match: MatchesModel.match }
+    | { ok: false; message: string; status: 400 | 403 | 404 }
+  > {
+    const loaded = await MatchesService.loadFightingBattle(input);
+    if (!loaded.ok) {
+      return loaded;
+    }
+    const { existing, state, store } = loaded;
+
+    if (!state.drawOfferByPlayerId) {
+      return { ok: false, message: 'Нет предложения ничьей', status: 400 };
+    }
+    if (state.drawOfferByPlayerId === input.playerId) {
+      return { ok: false, message: 'Нельзя принять своё предложение', status: 400 };
+    }
+
+    forceDraw(state);
+    await MatchesService.finalizeBattle({
+      matchId: existing.id,
+      winnerPlayerId: null,
+      state,
+      hostDisplayName: existing.host.displayName,
+      guestDisplayName: existing.guest?.displayName ?? '—',
+    });
+    await store.set(state);
+    publishBattle(existing.id, 'battle:ended', toBattleSummary(state));
+
+    const row = await prisma.match.findUniqueOrThrow({
+      where: { id: existing.id },
+      include: matchInclude,
+    });
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+  }
+
+  /**
+   * Отклонить предложение ничьей.
+   */
+  static async declineDraw(input: {
+    readonly matchId: string;
+    readonly playerId: string;
+  }): Promise<
+    | { ok: true; match: MatchesModel.match }
+    | { ok: false; message: string; status: 400 | 403 | 404 }
+  > {
+    const loaded = await MatchesService.loadFightingBattle(input);
+    if (!loaded.ok) {
+      return loaded;
+    }
+    const { existing, state, store } = loaded;
+
+    if (!state.drawOfferByPlayerId) {
+      return { ok: false, message: 'Нет предложения ничьей', status: 400 };
+    }
+    if (state.drawOfferByPlayerId === input.playerId) {
+      return { ok: false, message: 'Нельзя отклонить своё предложение', status: 400 };
+    }
+
+    state.drawOfferByPlayerId = null;
+    state.log.push('Предложение ничьей отклонено.');
+    await store.set(state);
+    publishBattle(existing.id, 'battle:state', toBattleSummary(state));
+
+    const row = await prisma.match.findUniqueOrThrow({
+      where: { id: existing.id },
+      include: matchInclude,
+    });
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+  }
+
+  private static async loadFightingBattle(input: {
+    readonly matchId: string;
+    readonly playerId: string;
+  }): Promise<
+    | {
+        ok: true;
+        existing: MatchRow;
+        state: BattleState;
+        store: ReturnType<typeof getBattleStore>;
+      }
+    | { ok: false; message: string; status: 400 | 403 | 404 }
+  > {
+    const existing = await prisma.match.findUnique({
+      where: { id: input.matchId },
+      include: matchInclude,
+    });
+    if (!existing) {
+      return { ok: false, message: 'Матч не найден', status: 404 };
+    }
+    if (!MatchesService.isParticipant(existing, input.playerId)) {
+      return { ok: false, message: 'Вы не участник этого матча', status: 403 };
+    }
+    if (existing.status !== 'fighting') {
+      return { ok: false, message: 'Доступно только во время боя', status: 400 };
+    }
+    const store = getBattleStore();
+    const state = await store.get(existing.id);
+    if (!state) {
+      return { ok: false, message: 'Состояние боя не найдено', status: 400 };
+    }
+    if (state.outcome !== 'ongoing') {
+      return { ok: false, message: 'Бой уже завершён', status: 400 };
+    }
+    // Backfill for battles started before drawOffer field existed.
+    if (state.drawOfferByPlayerId === undefined) {
+      state.drawOfferByPlayerId = null;
+    }
+    return { ok: true, existing: existing as MatchRow, state, store };
   }
 
   /**

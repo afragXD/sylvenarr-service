@@ -216,6 +216,87 @@ export const matchesController = new Elysia({ prefix: '/matches', tags: ['Matche
     }
   )
   .post(
+    '/:id/battle/draw/offer',
+    async ({ params, player, status }) => {
+      const result = await MatchesService.offerDraw({
+        matchId: params.id,
+        playerId: player.id,
+      });
+      if (!result.ok) {
+        return status(result.status, { message: result.message });
+      }
+      return result.match;
+    },
+    {
+      requireAuth: true,
+      params: MatchesModel.idParams,
+      response: {
+        200: MatchesModel.match,
+        400: MatchesModel.errorResponse,
+        401: MatchesModel.errorResponse,
+        403: MatchesModel.errorResponse,
+        404: MatchesModel.errorResponse,
+      },
+      detail: {
+        summary: 'Предложить ничью',
+      },
+    }
+  )
+  .post(
+    '/:id/battle/draw/accept',
+    async ({ params, player, status }) => {
+      const result = await MatchesService.acceptDraw({
+        matchId: params.id,
+        playerId: player.id,
+      });
+      if (!result.ok) {
+        return status(result.status, { message: result.message });
+      }
+      return result.match;
+    },
+    {
+      requireAuth: true,
+      params: MatchesModel.idParams,
+      response: {
+        200: MatchesModel.match,
+        400: MatchesModel.errorResponse,
+        401: MatchesModel.errorResponse,
+        403: MatchesModel.errorResponse,
+        404: MatchesModel.errorResponse,
+      },
+      detail: {
+        summary: 'Принять ничью',
+      },
+    }
+  )
+  .post(
+    '/:id/battle/draw/decline',
+    async ({ params, player, status }) => {
+      const result = await MatchesService.declineDraw({
+        matchId: params.id,
+        playerId: player.id,
+      });
+      if (!result.ok) {
+        return status(result.status, { message: result.message });
+      }
+      return result.match;
+    },
+    {
+      requireAuth: true,
+      params: MatchesModel.idParams,
+      response: {
+        200: MatchesModel.match,
+        400: MatchesModel.errorResponse,
+        401: MatchesModel.errorResponse,
+        403: MatchesModel.errorResponse,
+        404: MatchesModel.errorResponse,
+      },
+      detail: {
+        summary: 'Отклонить ничью',
+      },
+    }
+  )
+  .post(
     '/:id/battle/action',
     async ({ params, body, player, status }) => {
       const result = await MatchesService.battleAction({
