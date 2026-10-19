@@ -89,7 +89,15 @@ describe('effects', () => {
   });
 
   test('VAMPWEAPON heals on dealDamage', () => {
-    const attacker = unit({ id: 'a', health: 40, accuracy: 100, luck: 0, damage: 50 });
+    const state = emptyState();
+    const attacker = unit({
+      id: 'a',
+      displayName: 'Ассасин',
+      health: 40,
+      accuracy: 100,
+      luck: 0,
+      damage: 50,
+    });
     grantEffect(attacker, 'VAMPWEAPON', 2, 0.5);
     const defender = unit({
       id: 'd',
@@ -98,13 +106,15 @@ describe('effects', () => {
       armor: 0,
       dodge: 0,
     });
-    const dmg = dealDamage(attacker, defender, {
-      damageMult: 1,
-      armorIgnore: 0,
-      forceHit: true,
-    });
+    const dmg = dealDamage(
+      attacker,
+      defender,
+      { damageMult: 1, armorIgnore: 0, forceHit: true },
+      state
+    );
     expect(dmg).toBeGreaterThan(0);
     expect(attacker.health).toBeGreaterThan(40);
+    expect(state.log.some((line) => line.includes('высасывает'))).toBe(true);
   });
 
   test('CONTR counters after hit', () => {

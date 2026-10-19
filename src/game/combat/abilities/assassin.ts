@@ -88,7 +88,7 @@ export const assassinAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 1.15, armorIgnore: 0.35 });
+      const damage = dealDamage(actor, target, { damageMult: 1.15, armorIgnore: 0.35 }, state);
       if (damage === 0) {
         state.log.push(`${actor.displayName} промахивается стилетом.`);
       } else {
