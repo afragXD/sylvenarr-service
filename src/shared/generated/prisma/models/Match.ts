@@ -561,10 +561,6 @@ export type EnumMatchStatusFieldUpdateOperationsInput = {
   set?: $Enums.MatchStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type MatchCreateNestedOneWithoutPicksInput = {
   create?: Prisma.XOR<Prisma.MatchCreateWithoutPicksInput, Prisma.MatchUncheckedCreateWithoutPicksInput>
   connectOrCreate?: Prisma.MatchCreateOrConnectWithoutPicksInput

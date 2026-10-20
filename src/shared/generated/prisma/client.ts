@@ -50,6 +50,11 @@ export type HeroClass = Prisma.HeroClassModel
  */
 export type Player = Prisma.PlayerModel
 /**
+ * Model News
+ * Новость хроники разработки.
+ */
+export type News = Prisma.NewsModel
+/**
  * Model OAuthAccount
  * Привязка внешнего OAuth-провайдера к игроку.
  */

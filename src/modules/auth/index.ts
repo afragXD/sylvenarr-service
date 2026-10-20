@@ -21,21 +21,64 @@ const stateCookieOptions = {
   maxAge: 60 * 10,
 };
 
-export const authController = new Elysia({ prefix: '/auth', tags: ['Auth'] })
-  .get(
-    '/providers',
-    () => ({
-      items: listEnabledProviders(),
-    }),
-    {
-      response: {
-        200: AuthModel.providersResponse,
+let auth = new Elysia({ prefix: '/auth', tags: ['Auth'] }).get(
+  '/providers',
+  () => ({
+    items: listEnabledProviders(),
+  }),
+  {
+    response: {
+      200: AuthModel.providersResponse,
+    },
+    detail: {
+      summary: 'Список включённых OAuth-провайдеров',
+    },
+  }
+);
+
+if (isDev) {
+  auth = auth
+    .get(
+      '/dev-login/:playerId',
+      async ({ params, cookie, redirect, status }) => {
+        const player = await AuthService.findPlayerForDevLogin(params.playerId);
+        if (!player) {
+          return status(404, { message: 'Игрок не найден' });
+        }
+        cookie[PLAYER_COOKIE_NAME].set({
+          value: player.id,
+          ...sessionCookieOptions,
+        });
+        return redirect(AuthService.successRedirectUrl());
       },
-      detail: {
-        summary: 'Список включённых OAuth-провайдеров',
+      {
+        detail: {
+          summary: 'Dev-only: войти под игроком по id (редирект на фронт)',
+        },
+      }
+    )
+    .post(
+      '/dev-login/:playerId',
+      async ({ params, cookie, status }) => {
+        const player = await AuthService.findPlayerForDevLogin(params.playerId);
+        if (!player) {
+          return status(404, { message: 'Игрок не найден' });
+        }
+        cookie[PLAYER_COOKIE_NAME].set({
+          value: player.id,
+          ...sessionCookieOptions,
+        });
+        return { ok: true, playerId: player.id, displayName: player.displayName };
       },
-    }
-  )
+      {
+        detail: {
+          summary: 'Dev-only: войти под игроком по id (JSON, для cookie с фронта)',
+        },
+      }
+    );
+}
+
+export const authController = auth
   .get(
     '/:provider',
     ({ params, cookie, status, redirect }) => {

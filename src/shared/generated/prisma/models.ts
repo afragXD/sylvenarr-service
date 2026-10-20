@@ -10,6 +10,7 @@
  */
 export type * from './models/HeroClass'
 export type * from './models/Player'
+export type * from './models/News'
 export type * from './models/OAuthAccount'
 export type * from './models/Match'
 export type * from './models/MatchPick'

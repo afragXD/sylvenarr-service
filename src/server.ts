@@ -8,6 +8,8 @@ import { authController } from './modules/auth';
 import { heroesController } from './modules/heroes';
 import { matchesController } from './modules/matches';
 import { matchesWsController } from './modules/matches/ws';
+import { devScenesController } from './modules/dev-scenes';
+import { newsController } from './modules/news';
 import { playersController } from './modules/players';
 import { ratingController } from './modules/rating';
 import { isDev } from './utils/isDev';
@@ -50,4 +52,6 @@ export const app = new Elysia({
   .use(playersController)
   .use(matchesController)
   .use(matchesWsController)
-  .use(ratingController);
+  .use(ratingController)
+  .use(newsController)
+  .use(devScenesController);

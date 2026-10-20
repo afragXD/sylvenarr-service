@@ -29,3 +29,21 @@ export const RatingResult = {
 } as const
 
 export type RatingResult = (typeof RatingResult)[keyof typeof RatingResult]
+
+
+export const PlayerRole = {
+  player: 'player',
+  admin: 'admin'
+} as const
+
+export type PlayerRole = (typeof PlayerRole)[keyof typeof PlayerRole]
+
+
+export const NewsCategory = {
+  announcement: 'announcement',
+  devlog: 'devlog',
+  update: 'update',
+  fix: 'fix'
+} as const
+
+export type NewsCategory = (typeof NewsCategory)[keyof typeof NewsCategory]

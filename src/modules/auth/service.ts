@@ -100,4 +100,11 @@ export abstract class AuthService {
     }
     return player;
   }
+
+  /**
+   * Dev-only: игрок с OAuth для установки cookie без провайдера.
+   */
+  static async findPlayerForDevLogin(playerId: string): Promise<PlayersModel.player | null> {
+    return PlayersService.findAuthenticatedById(playerId);
+  }
 }

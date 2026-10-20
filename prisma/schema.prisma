@@ -23,6 +23,18 @@ enum RatingResult {
   draw
 }
 
+enum PlayerRole {
+  player
+  admin
+}
+
+enum NewsCategory {
+  announcement
+  devlog
+  update
+  fix
+}
+
 /// Класс героя из каталога (статы из legacy stats_dict).
 model HeroClass {
   code         String   @id
@@ -55,20 +67,41 @@ model HeroClass {
 
 /// Игрок (создаётся только через OAuth).
 model Player {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   displayName String
   email       String?
   avatarUrl   String?
   /// ПТС (сезонный рейтинг Heroes III / StickyFingaz). Нулевой уровень = 1500.
-  pts         Int      @default(1500)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  pts         Int        @default(1500)
+  role        PlayerRole @default(player)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   hostedMatches  Match[]        @relation("MatchHost")
   guestMatches   Match[]        @relation("MatchGuest")
   ratingEntries  RatingEntry[]
   oauthAccounts  OAuthAccount[]
   matchPicks     MatchPick[]
+  news           News[]
+}
+
+/// Новость хроники разработки.
+model News {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  title       String
+  summary     String
+  body        String
+  category    NewsCategory @default(devlog)
+  coverUrl    String?
+  publishedAt DateTime?
+  authorId    String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  author Player? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([publishedAt])
 }
 
 /// Привязка внешнего OAuth-провайдера к игроку.

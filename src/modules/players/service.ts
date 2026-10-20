@@ -6,6 +6,7 @@ type PlayerRow = {
   displayName: string;
   email: string | null;
   avatarUrl: string | null;
+  role: PlayersModel.playerRole;
   createdAt: Date;
   oauthAccounts: ReadonlyArray<{ provider: string }>;
 };
@@ -20,6 +21,7 @@ export abstract class PlayersService {
       displayName: row.displayName,
       email: row.email,
       avatarUrl: row.avatarUrl,
+      role: row.role,
       providers: row.oauthAccounts.map((account) => account.provider),
       createdAt: row.createdAt.toISOString(),
     };
@@ -30,6 +32,7 @@ export abstract class PlayersService {
     displayName: true,
     email: true,
     avatarUrl: true,
+    role: true,
     createdAt: true,
     oauthAccounts: {
       select: { provider: true },

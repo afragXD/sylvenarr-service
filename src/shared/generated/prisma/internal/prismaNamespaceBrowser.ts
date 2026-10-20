@@ -53,6 +53,7 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   HeroClass: 'HeroClass',
   Player: 'Player',
+  News: 'News',
   OAuthAccount: 'OAuthAccount',
   Match: 'Match',
   MatchPick: 'MatchPick',
@@ -107,11 +108,29 @@ export const PlayerScalarFieldEnum = {
   email: 'email',
   avatarUrl: 'avatarUrl',
   pts: 'pts',
+  role: 'role',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type PlayerScalarFieldEnum = (typeof PlayerScalarFieldEnum)[keyof typeof PlayerScalarFieldEnum]
+
+
+export const NewsScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  summary: 'summary',
+  body: 'body',
+  category: 'category',
+  coverUrl: 'coverUrl',
+  publishedAt: 'publishedAt',
+  authorId: 'authorId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NewsScalarFieldEnum = (typeof NewsScalarFieldEnum)[keyof typeof NewsScalarFieldEnum]
 
 
 export const OAuthAccountScalarFieldEnum = {
