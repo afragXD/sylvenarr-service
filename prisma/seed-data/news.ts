@@ -19,24 +19,32 @@ export const NEWS_SEED: readonly NewsSeed[] = [
     summary:
       'Веб-версия арены открывает каталог героев и каркас матчей. Исходник — открытый VK-бот enlacroix.',
     category: 'announcement',
-    coverUrl: '/scenes/hero.jpg',
+    coverUrl: '/scenes/bot-combat.jpg',
     publishedAt: '2026-10-15T15:00:00.000Z',
-    body: `Sylvenarr: Origins снова на арене — уже не только во ВКонтакте.
+    body: `Sylvenarr снова на арене — уже в браузере.
 
-Оригинал — текстовая PvP-арена **Master of Arena** авторства enlacroix: отряд из четырёх–шести героев, два десятка классов, рейтинг и ярмарка. Исходник бота открыт в репозитории arenamsterbot — веб-версия переносит его механики в браузер.
+Оригинал — VK-бот **Sylvenarr: Origins** авторства enlacroix: пошаговые дуэли в тёмном технофэнтези, отряд из четырёх–шести героев и два десятка классов. Исходник открыт в репозитории [arenamsterbot](https://github.com/enlacroix/arenamsterbot).
 
-Сейчас уже есть каталог классов, каркас игрока и матча, заготовка рейтинга. Спасибо enlacroix за мир, в который мы вернулись.`,
+В боте всё шло текстом и командами в чате: расстановка на поле, ход юнита, способности.
+
+![Поле боя во VK-боте](/scenes/bot-field.png)
+
+![Меню хода во VK-боте](/scenes/bot-gameplay.png)
+
+Веб-версия переносит эти механики в браузер. На старте уже есть каталог классов, каркас игрока и матча, заготовка рейтинга. Спасибо enlacroix за мир, в который мы вернулись.`,
   },
   {
     slug: 'yandex-login-lobby-draft',
     title: 'Вход через Яндекс, лобби и драфт',
     summary: 'Без гостевых аккаунтов: OAuth, код приглашения и расстановка героев по рядам.',
     category: 'devlog',
-    coverUrl: '/scenes/draft.png',
+    coverUrl: '/scenes/signin.webp',
     publishedAt: '2026-10-16T17:00:00.000Z',
     body: `Вход теперь только через Яндекс. Гостевых сессий нет — рейтинг и история матчей всегда привязаны к вам.
 
 В лобби создаёте матч и отправляете другу код приглашения. Дальше — драфт: по очереди забираете классы и расставляете их по переднему и заднему ряду. Пики можно переставлять, пока драфт не закрыт.
+
+![Драфт отряда](/scenes/draft.webp)
 
 Рядом появилась страница конфиденциальности: что храним и зачем.`,
   },
@@ -45,7 +53,7 @@ export const NEWS_SEED: readonly NewsSeed[] = [
     title: 'Первая кровь: пошаговый бой',
     summary: 'Очередь по инициативе, способности классов, перемещение между рядами и кодекс эффектов.',
     category: 'update',
-    coverUrl: '/scenes/battle.jpg',
+    coverUrl: '/scenes/battle.webp',
     publishedAt: '2026-10-17T17:00:00.000Z',
     body: `Боевой движок включён.
 
@@ -58,7 +66,7 @@ export const NEWS_SEED: readonly NewsSeed[] = [
     title: 'Уровни, правила матча, сдача и ничья',
     summary: 'Рост юнитов в бою, настраиваемые квоты и дубли, кнопки сдачи и предложения ничьей.',
     category: 'update',
-    coverUrl: '/scenes/rows.png',
+    coverUrl: '/scenes/rules.webp',
     publishedAt: '2026-10-19T16:00:00.000Z',
     body: `Юниты растут прямо в бою: уровень поднимает статы и открывает более сильные варианты способностей.
 
@@ -71,7 +79,7 @@ export const NEWS_SEED: readonly NewsSeed[] = [
     title: 'Рейтинг ПТС, криты и варды',
     summary: 'Сезонный рейтинг в духе Heroes III, критические удары и переработанные сопротивления.',
     category: 'update',
-    coverUrl: '/scenes/initiative.png',
+    coverUrl: '/scenes/rating.webp',
     publishedAt: '2026-10-20T17:00:00.000Z',
     body: `Рейтинг переведён на **ПТС** — очки в духе Heroes of Might and Magic III. Все начинают с 1500. Победа над сильным соперником даёт больше, ничья тоже учитывается.
 
@@ -82,7 +90,7 @@ export const NEWS_SEED: readonly NewsSeed[] = [
     title: 'Новый облик арены',
     summary: 'Тёмный дым, латунные рамки, витрина героев, хроника разработки и вопросы на главной.',
     category: 'announcement',
-    coverUrl: '/scenes/hero.jpg',
+    coverUrl: '/scenes/home.webp',
     publishedAt: '2026-10-21T00:30:00.000Z',
     body: `Сайт переодет.
 

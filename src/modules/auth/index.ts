@@ -21,64 +21,44 @@ const stateCookieOptions = {
   maxAge: 60 * 10,
 };
 
-let auth = new Elysia({ prefix: '/auth', tags: ['Auth'] }).get(
-  '/providers',
-  () => ({
-    items: listEnabledProviders(),
-  }),
-  {
-    response: {
-      200: AuthModel.providersResponse,
-    },
-    detail: {
-      summary: 'Список включённых OAuth-провайдеров',
-    },
-  }
-);
-
-if (isDev) {
-  auth = auth
-    .get(
-      '/dev-login/:playerId',
-      async ({ params, cookie, redirect, status }) => {
-        const player = await AuthService.findPlayerForDevLogin(params.playerId);
-        if (!player) {
-          return status(404, { message: 'Игрок не найден' });
-        }
-        cookie[PLAYER_COOKIE_NAME].set({
-          value: player.id,
-          ...sessionCookieOptions,
-        });
-        return redirect(AuthService.successRedirectUrl());
+export const authController = new Elysia({ prefix: '/auth', tags: ['Auth'] })
+  .get(
+    '/providers',
+    () => ({
+      items: listEnabledProviders(),
+    }),
+    {
+      response: {
+        200: AuthModel.providersResponse,
       },
-      {
-        detail: {
-          summary: 'Dev-only: войти под игроком по id (редирект на фронт)',
-        },
-      }
-    )
-    .post(
-      '/dev-login/:playerId',
-      async ({ params, cookie, status }) => {
-        const player = await AuthService.findPlayerForDevLogin(params.playerId);
-        if (!player) {
-          return status(404, { message: 'Игрок не найден' });
-        }
-        cookie[PLAYER_COOKIE_NAME].set({
-          value: player.id,
-          ...sessionCookieOptions,
-        });
-        return { ok: true, playerId: player.id, displayName: player.displayName };
+      detail: {
+        summary: 'Список включённых OAuth-провайдеров',
       },
-      {
-        detail: {
-          summary: 'Dev-only: войти под игроком по id (JSON, для cookie с фронта)',
-        },
+    }
+  )
+  .post(
+    '/dev-login/:playerId',
+    async ({ params, cookie, status }) => {
+      if (!isDev) {
+        return status(404, { message: 'Not found' });
       }
-    );
-}
-
-export const authController = auth
+      const player = await AuthService.findPlayerForDevLogin(params.playerId);
+      if (!player) {
+        return status(404, { message: 'Игрок не найден' });
+      }
+      cookie[PLAYER_COOKIE_NAME].set({
+        value: player.id,
+        ...sessionCookieOptions,
+      });
+      return { ok: true, playerId: player.id, displayName: player.displayName };
+    },
+    {
+      detail: {
+        summary: 'Только в разработке: войти под игроком по id',
+        hide: !isDev,
+      },
+    }
+  )
   .get(
     '/:provider',
     ({ params, cookie, status, redirect }) => {
