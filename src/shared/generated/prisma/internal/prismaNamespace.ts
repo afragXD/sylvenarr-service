@@ -923,6 +923,7 @@ export const PlayerScalarFieldEnum = {
   displayName: 'displayName',
   email: 'email',
   avatarUrl: 'avatarUrl',
+  pts: 'pts',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -980,6 +981,10 @@ export const RatingEntryScalarFieldEnum = {
   playerId: 'playerId',
   result: 'result',
   heroClassCode: 'heroClassCode',
+  matchId: 'matchId',
+  ptsBefore: 'ptsBefore',
+  ptsDelta: 'ptsDelta',
+  ptsAfter: 'ptsAfter',
   createdAt: 'createdAt'
 } as const
 

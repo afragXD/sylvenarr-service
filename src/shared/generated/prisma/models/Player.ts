@@ -20,8 +20,18 @@ export type PlayerModel = runtime.Types.Result.DefaultSelection<Prisma.$PlayerPa
 
 export type AggregatePlayer = {
   _count: PlayerCountAggregateOutputType | null
+  _avg: PlayerAvgAggregateOutputType | null
+  _sum: PlayerSumAggregateOutputType | null
   _min: PlayerMinAggregateOutputType | null
   _max: PlayerMaxAggregateOutputType | null
+}
+
+export type PlayerAvgAggregateOutputType = {
+  pts: number | null
+}
+
+export type PlayerSumAggregateOutputType = {
+  pts: number | null
 }
 
 export type PlayerMinAggregateOutputType = {
@@ -29,6 +39,7 @@ export type PlayerMinAggregateOutputType = {
   displayName: string | null
   email: string | null
   avatarUrl: string | null
+  pts: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -38,6 +49,7 @@ export type PlayerMaxAggregateOutputType = {
   displayName: string | null
   email: string | null
   avatarUrl: string | null
+  pts: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -47,17 +59,27 @@ export type PlayerCountAggregateOutputType = {
   displayName: number
   email: number
   avatarUrl: number
+  pts: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
 
+export type PlayerAvgAggregateInputType = {
+  pts?: true
+}
+
+export type PlayerSumAggregateInputType = {
+  pts?: true
+}
+
 export type PlayerMinAggregateInputType = {
   id?: true
   displayName?: true
   email?: true
   avatarUrl?: true
+  pts?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -67,6 +89,7 @@ export type PlayerMaxAggregateInputType = {
   displayName?: true
   email?: true
   avatarUrl?: true
+  pts?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -76,6 +99,7 @@ export type PlayerCountAggregateInputType = {
   displayName?: true
   email?: true
   avatarUrl?: true
+  pts?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -119,6 +143,18 @@ export type PlayerAggregateArgs<ExtArgs extends runtime.Types.Extensions.Interna
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: PlayerAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: PlayerSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: PlayerMinAggregateInputType
@@ -149,6 +185,8 @@ export type PlayerGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   _count?: PlayerCountAggregateInputType | true
+  _avg?: PlayerAvgAggregateInputType
+  _sum?: PlayerSumAggregateInputType
   _min?: PlayerMinAggregateInputType
   _max?: PlayerMaxAggregateInputType
 }
@@ -158,9 +196,12 @@ export type PlayerGroupByOutputType = {
   displayName: string
   email: string | null
   avatarUrl: string | null
+  pts: number
   createdAt: Date
   updatedAt: Date
   _count: PlayerCountAggregateOutputType | null
+  _avg: PlayerAvgAggregateOutputType | null
+  _sum: PlayerSumAggregateOutputType | null
   _min: PlayerMinAggregateOutputType | null
   _max: PlayerMaxAggregateOutputType | null
 }
@@ -188,6 +229,7 @@ export type PlayerWhereInput = {
   displayName?: Prisma.StringFilter<"Player"> | string
   email?: Prisma.StringNullableFilter<"Player"> | string | null
   avatarUrl?: Prisma.StringNullableFilter<"Player"> | string | null
+  pts?: Prisma.IntFilter<"Player"> | number
   createdAt?: Prisma.DateTimeFilter<"Player"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Player"> | Date | string
   hostedMatches?: Prisma.MatchListRelationFilter
@@ -202,6 +244,7 @@ export type PlayerOrderByWithRelationInput = {
   displayName?: Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  pts?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   hostedMatches?: Prisma.MatchOrderByRelationAggregateInput
@@ -219,6 +262,7 @@ export type PlayerWhereUniqueInput = Prisma.AtLeast<{
   displayName?: Prisma.StringFilter<"Player"> | string
   email?: Prisma.StringNullableFilter<"Player"> | string | null
   avatarUrl?: Prisma.StringNullableFilter<"Player"> | string | null
+  pts?: Prisma.IntFilter<"Player"> | number
   createdAt?: Prisma.DateTimeFilter<"Player"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Player"> | Date | string
   hostedMatches?: Prisma.MatchListRelationFilter
@@ -233,11 +277,14 @@ export type PlayerOrderByWithAggregationInput = {
   displayName?: Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  pts?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.PlayerCountOrderByAggregateInput
+  _avg?: Prisma.PlayerAvgOrderByAggregateInput
   _max?: Prisma.PlayerMaxOrderByAggregateInput
   _min?: Prisma.PlayerMinOrderByAggregateInput
+  _sum?: Prisma.PlayerSumOrderByAggregateInput
 }
 
 export type PlayerScalarWhereWithAggregatesInput = {
@@ -248,6 +295,7 @@ export type PlayerScalarWhereWithAggregatesInput = {
   displayName?: Prisma.StringWithAggregatesFilter<"Player"> | string
   email?: Prisma.StringNullableWithAggregatesFilter<"Player"> | string | null
   avatarUrl?: Prisma.StringNullableWithAggregatesFilter<"Player"> | string | null
+  pts?: Prisma.IntWithAggregatesFilter<"Player"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Player"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Player"> | Date | string
 }
@@ -257,6 +305,7 @@ export type PlayerCreateInput = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  pts?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchCreateNestedManyWithoutHostInput
@@ -271,6 +320,7 @@ export type PlayerUncheckedCreateInput = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  pts?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutHostInput
@@ -285,6 +335,7 @@ export type PlayerUpdateInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUpdateManyWithoutHostNestedInput
@@ -299,6 +350,7 @@ export type PlayerUncheckedUpdateInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUncheckedUpdateManyWithoutHostNestedInput
@@ -313,6 +365,7 @@ export type PlayerCreateManyInput = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  pts?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -322,6 +375,7 @@ export type PlayerUpdateManyMutationInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -331,6 +385,7 @@ export type PlayerUncheckedUpdateManyInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -340,8 +395,13 @@ export type PlayerCountOrderByAggregateInput = {
   displayName?: Prisma.SortOrder
   email?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
+  pts?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type PlayerAvgOrderByAggregateInput = {
+  pts?: Prisma.SortOrder
 }
 
 export type PlayerMaxOrderByAggregateInput = {
@@ -349,6 +409,7 @@ export type PlayerMaxOrderByAggregateInput = {
   displayName?: Prisma.SortOrder
   email?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
+  pts?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -358,8 +419,13 @@ export type PlayerMinOrderByAggregateInput = {
   displayName?: Prisma.SortOrder
   email?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
+  pts?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type PlayerSumOrderByAggregateInput = {
+  pts?: Prisma.SortOrder
 }
 
 export type PlayerScalarRelationFilter = {
@@ -453,6 +519,7 @@ export type PlayerCreateWithoutOauthAccountsInput = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  pts?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchCreateNestedManyWithoutHostInput
@@ -466,6 +533,7 @@ export type PlayerUncheckedCreateWithoutOauthAccountsInput = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  pts?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutHostInput
@@ -495,6 +563,7 @@ export type PlayerUpdateWithoutOauthAccountsInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUpdateManyWithoutHostNestedInput
@@ -508,6 +577,7 @@ export type PlayerUncheckedUpdateWithoutOauthAccountsInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUncheckedUpdateManyWithoutHostNestedInput
@@ -521,6 +591,7 @@ export type PlayerCreateWithoutHostedMatchesInput = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  pts?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   guestMatches?: Prisma.MatchCreateNestedManyWithoutGuestInput
@@ -534,6 +605,7 @@ export type PlayerUncheckedCreateWithoutHostedMatchesInput = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  pts?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   guestMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutGuestInput
@@ -552,6 +624,7 @@ export type PlayerCreateWithoutGuestMatchesInput = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  pts?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchCreateNestedManyWithoutHostInput
@@ -565,6 +638,7 @@ export type PlayerUncheckedCreateWithoutGuestMatchesInput = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  pts?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutHostInput
@@ -594,6 +668,7 @@ export type PlayerUpdateWithoutHostedMatchesInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   guestMatches?: Prisma.MatchUpdateManyWithoutGuestNestedInput
@@ -607,6 +682,7 @@ export type PlayerUncheckedUpdateWithoutHostedMatchesInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   guestMatches?: Prisma.MatchUncheckedUpdateManyWithoutGuestNestedInput
@@ -631,6 +707,7 @@ export type PlayerUpdateWithoutGuestMatchesInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUpdateManyWithoutHostNestedInput
@@ -644,6 +721,7 @@ export type PlayerUncheckedUpdateWithoutGuestMatchesInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUncheckedUpdateManyWithoutHostNestedInput
@@ -657,6 +735,7 @@ export type PlayerCreateWithoutMatchPicksInput = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  pts?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchCreateNestedManyWithoutHostInput
@@ -670,6 +749,7 @@ export type PlayerUncheckedCreateWithoutMatchPicksInput = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  pts?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutHostInput
@@ -699,6 +779,7 @@ export type PlayerUpdateWithoutMatchPicksInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUpdateManyWithoutHostNestedInput
@@ -712,6 +793,7 @@ export type PlayerUncheckedUpdateWithoutMatchPicksInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUncheckedUpdateManyWithoutHostNestedInput
@@ -725,6 +807,7 @@ export type PlayerCreateWithoutRatingEntriesInput = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  pts?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchCreateNestedManyWithoutHostInput
@@ -738,6 +821,7 @@ export type PlayerUncheckedCreateWithoutRatingEntriesInput = {
   displayName: string
   email?: string | null
   avatarUrl?: string | null
+  pts?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   hostedMatches?: Prisma.MatchUncheckedCreateNestedManyWithoutHostInput
@@ -767,6 +851,7 @@ export type PlayerUpdateWithoutRatingEntriesInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUpdateManyWithoutHostNestedInput
@@ -780,6 +865,7 @@ export type PlayerUncheckedUpdateWithoutRatingEntriesInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pts?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hostedMatches?: Prisma.MatchUncheckedUpdateManyWithoutHostNestedInput
@@ -860,6 +946,7 @@ export type PlayerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   displayName?: boolean
   email?: boolean
   avatarUrl?: boolean
+  pts?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   hostedMatches?: boolean | Prisma.Player$hostedMatchesArgs<ExtArgs>
@@ -875,6 +962,7 @@ export type PlayerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   displayName?: boolean
   email?: boolean
   avatarUrl?: boolean
+  pts?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["player"]>
@@ -884,6 +972,7 @@ export type PlayerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   displayName?: boolean
   email?: boolean
   avatarUrl?: boolean
+  pts?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["player"]>
@@ -893,11 +982,12 @@ export type PlayerSelectScalar = {
   displayName?: boolean
   email?: boolean
   avatarUrl?: boolean
+  pts?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type PlayerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "displayName" | "email" | "avatarUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["player"]>
+export type PlayerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "displayName" | "email" | "avatarUrl" | "pts" | "createdAt" | "updatedAt", ExtArgs["result"]["player"]>
 export type PlayerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   hostedMatches?: boolean | Prisma.Player$hostedMatchesArgs<ExtArgs>
   guestMatches?: boolean | Prisma.Player$guestMatchesArgs<ExtArgs>
@@ -923,6 +1013,10 @@ export type $PlayerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     displayName: string
     email: string | null
     avatarUrl: string | null
+    /**
+     * ПТС (сезонный рейтинг Heroes III / StickyFingaz). Нулевой уровень = 1500.
+     */
+    pts: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["player"]>
@@ -1357,6 +1451,7 @@ export interface PlayerFieldRefs {
   readonly displayName: Prisma.FieldRef<"Player", 'String'>
   readonly email: Prisma.FieldRef<"Player", 'String'>
   readonly avatarUrl: Prisma.FieldRef<"Player", 'String'>
+  readonly pts: Prisma.FieldRef<"Player", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Player", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Player", 'DateTime'>
 }

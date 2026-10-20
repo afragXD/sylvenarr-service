@@ -20,6 +20,7 @@ enum MatchStatus {
 enum RatingResult {
   win
   loss
+  draw
 }
 
 /// Класс героя из каталога (статы из legacy stats_dict).
@@ -58,6 +59,8 @@ model Player {
   displayName String
   email       String?
   avatarUrl   String?
+  /// ПТС (сезонный рейтинг Heroes III / StickyFingaz). Нулевой уровень = 1500.
+  pts         Int      @default(1500)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -137,10 +140,15 @@ model RatingEntry {
   playerId      String
   result        RatingResult
   heroClassCode String?
+  matchId       String?
+  ptsBefore     Int?
+  ptsDelta      Int?
+  ptsAfter      Int?
   createdAt     DateTime     @default(now())
 
   player    Player     @relation(fields: [playerId], references: [id])
   heroClass HeroClass? @relation(fields: [heroClassCode], references: [code])
 
   @@index([playerId])
+  @@index([matchId])
 }

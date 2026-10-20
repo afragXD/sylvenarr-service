@@ -20,8 +20,22 @@ export type RatingEntryModel = runtime.Types.Result.DefaultSelection<Prisma.$Rat
 
 export type AggregateRatingEntry = {
   _count: RatingEntryCountAggregateOutputType | null
+  _avg: RatingEntryAvgAggregateOutputType | null
+  _sum: RatingEntrySumAggregateOutputType | null
   _min: RatingEntryMinAggregateOutputType | null
   _max: RatingEntryMaxAggregateOutputType | null
+}
+
+export type RatingEntryAvgAggregateOutputType = {
+  ptsBefore: number | null
+  ptsDelta: number | null
+  ptsAfter: number | null
+}
+
+export type RatingEntrySumAggregateOutputType = {
+  ptsBefore: number | null
+  ptsDelta: number | null
+  ptsAfter: number | null
 }
 
 export type RatingEntryMinAggregateOutputType = {
@@ -29,6 +43,10 @@ export type RatingEntryMinAggregateOutputType = {
   playerId: string | null
   result: $Enums.RatingResult | null
   heroClassCode: string | null
+  matchId: string | null
+  ptsBefore: number | null
+  ptsDelta: number | null
+  ptsAfter: number | null
   createdAt: Date | null
 }
 
@@ -37,6 +55,10 @@ export type RatingEntryMaxAggregateOutputType = {
   playerId: string | null
   result: $Enums.RatingResult | null
   heroClassCode: string | null
+  matchId: string | null
+  ptsBefore: number | null
+  ptsDelta: number | null
+  ptsAfter: number | null
   createdAt: Date | null
 }
 
@@ -45,16 +67,36 @@ export type RatingEntryCountAggregateOutputType = {
   playerId: number
   result: number
   heroClassCode: number
+  matchId: number
+  ptsBefore: number
+  ptsDelta: number
+  ptsAfter: number
   createdAt: number
   _all: number
 }
 
+
+export type RatingEntryAvgAggregateInputType = {
+  ptsBefore?: true
+  ptsDelta?: true
+  ptsAfter?: true
+}
+
+export type RatingEntrySumAggregateInputType = {
+  ptsBefore?: true
+  ptsDelta?: true
+  ptsAfter?: true
+}
 
 export type RatingEntryMinAggregateInputType = {
   id?: true
   playerId?: true
   result?: true
   heroClassCode?: true
+  matchId?: true
+  ptsBefore?: true
+  ptsDelta?: true
+  ptsAfter?: true
   createdAt?: true
 }
 
@@ -63,6 +105,10 @@ export type RatingEntryMaxAggregateInputType = {
   playerId?: true
   result?: true
   heroClassCode?: true
+  matchId?: true
+  ptsBefore?: true
+  ptsDelta?: true
+  ptsAfter?: true
   createdAt?: true
 }
 
@@ -71,6 +117,10 @@ export type RatingEntryCountAggregateInputType = {
   playerId?: true
   result?: true
   heroClassCode?: true
+  matchId?: true
+  ptsBefore?: true
+  ptsDelta?: true
+  ptsAfter?: true
   createdAt?: true
   _all?: true
 }
@@ -113,6 +163,18 @@ export type RatingEntryAggregateArgs<ExtArgs extends runtime.Types.Extensions.In
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: RatingEntryAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: RatingEntrySumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: RatingEntryMinAggregateInputType
@@ -143,6 +205,8 @@ export type RatingEntryGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   _count?: RatingEntryCountAggregateInputType | true
+  _avg?: RatingEntryAvgAggregateInputType
+  _sum?: RatingEntrySumAggregateInputType
   _min?: RatingEntryMinAggregateInputType
   _max?: RatingEntryMaxAggregateInputType
 }
@@ -152,8 +216,14 @@ export type RatingEntryGroupByOutputType = {
   playerId: string
   result: $Enums.RatingResult
   heroClassCode: string | null
+  matchId: string | null
+  ptsBefore: number | null
+  ptsDelta: number | null
+  ptsAfter: number | null
   createdAt: Date
   _count: RatingEntryCountAggregateOutputType | null
+  _avg: RatingEntryAvgAggregateOutputType | null
+  _sum: RatingEntrySumAggregateOutputType | null
   _min: RatingEntryMinAggregateOutputType | null
   _max: RatingEntryMaxAggregateOutputType | null
 }
@@ -181,6 +251,10 @@ export type RatingEntryWhereInput = {
   playerId?: Prisma.StringFilter<"RatingEntry"> | string
   result?: Prisma.EnumRatingResultFilter<"RatingEntry"> | $Enums.RatingResult
   heroClassCode?: Prisma.StringNullableFilter<"RatingEntry"> | string | null
+  matchId?: Prisma.StringNullableFilter<"RatingEntry"> | string | null
+  ptsBefore?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
+  ptsDelta?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
+  ptsAfter?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
   createdAt?: Prisma.DateTimeFilter<"RatingEntry"> | Date | string
   player?: Prisma.XOR<Prisma.PlayerScalarRelationFilter, Prisma.PlayerWhereInput>
   heroClass?: Prisma.XOR<Prisma.HeroClassNullableScalarRelationFilter, Prisma.HeroClassWhereInput> | null
@@ -191,6 +265,10 @@ export type RatingEntryOrderByWithRelationInput = {
   playerId?: Prisma.SortOrder
   result?: Prisma.SortOrder
   heroClassCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  matchId?: Prisma.SortOrderInput | Prisma.SortOrder
+  ptsBefore?: Prisma.SortOrderInput | Prisma.SortOrder
+  ptsDelta?: Prisma.SortOrderInput | Prisma.SortOrder
+  ptsAfter?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   player?: Prisma.PlayerOrderByWithRelationInput
   heroClass?: Prisma.HeroClassOrderByWithRelationInput
@@ -204,6 +282,10 @@ export type RatingEntryWhereUniqueInput = Prisma.AtLeast<{
   playerId?: Prisma.StringFilter<"RatingEntry"> | string
   result?: Prisma.EnumRatingResultFilter<"RatingEntry"> | $Enums.RatingResult
   heroClassCode?: Prisma.StringNullableFilter<"RatingEntry"> | string | null
+  matchId?: Prisma.StringNullableFilter<"RatingEntry"> | string | null
+  ptsBefore?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
+  ptsDelta?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
+  ptsAfter?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
   createdAt?: Prisma.DateTimeFilter<"RatingEntry"> | Date | string
   player?: Prisma.XOR<Prisma.PlayerScalarRelationFilter, Prisma.PlayerWhereInput>
   heroClass?: Prisma.XOR<Prisma.HeroClassNullableScalarRelationFilter, Prisma.HeroClassWhereInput> | null
@@ -214,10 +296,16 @@ export type RatingEntryOrderByWithAggregationInput = {
   playerId?: Prisma.SortOrder
   result?: Prisma.SortOrder
   heroClassCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  matchId?: Prisma.SortOrderInput | Prisma.SortOrder
+  ptsBefore?: Prisma.SortOrderInput | Prisma.SortOrder
+  ptsDelta?: Prisma.SortOrderInput | Prisma.SortOrder
+  ptsAfter?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.RatingEntryCountOrderByAggregateInput
+  _avg?: Prisma.RatingEntryAvgOrderByAggregateInput
   _max?: Prisma.RatingEntryMaxOrderByAggregateInput
   _min?: Prisma.RatingEntryMinOrderByAggregateInput
+  _sum?: Prisma.RatingEntrySumOrderByAggregateInput
 }
 
 export type RatingEntryScalarWhereWithAggregatesInput = {
@@ -228,12 +316,20 @@ export type RatingEntryScalarWhereWithAggregatesInput = {
   playerId?: Prisma.StringWithAggregatesFilter<"RatingEntry"> | string
   result?: Prisma.EnumRatingResultWithAggregatesFilter<"RatingEntry"> | $Enums.RatingResult
   heroClassCode?: Prisma.StringNullableWithAggregatesFilter<"RatingEntry"> | string | null
+  matchId?: Prisma.StringNullableWithAggregatesFilter<"RatingEntry"> | string | null
+  ptsBefore?: Prisma.IntNullableWithAggregatesFilter<"RatingEntry"> | number | null
+  ptsDelta?: Prisma.IntNullableWithAggregatesFilter<"RatingEntry"> | number | null
+  ptsAfter?: Prisma.IntNullableWithAggregatesFilter<"RatingEntry"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"RatingEntry"> | Date | string
 }
 
 export type RatingEntryCreateInput = {
   id?: string
   result: $Enums.RatingResult
+  matchId?: string | null
+  ptsBefore?: number | null
+  ptsDelta?: number | null
+  ptsAfter?: number | null
   createdAt?: Date | string
   player: Prisma.PlayerCreateNestedOneWithoutRatingEntriesInput
   heroClass?: Prisma.HeroClassCreateNestedOneWithoutRatingEntriesInput
@@ -244,12 +340,20 @@ export type RatingEntryUncheckedCreateInput = {
   playerId: string
   result: $Enums.RatingResult
   heroClassCode?: string | null
+  matchId?: string | null
+  ptsBefore?: number | null
+  ptsDelta?: number | null
+  ptsAfter?: number | null
   createdAt?: Date | string
 }
 
 export type RatingEntryUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumRatingResultFieldUpdateOperationsInput | $Enums.RatingResult
+  matchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ptsBefore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsDelta?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsAfter?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   player?: Prisma.PlayerUpdateOneRequiredWithoutRatingEntriesNestedInput
   heroClass?: Prisma.HeroClassUpdateOneWithoutRatingEntriesNestedInput
@@ -260,6 +364,10 @@ export type RatingEntryUncheckedUpdateInput = {
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumRatingResultFieldUpdateOperationsInput | $Enums.RatingResult
   heroClassCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  matchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ptsBefore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsDelta?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsAfter?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -268,12 +376,20 @@ export type RatingEntryCreateManyInput = {
   playerId: string
   result: $Enums.RatingResult
   heroClassCode?: string | null
+  matchId?: string | null
+  ptsBefore?: number | null
+  ptsDelta?: number | null
+  ptsAfter?: number | null
   createdAt?: Date | string
 }
 
 export type RatingEntryUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumRatingResultFieldUpdateOperationsInput | $Enums.RatingResult
+  matchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ptsBefore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsDelta?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsAfter?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -282,6 +398,10 @@ export type RatingEntryUncheckedUpdateManyInput = {
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumRatingResultFieldUpdateOperationsInput | $Enums.RatingResult
   heroClassCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  matchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ptsBefore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsDelta?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsAfter?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -300,7 +420,17 @@ export type RatingEntryCountOrderByAggregateInput = {
   playerId?: Prisma.SortOrder
   result?: Prisma.SortOrder
   heroClassCode?: Prisma.SortOrder
+  matchId?: Prisma.SortOrder
+  ptsBefore?: Prisma.SortOrder
+  ptsDelta?: Prisma.SortOrder
+  ptsAfter?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type RatingEntryAvgOrderByAggregateInput = {
+  ptsBefore?: Prisma.SortOrder
+  ptsDelta?: Prisma.SortOrder
+  ptsAfter?: Prisma.SortOrder
 }
 
 export type RatingEntryMaxOrderByAggregateInput = {
@@ -308,6 +438,10 @@ export type RatingEntryMaxOrderByAggregateInput = {
   playerId?: Prisma.SortOrder
   result?: Prisma.SortOrder
   heroClassCode?: Prisma.SortOrder
+  matchId?: Prisma.SortOrder
+  ptsBefore?: Prisma.SortOrder
+  ptsDelta?: Prisma.SortOrder
+  ptsAfter?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -316,7 +450,17 @@ export type RatingEntryMinOrderByAggregateInput = {
   playerId?: Prisma.SortOrder
   result?: Prisma.SortOrder
   heroClassCode?: Prisma.SortOrder
+  matchId?: Prisma.SortOrder
+  ptsBefore?: Prisma.SortOrder
+  ptsDelta?: Prisma.SortOrder
+  ptsAfter?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type RatingEntrySumOrderByAggregateInput = {
+  ptsBefore?: Prisma.SortOrder
+  ptsDelta?: Prisma.SortOrder
+  ptsAfter?: Prisma.SortOrder
 }
 
 export type RatingEntryCreateNestedManyWithoutHeroClassInput = {
@@ -407,9 +551,21 @@ export type EnumRatingResultFieldUpdateOperationsInput = {
   set?: $Enums.RatingResult
 }
 
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type RatingEntryCreateWithoutHeroClassInput = {
   id?: string
   result: $Enums.RatingResult
+  matchId?: string | null
+  ptsBefore?: number | null
+  ptsDelta?: number | null
+  ptsAfter?: number | null
   createdAt?: Date | string
   player: Prisma.PlayerCreateNestedOneWithoutRatingEntriesInput
 }
@@ -418,6 +574,10 @@ export type RatingEntryUncheckedCreateWithoutHeroClassInput = {
   id?: string
   playerId: string
   result: $Enums.RatingResult
+  matchId?: string | null
+  ptsBefore?: number | null
+  ptsDelta?: number | null
+  ptsAfter?: number | null
   createdAt?: Date | string
 }
 
@@ -455,12 +615,20 @@ export type RatingEntryScalarWhereInput = {
   playerId?: Prisma.StringFilter<"RatingEntry"> | string
   result?: Prisma.EnumRatingResultFilter<"RatingEntry"> | $Enums.RatingResult
   heroClassCode?: Prisma.StringNullableFilter<"RatingEntry"> | string | null
+  matchId?: Prisma.StringNullableFilter<"RatingEntry"> | string | null
+  ptsBefore?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
+  ptsDelta?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
+  ptsAfter?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
   createdAt?: Prisma.DateTimeFilter<"RatingEntry"> | Date | string
 }
 
 export type RatingEntryCreateWithoutPlayerInput = {
   id?: string
   result: $Enums.RatingResult
+  matchId?: string | null
+  ptsBefore?: number | null
+  ptsDelta?: number | null
+  ptsAfter?: number | null
   createdAt?: Date | string
   heroClass?: Prisma.HeroClassCreateNestedOneWithoutRatingEntriesInput
 }
@@ -469,6 +637,10 @@ export type RatingEntryUncheckedCreateWithoutPlayerInput = {
   id?: string
   result: $Enums.RatingResult
   heroClassCode?: string | null
+  matchId?: string | null
+  ptsBefore?: number | null
+  ptsDelta?: number | null
+  ptsAfter?: number | null
   createdAt?: Date | string
 }
 
@@ -502,12 +674,20 @@ export type RatingEntryCreateManyHeroClassInput = {
   id?: string
   playerId: string
   result: $Enums.RatingResult
+  matchId?: string | null
+  ptsBefore?: number | null
+  ptsDelta?: number | null
+  ptsAfter?: number | null
   createdAt?: Date | string
 }
 
 export type RatingEntryUpdateWithoutHeroClassInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumRatingResultFieldUpdateOperationsInput | $Enums.RatingResult
+  matchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ptsBefore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsDelta?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsAfter?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   player?: Prisma.PlayerUpdateOneRequiredWithoutRatingEntriesNestedInput
 }
@@ -516,6 +696,10 @@ export type RatingEntryUncheckedUpdateWithoutHeroClassInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumRatingResultFieldUpdateOperationsInput | $Enums.RatingResult
+  matchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ptsBefore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsDelta?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsAfter?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -523,6 +707,10 @@ export type RatingEntryUncheckedUpdateManyWithoutHeroClassInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumRatingResultFieldUpdateOperationsInput | $Enums.RatingResult
+  matchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ptsBefore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsDelta?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsAfter?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -530,12 +718,20 @@ export type RatingEntryCreateManyPlayerInput = {
   id?: string
   result: $Enums.RatingResult
   heroClassCode?: string | null
+  matchId?: string | null
+  ptsBefore?: number | null
+  ptsDelta?: number | null
+  ptsAfter?: number | null
   createdAt?: Date | string
 }
 
 export type RatingEntryUpdateWithoutPlayerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumRatingResultFieldUpdateOperationsInput | $Enums.RatingResult
+  matchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ptsBefore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsDelta?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsAfter?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   heroClass?: Prisma.HeroClassUpdateOneWithoutRatingEntriesNestedInput
 }
@@ -544,6 +740,10 @@ export type RatingEntryUncheckedUpdateWithoutPlayerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumRatingResultFieldUpdateOperationsInput | $Enums.RatingResult
   heroClassCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  matchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ptsBefore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsDelta?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsAfter?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -551,6 +751,10 @@ export type RatingEntryUncheckedUpdateManyWithoutPlayerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumRatingResultFieldUpdateOperationsInput | $Enums.RatingResult
   heroClassCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  matchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ptsBefore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsDelta?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ptsAfter?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -561,6 +765,10 @@ export type RatingEntrySelect<ExtArgs extends runtime.Types.Extensions.InternalA
   playerId?: boolean
   result?: boolean
   heroClassCode?: boolean
+  matchId?: boolean
+  ptsBefore?: boolean
+  ptsDelta?: boolean
+  ptsAfter?: boolean
   createdAt?: boolean
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
   heroClass?: boolean | Prisma.RatingEntry$heroClassArgs<ExtArgs>
@@ -571,6 +779,10 @@ export type RatingEntrySelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   playerId?: boolean
   result?: boolean
   heroClassCode?: boolean
+  matchId?: boolean
+  ptsBefore?: boolean
+  ptsDelta?: boolean
+  ptsAfter?: boolean
   createdAt?: boolean
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
   heroClass?: boolean | Prisma.RatingEntry$heroClassArgs<ExtArgs>
@@ -581,6 +793,10 @@ export type RatingEntrySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   playerId?: boolean
   result?: boolean
   heroClassCode?: boolean
+  matchId?: boolean
+  ptsBefore?: boolean
+  ptsDelta?: boolean
+  ptsAfter?: boolean
   createdAt?: boolean
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
   heroClass?: boolean | Prisma.RatingEntry$heroClassArgs<ExtArgs>
@@ -591,10 +807,14 @@ export type RatingEntrySelectScalar = {
   playerId?: boolean
   result?: boolean
   heroClassCode?: boolean
+  matchId?: boolean
+  ptsBefore?: boolean
+  ptsDelta?: boolean
+  ptsAfter?: boolean
   createdAt?: boolean
 }
 
-export type RatingEntryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "playerId" | "result" | "heroClassCode" | "createdAt", ExtArgs["result"]["ratingEntry"]>
+export type RatingEntryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "playerId" | "result" | "heroClassCode" | "matchId" | "ptsBefore" | "ptsDelta" | "ptsAfter" | "createdAt", ExtArgs["result"]["ratingEntry"]>
 export type RatingEntryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
   heroClass?: boolean | Prisma.RatingEntry$heroClassArgs<ExtArgs>
@@ -619,6 +839,10 @@ export type $RatingEntryPayload<ExtArgs extends runtime.Types.Extensions.Interna
     playerId: string
     result: $Enums.RatingResult
     heroClassCode: string | null
+    matchId: string | null
+    ptsBefore: number | null
+    ptsDelta: number | null
+    ptsAfter: number | null
     createdAt: Date
   }, ExtArgs["result"]["ratingEntry"]>
   composites: {}
@@ -1049,6 +1273,10 @@ export interface RatingEntryFieldRefs {
   readonly playerId: Prisma.FieldRef<"RatingEntry", 'String'>
   readonly result: Prisma.FieldRef<"RatingEntry", 'RatingResult'>
   readonly heroClassCode: Prisma.FieldRef<"RatingEntry", 'String'>
+  readonly matchId: Prisma.FieldRef<"RatingEntry", 'String'>
+  readonly ptsBefore: Prisma.FieldRef<"RatingEntry", 'Int'>
+  readonly ptsDelta: Prisma.FieldRef<"RatingEntry", 'Int'>
+  readonly ptsAfter: Prisma.FieldRef<"RatingEntry", 'Int'>
   readonly createdAt: Prisma.FieldRef<"RatingEntry", 'DateTime'>
 }
     

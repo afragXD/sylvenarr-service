@@ -30,6 +30,7 @@ import {
 } from '../../game/matchRules';
 import { prisma } from '../../shared/db';
 import { createInviteCode } from '../../utils/create-invite-code';
+import { computePtsChange } from '../rating/pts';
 import type { MatchesModel } from './model';
 
 type PickRow = {
@@ -839,7 +840,7 @@ export abstract class MatchesService {
   }
 
   /**
-   * Завершает бой: статус, snapshot, рейтинг (без ничьей).
+   * Завершает бой: статус, snapshot, ПТС (StickyFingaz / Heroes III).
    */
   private static async finalizeBattle(input: {
     readonly matchId: string;
@@ -848,8 +849,14 @@ export abstract class MatchesService {
     readonly hostDisplayName: string;
     readonly guestDisplayName: string;
   }): Promise<void> {
-    const match = await prisma.match.findUnique({ where: { id: input.matchId } });
-    if (!match || !match.guestId) {
+    const match = await prisma.match.findUnique({
+      where: { id: input.matchId },
+      include: {
+        host: { select: { id: true, pts: true } },
+        guest: { select: { id: true, pts: true } },
+      },
+    });
+    if (!match || !match.guestId || !match.guest) {
       return;
     }
     const snapshot = buildResultSnapshot({
@@ -857,26 +864,65 @@ export abstract class MatchesService {
       hostDisplayName: input.hostDisplayName,
       guestDisplayName: input.guestDisplayName,
     });
-    await prisma.match.update({
-      where: { id: input.matchId },
-      data: {
-        status: 'finished',
-        winnerPlayerId: input.winnerPlayerId,
-        finishedAt: new Date(),
-        resultSnapshot: snapshot as unknown as Prisma.InputJsonValue,
-      },
+
+    const hostId = match.hostId;
+    const guestId = match.guestId;
+    const outcome =
+      input.winnerPlayerId === null
+        ? 'draw'
+        : input.winnerPlayerId === hostId
+          ? 'a_win'
+          : 'b_win';
+    const change = computePtsChange({
+      ptsA: match.host.pts,
+      ptsB: match.guest.pts,
+      outcome,
     });
 
-    if (!input.winnerPlayerId) {
-      return;
-    }
-    const loserId = input.winnerPlayerId === match.hostId ? match.guestId : match.hostId;
-    await prisma.ratingEntry.createMany({
-      data: [
-        { playerId: input.winnerPlayerId, result: 'win' },
-        { playerId: loserId, result: 'loss' },
-      ],
-    });
+    const hostResult =
+      outcome === 'draw' ? 'draw' : outcome === 'a_win' ? 'win' : 'loss';
+    const guestResult =
+      outcome === 'draw' ? 'draw' : outcome === 'b_win' ? 'win' : 'loss';
+
+    await prisma.$transaction([
+      prisma.match.update({
+        where: { id: input.matchId },
+        data: {
+          status: 'finished',
+          winnerPlayerId: input.winnerPlayerId,
+          finishedAt: new Date(),
+          resultSnapshot: snapshot as unknown as Prisma.InputJsonValue,
+        },
+      }),
+      prisma.player.update({
+        where: { id: hostId },
+        data: { pts: change.ptsAfterA },
+      }),
+      prisma.player.update({
+        where: { id: guestId },
+        data: { pts: change.ptsAfterB },
+      }),
+      prisma.ratingEntry.create({
+        data: {
+          playerId: hostId,
+          result: hostResult,
+          matchId: input.matchId,
+          ptsBefore: match.host.pts,
+          ptsDelta: change.deltaA,
+          ptsAfter: change.ptsAfterA,
+        },
+      }),
+      prisma.ratingEntry.create({
+        data: {
+          playerId: guestId,
+          result: guestResult,
+          matchId: input.matchId,
+          ptsBefore: match.guest.pts,
+          ptsDelta: change.deltaB,
+          ptsAfter: change.ptsAfterB,
+        },
+      }),
+    ]);
   }
 
   /**

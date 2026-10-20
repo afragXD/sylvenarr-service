@@ -12,7 +12,7 @@ export const ratingController = new Elysia({ prefix: '/rating', tags: ['Rating']
       200: RatingModel.listResponse,
     },
     detail: {
-      summary: 'Таблица рейтинга',
+      summary: 'Таблица рейтинга (ПТС Heroes III)',
     },
   }
 );

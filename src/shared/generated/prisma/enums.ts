@@ -24,7 +24,8 @@ export type MatchStatus = (typeof MatchStatus)[keyof typeof MatchStatus]
 
 export const RatingResult = {
   win: 'win',
-  loss: 'loss'
+  loss: 'loss',
+  draw: 'draw'
 } as const
 
 export type RatingResult = (typeof RatingResult)[keyof typeof RatingResult]
