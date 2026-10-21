@@ -22,6 +22,43 @@ const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassS
 });
 
 describe('createSummon', () => {
+  test('matches summoner level and grown stats', () => {
+    const heroes = new Map([
+      ['Archlich', hero('Archlich')],
+      ['B', hero('B')],
+      ['Zombie', hero('Zombie', { health: 50, damage: 10 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm-lvl',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Archlich', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const lich = state.units.find((unit) => unit.id === 'p1');
+    if (!lich) {
+      throw new Error('missing lich');
+    }
+    lich.lvl = 7;
+    lich.hiddenLvl = 7;
+    lich.maxSummons = 2;
+    const zombie = createSummon(state, {
+      summoner: lich,
+      heroCode: 'Zombie',
+      row: 0,
+      isLichSummon: true,
+    });
+    expect(zombie).toBeTruthy();
+    expect(zombie!.lvl).toBe(7);
+    expect(zombie!.hiddenLvl).toBe(7);
+    // Zombie growth: +4 dmg за каждый levelup × 6
+    expect(zombie!.damage).toBe(10 + 4 * 6);
+    expect(zombie!.health).toBe(zombie!.maxHp);
+  });
+
   test('respects maxSummons of owner', () => {
     const heroes = new Map([
       ['OrcKing', hero('OrcKing')],

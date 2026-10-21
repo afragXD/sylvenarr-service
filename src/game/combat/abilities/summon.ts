@@ -1,5 +1,6 @@
 import { resolveAttackStyle } from '../attack-style';
 import { resistsForClass } from '../defaultResists';
+import { levelUpUnit } from '../level';
 import { cloneResists } from '../resists';
 import type { BattleState, BattleUnit } from '../types';
 
@@ -79,7 +80,7 @@ export function createSummon(
     power: hero.power,
     mana: hero.mana,
     gold: hero.gold,
-    lvl: Math.max(1, input.summoner.lvl),
+    lvl: 1,
     hiddenLvl: 1,
     defending: false,
     alive: true,
@@ -109,6 +110,12 @@ export function createSummon(
     morale: hero.morale ?? 0,
   };
   state.units.push(unit);
+  // Уровень и статы = уровень призывателя в момент призыва (базовый каталог + прокачка).
+  const catchUp = Math.max(0, input.summoner.lvl - 1);
+  if (catchUp > 0) {
+    levelUpUnit(unit, catchUp, state);
+  }
+  unit.health = unit.maxHp;
   return unit;
 }
 
