@@ -99,13 +99,12 @@ function abilityMeta(
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
-    case 4:
-    case 5:
+    default:
       return {
         slot,
-        label: 'Базовые действия',
+        label: '—',
         needsTarget: false,
-        disabledReason: 'Используйте защиту / ожидание',
+        disabledReason: 'Нет способности',
         legalTargetIds: [],
       };
   }
@@ -116,7 +115,7 @@ function abilityMeta(
  */
 export const zombieAbilities: AbilityHandler = {
   listAbilities(state, actor) {
-    return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
+    return ([1, 2, 3] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
   },
 
   apply(state, actor, input): AbilityOutcome {

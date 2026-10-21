@@ -72,12 +72,12 @@ function abilityMeta(
         legalTargetIds: [],
       };
     }
-    case 5:
+    default:
       return {
-        slot: 5,
-        label: 'Базовые действия',
+        slot,
+        label: '—',
         needsTarget: false,
-        disabledReason: 'Используйте защиту / ожидание',
+        disabledReason: 'Нет способности',
         legalTargetIds: [],
       };
   }
@@ -88,7 +88,7 @@ function abilityMeta(
  */
 export const goblinShamanAbilities: AbilityHandler = {
   listAbilities(state, actor) {
-    return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
+    return ([1, 2, 3, 4] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
   },
 
   apply(state, actor, input): AbilityOutcome {

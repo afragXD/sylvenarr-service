@@ -34,6 +34,7 @@ export abstract class AuthService {
 
   /**
    * Создаёт или обновляет Player + OAuthAccount по профилю провайдера.
+   * У существующего игрока displayName не перезаписывается.
    */
   static async upsertOAuthPlayer(
     provider: string,
@@ -50,10 +51,10 @@ export abstract class AuthService {
     });
 
     if (existingAccount) {
+      // Ник не трогаем: мог быть изменён вручную в БД / позже через профиль.
       await prisma.player.update({
         where: { id: existingAccount.playerId },
         data: {
-          displayName: profile.displayName,
           email: profile.email,
           avatarUrl: profile.avatarUrl,
         },
