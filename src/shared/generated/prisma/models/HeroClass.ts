@@ -35,6 +35,7 @@ export type HeroClassAvgAggregateOutputType = {
   luck: number | null
   morale: number | null
   mana: number | null
+  maxMana: number | null
   power: number | null
   gold: number | null
   accuracy: number | null
@@ -51,6 +52,7 @@ export type HeroClassSumAggregateOutputType = {
   luck: number | null
   morale: number | null
   mana: number | null
+  maxMana: number | null
   power: number | null
   gold: number | null
   accuracy: number | null
@@ -71,6 +73,7 @@ export type HeroClassMinAggregateOutputType = {
   luck: number | null
   morale: number | null
   mana: number | null
+  maxMana: number | null
   power: number | null
   gold: number | null
   accuracy: number | null
@@ -94,6 +97,7 @@ export type HeroClassMaxAggregateOutputType = {
   luck: number | null
   morale: number | null
   mana: number | null
+  maxMana: number | null
   power: number | null
   gold: number | null
   accuracy: number | null
@@ -117,6 +121,7 @@ export type HeroClassCountAggregateOutputType = {
   luck: number
   morale: number
   mana: number
+  maxMana: number
   power: number
   gold: number
   accuracy: number
@@ -138,6 +143,7 @@ export type HeroClassAvgAggregateInputType = {
   luck?: true
   morale?: true
   mana?: true
+  maxMana?: true
   power?: true
   gold?: true
   accuracy?: true
@@ -154,6 +160,7 @@ export type HeroClassSumAggregateInputType = {
   luck?: true
   morale?: true
   mana?: true
+  maxMana?: true
   power?: true
   gold?: true
   accuracy?: true
@@ -174,6 +181,7 @@ export type HeroClassMinAggregateInputType = {
   luck?: true
   morale?: true
   mana?: true
+  maxMana?: true
   power?: true
   gold?: true
   accuracy?: true
@@ -197,6 +205,7 @@ export type HeroClassMaxAggregateInputType = {
   luck?: true
   morale?: true
   mana?: true
+  maxMana?: true
   power?: true
   gold?: true
   accuracy?: true
@@ -220,6 +229,7 @@ export type HeroClassCountAggregateInputType = {
   luck?: true
   morale?: true
   mana?: true
+  maxMana?: true
   power?: true
   gold?: true
   accuracy?: true
@@ -330,6 +340,7 @@ export type HeroClassGroupByOutputType = {
   luck: number
   morale: number
   mana: number
+  maxMana: number
   power: number
   gold: number
   accuracy: number
@@ -376,6 +387,7 @@ export type HeroClassWhereInput = {
   luck?: Prisma.IntFilter<"HeroClass"> | number
   morale?: Prisma.IntFilter<"HeroClass"> | number
   mana?: Prisma.IntFilter<"HeroClass"> | number
+  maxMana?: Prisma.IntFilter<"HeroClass"> | number
   power?: Prisma.IntFilter<"HeroClass"> | number
   gold?: Prisma.IntFilter<"HeroClass"> | number
   accuracy?: Prisma.IntFilter<"HeroClass"> | number
@@ -401,6 +413,7 @@ export type HeroClassOrderByWithRelationInput = {
   luck?: Prisma.SortOrder
   morale?: Prisma.SortOrder
   mana?: Prisma.SortOrder
+  maxMana?: Prisma.SortOrder
   power?: Prisma.SortOrder
   gold?: Prisma.SortOrder
   accuracy?: Prisma.SortOrder
@@ -429,6 +442,7 @@ export type HeroClassWhereUniqueInput = Prisma.AtLeast<{
   luck?: Prisma.IntFilter<"HeroClass"> | number
   morale?: Prisma.IntFilter<"HeroClass"> | number
   mana?: Prisma.IntFilter<"HeroClass"> | number
+  maxMana?: Prisma.IntFilter<"HeroClass"> | number
   power?: Prisma.IntFilter<"HeroClass"> | number
   gold?: Prisma.IntFilter<"HeroClass"> | number
   accuracy?: Prisma.IntFilter<"HeroClass"> | number
@@ -454,6 +468,7 @@ export type HeroClassOrderByWithAggregationInput = {
   luck?: Prisma.SortOrder
   morale?: Prisma.SortOrder
   mana?: Prisma.SortOrder
+  maxMana?: Prisma.SortOrder
   power?: Prisma.SortOrder
   gold?: Prisma.SortOrder
   accuracy?: Prisma.SortOrder
@@ -485,6 +500,7 @@ export type HeroClassScalarWhereWithAggregatesInput = {
   luck?: Prisma.IntWithAggregatesFilter<"HeroClass"> | number
   morale?: Prisma.IntWithAggregatesFilter<"HeroClass"> | number
   mana?: Prisma.IntWithAggregatesFilter<"HeroClass"> | number
+  maxMana?: Prisma.IntWithAggregatesFilter<"HeroClass"> | number
   power?: Prisma.IntWithAggregatesFilter<"HeroClass"> | number
   gold?: Prisma.IntWithAggregatesFilter<"HeroClass"> | number
   accuracy?: Prisma.IntWithAggregatesFilter<"HeroClass"> | number
@@ -508,6 +524,7 @@ export type HeroClassCreateInput = {
   luck: number
   morale: number
   mana: number
+  maxMana?: number
   power: number
   gold: number
   accuracy: number
@@ -533,6 +550,7 @@ export type HeroClassUncheckedCreateInput = {
   luck: number
   morale: number
   mana: number
+  maxMana?: number
   power: number
   gold: number
   accuracy: number
@@ -558,6 +576,7 @@ export type HeroClassUpdateInput = {
   luck?: Prisma.IntFieldUpdateOperationsInput | number
   morale?: Prisma.IntFieldUpdateOperationsInput | number
   mana?: Prisma.IntFieldUpdateOperationsInput | number
+  maxMana?: Prisma.IntFieldUpdateOperationsInput | number
   power?: Prisma.IntFieldUpdateOperationsInput | number
   gold?: Prisma.IntFieldUpdateOperationsInput | number
   accuracy?: Prisma.IntFieldUpdateOperationsInput | number
@@ -583,6 +602,7 @@ export type HeroClassUncheckedUpdateInput = {
   luck?: Prisma.IntFieldUpdateOperationsInput | number
   morale?: Prisma.IntFieldUpdateOperationsInput | number
   mana?: Prisma.IntFieldUpdateOperationsInput | number
+  maxMana?: Prisma.IntFieldUpdateOperationsInput | number
   power?: Prisma.IntFieldUpdateOperationsInput | number
   gold?: Prisma.IntFieldUpdateOperationsInput | number
   accuracy?: Prisma.IntFieldUpdateOperationsInput | number
@@ -608,6 +628,7 @@ export type HeroClassCreateManyInput = {
   luck: number
   morale: number
   mana: number
+  maxMana?: number
   power: number
   gold: number
   accuracy: number
@@ -631,6 +652,7 @@ export type HeroClassUpdateManyMutationInput = {
   luck?: Prisma.IntFieldUpdateOperationsInput | number
   morale?: Prisma.IntFieldUpdateOperationsInput | number
   mana?: Prisma.IntFieldUpdateOperationsInput | number
+  maxMana?: Prisma.IntFieldUpdateOperationsInput | number
   power?: Prisma.IntFieldUpdateOperationsInput | number
   gold?: Prisma.IntFieldUpdateOperationsInput | number
   accuracy?: Prisma.IntFieldUpdateOperationsInput | number
@@ -654,6 +676,7 @@ export type HeroClassUncheckedUpdateManyInput = {
   luck?: Prisma.IntFieldUpdateOperationsInput | number
   morale?: Prisma.IntFieldUpdateOperationsInput | number
   mana?: Prisma.IntFieldUpdateOperationsInput | number
+  maxMana?: Prisma.IntFieldUpdateOperationsInput | number
   power?: Prisma.IntFieldUpdateOperationsInput | number
   gold?: Prisma.IntFieldUpdateOperationsInput | number
   accuracy?: Prisma.IntFieldUpdateOperationsInput | number
@@ -677,6 +700,7 @@ export type HeroClassCountOrderByAggregateInput = {
   luck?: Prisma.SortOrder
   morale?: Prisma.SortOrder
   mana?: Prisma.SortOrder
+  maxMana?: Prisma.SortOrder
   power?: Prisma.SortOrder
   gold?: Prisma.SortOrder
   accuracy?: Prisma.SortOrder
@@ -696,6 +720,7 @@ export type HeroClassAvgOrderByAggregateInput = {
   luck?: Prisma.SortOrder
   morale?: Prisma.SortOrder
   mana?: Prisma.SortOrder
+  maxMana?: Prisma.SortOrder
   power?: Prisma.SortOrder
   gold?: Prisma.SortOrder
   accuracy?: Prisma.SortOrder
@@ -716,6 +741,7 @@ export type HeroClassMaxOrderByAggregateInput = {
   luck?: Prisma.SortOrder
   morale?: Prisma.SortOrder
   mana?: Prisma.SortOrder
+  maxMana?: Prisma.SortOrder
   power?: Prisma.SortOrder
   gold?: Prisma.SortOrder
   accuracy?: Prisma.SortOrder
@@ -739,6 +765,7 @@ export type HeroClassMinOrderByAggregateInput = {
   luck?: Prisma.SortOrder
   morale?: Prisma.SortOrder
   mana?: Prisma.SortOrder
+  maxMana?: Prisma.SortOrder
   power?: Prisma.SortOrder
   gold?: Prisma.SortOrder
   accuracy?: Prisma.SortOrder
@@ -758,6 +785,7 @@ export type HeroClassSumOrderByAggregateInput = {
   luck?: Prisma.SortOrder
   morale?: Prisma.SortOrder
   mana?: Prisma.SortOrder
+  maxMana?: Prisma.SortOrder
   power?: Prisma.SortOrder
   gold?: Prisma.SortOrder
   accuracy?: Prisma.SortOrder
@@ -838,6 +866,7 @@ export type HeroClassCreateWithoutMatchPicksInput = {
   luck: number
   morale: number
   mana: number
+  maxMana?: number
   power: number
   gold: number
   accuracy: number
@@ -862,6 +891,7 @@ export type HeroClassUncheckedCreateWithoutMatchPicksInput = {
   luck: number
   morale: number
   mana: number
+  maxMana?: number
   power: number
   gold: number
   accuracy: number
@@ -902,6 +932,7 @@ export type HeroClassUpdateWithoutMatchPicksInput = {
   luck?: Prisma.IntFieldUpdateOperationsInput | number
   morale?: Prisma.IntFieldUpdateOperationsInput | number
   mana?: Prisma.IntFieldUpdateOperationsInput | number
+  maxMana?: Prisma.IntFieldUpdateOperationsInput | number
   power?: Prisma.IntFieldUpdateOperationsInput | number
   gold?: Prisma.IntFieldUpdateOperationsInput | number
   accuracy?: Prisma.IntFieldUpdateOperationsInput | number
@@ -926,6 +957,7 @@ export type HeroClassUncheckedUpdateWithoutMatchPicksInput = {
   luck?: Prisma.IntFieldUpdateOperationsInput | number
   morale?: Prisma.IntFieldUpdateOperationsInput | number
   mana?: Prisma.IntFieldUpdateOperationsInput | number
+  maxMana?: Prisma.IntFieldUpdateOperationsInput | number
   power?: Prisma.IntFieldUpdateOperationsInput | number
   gold?: Prisma.IntFieldUpdateOperationsInput | number
   accuracy?: Prisma.IntFieldUpdateOperationsInput | number
@@ -950,6 +982,7 @@ export type HeroClassCreateWithoutRatingEntriesInput = {
   luck: number
   morale: number
   mana: number
+  maxMana?: number
   power: number
   gold: number
   accuracy: number
@@ -974,6 +1007,7 @@ export type HeroClassUncheckedCreateWithoutRatingEntriesInput = {
   luck: number
   morale: number
   mana: number
+  maxMana?: number
   power: number
   gold: number
   accuracy: number
@@ -1014,6 +1048,7 @@ export type HeroClassUpdateWithoutRatingEntriesInput = {
   luck?: Prisma.IntFieldUpdateOperationsInput | number
   morale?: Prisma.IntFieldUpdateOperationsInput | number
   mana?: Prisma.IntFieldUpdateOperationsInput | number
+  maxMana?: Prisma.IntFieldUpdateOperationsInput | number
   power?: Prisma.IntFieldUpdateOperationsInput | number
   gold?: Prisma.IntFieldUpdateOperationsInput | number
   accuracy?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1038,6 +1073,7 @@ export type HeroClassUncheckedUpdateWithoutRatingEntriesInput = {
   luck?: Prisma.IntFieldUpdateOperationsInput | number
   morale?: Prisma.IntFieldUpdateOperationsInput | number
   mana?: Prisma.IntFieldUpdateOperationsInput | number
+  maxMana?: Prisma.IntFieldUpdateOperationsInput | number
   power?: Prisma.IntFieldUpdateOperationsInput | number
   gold?: Prisma.IntFieldUpdateOperationsInput | number
   accuracy?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1102,6 +1138,7 @@ export type HeroClassSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   luck?: boolean
   morale?: boolean
   mana?: boolean
+  maxMana?: boolean
   power?: boolean
   gold?: boolean
   accuracy?: boolean
@@ -1128,6 +1165,7 @@ export type HeroClassSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   luck?: boolean
   morale?: boolean
   mana?: boolean
+  maxMana?: boolean
   power?: boolean
   gold?: boolean
   accuracy?: boolean
@@ -1151,6 +1189,7 @@ export type HeroClassSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   luck?: boolean
   morale?: boolean
   mana?: boolean
+  maxMana?: boolean
   power?: boolean
   gold?: boolean
   accuracy?: boolean
@@ -1174,6 +1213,7 @@ export type HeroClassSelectScalar = {
   luck?: boolean
   morale?: boolean
   mana?: boolean
+  maxMana?: boolean
   power?: boolean
   gold?: boolean
   accuracy?: boolean
@@ -1184,7 +1224,7 @@ export type HeroClassSelectScalar = {
   updatedAt?: boolean
 }
 
-export type HeroClassOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"code" | "displayName" | "description" | "roleSummary" | "health" | "damage" | "armor" | "initiative" | "dodge" | "luck" | "morale" | "mana" | "power" | "gold" | "accuracy" | "size" | "isPlayable" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["heroClass"]>
+export type HeroClassOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"code" | "displayName" | "description" | "roleSummary" | "health" | "damage" | "armor" | "initiative" | "dodge" | "luck" | "morale" | "mana" | "maxMana" | "power" | "gold" | "accuracy" | "size" | "isPlayable" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["heroClass"]>
 export type HeroClassInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ratingEntries?: boolean | Prisma.HeroClass$ratingEntriesArgs<ExtArgs>
   matchPicks?: boolean | Prisma.HeroClass$matchPicksArgs<ExtArgs>
@@ -1218,6 +1258,10 @@ export type $HeroClassPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     luck: number
     morale: number
     mana: number
+    /**
+     * Константный потолок маны класса (обычно = стартовой mana).
+     */
+    maxMana: number
     power: number
     gold: number
     accuracy: number
@@ -1666,6 +1710,7 @@ export interface HeroClassFieldRefs {
   readonly luck: Prisma.FieldRef<"HeroClass", 'Int'>
   readonly morale: Prisma.FieldRef<"HeroClass", 'Int'>
   readonly mana: Prisma.FieldRef<"HeroClass", 'Int'>
+  readonly maxMana: Prisma.FieldRef<"HeroClass", 'Int'>
   readonly power: Prisma.FieldRef<"HeroClass", 'Int'>
   readonly gold: Prisma.FieldRef<"HeroClass", 'Int'>
   readonly accuracy: Prisma.FieldRef<"HeroClass", 'Int'>

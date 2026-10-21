@@ -80,6 +80,7 @@ export const DEBUFF_EFFECT_IDS: readonly EffectId[] = [
   'GALL',
   'INTERDICT',
   'MAGIC_SHACKLES',
+  'ASHILLNESS',
 ];
 
 /**
@@ -240,6 +241,7 @@ export function enslaveUnit(target: BattleUnit, enslaver: BattleUnit): void {
 
 /**
  * Тик в начале хода юнита: regen и DoT (без уменьшения rounds).
+ * DoT тикают только если !wasEffected (wait / доп. ход не повторяют урон).
  * Также сбрасывает флаг fresh — эффекты, дожившие до своего хода, тикают в его конце.
  */
 export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
@@ -256,7 +258,7 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
       }
     }
     const dotSource = DOT_SOURCES[effect.id];
-    if (dotSource && unit.alive) {
+    if (dotSource && unit.alive && !unit.wasEffected) {
       const resist = applyResistMultiplier(unit, dotSource);
       if (resist.blocked) {
         if (resist.blockReason) {
@@ -272,7 +274,22 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
       }
     }
   }
+  if ([...unit.effects].some((effect) => DOT_SOURCES[effect.id])) {
+    unit.wasEffected = true;
+  }
   return log;
+}
+
+/**
+ * Прирост маны с clamp к maxMana.
+ */
+export function addMana(unit: BattleUnit, amount: number): number {
+  if (amount <= 0 || unit.maxMana <= 0) {
+    return 0;
+  }
+  const before = unit.mana;
+  unit.mana = Math.min(unit.maxMana, unit.mana + amount);
+  return unit.mana - before;
 }
 
 /**
@@ -368,6 +385,15 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
     case 'ROW_FORTIFY':
       unit.armor += Math.max(1, Math.round(effect.power || 1));
       break;
+    case 'ASHILLNESS': {
+      // power — доля (VK [0.25, 0.25]); снижаем мощь и инициативу один раз.
+      const frac = effect.power > 0 && effect.power <= 1 ? effect.power : 0.25;
+      const powerLoss = Math.floor(unit.power * frac);
+      const initLoss = Math.floor(unit.initiative * frac);
+      unit.power = Math.max(0, unit.power - powerLoss);
+      unit.initiative = Math.max(1, unit.initiative - initLoss);
+      break;
+    }
     case 'ENSLAVED':
     case 'MAGIC_SHACKLES':
       break;
@@ -454,6 +480,9 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect): void {
         0,
         unit.armor - Math.max(1, Math.round(effect.power || 1))
       );
+      break;
+    case 'ASHILLNESS':
+      // Снижение постоянное на время маркера; откат не восстанавливаем (доля от текущего).
       break;
     case 'MAGIC_SHACKLES':
       break;

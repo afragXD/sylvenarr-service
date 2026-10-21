@@ -1,5 +1,5 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, healUnit } from '../effects';
+import { grantEffect, healUnit, addMana } from '../effects';
 import { levelUpUnit } from '../level';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { availableSummonRows, createSummon } from './summon';
@@ -147,7 +147,7 @@ export const archlichAbilities: AbilityHandler = {
       if (target.id === actor.id) {
         const rows = availableSummonRows(state, actor);
         if (rows.length === 0) {
-          actor.mana += 3;
+          addMana(actor, 3);
           return { status: 'reject', message: 'Нет места для саммона' };
         }
         if (rows.length === 1) {
@@ -158,7 +158,7 @@ export const archlichAbilities: AbilityHandler = {
             isLichSummon: true,
           });
           if (!summon) {
-            actor.mana += 3;
+            addMana(actor, 3);
             return { status: 'reject', message: 'Не удалось призвать' };
           }
           state.log.push(`${actor.displayName} призывает зомби.`);
@@ -240,16 +240,17 @@ export const archlichAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Нужно 2 МР' };
       }
       if (target.isSummon) {
-        target.damage += 2;
-        target.armor += 1;
-        target.power += 1;
+        const levels = 1 + Math.floor(actor.lvl / 4);
+        levelUpUnit(target, levels, state);
         if (target.isLichSummon) {
           const heal = healUnit(target, actor.lvl * 5 + 10);
           state.log.push(
-            `${actor.displayName} усиливает ${target.displayName} и лечит на ${heal}.`
+            `${actor.displayName} проводит ритуал над ${target.displayName}: +${levels} ур.${heal > 0 ? `, лечение ${heal}` : ''}.`,
           );
         } else {
-          state.log.push(`${actor.displayName} усиливает ${target.displayName}.`);
+          state.log.push(
+            `${actor.displayName} проводит ритуал над ${target.displayName}: +${levels} ур.`,
+          );
         }
       } else {
         grantEffect(target, 'VAMPWEAPON', 1 + Math.floor(actor.lvl / 7), 0.5 + actor.lvl / 25);
@@ -285,7 +286,7 @@ export const archlichAbilities: AbilityHandler = {
       return { status: 'reject', message: 'Нужен союзник' };
     }
     const manaBoost = Math.max(1, Math.round(victim.health / 30));
-    actor.mana += manaBoost;
+    addMana(actor, manaBoost);
     actor.power += Math.max(1, Math.round(actor.lvl * 0.75));
     actor.damage += 2;
     // Поглощение уровней души (порт lich.py: levelup(max(1, round(lvl * 0.75)))).
@@ -322,7 +323,7 @@ function resolvePrompt(
     });
     state.pendingPrompt = null;
     if (!summon) {
-      actor.mana += 3;
+      addMana(actor, 3);
       return { status: 'reject', message: 'Не удалось призвать' };
     }
     state.log.push(`${actor.displayName} призывает зомби.`);

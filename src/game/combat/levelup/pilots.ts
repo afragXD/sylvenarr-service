@@ -1,5 +1,5 @@
 import { randInt } from '../damage';
-import { healUnit } from '../effects';
+import { addMana, healUnit } from '../effects';
 import { changeResist, setWard } from '../resists';
 import type { BattleUnit } from '../types';
 import { bumpLevel } from './bump';
@@ -25,7 +25,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   Paladin(unit, ind, _state) {
     if (unit.hiddenLvl % 7 === 0) {
       unit.ultaCharges += 1;
-      unit.mana += 5;
+      addMana(unit, 5);
       // Item(475) — вне скоупа
     }
     unit.armor += randInt(1, 2) * Math.floor(unit.lvl / 2) * ind;
@@ -41,7 +41,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     if (unit.health > 0) {
       healUnit(unit, randInt(10, 15 + unit.lvl) * ind);
     }
-    unit.mana += randInt(1, 2) * ind;
+    addMana(unit, randInt(1, 2) * ind);
     unit.damage += (randInt(1, 3) + Math.floor(unit.lvl / 3)) * ind;
     bumpLevel(unit, ind);
   },
@@ -62,7 +62,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     }
     unit.power += randInt(2, 4) * ind;
     unit.luck += 2 * ind;
-    unit.mana += ind;
+    addMana(unit, ind);
     unit.armorPenetration += 0.04 * ind;
     unit.damage += (Math.floor(unit.lvl / 2) + randInt(1, 2)) * ind;
     unit.initiative += randInt(-2, 3) * ind;
@@ -74,7 +74,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
       unit.dodgeBank += 1;
     }
     unit.power += (randInt(0, 2) + Math.floor(unit.lvl / 2)) * ind;
-    unit.mana += ind;
+    addMana(unit, ind);
     unit.maxHp += 5 * ind;
     bumpLevel(unit, ind);
   },
@@ -100,7 +100,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     }
     unit.damage += (randInt(2, 5) + Math.floor(unit.lvl / 2)) * ind;
     unit.gold += randInt(30, 50) * ind;
-    unit.mana += ind;
+    addMana(unit, ind);
     unit.power += (Math.floor(unit.lvl / 2) + 1) * ind;
     bumpLevel(unit, ind);
   },
@@ -127,7 +127,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     }
     // Python: randint(0,2) * lvl // 2 * ind
     unit.power += Math.floor((randInt(0, 2) * unit.lvl) / 2) * ind;
-    unit.mana += randInt(1, 2) * ind;
+    addMana(unit, randInt(1, 2) * ind);
     bumpLevel(unit, ind);
   },
 
@@ -136,7 +136,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
       unit.gun += 3;
       unit.damage += randInt(10, 15);
     }
-    unit.mana += ind * randInt(1, 2);
+    addMana(unit, ind * randInt(1, 2));
     unit.power += (Math.floor(unit.lvl / 2) + 3) * ind;
     changeResist(unit, 'EARTH', 3 * ind);
     changeResist(unit, 'MIND', 2 * ind);
@@ -157,12 +157,13 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     if (unit.hiddenLvl % 6 === 0) {
       unit.ultaCharges += 1;
     }
-    unit.mana += 2 * ind;
+    addMana(unit, 2 * ind);
     bumpLevel(unit, ind);
   },
 
   Herbalist(unit, ind, _state) {
     unit.armor += 2 * ind;
+    unit.damage += randInt(1, 2) * ind;
     bumpLevel(unit, ind);
   },
 
@@ -170,7 +171,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   Demiurge(unit, ind, _state) {
     bumpLevel(unit, ind);
     unit.power += 2 * ind;
-    unit.mana += randInt(0, 3) * Math.max(ind, 0);
+    addMana(unit, randInt(1, 3) * Math.max(ind, 0));
     unit.armor += 2 * ind;
   },
 
@@ -183,6 +184,8 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     if (unit.hiddenLvl % 6 === 0) {
       unit.ultaCharges += 1;
     }
+    unit.power += randInt(1, 2) * ind;
+    unit.luck += 1 * ind;
     bumpLevel(unit, ind);
   },
 
@@ -201,7 +204,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     if (unit.hiddenLvl % 4 === 0) {
       unit.ultaCharges += 1;
     }
-    unit.mana += ind;
+    addMana(unit, ind);
     bumpLevel(unit, ind);
   },
 
@@ -211,7 +214,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     }
     unit.armor += 3 * ind;
     unit.power += 4 * ind;
-    unit.mana += 1 * ind;
+    addMana(unit, 1 * ind);
     bumpLevel(unit, ind);
   },
 
@@ -225,7 +228,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   EvilTree(unit, ind, _state) {
     unit.damage += randInt(1, 3) * ind;
     unit.power += randInt(2, 3) * ind;
-    unit.mana += randInt(0, 1) * ind;
+    addMana(unit, randInt(1, 2) * ind);
     bumpLevel(unit, ind);
   },
 

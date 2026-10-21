@@ -14,7 +14,7 @@ import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt } from './d
 import { resistsForClass } from './defaultResists';
 import { levelUpLivingUnits, levelUpUnit } from './level';
 import { summarizeResists } from './resists';
-import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnEnd, tickEffectsOnTurnStart } from './effects';
+import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnEnd, tickEffectsOnTurnStart, addMana } from './effects';
 import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, MAX_TEAM_SIZE, ROW_FRONT } from './settings';
 import {
   classAttackMods,
@@ -51,7 +51,7 @@ function applyDefendPassives(actor: BattleUnit): void {
       break;
     case 'Witch':
       grantEffect(actor, 'FOCUSED', 2, 15);
-      actor.mana += 3;
+      addMana(actor, 3);
       break;
     case 'Inquisitor':
       grantEffect(actor, 'CONTR', 2, 0);
@@ -168,7 +168,9 @@ function buildTeamUnits(
         attackStyle: resolveAttackStyle(hero.code),
         power: hero.power,
         mana: hero.mana,
+        maxMana: hero.maxMana ?? hero.mana,
         gold: hero.gold,
+        wasEffected: false,
         lvl: 1,
         hiddenLvl: 1,
         defending: false,
@@ -245,6 +247,7 @@ export function advanceToNextUnit(state: BattleState): void {
       state.preChoiceDoneIds = [];
       for (const unit of state.units) {
         unit.defending = false;
+        unit.wasEffected = false;
       }
       if (state.stage > state.rules.maxRounds) {
         state.outcome = 'draw';
@@ -841,6 +844,7 @@ export function toBattleSummary(state: BattleState) {
       isSummon: unit.isSummon,
       horseIsDead: unit.horseIsDead,
       mana: unit.mana,
+      maxMana: unit.maxMana,
       damage: unit.damage,
       armor: unit.armor,
       initiative: unit.initiative,

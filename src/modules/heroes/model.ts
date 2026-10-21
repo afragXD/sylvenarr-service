@@ -14,6 +14,7 @@ export namespace HeroesModel {
     luck: t.Number(),
     morale: t.Number(),
     mana: t.Number(),
+    maxMana: t.Number(),
     power: t.Number(),
     gold: t.Number(),
     accuracy: t.Number(),

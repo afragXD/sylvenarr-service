@@ -1,12 +1,12 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { effectLogLabel } from '../effect-labels';
-import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
+import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana, addMana } from '../effects';
 import { levelUpUnit } from '../level';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-const WISDOM_BUFFS = ['STRENGTH', 'HAPPY', 'HASTE'] as const;
+type WisdomLesson = 'focus' | 'strength' | 'crit' | 'armor';
 
 function abilityMeta(
   state: BattleState,
@@ -123,7 +123,12 @@ export const evilTreeAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1, armorIgnore: 0.1, source: 'EARTH' },
+        {
+          damageMult: 1.2,
+          armorIgnore: 0.4,
+          source: 'EARTH',
+          forceStyle: 'magic',
+        },
         state
       );
       if (damage === 0) {
@@ -133,6 +138,7 @@ export const evilTreeAbilities: AbilityHandler = {
       state.log.push(
         `${actor.displayName} опутывает ${target.displayName} (${damage}).`
       );
+      grantEffect(target, 'SLOW', 1 + Math.floor(actor.lvl / 5), 15 + actor.lvl);
       markDeadIfNeeded(state, target);
       const row = ownRowAllies(state, actor);
       if (row.length > 0) {
@@ -141,6 +147,16 @@ export const evilTreeAbilities: AbilityHandler = {
           const healed = healUnit(ally, share);
           if (healed > 0) {
             state.log.push(`${ally.displayName} восстанавливает ${healed} ОЗ от корней.`);
+          }
+        }
+        const weakest = [...row].sort((a, b) => a.health / a.maxHp - b.health / b.maxHp)[0];
+        if (weakest) {
+          const bonus = Math.floor(damage * 0.35);
+          const healed = healUnit(weakest, bonus);
+          if (healed > 0) {
+            state.log.push(
+              `${weakest.displayName} получает ещё ${healed} ОЗ от сока корней.`
+            );
           }
         }
       }
@@ -166,20 +182,35 @@ export const evilTreeAbilities: AbilityHandler = {
       }
       const target = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
-        actor.mana += 3;
+        addMana(actor, 3);
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const buff = WISDOM_BUFFS[randInt(0, WISDOM_BUFFS.length - 1)]!;
-      const power =
-        buff === 'STRENGTH'
-          ? 20 + actor.lvl * 2
-          : buff === 'HAPPY'
-            ? 15 + actor.lvl * 2
-            : 20;
-      grantEffect(target, buff, 2, power);
-      state.log.push(
-        `${actor.displayName}: мудрость — ${target.displayName} получает «${effectLogLabel(buff)}».`
-      );
+      const rounds = 3 + Math.floor(actor.lvl / 4);
+      const lessons: WisdomLesson[] = ['focus', 'strength', 'crit', 'armor'];
+      const lesson = lessons[randInt(0, lessons.length - 1)]!;
+      if (lesson === 'focus') {
+        grantEffect(target, 'FOCUSED', rounds, 20 + actor.lvl * 2);
+        grantEffect(target, 'LUCKY', rounds, 10 + actor.lvl * 2);
+        state.log.push(
+          `${actor.displayName}: мудрость — ${target.displayName} учит сосредоточенность (${rounds} р.).`
+        );
+      } else if (lesson === 'strength') {
+        grantEffect(target, 'STRENGTH', rounds, 20 + actor.lvl * 2);
+        state.log.push(
+          `${actor.displayName}: мудрость — ${target.displayName} получает «${effectLogLabel('STRENGTH')}» (${rounds} р.).`
+        );
+      } else if (lesson === 'crit') {
+        const bank = 1 + Math.floor(actor.lvl / 4);
+        target.critBank += bank;
+        state.log.push(
+          `${actor.displayName}: мудрость — ${target.displayName} получает ${bank} гарант. крит.`
+        );
+      } else {
+        grantEffect(target, 'ROW_FORTIFY', rounds, 4 + Math.floor(actor.lvl / 3));
+        state.log.push(
+          `${actor.displayName}: мудрость — ${target.displayName} укрепляет броню (${rounds} р.).`
+        );
+      }
       return { status: 'done' };
     }
 
@@ -190,7 +221,7 @@ export const evilTreeAbilities: AbilityHandler = {
       }
       const target = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
-        actor.mana += 4;
+        addMana(actor, 4);
         return { status: 'reject', message: 'Цель не найдена' };
       }
       const levels = 2 + actor.lvl;

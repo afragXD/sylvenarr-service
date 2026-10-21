@@ -4,6 +4,7 @@ import { applyAction, createBattleState } from '../engine';
 import { grantEffect } from '../effects';
 import type { HeroClassStats } from '../types';
 import { goldGolemAbilities } from './gold-golem';
+import { createSummon } from './summon';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
   code,
@@ -71,6 +72,49 @@ describe('combat fixes', () => {
     expect(foe.effects.some((effect) => effect.id === 'ENSLAVED')).toBe(false);
     expect(foe.team).toBe(1);
     expect(foe.playerId).toBe('g');
+  });
+
+  test('Archlich slot 3 ритуал: саммон +1+master.lvl//4 уровней', () => {
+    const heroes = new Map([
+      ['Archlich', hero('Archlich', { initiative: 99, mana: 10 })],
+      ['Zombie', hero('Zombie', { health: 50, damage: 10 })],
+      ['C', hero('C', { initiative: 1 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm-ritual',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Archlich', row: 0, pickOrder: 1 },
+        { id: 'p3', playerId: 'g', heroClassCode: 'C', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const lich = state.units.find((unit) => unit.id === 'p1')!;
+    lich.lvl = 8;
+    lich.hiddenLvl = 8;
+    lich.maxSummons = 2;
+    const zombie = createSummon(state, {
+      summoner: lich,
+      heroCode: 'Zombie',
+      row: 0,
+      isLichSummon: true,
+    });
+    expect(zombie).toBeTruthy();
+    const before = zombie!.lvl;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const cast = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 3,
+      targetId: zombie!.id,
+    });
+    expect(cast.ok).toBe(true);
+    // 1 + floor(8/4) = 3
+    expect(zombie!.lvl).toBe(before + 3);
+    expect(state.log.some((line) => line.includes('+3 ур.'))).toBe(true);
   });
 
   test('Archlich slot 5 поглощает уровни союзника', () => {

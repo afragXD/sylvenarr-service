@@ -1,6 +1,7 @@
+import { dealDamage, markDeadIfNeeded } from '../damage';
 import { clearDebuffs, grantEffect, healUnit, trySpendMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { alliesOf, ownRowAllies } from './targets';
+import { alliesOf, enemiesOf, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function abilityMeta(
@@ -45,14 +46,16 @@ function abilityMeta(
         disabledReason: null,
         legalTargetIds: [],
       };
-    case 5:
+    case 5: {
+      const targets = enemiesOf(state, actor);
       return {
         slot: 5,
-        label: 'Базовые действия',
-        needsTarget: false,
-        disabledReason: 'Используйте защиту / ожидание',
-        legalTargetIds: [],
+        label: 'Праща',
+        needsTarget: true,
+        disabledReason: targets.length === 0 ? 'Нет целей' : null,
+        legalTargetIds: targets.map((unit) => unit.id),
       };
+    }
   }
 }
 
@@ -110,6 +113,31 @@ export const herbalistAbilities: AbilityHandler = {
       state.log.push(
         `${actor.displayName} варит зелье поддержки (+${healed} ОЗ; инвентарь — позже).`
       );
+      return { status: 'done' };
+    }
+
+    if (input.slot === 5) {
+      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+      if (!target) {
+        return { status: 'reject', message: 'Цель не найдена' };
+      }
+      const graves = state.graveyard.filter((entry) => entry.team === actor.team).length;
+      const damageMult = 1 + 0.15 * graves;
+      const armorIgnore = (20 + actor.lvl) / 100;
+      const damage = dealDamage(
+        actor,
+        target,
+        { damageMult, armorIgnore, forceStyle: 'ranged', source: 'ARROWS' },
+        state
+      );
+      if (damage === 0) {
+        state.log.push(`${actor.displayName}: праща — промах.`);
+        return { status: 'done' };
+      }
+      state.log.push(
+        `${actor.displayName} бьёт пращой ${target.displayName} (${damage}${graves > 0 ? `, +${graves * 15}% за могилы` : ''}).`
+      );
+      markDeadIfNeeded(state, target);
       return { status: 'done' };
     }
 

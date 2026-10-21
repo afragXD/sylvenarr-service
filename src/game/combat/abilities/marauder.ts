@@ -1,7 +1,7 @@
 import { resolveAttackStyle } from '../attack-style';
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { resistsForClass } from '../defaultResists';
-import { grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
+import { grantEffect, hasEffect, healUnit, trySpendMana, addMana } from '../effects';
 import { setWard } from '../resists';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -323,7 +323,7 @@ function applyWerewolf(
         Math.round((actor.health / actor.maxHp + 0.2 + actor.lvl * 0.03) * damage)
       );
       const healed = healUnit(actor, vamp);
-      actor.mana += Math.floor(vamp / 5);
+      addMana(actor, Math.floor(vamp / 5));
       state.log.push(
         `${actor.displayName} кусает ${target.displayName} (${damage}), +${healed} ОЗ.`
       );

@@ -1,11 +1,11 @@
 import { randInt } from '../damage';
-import { healUnit } from '../effects';
+import { healUnit, addMana } from '../effects';
 import { bumpLevel } from './bump';
 import type { ClassLevelUpFn } from './types';
 
 export const summonLevelUps: Record<string, ClassLevelUpFn> = {
   GoblinShaman(unit, ind, _state) {
-    unit.mana += ind;
+    addMana(unit, ind);
     unit.power += 4 * ind;
     unit.maxHp += 4 * ind;
     healUnit(unit, 4 * ind);

@@ -87,6 +87,7 @@ export namespace MatchesModel {
     isSummon: t.Boolean(),
     horseIsDead: t.Boolean(),
     mana: t.Number(),
+    maxMana: t.Number(),
     damage: t.Number(),
     armor: t.Number(),
     initiative: t.Number(),

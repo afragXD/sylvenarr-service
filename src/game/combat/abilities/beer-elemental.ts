@@ -1,4 +1,4 @@
-import { randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf } from './targets';
@@ -11,13 +11,13 @@ function abilityMeta(
 ): AbilityInfo {
   switch (slot) {
     case 1: {
-      const allies = alliesOf(state, actor);
+      const targets = enemiesOf(state, actor);
       return {
         slot: 1,
-        label: 'Homie De Flanders',
+        label: 'Напоить',
         needsTarget: true,
-        disabledReason: allies.length === 0 ? 'Нет союзников' : null,
-        legalTargetIds: allies.map((unit) => unit.id),
+        disabledReason: targets.length === 0 ? 'Нет целей' : null,
+        legalTargetIds: targets.map((unit) => unit.id),
       };
     }
     case 2: {
@@ -87,15 +87,24 @@ export const beerElementalAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const target = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
+      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const power = target.luck < 5 ? 10 + actor.lvl * 2 : 5;
-      grantEffect(target, 'HAPPY', 2, power);
-      state.log.push(
-        `${actor.displayName}: кружка для ${target.displayName} (+${power} удачи).`
+      const damage = dealDamage(
+        actor,
+        target,
+        { damageMult: 1, source: 'WATER', forceStyle: 'magic' },
+        state
       );
+      if (damage === 0) {
+        state.log.push(`${actor.displayName}: напоить — промах.`);
+        return { status: 'done' };
+      }
+      state.log.push(
+        `${actor.displayName} напаивает ${target.displayName} некачественным пивом (${damage}).`
+      );
+      markDeadIfNeeded(state, target);
       return { status: 'done' };
     }
 

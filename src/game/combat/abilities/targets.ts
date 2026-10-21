@@ -62,22 +62,32 @@ export function neighbourBehind(state: BattleState, target: BattleUnit): BattleU
 }
 
 /**
+ * Живые враги на переднем ряду, включая SANCTUM (блок ряда, не список целей).
+ */
+export function livingEnemyFront(state: BattleState, actor: BattleUnit): BattleUnit[] {
+  return state.units.filter(
+    (unit) => unit.alive && unit.team !== actor.team && unit.row === ROW_FRONT
+  );
+}
+
+/**
  * Доступные цели для атаки (melee-правила).
+ * Передний ряд с живыми (в т.ч. под SANCTUM) блокирует задний; SANCTUM из целей исключается.
  */
 export function listAttackTargets(state: BattleState, attacker: BattleUnit): BattleUnit[] {
   const enemies = enemiesOf(state, attacker);
   if (attacker.attackStyle !== 'melee') {
     return enemies;
   }
-  const enemyFront = enemies.filter((unit) => unit.row === ROW_FRONT);
   const ownFrontAlive = state.units.some(
     (unit) => unit.alive && unit.team === attacker.team && unit.row === ROW_FRONT
   );
   if (attacker.row === 1 && ownFrontAlive) {
     return [];
   }
-  if (enemyFront.length > 0) {
-    return enemyFront;
+  const frontAlive = livingEnemyFront(state, attacker);
+  if (frontAlive.length > 0) {
+    return enemies.filter((unit) => unit.row === ROW_FRONT);
   }
   return enemies;
 }

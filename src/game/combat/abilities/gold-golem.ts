@@ -1,5 +1,5 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, tryStun } from '../effects';
+import { grantEffect, tryStun, addMana } from '../effects';
 import { setWard } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, meleeOrAll } from './targets';
@@ -115,7 +115,7 @@ export const goldGolemAbilities: AbilityHandler = {
       if (randInt(1, 100) <= 70) {
         const drained = randInt(2, 3);
         target.mana = Math.max(0, target.mana - drained);
-        actor.mana += drained;
+        addMana(actor, drained);
         const lose = Math.max(1, Math.round(target.power * (0.25 + actor.lvl * 0.05)));
         grantEffect(target, 'INTERFERENCE', 1, lose);
         state.log.push(

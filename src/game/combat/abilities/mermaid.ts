@@ -1,5 +1,5 @@
 import { randInt } from '../damage';
-import { enslaveUnit, grantEffect, healUnit, trySpendMana, tryStun } from '../effects';
+import { enslaveUnit, grantEffect, healUnit, trySpendMana, tryStun, addMana } from '../effects';
 import { resistsEnslave } from '../races';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, unitsOnSameRow } from './targets';
@@ -153,7 +153,7 @@ export const mermaidAbilities: AbilityHandler = {
       }
       const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
-        actor.mana += 2;
+        addMana(actor, 2);
         return { status: 'reject', message: 'Цель не найдена' };
       }
       grantEffect(target, 'MAGIC_SHACKLES', 2 + Math.floor(actor.lvl / 6), 0);

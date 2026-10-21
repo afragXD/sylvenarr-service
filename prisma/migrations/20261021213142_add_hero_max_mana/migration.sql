@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "HeroClass" ADD COLUMN     "maxMana" INTEGER NOT NULL DEFAULT 0;

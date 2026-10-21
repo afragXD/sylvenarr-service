@@ -51,6 +51,8 @@ model HeroClass {
   luck         Int
   morale       Int
   mana         Int
+  /// Константный потолок маны класса (обычно = стартовой mana).
+  maxMana      Int      @default(0)
   power        Int
   gold         Int
   accuracy     Int

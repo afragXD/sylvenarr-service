@@ -32,7 +32,7 @@ const map = (pairs: Array<[DamageSource, Spec]>): ResistMap => {
  * Коды — HeroClass.code веба.
  */
 export const DEFAULT_RESISTS: Record<string, ResistMap> = {
-  Pyro: map([['FIRE', { ward: 1 }]]),
+  Pyro: map([['FIRE', { value: 25, ward: 1 }]]),
   Oracle: map([['FIRE', { ward: 1 }]]),
   Witch: map([
     ['FINALSTRIKE', { value: 25, ward: 1 }],
@@ -47,7 +47,7 @@ export const DEFAULT_RESISTS: Record<string, ResistMap> = {
   ]),
   Knight: map([['FINALSTRIKE', { value: 25 }]]),
   Archlich: map([
-    ['FIRE', { value: -20 }],
+    ['FIRE', { value: -20, ward: 1 }],
     ['DEATH', { value: 75, ward: 1 }],
     ['HOLY', { value: -20 }],
   ]),

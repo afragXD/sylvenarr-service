@@ -42,7 +42,8 @@ export type EffectId =
   | 'INTERDICT'
   | 'MAGIC_SHACKLES'
   | 'ENSLAVED'
-  | 'ROW_FORTIFY';
+  | 'ROW_FORTIFY'
+  | 'ASHILLNESS';
 
 export type BattleEffect = {
   id: EffectId;
@@ -115,7 +116,14 @@ export type BattleUnit = {
   attackStyle: 'melee' | 'ranged' | 'magic';
   power: number;
   mana: number;
+  /** Константный потолок маны класса (не растёт в бою). */
+  maxMana: number;
   gold: number;
+  /**
+   * DoT уже тикнули в этом логическом ходе (legacy was_effected).
+   * Сбрасывается в начале раунда; wait / доп. ход не сбрасывают.
+   */
+  wasEffected: boolean;
   /** Уровень юнита в бою (legacy Hero.lvl); старт 1. */
   lvl: number;
   /**
@@ -217,6 +225,8 @@ export type HeroClassStats = {
   readonly accuracy: number;
   readonly power: number;
   readonly mana: number;
+  /** Потолок маны; если не задан в тестах — берётся mana. */
+  readonly maxMana?: number;
   readonly gold: number;
   readonly size: number;
   /** Боевой дух (опционально в тестах; из БД приходит всегда). */

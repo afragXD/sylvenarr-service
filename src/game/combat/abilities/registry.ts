@@ -7,8 +7,11 @@ import { demonLordAbilities } from './demon-lord';
 import { detectiveAbilities } from './detective';
 import { beerElementalAbilities } from './beer-elemental';
 import { dracolichAbilities } from './dracolich';
+import { ectoplasmAbilities } from './ectoplasm';
 import { evilTreeAbilities } from './evil-tree';
 import { ghostWarriorAbilities } from './ghost-warrior';
+import { goblinShamanAbilities } from './goblin-shaman';
+import { goblinTrapperAbilities } from './goblin-trapper';
 import { goldGolemAbilities } from './gold-golem';
 import { herbalistAbilities } from './herbalist';
 import { inquisitorAbilities } from './inquisitor';
@@ -20,8 +23,10 @@ import { orcKingAbilities } from './orc-king';
 import { paladinAbilities } from './paladin';
 import { patriarchAbilities } from './patriarch';
 import { pyroAbilities } from './pyro';
+import { skeletonChampionAbilities } from './skeleton-champion';
 import { specterAbilities } from './specter';
 import { witchAbilities } from './witch';
+import { zombieAbilities } from './zombie';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 const PILOT_HANDLERS: Record<string, AbilityHandler> = {
@@ -49,6 +54,11 @@ const PILOT_HANDLERS: Record<string, AbilityHandler> = {
   EvilTree: evilTreeAbilities,
   Mermaid: mermaidAbilities,
   Dracolich: dracolichAbilities,
+  Zombie: zombieAbilities,
+  SkeletonChampion: skeletonChampionAbilities,
+  GoblinShaman: goblinShamanAbilities,
+  GoblinTrapper: goblinTrapperAbilities,
+  Ectoplasm: ectoplasmAbilities,
 };
 
 /**

@@ -12,8 +12,13 @@ function lowHpDamageMult(actor: BattleUnit): number {
 
 function meleeTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {
   const enemies = enemiesOf(state, actor);
-  const front = enemies.filter((unit) => unit.row === ROW_FRONT);
-  return front.length > 0 ? front : enemies;
+  const frontAlive = state.units.filter(
+    (unit) => unit.alive && unit.team !== actor.team && unit.row === ROW_FRONT
+  );
+  if (frontAlive.length > 0) {
+    return enemies.filter((unit) => unit.row === ROW_FRONT);
+  }
+  return enemies;
 }
 
 function abilityMeta(

@@ -372,6 +372,7 @@ export abstract class MatchesService {
           accuracy: hero.accuracy,
           power: hero.power,
           mana: hero.mana,
+          maxMana: hero.maxMana,
           gold: hero.gold,
           size: hero.size,
           morale: hero.morale,

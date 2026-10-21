@@ -23,6 +23,7 @@ async function main(): Promise<void> {
         luck: hero.luck,
         morale: hero.morale,
         mana: hero.mana,
+        maxMana: hero.maxMana,
         power: hero.power,
         gold: hero.gold,
         accuracy: hero.accuracy,

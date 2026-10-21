@@ -89,6 +89,7 @@ export const HeroClassScalarFieldEnum = {
   luck: 'luck',
   morale: 'morale',
   mana: 'mana',
+  maxMana: 'maxMana',
   power: 'power',
   gold: 'gold',
   accuracy: 'accuracy',

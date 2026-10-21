@@ -39,6 +39,7 @@ const LABELS: Record<EffectId, string> = {
   MAGIC_SHACKLES: 'Волшебные оковы',
   ENSLAVED: 'Порабощённый',
   ROW_FORTIFY: 'Укрепление ряда',
+  ASHILLNESS: 'Пепельная язва',
 };
 
 /**

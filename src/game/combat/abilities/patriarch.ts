@@ -1,5 +1,5 @@
 import { dealDamage, markDeadIfNeeded } from '../damage';
-import { grantEffect, healUnit, resurrectUnit, trySpendMana } from '../effects';
+import { grantEffect, healUnit, resurrectUnit, trySpendMana, addMana } from '../effects';
 import { ROW_BACK } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesInColumn, enemiesOf } from './targets';
@@ -95,7 +95,7 @@ function resolveResurrect(
   }
   if (choice === 'cancel') {
     state.pendingPrompt = null;
-    actor.mana += 5;
+    addMana(actor, 5);
     state.log.push(`${actor.displayName} отменяет воскрешение.`);
     return { status: 'done' };
   }

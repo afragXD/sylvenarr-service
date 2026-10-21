@@ -1,5 +1,5 @@
 import { randInt } from '../damage';
-import { grantEffect, healUnit, trySpendMana } from '../effects';
+import { grantEffect, healUnit, trySpendMana, addMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -137,7 +137,7 @@ export const oracleAbilities: AbilityHandler = {
     if (input.slot === 4) {
       actor.ultaCharges -= 1;
       for (const ally of ownRowAllies(state, actor)) {
-        ally.mana += randInt(4, 8);
+        addMana(ally, randInt(4, 8));
       }
       state.log.push(`${actor.displayName}: аркана энергии наполняет ряд маной.`);
       return { status: 'done' };

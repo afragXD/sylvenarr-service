@@ -15,6 +15,7 @@ export type HeroSeed = {
   readonly luck: number;
   readonly morale: number;
   readonly mana: number;
+  readonly maxMana: number;
   readonly power: number;
   readonly gold: number;
   readonly accuracy: number;
@@ -312,7 +313,7 @@ const rawHeroes: ReadonlyArray<RawHero> = [
     roleSummary:
       'Юнит поддержки, который может увеличивать урон, наносимый в ближнем бою – точечно либо на группу. Может снимать отрицательные эффекты и готовить зелья восстановления здоровья и маны.',
     health: 165,
-    damage: 0,
+    damage: 10,
     armor: 20,
     initiative: 10,
     dodge: 5,
@@ -373,10 +374,10 @@ const rawHeroes: ReadonlyArray<RawHero> = [
     armor: 0,
     initiative: 30,
     dodge: 25,
-    luck: 0,
+    luck: 20,
     morale: 0,
     mana: 0,
-    power: 0,
+    power: 18,
     gold: 450,
     accuracy: 100,
   },
@@ -470,7 +471,7 @@ const rawHeroes: ReadonlyArray<RawHero> = [
     dodge: -5,
     luck: 0,
     morale: 0,
-    mana: 6,
+    mana: 10,
     power: 30,
     gold: 320,
     accuracy: 92,
@@ -610,6 +611,7 @@ const rawHeroes: ReadonlyArray<RawHero> = [
 
 export const heroSeeds: ReadonlyArray<HeroSeed> = rawHeroes.map((hero, index) => ({
   ...hero,
+  maxMana: hero.mana,
   size: giantCodes.has(hero.code) ? 2 : 1,
   isPlayable: !summonCodes.has(hero.code),
   sortOrder: index + 1,

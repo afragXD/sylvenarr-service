@@ -18,6 +18,8 @@ const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassS
   accuracy: 90,
   power: 15,
   mana: 10,
+  /** Выше стартовой маны — чтобы level-up addMana был виден в тестах роста. */
+  maxMana: 99,
   gold: 200,
   size: 1,
   ...overrides,
