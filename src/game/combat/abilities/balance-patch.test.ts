@@ -103,7 +103,7 @@ describe('balance patch 2026-10', () => {
     expect(DEFAULT_RESISTS.Archlich?.FIRE).toEqual({ value: -20, wardCharges: 1 });
   });
 
-  test('BeerElemental slot 1 Напоить deals water magic', () => {
+  test('BeerElemental slot 1 Homie De Flanders deals water magic', () => {
     const heroes = new Map([
       ['BeerElemental', hero('BeerElemental', { initiative: 99, power: 18, luck: 20, mana: 0 })],
       ['B', hero('B', { initiative: 1, health: 300 })],

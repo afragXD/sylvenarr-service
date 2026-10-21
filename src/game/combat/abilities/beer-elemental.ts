@@ -14,7 +14,7 @@ function abilityMeta(
       const targets = enemiesOf(state, actor);
       return {
         slot: 1,
-        label: 'Напоить',
+        label: 'Homie De Flanders',
         needsTarget: true,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
