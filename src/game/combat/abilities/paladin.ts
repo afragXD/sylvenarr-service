@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, healUnit, tryLevelDrain } from '../effects';
 import { levelUpUnit } from '../level';
 import { setWard } from '../resists';
@@ -127,26 +127,40 @@ export const paladinAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Нужно 2 МР' };
       }
       actor.mana -= 2;
+      // Порт MagicPattern(HOLY, meleeFlag): урон от силы, касание.
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1.1, armorIgnore: 0.15, source: 'HOLY' },
+        { damageMult: 1.1, armorIgnore: 0.15, source: 'HOLY', forceStyle: 'magic' },
         state
       );
-      if (damage === 0) {
+      const deal = lastDealDamageResult();
+      // В боте промах (evade) обрывает действие; вард HOLY оставляет 1 урона и не мешает дрену.
+      if (deal.missed) {
         state.log.push(`${actor.displayName}: разбить душу — промах.`);
         return { status: 'done' };
       }
-      state.log.push(
-        `${actor.displayName} разбивает душу ${target.displayName} (${damage}).`
-      );
-      markDeadIfNeeded(state, target);
-      if (target.alive && randInt(1, 100) <= 70 && tryLevelDrain(state, target)) {
-        const n = 1 + Math.floor(actor.lvl / 5);
-        levelUpUnit(target, -n, state);
-        levelUpUnit(actor, n, state);
-        state.log.push(`${actor.displayName} поглощает ${n} уровней у ${target.displayName}.`);
+      if (damage > 0) {
+        state.log.push(
+          `${actor.displayName} разбивает душу ${target.displayName} (${damage}).`
+        );
       }
+      // Поглощение уровней — до markDead: в боте levelup идёт пока юнит ещё в бою,
+      // даже после смертельного удара; levelUpUnit игнорирует !alive.
+      // Chance(70, HOLY, LOWERINGLEVEL) из paladin.py — при провале шанса пишем в лог.
+      if (randInt(1, 100) <= 70) {
+        if (tryLevelDrain(state, target)) {
+          const n = 1 + Math.floor(actor.lvl / 5);
+          levelUpUnit(target, -n, state);
+          levelUpUnit(actor, n, state);
+          state.log.push(`${actor.displayName} поглощает ${n} уровней у ${target.displayName}.`);
+        }
+      } else {
+        state.log.push(
+          `${actor.displayName}: душа ${target.displayName} устояла — уровни не поглощены.`,
+        );
+      }
+      markDeadIfNeeded(state, target);
       return { status: 'done' };
     }
 

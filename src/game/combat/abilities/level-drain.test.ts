@@ -100,6 +100,86 @@ describe('petrify and level drain', () => {
     expect(foe.lvl).toBe(8 - n);
   });
 
+  test('Paladin slot 3 drains levels even on killing blow', () => {
+    randomSpy = spyOn(Math, 'random').mockReturnValue(0);
+    const heroes = new Map([
+      ['Paladin', hero('Paladin', { initiative: 99, mana: 10, power: 80 })],
+      ['B', hero('B', { initiative: 1, health: 5 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Paladin', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const paladin = state.units.find((unit) => unit.id === 'p1')!;
+    const foe = state.units.find((unit) => unit.id === 'p2')!;
+    paladin.lvl = 5;
+    paladin.hiddenLvl = 5;
+    foe.lvl = 6;
+    foe.hiddenLvl = 6;
+    foe.health = 3;
+    foe.maxHp = 5;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const result = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 3,
+      targetId: 'p2',
+    });
+    expect(result.ok).toBe(true);
+    expect(foe.alive).toBe(false);
+    const n = 1 + Math.floor(5 / 5);
+    expect(paladin.lvl).toBe(5 + n);
+    expect(foe.lvl).toBe(6 - n);
+    expect(state.log.some((line) => line.includes('поглощает'))).toBe(true);
+  });
+
+  test('Paladin slot 3 still drains after HOLY ward blocks damage', () => {
+    randomSpy = spyOn(Math, 'random').mockReturnValue(0);
+    const heroes = new Map([
+      ['Paladin', hero('Paladin', { initiative: 99, mana: 10, power: 40 })],
+      ['Abbess', hero('Abbess', { initiative: 1 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Paladin', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'Abbess', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const paladin = state.units.find((unit) => unit.id === 'p1')!;
+    const foe = state.units.find((unit) => unit.id === 'p2')!;
+    // Вард HOLY как у цели с щитом от святого (не дефолт Abbess — выставим вручную).
+    foe.resists.HOLY = { value: 0, wardCharges: 1 };
+    paladin.lvl = 5;
+    paladin.hiddenLvl = 5;
+    foe.lvl = 4;
+    foe.hiddenLvl = 4;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const result = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 3,
+      targetId: 'p2',
+    });
+    expect(result.ok).toBe(true);
+    const n = 1 + Math.floor(5 / 5);
+    expect(paladin.lvl).toBe(5 + n);
+    expect(foe.lvl).toBe(4 - n);
+  });
+
   test('Witch slot 4 lowers target level', () => {
     randomSpy = spyOn(Math, 'random').mockReturnValue(0);
     const heroes = new Map([
