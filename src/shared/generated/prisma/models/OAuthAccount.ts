@@ -194,8 +194,8 @@ export type OAuthAccountWhereInput = {
   AND?: Prisma.OAuthAccountWhereInput | Prisma.OAuthAccountWhereInput[]
   OR?: Prisma.OAuthAccountWhereInput[]
   NOT?: Prisma.OAuthAccountWhereInput | Prisma.OAuthAccountWhereInput[]
-  id?: Prisma.StringFilter<"OAuthAccount"> | string
-  playerId?: Prisma.StringFilter<"OAuthAccount"> | string
+  id?: Prisma.UuidFilter<"OAuthAccount"> | string
+  playerId?: Prisma.UuidFilter<"OAuthAccount"> | string
   provider?: Prisma.StringFilter<"OAuthAccount"> | string
   providerUserId?: Prisma.StringFilter<"OAuthAccount"> | string
   email?: Prisma.StringNullableFilter<"OAuthAccount"> | string | null
@@ -223,7 +223,7 @@ export type OAuthAccountWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.OAuthAccountWhereInput | Prisma.OAuthAccountWhereInput[]
   OR?: Prisma.OAuthAccountWhereInput[]
   NOT?: Prisma.OAuthAccountWhereInput | Prisma.OAuthAccountWhereInput[]
-  playerId?: Prisma.StringFilter<"OAuthAccount"> | string
+  playerId?: Prisma.UuidFilter<"OAuthAccount"> | string
   provider?: Prisma.StringFilter<"OAuthAccount"> | string
   providerUserId?: Prisma.StringFilter<"OAuthAccount"> | string
   email?: Prisma.StringNullableFilter<"OAuthAccount"> | string | null
@@ -251,8 +251,8 @@ export type OAuthAccountScalarWhereWithAggregatesInput = {
   AND?: Prisma.OAuthAccountScalarWhereWithAggregatesInput | Prisma.OAuthAccountScalarWhereWithAggregatesInput[]
   OR?: Prisma.OAuthAccountScalarWhereWithAggregatesInput[]
   NOT?: Prisma.OAuthAccountScalarWhereWithAggregatesInput | Prisma.OAuthAccountScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"OAuthAccount"> | string
-  playerId?: Prisma.StringWithAggregatesFilter<"OAuthAccount"> | string
+  id?: Prisma.UuidWithAggregatesFilter<"OAuthAccount"> | string
+  playerId?: Prisma.UuidWithAggregatesFilter<"OAuthAccount"> | string
   provider?: Prisma.StringWithAggregatesFilter<"OAuthAccount"> | string
   providerUserId?: Prisma.StringWithAggregatesFilter<"OAuthAccount"> | string
   email?: Prisma.StringNullableWithAggregatesFilter<"OAuthAccount"> | string | null
@@ -475,8 +475,8 @@ export type OAuthAccountScalarWhereInput = {
   AND?: Prisma.OAuthAccountScalarWhereInput | Prisma.OAuthAccountScalarWhereInput[]
   OR?: Prisma.OAuthAccountScalarWhereInput[]
   NOT?: Prisma.OAuthAccountScalarWhereInput | Prisma.OAuthAccountScalarWhereInput[]
-  id?: Prisma.StringFilter<"OAuthAccount"> | string
-  playerId?: Prisma.StringFilter<"OAuthAccount"> | string
+  id?: Prisma.UuidFilter<"OAuthAccount"> | string
+  playerId?: Prisma.UuidFilter<"OAuthAccount"> | string
   provider?: Prisma.StringFilter<"OAuthAccount"> | string
   providerUserId?: Prisma.StringFilter<"OAuthAccount"> | string
   email?: Prisma.StringNullableFilter<"OAuthAccount"> | string | null

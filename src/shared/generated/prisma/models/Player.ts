@@ -232,7 +232,7 @@ export type PlayerWhereInput = {
   AND?: Prisma.PlayerWhereInput | Prisma.PlayerWhereInput[]
   OR?: Prisma.PlayerWhereInput[]
   NOT?: Prisma.PlayerWhereInput | Prisma.PlayerWhereInput[]
-  id?: Prisma.StringFilter<"Player"> | string
+  id?: Prisma.UuidFilter<"Player"> | string
   displayName?: Prisma.StringFilter<"Player"> | string
   email?: Prisma.StringNullableFilter<"Player"> | string | null
   avatarUrl?: Prisma.StringNullableFilter<"Player"> | string | null
@@ -305,7 +305,7 @@ export type PlayerScalarWhereWithAggregatesInput = {
   AND?: Prisma.PlayerScalarWhereWithAggregatesInput | Prisma.PlayerScalarWhereWithAggregatesInput[]
   OR?: Prisma.PlayerScalarWhereWithAggregatesInput[]
   NOT?: Prisma.PlayerScalarWhereWithAggregatesInput | Prisma.PlayerScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Player"> | string
+  id?: Prisma.UuidWithAggregatesFilter<"Player"> | string
   displayName?: Prisma.StringWithAggregatesFilter<"Player"> | string
   email?: Prisma.StringNullableWithAggregatesFilter<"Player"> | string | null
   avatarUrl?: Prisma.StringNullableWithAggregatesFilter<"Player"> | string | null

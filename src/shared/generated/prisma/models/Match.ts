@@ -218,12 +218,12 @@ export type MatchWhereInput = {
   AND?: Prisma.MatchWhereInput | Prisma.MatchWhereInput[]
   OR?: Prisma.MatchWhereInput[]
   NOT?: Prisma.MatchWhereInput | Prisma.MatchWhereInput[]
-  id?: Prisma.StringFilter<"Match"> | string
+  id?: Prisma.UuidFilter<"Match"> | string
   status?: Prisma.EnumMatchStatusFilter<"Match"> | $Enums.MatchStatus
   inviteCode?: Prisma.StringFilter<"Match"> | string
-  hostId?: Prisma.StringFilter<"Match"> | string
-  guestId?: Prisma.StringNullableFilter<"Match"> | string | null
-  winnerPlayerId?: Prisma.StringNullableFilter<"Match"> | string | null
+  hostId?: Prisma.UuidFilter<"Match"> | string
+  guestId?: Prisma.UuidNullableFilter<"Match"> | string | null
+  winnerPlayerId?: Prisma.UuidNullableFilter<"Match"> | string | null
   fightingStartedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   resultSnapshot?: Prisma.JsonNullableFilter<"Match">
@@ -260,9 +260,9 @@ export type MatchWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.MatchWhereInput[]
   NOT?: Prisma.MatchWhereInput | Prisma.MatchWhereInput[]
   status?: Prisma.EnumMatchStatusFilter<"Match"> | $Enums.MatchStatus
-  hostId?: Prisma.StringFilter<"Match"> | string
-  guestId?: Prisma.StringNullableFilter<"Match"> | string | null
-  winnerPlayerId?: Prisma.StringNullableFilter<"Match"> | string | null
+  hostId?: Prisma.UuidFilter<"Match"> | string
+  guestId?: Prisma.UuidNullableFilter<"Match"> | string | null
+  winnerPlayerId?: Prisma.UuidNullableFilter<"Match"> | string | null
   fightingStartedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   resultSnapshot?: Prisma.JsonNullableFilter<"Match">
@@ -296,12 +296,12 @@ export type MatchScalarWhereWithAggregatesInput = {
   AND?: Prisma.MatchScalarWhereWithAggregatesInput | Prisma.MatchScalarWhereWithAggregatesInput[]
   OR?: Prisma.MatchScalarWhereWithAggregatesInput[]
   NOT?: Prisma.MatchScalarWhereWithAggregatesInput | Prisma.MatchScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Match"> | string
+  id?: Prisma.UuidWithAggregatesFilter<"Match"> | string
   status?: Prisma.EnumMatchStatusWithAggregatesFilter<"Match"> | $Enums.MatchStatus
   inviteCode?: Prisma.StringWithAggregatesFilter<"Match"> | string
-  hostId?: Prisma.StringWithAggregatesFilter<"Match"> | string
-  guestId?: Prisma.StringNullableWithAggregatesFilter<"Match"> | string | null
-  winnerPlayerId?: Prisma.StringNullableWithAggregatesFilter<"Match"> | string | null
+  hostId?: Prisma.UuidWithAggregatesFilter<"Match"> | string
+  guestId?: Prisma.UuidNullableWithAggregatesFilter<"Match"> | string | null
+  winnerPlayerId?: Prisma.UuidNullableWithAggregatesFilter<"Match"> | string | null
   fightingStartedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Match"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Match"> | Date | string | null
   resultSnapshot?: Prisma.JsonNullableWithAggregatesFilter<"Match">
@@ -675,12 +675,12 @@ export type MatchScalarWhereInput = {
   AND?: Prisma.MatchScalarWhereInput | Prisma.MatchScalarWhereInput[]
   OR?: Prisma.MatchScalarWhereInput[]
   NOT?: Prisma.MatchScalarWhereInput | Prisma.MatchScalarWhereInput[]
-  id?: Prisma.StringFilter<"Match"> | string
+  id?: Prisma.UuidFilter<"Match"> | string
   status?: Prisma.EnumMatchStatusFilter<"Match"> | $Enums.MatchStatus
   inviteCode?: Prisma.StringFilter<"Match"> | string
-  hostId?: Prisma.StringFilter<"Match"> | string
-  guestId?: Prisma.StringNullableFilter<"Match"> | string | null
-  winnerPlayerId?: Prisma.StringNullableFilter<"Match"> | string | null
+  hostId?: Prisma.UuidFilter<"Match"> | string
+  guestId?: Prisma.UuidNullableFilter<"Match"> | string | null
+  winnerPlayerId?: Prisma.UuidNullableFilter<"Match"> | string | null
   fightingStartedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   resultSnapshot?: Prisma.JsonNullableFilter<"Match">

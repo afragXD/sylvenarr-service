@@ -923,6 +923,8 @@ export abstract class MatchesService {
           ptsAfter: change.ptsAfterB,
         },
       }),
+      // Драфт больше не нужен — состав и лог уже в resultSnapshot.
+      prisma.matchPick.deleteMany({ where: { matchId: input.matchId } }),
     ]);
   }
 
@@ -977,10 +979,6 @@ export abstract class MatchesService {
       include: {
         host: { select: { id: true, displayName: true } },
         guest: { select: { id: true, displayName: true } },
-        picks: {
-          orderBy: { pickOrder: 'asc' },
-          include: { heroClass: { select: { code: true, displayName: true } } },
-        },
       },
     });
     if (!row) {
@@ -1003,16 +1001,22 @@ export abstract class MatchesService {
     }
 
     const snapshot = parseResultSnapshot(row.resultSnapshot);
-    const hostUnits =
-      snapshot?.host.units ??
-      row.picks
+    // После finalize пики удаляются; для старых матчей без snapshot — fallback на picks.
+    let hostUnits = snapshot?.host.units ?? [];
+    let guestUnits = snapshot?.guest.units ?? [];
+    if (!snapshot) {
+      const picks = await prisma.matchPick.findMany({
+        where: { matchId },
+        orderBy: { pickOrder: 'asc' },
+        include: { heroClass: { select: { code: true, displayName: true } } },
+      });
+      hostUnits = picks
         .filter((pick) => pick.playerId === row.hostId)
         .map((pick) => unitFromPick(pick));
-    const guestUnits =
-      snapshot?.guest.units ??
-      row.picks
+      guestUnits = picks
         .filter((pick) => pick.playerId === row.guestId)
         .map((pick) => unitFromPick(pick));
+    }
 
     return {
       ok: true,

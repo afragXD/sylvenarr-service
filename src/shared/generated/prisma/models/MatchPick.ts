@@ -229,9 +229,9 @@ export type MatchPickWhereInput = {
   AND?: Prisma.MatchPickWhereInput | Prisma.MatchPickWhereInput[]
   OR?: Prisma.MatchPickWhereInput[]
   NOT?: Prisma.MatchPickWhereInput | Prisma.MatchPickWhereInput[]
-  id?: Prisma.StringFilter<"MatchPick"> | string
-  matchId?: Prisma.StringFilter<"MatchPick"> | string
-  playerId?: Prisma.StringFilter<"MatchPick"> | string
+  id?: Prisma.UuidFilter<"MatchPick"> | string
+  matchId?: Prisma.UuidFilter<"MatchPick"> | string
+  playerId?: Prisma.UuidFilter<"MatchPick"> | string
   heroClassCode?: Prisma.StringFilter<"MatchPick"> | string
   row?: Prisma.IntFilter<"MatchPick"> | number
   pickOrder?: Prisma.IntFilter<"MatchPick"> | number
@@ -259,8 +259,8 @@ export type MatchPickWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.MatchPickWhereInput | Prisma.MatchPickWhereInput[]
   OR?: Prisma.MatchPickWhereInput[]
   NOT?: Prisma.MatchPickWhereInput | Prisma.MatchPickWhereInput[]
-  matchId?: Prisma.StringFilter<"MatchPick"> | string
-  playerId?: Prisma.StringFilter<"MatchPick"> | string
+  matchId?: Prisma.UuidFilter<"MatchPick"> | string
+  playerId?: Prisma.UuidFilter<"MatchPick"> | string
   heroClassCode?: Prisma.StringFilter<"MatchPick"> | string
   row?: Prisma.IntFilter<"MatchPick"> | number
   pickOrder?: Prisma.IntFilter<"MatchPick"> | number
@@ -289,9 +289,9 @@ export type MatchPickScalarWhereWithAggregatesInput = {
   AND?: Prisma.MatchPickScalarWhereWithAggregatesInput | Prisma.MatchPickScalarWhereWithAggregatesInput[]
   OR?: Prisma.MatchPickScalarWhereWithAggregatesInput[]
   NOT?: Prisma.MatchPickScalarWhereWithAggregatesInput | Prisma.MatchPickScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"MatchPick"> | string
-  matchId?: Prisma.StringWithAggregatesFilter<"MatchPick"> | string
-  playerId?: Prisma.StringWithAggregatesFilter<"MatchPick"> | string
+  id?: Prisma.UuidWithAggregatesFilter<"MatchPick"> | string
+  matchId?: Prisma.UuidWithAggregatesFilter<"MatchPick"> | string
+  playerId?: Prisma.UuidWithAggregatesFilter<"MatchPick"> | string
   heroClassCode?: Prisma.StringWithAggregatesFilter<"MatchPick"> | string
   row?: Prisma.IntWithAggregatesFilter<"MatchPick"> | number
   pickOrder?: Prisma.IntWithAggregatesFilter<"MatchPick"> | number
@@ -589,9 +589,9 @@ export type MatchPickScalarWhereInput = {
   AND?: Prisma.MatchPickScalarWhereInput | Prisma.MatchPickScalarWhereInput[]
   OR?: Prisma.MatchPickScalarWhereInput[]
   NOT?: Prisma.MatchPickScalarWhereInput | Prisma.MatchPickScalarWhereInput[]
-  id?: Prisma.StringFilter<"MatchPick"> | string
-  matchId?: Prisma.StringFilter<"MatchPick"> | string
-  playerId?: Prisma.StringFilter<"MatchPick"> | string
+  id?: Prisma.UuidFilter<"MatchPick"> | string
+  matchId?: Prisma.UuidFilter<"MatchPick"> | string
+  playerId?: Prisma.UuidFilter<"MatchPick"> | string
   heroClassCode?: Prisma.StringFilter<"MatchPick"> | string
   row?: Prisma.IntFilter<"MatchPick"> | number
   pickOrder?: Prisma.IntFilter<"MatchPick"> | number

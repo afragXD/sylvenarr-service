@@ -69,7 +69,7 @@ model HeroClass {
 
 /// Игрок (создаётся только через OAuth).
 model Player {
-  id          String     @id @default(cuid())
+  id          String     @id @default(uuid()) @db.Uuid
   displayName String
   email       String?
   avatarUrl   String?
@@ -89,7 +89,7 @@ model Player {
 
 /// Новость хроники разработки.
 model News {
-  id          String       @id @default(cuid())
+  id          String       @id @default(uuid()) @db.Uuid
   slug        String       @unique
   title       String
   summary     String
@@ -97,7 +97,7 @@ model News {
   category    NewsCategory @default(devlog)
   coverUrl    String?
   publishedAt DateTime?
-  authorId    String?
+  authorId    String?      @db.Uuid
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -108,8 +108,8 @@ model News {
 
 /// Привязка внешнего OAuth-провайдера к игроку.
 model OAuthAccount {
-  id             String   @id @default(cuid())
-  playerId       String
+  id             String   @id @default(uuid()) @db.Uuid
+  playerId       String   @db.Uuid
   provider       String
   providerUserId String
   email          String?
@@ -125,12 +125,12 @@ model OAuthAccount {
 
 /// Лобби / матч / бой.
 model Match {
-  id                 String      @id @default(cuid())
+  id                 String      @id @default(uuid()) @db.Uuid
   status             MatchStatus @default(waiting)
   inviteCode         String      @unique
-  hostId             String
-  guestId            String?
-  winnerPlayerId     String?
+  hostId             String      @db.Uuid
+  guestId            String?     @db.Uuid
+  winnerPlayerId     String?     @db.Uuid
   /// Момент перехода в fighting (для длительности боя).
   fightingStartedAt  DateTime?
   finishedAt         DateTime?
@@ -152,9 +152,9 @@ model Match {
 
 /// Пик героя в draft.
 model MatchPick {
-  id            String   @id @default(cuid())
-  matchId       String
-  playerId      String
+  id            String   @id @default(uuid()) @db.Uuid
+  matchId       String   @db.Uuid
+  playerId      String   @db.Uuid
   heroClassCode String
   /// 0 = передний ряд, 1 = задний.
   row           Int
@@ -171,11 +171,11 @@ model MatchPick {
 
 /// Запись результата матча для рейтинга.
 model RatingEntry {
-  id            String       @id @default(cuid())
-  playerId      String
+  id            String       @id @default(uuid()) @db.Uuid
+  playerId      String       @db.Uuid
   result        RatingResult
   heroClassCode String?
-  matchId       String?
+  matchId       String?      @db.Uuid
   ptsBefore     Int?
   ptsDelta      Int?
   ptsAfter      Int?

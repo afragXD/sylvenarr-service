@@ -219,7 +219,7 @@ export type NewsWhereInput = {
   AND?: Prisma.NewsWhereInput | Prisma.NewsWhereInput[]
   OR?: Prisma.NewsWhereInput[]
   NOT?: Prisma.NewsWhereInput | Prisma.NewsWhereInput[]
-  id?: Prisma.StringFilter<"News"> | string
+  id?: Prisma.UuidFilter<"News"> | string
   slug?: Prisma.StringFilter<"News"> | string
   title?: Prisma.StringFilter<"News"> | string
   summary?: Prisma.StringFilter<"News"> | string
@@ -227,7 +227,7 @@ export type NewsWhereInput = {
   category?: Prisma.EnumNewsCategoryFilter<"News"> | $Enums.NewsCategory
   coverUrl?: Prisma.StringNullableFilter<"News"> | string | null
   publishedAt?: Prisma.DateTimeNullableFilter<"News"> | Date | string | null
-  authorId?: Prisma.StringNullableFilter<"News"> | string | null
+  authorId?: Prisma.UuidNullableFilter<"News"> | string | null
   createdAt?: Prisma.DateTimeFilter<"News"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"News"> | Date | string
   author?: Prisma.XOR<Prisma.PlayerNullableScalarRelationFilter, Prisma.PlayerWhereInput> | null
@@ -260,7 +260,7 @@ export type NewsWhereUniqueInput = Prisma.AtLeast<{
   category?: Prisma.EnumNewsCategoryFilter<"News"> | $Enums.NewsCategory
   coverUrl?: Prisma.StringNullableFilter<"News"> | string | null
   publishedAt?: Prisma.DateTimeNullableFilter<"News"> | Date | string | null
-  authorId?: Prisma.StringNullableFilter<"News"> | string | null
+  authorId?: Prisma.UuidNullableFilter<"News"> | string | null
   createdAt?: Prisma.DateTimeFilter<"News"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"News"> | Date | string
   author?: Prisma.XOR<Prisma.PlayerNullableScalarRelationFilter, Prisma.PlayerWhereInput> | null
@@ -287,7 +287,7 @@ export type NewsScalarWhereWithAggregatesInput = {
   AND?: Prisma.NewsScalarWhereWithAggregatesInput | Prisma.NewsScalarWhereWithAggregatesInput[]
   OR?: Prisma.NewsScalarWhereWithAggregatesInput[]
   NOT?: Prisma.NewsScalarWhereWithAggregatesInput | Prisma.NewsScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"News"> | string
+  id?: Prisma.UuidWithAggregatesFilter<"News"> | string
   slug?: Prisma.StringWithAggregatesFilter<"News"> | string
   title?: Prisma.StringWithAggregatesFilter<"News"> | string
   summary?: Prisma.StringWithAggregatesFilter<"News"> | string
@@ -295,7 +295,7 @@ export type NewsScalarWhereWithAggregatesInput = {
   category?: Prisma.EnumNewsCategoryWithAggregatesFilter<"News"> | $Enums.NewsCategory
   coverUrl?: Prisma.StringNullableWithAggregatesFilter<"News"> | string | null
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"News"> | Date | string | null
-  authorId?: Prisma.StringNullableWithAggregatesFilter<"News"> | string | null
+  authorId?: Prisma.UuidNullableWithAggregatesFilter<"News"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"News"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"News"> | Date | string
 }
@@ -555,7 +555,7 @@ export type NewsScalarWhereInput = {
   AND?: Prisma.NewsScalarWhereInput | Prisma.NewsScalarWhereInput[]
   OR?: Prisma.NewsScalarWhereInput[]
   NOT?: Prisma.NewsScalarWhereInput | Prisma.NewsScalarWhereInput[]
-  id?: Prisma.StringFilter<"News"> | string
+  id?: Prisma.UuidFilter<"News"> | string
   slug?: Prisma.StringFilter<"News"> | string
   title?: Prisma.StringFilter<"News"> | string
   summary?: Prisma.StringFilter<"News"> | string
@@ -563,7 +563,7 @@ export type NewsScalarWhereInput = {
   category?: Prisma.EnumNewsCategoryFilter<"News"> | $Enums.NewsCategory
   coverUrl?: Prisma.StringNullableFilter<"News"> | string | null
   publishedAt?: Prisma.DateTimeNullableFilter<"News"> | Date | string | null
-  authorId?: Prisma.StringNullableFilter<"News"> | string | null
+  authorId?: Prisma.UuidNullableFilter<"News"> | string | null
   createdAt?: Prisma.DateTimeFilter<"News"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"News"> | Date | string
 }

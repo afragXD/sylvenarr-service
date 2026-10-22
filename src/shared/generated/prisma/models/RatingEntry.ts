@@ -247,11 +247,11 @@ export type RatingEntryWhereInput = {
   AND?: Prisma.RatingEntryWhereInput | Prisma.RatingEntryWhereInput[]
   OR?: Prisma.RatingEntryWhereInput[]
   NOT?: Prisma.RatingEntryWhereInput | Prisma.RatingEntryWhereInput[]
-  id?: Prisma.StringFilter<"RatingEntry"> | string
-  playerId?: Prisma.StringFilter<"RatingEntry"> | string
+  id?: Prisma.UuidFilter<"RatingEntry"> | string
+  playerId?: Prisma.UuidFilter<"RatingEntry"> | string
   result?: Prisma.EnumRatingResultFilter<"RatingEntry"> | $Enums.RatingResult
   heroClassCode?: Prisma.StringNullableFilter<"RatingEntry"> | string | null
-  matchId?: Prisma.StringNullableFilter<"RatingEntry"> | string | null
+  matchId?: Prisma.UuidNullableFilter<"RatingEntry"> | string | null
   ptsBefore?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
   ptsDelta?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
   ptsAfter?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
@@ -279,10 +279,10 @@ export type RatingEntryWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.RatingEntryWhereInput | Prisma.RatingEntryWhereInput[]
   OR?: Prisma.RatingEntryWhereInput[]
   NOT?: Prisma.RatingEntryWhereInput | Prisma.RatingEntryWhereInput[]
-  playerId?: Prisma.StringFilter<"RatingEntry"> | string
+  playerId?: Prisma.UuidFilter<"RatingEntry"> | string
   result?: Prisma.EnumRatingResultFilter<"RatingEntry"> | $Enums.RatingResult
   heroClassCode?: Prisma.StringNullableFilter<"RatingEntry"> | string | null
-  matchId?: Prisma.StringNullableFilter<"RatingEntry"> | string | null
+  matchId?: Prisma.UuidNullableFilter<"RatingEntry"> | string | null
   ptsBefore?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
   ptsDelta?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
   ptsAfter?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
@@ -312,11 +312,11 @@ export type RatingEntryScalarWhereWithAggregatesInput = {
   AND?: Prisma.RatingEntryScalarWhereWithAggregatesInput | Prisma.RatingEntryScalarWhereWithAggregatesInput[]
   OR?: Prisma.RatingEntryScalarWhereWithAggregatesInput[]
   NOT?: Prisma.RatingEntryScalarWhereWithAggregatesInput | Prisma.RatingEntryScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"RatingEntry"> | string
-  playerId?: Prisma.StringWithAggregatesFilter<"RatingEntry"> | string
+  id?: Prisma.UuidWithAggregatesFilter<"RatingEntry"> | string
+  playerId?: Prisma.UuidWithAggregatesFilter<"RatingEntry"> | string
   result?: Prisma.EnumRatingResultWithAggregatesFilter<"RatingEntry"> | $Enums.RatingResult
   heroClassCode?: Prisma.StringNullableWithAggregatesFilter<"RatingEntry"> | string | null
-  matchId?: Prisma.StringNullableWithAggregatesFilter<"RatingEntry"> | string | null
+  matchId?: Prisma.UuidNullableWithAggregatesFilter<"RatingEntry"> | string | null
   ptsBefore?: Prisma.IntNullableWithAggregatesFilter<"RatingEntry"> | number | null
   ptsDelta?: Prisma.IntNullableWithAggregatesFilter<"RatingEntry"> | number | null
   ptsAfter?: Prisma.IntNullableWithAggregatesFilter<"RatingEntry"> | number | null
@@ -611,11 +611,11 @@ export type RatingEntryScalarWhereInput = {
   AND?: Prisma.RatingEntryScalarWhereInput | Prisma.RatingEntryScalarWhereInput[]
   OR?: Prisma.RatingEntryScalarWhereInput[]
   NOT?: Prisma.RatingEntryScalarWhereInput | Prisma.RatingEntryScalarWhereInput[]
-  id?: Prisma.StringFilter<"RatingEntry"> | string
-  playerId?: Prisma.StringFilter<"RatingEntry"> | string
+  id?: Prisma.UuidFilter<"RatingEntry"> | string
+  playerId?: Prisma.UuidFilter<"RatingEntry"> | string
   result?: Prisma.EnumRatingResultFilter<"RatingEntry"> | $Enums.RatingResult
   heroClassCode?: Prisma.StringNullableFilter<"RatingEntry"> | string | null
-  matchId?: Prisma.StringNullableFilter<"RatingEntry"> | string | null
+  matchId?: Prisma.UuidNullableFilter<"RatingEntry"> | string | null
   ptsBefore?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
   ptsDelta?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
   ptsAfter?: Prisma.IntNullableFilter<"RatingEntry"> | number | null
