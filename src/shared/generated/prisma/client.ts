@@ -46,7 +46,7 @@ export { Prisma }
 export type HeroClass = Prisma.HeroClassModel
 /**
  * Model Player
- * Игрок (создаётся только через OAuth).
+ * Игрок (OAuth и/или пароль).
  */
 export type Player = Prisma.PlayerModel
 /**

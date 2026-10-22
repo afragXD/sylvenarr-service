@@ -8,6 +8,7 @@ type PlayerRow = {
   avatarUrl: string | null;
   role: PlayersModel.playerRole;
   createdAt: Date;
+  passwordHash: string | null;
   oauthAccounts: ReadonlyArray<{ provider: string }>;
 };
 
@@ -34,6 +35,7 @@ export abstract class PlayersService {
     avatarUrl: true,
     role: true,
     createdAt: true,
+    passwordHash: true,
     oauthAccounts: {
       select: { provider: true },
       orderBy: { provider: 'asc' as const },
@@ -41,14 +43,19 @@ export abstract class PlayersService {
   };
 
   /**
-   * Находит авторизованного игрока по id (есть хотя бы один OAuthAccount).
+   * Находит авторизованного игрока по id (OAuth и/или пароль).
    */
   static async findAuthenticatedById(id: string): Promise<PlayersModel.player | null> {
     const row = await prisma.player.findUnique({
       where: { id },
       select: PlayersService.playerSelect,
     });
-    if (!row || row.oauthAccounts.length === 0) {
+    if (!row) {
+      return null;
+    }
+    const hasOAuth = row.oauthAccounts.length > 0;
+    const hasPassword = row.passwordHash != null && row.passwordHash.length > 0;
+    if (!hasOAuth && !hasPassword) {
       return null;
     }
     return PlayersService.mapPlayer(row);

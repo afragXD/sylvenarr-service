@@ -108,4 +108,39 @@ export abstract class AuthService {
   static async findPlayerForDevLogin(playerId: string): Promise<PlayersModel.player | null> {
     return PlayersService.findAuthenticatedById(playerId);
   }
+
+  /**
+   * Вход по displayName или email + пароль (Argon2id).
+   * При любой ошибке возвращает null (без enumeration).
+   */
+  static async loginWithPassword(
+    loginOrEmail: string,
+    password: string
+  ): Promise<PlayersModel.player | null> {
+    const raw = loginOrEmail.trim();
+    if (!raw || !password) {
+      return null;
+    }
+
+    const player = await prisma.player.findFirst({
+      where: {
+        OR: [
+          { displayName: raw },
+          { email: { equals: raw, mode: 'insensitive' } },
+        ],
+      },
+      select: { id: true, passwordHash: true },
+    });
+
+    if (!player?.passwordHash) {
+      return null;
+    }
+
+    const ok = await Bun.password.verify(password, player.passwordHash);
+    if (!ok) {
+      return null;
+    }
+
+    return PlayersService.findAuthenticatedById(player.id);
+  }
 }

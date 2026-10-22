@@ -107,6 +107,7 @@ export const PlayerScalarFieldEnum = {
   id: 'id',
   displayName: 'displayName',
   email: 'email',
+  passwordHash: 'passwordHash',
   avatarUrl: 'avatarUrl',
   pts: 'pts',
   role: 'role',

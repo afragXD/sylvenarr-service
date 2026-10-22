@@ -37,6 +37,30 @@ export const authController = new Elysia({ prefix: '/auth', tags: ['Auth'] })
     }
   )
   .post(
+    '/login',
+    async ({ body, cookie, status }) => {
+      const player = await AuthService.loginWithPassword(body.loginOrEmail, body.password);
+      if (!player) {
+        return status(401, { message: 'Неверный логин или пароль' });
+      }
+      cookie[PLAYER_COOKIE_NAME].set({
+        value: player.id,
+        ...sessionCookieOptions,
+      });
+      return { ok: true as const, playerId: player.id, displayName: player.displayName };
+    },
+    {
+      body: AuthModel.loginBody,
+      response: {
+        200: AuthModel.loginResponse,
+        401: AuthModel.errorResponse,
+      },
+      detail: {
+        summary: 'Вход по логину/почте и паролю',
+      },
+    }
+  )
+  .post(
     '/dev-login/:playerId',
     async ({ params, cookie, status }) => {
       if (!isDev) {

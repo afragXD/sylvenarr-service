@@ -67,17 +67,19 @@ model HeroClass {
   matchPicks    MatchPick[]
 }
 
-/// Игрок (создаётся только через OAuth).
+/// Игрок (OAuth и/или пароль).
 model Player {
-  id          String     @id @default(uuid()) @db.Uuid
-  displayName String
-  email       String?
-  avatarUrl   String?
+  id           String     @id @default(uuid()) @db.Uuid
+  displayName  String     @unique
+  email        String?    @unique
+  /// Argon2id hash; не отдаём в API.
+  passwordHash String?
+  avatarUrl    String?
   /// ПТС (сезонный рейтинг Heroes III / StickyFingaz). Нулевой уровень = 1500.
-  pts         Int        @default(1500)
-  role        PlayerRole @default(player)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  pts          Int        @default(1500)
+  role         PlayerRole @default(player)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   hostedMatches  Match[]        @relation("MatchHost")
   guestMatches   Match[]        @relation("MatchGuest")

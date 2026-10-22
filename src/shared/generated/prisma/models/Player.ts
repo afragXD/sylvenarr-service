@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model Player
- * Игрок (создаётся только через OAuth).
+ * Игрок (OAuth и/или пароль).
  */
 export type PlayerModel = runtime.Types.Result.DefaultSelection<Prisma.$PlayerPayload>
 
@@ -38,6 +38,7 @@ export type PlayerMinAggregateOutputType = {
   id: string | null
   displayName: string | null
   email: string | null
+  passwordHash: string | null
   avatarUrl: string | null
   pts: number | null
   role: $Enums.PlayerRole | null
@@ -49,6 +50,7 @@ export type PlayerMaxAggregateOutputType = {
   id: string | null
   displayName: string | null
   email: string | null
+  passwordHash: string | null
   avatarUrl: string | null
   pts: number | null
   role: $Enums.PlayerRole | null
@@ -60,6 +62,7 @@ export type PlayerCountAggregateOutputType = {
   id: number
   displayName: number
   email: number
+  passwordHash: number
   avatarUrl: number
   pts: number
   role: number
@@ -81,6 +84,7 @@ export type PlayerMinAggregateInputType = {
   id?: true
   displayName?: true
   email?: true
+  passwordHash?: true
   avatarUrl?: true
   pts?: true
   role?: true
@@ -92,6 +96,7 @@ export type PlayerMaxAggregateInputType = {
   id?: true
   displayName?: true
   email?: true
+  passwordHash?: true
   avatarUrl?: true
   pts?: true
   role?: true
@@ -103,6 +108,7 @@ export type PlayerCountAggregateInputType = {
   id?: true
   displayName?: true
   email?: true
+  passwordHash?: true
   avatarUrl?: true
   pts?: true
   role?: true
@@ -201,6 +207,7 @@ export type PlayerGroupByOutputType = {
   id: string
   displayName: string
   email: string | null
+  passwordHash: string | null
   avatarUrl: string | null
   pts: number
   role: $Enums.PlayerRole
@@ -235,6 +242,7 @@ export type PlayerWhereInput = {
   id?: Prisma.UuidFilter<"Player"> | string
   displayName?: Prisma.StringFilter<"Player"> | string
   email?: Prisma.StringNullableFilter<"Player"> | string | null
+  passwordHash?: Prisma.StringNullableFilter<"Player"> | string | null
   avatarUrl?: Prisma.StringNullableFilter<"Player"> | string | null
   pts?: Prisma.IntFilter<"Player"> | number
   role?: Prisma.EnumPlayerRoleFilter<"Player"> | $Enums.PlayerRole
@@ -252,6 +260,7 @@ export type PlayerOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
+  passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   pts?: Prisma.SortOrder
   role?: Prisma.SortOrder
@@ -267,11 +276,12 @@ export type PlayerOrderByWithRelationInput = {
 
 export type PlayerWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  displayName?: string
+  email?: string
   AND?: Prisma.PlayerWhereInput | Prisma.PlayerWhereInput[]
   OR?: Prisma.PlayerWhereInput[]
   NOT?: Prisma.PlayerWhereInput | Prisma.PlayerWhereInput[]
-  displayName?: Prisma.StringFilter<"Player"> | string
-  email?: Prisma.StringNullableFilter<"Player"> | string | null
+  passwordHash?: Prisma.StringNullableFilter<"Player"> | string | null
   avatarUrl?: Prisma.StringNullableFilter<"Player"> | string | null
   pts?: Prisma.IntFilter<"Player"> | number
   role?: Prisma.EnumPlayerRoleFilter<"Player"> | $Enums.PlayerRole
@@ -283,12 +293,13 @@ export type PlayerWhereUniqueInput = Prisma.AtLeast<{
   oauthAccounts?: Prisma.OAuthAccountListRelationFilter
   matchPicks?: Prisma.MatchPickListRelationFilter
   news?: Prisma.NewsListRelationFilter
-}, "id">
+}, "id" | "displayName" | "email">
 
 export type PlayerOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
+  passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   pts?: Prisma.SortOrder
   role?: Prisma.SortOrder
@@ -308,6 +319,7 @@ export type PlayerScalarWhereWithAggregatesInput = {
   id?: Prisma.UuidWithAggregatesFilter<"Player"> | string
   displayName?: Prisma.StringWithAggregatesFilter<"Player"> | string
   email?: Prisma.StringNullableWithAggregatesFilter<"Player"> | string | null
+  passwordHash?: Prisma.StringNullableWithAggregatesFilter<"Player"> | string | null
   avatarUrl?: Prisma.StringNullableWithAggregatesFilter<"Player"> | string | null
   pts?: Prisma.IntWithAggregatesFilter<"Player"> | number
   role?: Prisma.EnumPlayerRoleWithAggregatesFilter<"Player"> | $Enums.PlayerRole
@@ -319,6 +331,7 @@ export type PlayerCreateInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -336,6 +349,7 @@ export type PlayerUncheckedCreateInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -353,6 +367,7 @@ export type PlayerUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -370,6 +385,7 @@ export type PlayerUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -387,6 +403,7 @@ export type PlayerCreateManyInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -398,6 +415,7 @@ export type PlayerUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -409,6 +427,7 @@ export type PlayerUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -420,6 +439,7 @@ export type PlayerCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  passwordHash?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
   pts?: Prisma.SortOrder
   role?: Prisma.SortOrder
@@ -435,6 +455,7 @@ export type PlayerMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  passwordHash?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
   pts?: Prisma.SortOrder
   role?: Prisma.SortOrder
@@ -446,6 +467,7 @@ export type PlayerMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  passwordHash?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
   pts?: Prisma.SortOrder
   role?: Prisma.SortOrder
@@ -567,6 +589,7 @@ export type PlayerCreateWithoutNewsInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -583,6 +606,7 @@ export type PlayerUncheckedCreateWithoutNewsInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -615,6 +639,7 @@ export type PlayerUpdateWithoutNewsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -631,6 +656,7 @@ export type PlayerUncheckedUpdateWithoutNewsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -647,6 +673,7 @@ export type PlayerCreateWithoutOauthAccountsInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -663,6 +690,7 @@ export type PlayerUncheckedCreateWithoutOauthAccountsInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -695,6 +723,7 @@ export type PlayerUpdateWithoutOauthAccountsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -711,6 +740,7 @@ export type PlayerUncheckedUpdateWithoutOauthAccountsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -727,6 +757,7 @@ export type PlayerCreateWithoutHostedMatchesInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -743,6 +774,7 @@ export type PlayerUncheckedCreateWithoutHostedMatchesInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -764,6 +796,7 @@ export type PlayerCreateWithoutGuestMatchesInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -780,6 +813,7 @@ export type PlayerUncheckedCreateWithoutGuestMatchesInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -812,6 +846,7 @@ export type PlayerUpdateWithoutHostedMatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -828,6 +863,7 @@ export type PlayerUncheckedUpdateWithoutHostedMatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -855,6 +891,7 @@ export type PlayerUpdateWithoutGuestMatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -871,6 +908,7 @@ export type PlayerUncheckedUpdateWithoutGuestMatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -887,6 +925,7 @@ export type PlayerCreateWithoutMatchPicksInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -903,6 +942,7 @@ export type PlayerUncheckedCreateWithoutMatchPicksInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -935,6 +975,7 @@ export type PlayerUpdateWithoutMatchPicksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -951,6 +992,7 @@ export type PlayerUncheckedUpdateWithoutMatchPicksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -967,6 +1009,7 @@ export type PlayerCreateWithoutRatingEntriesInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -983,6 +1026,7 @@ export type PlayerUncheckedCreateWithoutRatingEntriesInput = {
   id?: string
   displayName: string
   email?: string | null
+  passwordHash?: string | null
   avatarUrl?: string | null
   pts?: number
   role?: $Enums.PlayerRole
@@ -1015,6 +1059,7 @@ export type PlayerUpdateWithoutRatingEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -1031,6 +1076,7 @@ export type PlayerUncheckedUpdateWithoutRatingEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pts?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
@@ -1123,6 +1169,7 @@ export type PlayerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   id?: boolean
   displayName?: boolean
   email?: boolean
+  passwordHash?: boolean
   avatarUrl?: boolean
   pts?: boolean
   role?: boolean
@@ -1141,6 +1188,7 @@ export type PlayerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   displayName?: boolean
   email?: boolean
+  passwordHash?: boolean
   avatarUrl?: boolean
   pts?: boolean
   role?: boolean
@@ -1152,6 +1200,7 @@ export type PlayerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   displayName?: boolean
   email?: boolean
+  passwordHash?: boolean
   avatarUrl?: boolean
   pts?: boolean
   role?: boolean
@@ -1163,6 +1212,7 @@ export type PlayerSelectScalar = {
   id?: boolean
   displayName?: boolean
   email?: boolean
+  passwordHash?: boolean
   avatarUrl?: boolean
   pts?: boolean
   role?: boolean
@@ -1170,7 +1220,7 @@ export type PlayerSelectScalar = {
   updatedAt?: boolean
 }
 
-export type PlayerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "displayName" | "email" | "avatarUrl" | "pts" | "role" | "createdAt" | "updatedAt", ExtArgs["result"]["player"]>
+export type PlayerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "displayName" | "email" | "passwordHash" | "avatarUrl" | "pts" | "role" | "createdAt" | "updatedAt", ExtArgs["result"]["player"]>
 export type PlayerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   hostedMatches?: boolean | Prisma.Player$hostedMatchesArgs<ExtArgs>
   guestMatches?: boolean | Prisma.Player$guestMatchesArgs<ExtArgs>
@@ -1197,6 +1247,10 @@ export type $PlayerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     id: string
     displayName: string
     email: string | null
+    /**
+     * Argon2id hash; не отдаём в API.
+     */
+    passwordHash: string | null
     avatarUrl: string | null
     /**
      * ПТС (сезонный рейтинг Heroes III / StickyFingaz). Нулевой уровень = 1500.
@@ -1637,6 +1691,7 @@ export interface PlayerFieldRefs {
   readonly id: Prisma.FieldRef<"Player", 'String'>
   readonly displayName: Prisma.FieldRef<"Player", 'String'>
   readonly email: Prisma.FieldRef<"Player", 'String'>
+  readonly passwordHash: Prisma.FieldRef<"Player", 'String'>
   readonly avatarUrl: Prisma.FieldRef<"Player", 'String'>
   readonly pts: Prisma.FieldRef<"Player", 'Int'>
   readonly role: Prisma.FieldRef<"Player", 'PlayerRole'>

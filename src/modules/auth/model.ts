@@ -33,4 +33,17 @@ export namespace AuthModel {
     ok: t.Boolean(),
   });
   export type logoutResponse = typeof logoutResponse.static;
+
+  export const loginBody = t.Object({
+    loginOrEmail: t.String({ minLength: 1 }),
+    password: t.String({ minLength: 1 }),
+  });
+  export type loginBody = typeof loginBody.static;
+
+  export const loginResponse = t.Object({
+    ok: t.Literal(true),
+    playerId: t.String(),
+    displayName: t.String(),
+  });
+  export type loginResponse = typeof loginResponse.static;
 }
