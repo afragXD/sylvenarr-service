@@ -39,7 +39,12 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
       unit.power += 10;
     }
     if (unit.health > 0) {
-      healUnit(unit, randInt(10, 15 + unit.lvl) * ind);
+      const healed = healUnit(unit, randInt(10, 15 + unit.lvl) * ind);
+      if (healed > 0) {
+        state.log.push(
+          `${unit.displayName} восстанавливает ${healed} ОЗ (усиление отряда).`
+        );
+      }
     }
     addMana(unit, randInt(1, 2) * ind);
     unit.damage += (randInt(1, 3) + Math.floor(unit.lvl / 3)) * ind;

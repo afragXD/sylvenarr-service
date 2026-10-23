@@ -257,11 +257,16 @@ export function advanceToNextUnit(state: BattleState): void {
         state.log.push(`Лимит раундов (${state.rules.maxRounds}) — ничья.`);
         return;
       }
+      // Классовые level-up могут писать в лог (лечение и т.п.) — переносим
+      // эти строки после объявления раунда и усиления отряда.
+      const levelLogAt = state.log.length;
       const maxLvl = levelUpLivingUnits(state);
+      const levelUpLogs = state.log.splice(levelLogAt);
       state.log.push(`Раунд ${state.stage}.`);
       if (maxLvl > 0) {
         state.log.push(`Отряд становится сильнее (ур. ${maxLvl}).`);
       }
+      state.log.push(...levelUpLogs);
       order = initiativeOrder(state);
     }
   }

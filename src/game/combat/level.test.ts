@@ -162,6 +162,19 @@ describe('class level-up growth', () => {
     expect(unit.maxHp).toBe(maxBefore + 5);
   });
 
+  test('Inquisitor: heals on level-up and logs it', () => {
+    const state = makeDuel('Inquisitor', { health: 220, displayName: 'Инквизитор' });
+    const unit = state.units.find((u) => u.id === 'p1')!;
+    unit.health = 50;
+    unit.lvl = 1;
+    levelUpUnit(unit, 1, state);
+    expect(unit.health).toBeGreaterThanOrEqual(60);
+    expect(unit.health).toBeLessThanOrEqual(66);
+    expect(
+      state.log.some((line) => /Инквизитор восстанавливает \d+ ОЗ \(усиление отряда\)/.test(line))
+    ).toBe(true);
+  });
+
   test('OrcKing: luck grows faster while negative (bot crit)', () => {
     const state = makeDuel('OrcKing', { luck: -37, damage: 30, accuracy: 90 });
     const unit = state.units.find((u) => u.id === 'p1')!;

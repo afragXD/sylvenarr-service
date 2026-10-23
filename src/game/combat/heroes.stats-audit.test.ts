@@ -340,7 +340,7 @@ const LEGACY_STATS_DICT: Record<
     dodge: -5,
     luck: 0,
     morale: 0,
-    mana: 10,
+    mana: 5,
     power: 30,
     gold: 320,
     accuracy: 92,
