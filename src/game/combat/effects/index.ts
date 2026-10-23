@@ -322,8 +322,19 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
       unit.damage += Math.round(effect.power);
       break;
     case 'HAPPY':
-      unit.luck += Math.round(effect.power);
+      // В боте attrs=['morale'], не luck.
+      unit.morale += Math.round(effect.power);
       break;
+    case 'ABSOLUTEPOWER': {
+      // Доля (0,1] → round(power * frac); иначе абсолютный бонус.
+      const bonus =
+        effect.power > 0 && effect.power <= 1
+          ? Math.max(1, Math.round(unit.power * effect.power))
+          : Math.round(effect.power);
+      unit.power += bonus;
+      effect.power = bonus;
+      break;
+    }
     case 'FATMAN':
       unit.dodge = Math.max(0, unit.dodge - Math.round(effect.power));
       break;
@@ -408,7 +419,10 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect): void {
       unit.damage = Math.max(0, unit.damage - Math.round(effect.power));
       break;
     case 'HAPPY':
-      unit.luck -= Math.round(effect.power);
+      unit.morale -= Math.round(effect.power);
+      break;
+    case 'ABSOLUTEPOWER':
+      unit.power = Math.max(0, unit.power - Math.round(effect.power));
       break;
     case 'FATMAN':
       unit.dodge += Math.round(effect.power);

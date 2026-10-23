@@ -257,7 +257,7 @@ function applyMarauder(
     return { status: 'done' };
   }
 
-  // slot 5
+  // slot 5 — урон × morale_boost (чем ниже мораль, тем сильнее)
   const err = trySpendMana(actor, 3);
   if (err) {
     return { status: 'reject', message: err };
@@ -266,10 +266,12 @@ function applyMarauder(
   if (!target) {
     return { status: 'reject', message: 'Цель не найдена' };
   }
-  const burn = Math.max(1, Math.round(actor.power * 0.9));
+  const moraleBoost =
+    actor.morale >= 0 ? 1 : 1 + Math.round((Math.abs(actor.morale) / 100) * 10) / 10;
+  const burn = Math.max(1, Math.round(actor.power * moraleBoost));
   target.health -= burn;
   state.log.push(
-    `${actor.displayName}: тёмное пламя жжёт ${target.displayName} (${burn}).`
+    `${actor.displayName}: тёмное пламя жжёт ${target.displayName} (${burn}, ×${moraleBoost}).`
   );
   if (randInt(1, 100) <= 67) {
     const manaBurn = randInt(3, 4);
@@ -339,7 +341,11 @@ function applyWerewolf(
     }
     actor.transformParentCode = null;
     const healed = healUnit(actor, 20 + actor.lvl * 5);
-    state.log.push(`${actor.displayName} успокаивается (+${healed} ОЗ).`);
+    const moraleGain = 10 + actor.lvl;
+    actor.morale += moraleGain;
+    state.log.push(
+      `${actor.displayName} успокаивается (+${healed} ОЗ, мораль +${moraleGain}).`
+    );
     return { status: 'done' };
   }
 

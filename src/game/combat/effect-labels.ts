@@ -40,6 +40,7 @@ const LABELS: Record<EffectId, string> = {
   ENSLAVED: 'Порабощённый',
   ROW_FORTIFY: 'Укрепление ряда',
   ASHILLNESS: 'Пепельная язва',
+  ABSOLUTEPOWER: 'Могущество',
 };
 
 /**

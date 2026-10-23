@@ -127,9 +127,10 @@ export const oracleAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Нужен союзник' };
       }
       grantEffect(target, 'MIND_WARD', 2, 0);
-      grantEffect(target, 'HAPPY', 2, actor.lvl * 2);
+      const moraleGain = actor.lvl * 2;
+      target.morale += moraleGain;
       state.log.push(
-        `${actor.displayName}: знамение защищает разум ${target.displayName}.`
+        `${actor.displayName}: знамение защищает разум ${target.displayName} (мораль +${moraleGain}).`
       );
       return { status: 'done' };
     }

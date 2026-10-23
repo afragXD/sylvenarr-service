@@ -106,10 +106,10 @@ export const assassinAbilities: AbilityHandler = {
       );
       const sample = others[randInt(0, Math.max(0, others.length - 1))];
       const name = sample?.displayName ?? 'неизвестный облик';
-      grantEffect(actor, 'HAPPY', 2, actor.lvl + 3);
+      actor.morale += actor.lvl + 3;
       actor.damage += 2;
       state.log.push(
-        `${actor.displayName} на миг принимает облик ${name} (+мораль/удача).`
+        `${actor.displayName} на миг принимает облик ${name} (мораль +${actor.lvl + 3}).`
       );
       return { status: 'done' };
     }
@@ -122,13 +122,13 @@ export const assassinAbilities: AbilityHandler = {
       actor.deathNoteCd = 3;
       if (randInt(1, 100) <= Math.min(95, actor.deathNote)) {
         target.health = 1;
-        actor.luck += 5;
+        actor.morale += 15;
         actor.deathNote = Math.max(0, actor.deathNote - 10);
         state.log.push(
           `${actor.displayName} вписывает имя ${target.displayName} — остаётся 1 ОЗ.`
         );
       } else {
-        actor.luck = Math.max(0, actor.luck - 5);
+        actor.morale -= 14;
         actor.deathNote += 7;
         grantEffect(actor, 'FATMAN', 3, 10);
         state.log.push(
@@ -157,11 +157,11 @@ export const assassinAbilities: AbilityHandler = {
     // slot 5
     const moraleLoss = randInt(4, 8);
     const noteGain = randInt(3, 6);
-    actor.luck = Math.max(0, actor.luck - Math.floor(moraleLoss / 2));
+    actor.morale -= moraleLoss;
     grantEffect(actor, 'CHAMELEON', 1, 20);
     actor.deathNote += noteGain;
     state.log.push(
-      `${actor.displayName} хохочет: хамелеон, тетрадь +${noteGain}%.`
+      `${actor.displayName} хохочет: хамелеон, тетрадь +${noteGain}%, мораль −${moraleLoss}.`
     );
     return { status: 'done' };
   },

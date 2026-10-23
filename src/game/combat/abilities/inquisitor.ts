@@ -1,5 +1,6 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, hasEffect, trySpendMana, tryStun } from '../effects';
+import { isArtificialClass, isUndeadClass } from '../races';
 import { ROW_BACK } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll, moveToOtherRow } from './targets';
@@ -135,6 +136,16 @@ export const inquisitorAbilities: AbilityHandler = {
         state.log.push(
           `${actor.displayName} пыточной молнией бьёт ${target.displayName} (${damage}).`
         );
+        if (
+          !isUndeadClass(target.heroClassCode) &&
+          !isArtificialClass(target.heroClassCode)
+        ) {
+          const moraleDamage = randInt(3, 6) + actor.lvl;
+          target.morale -= moraleDamage;
+          state.log.push(
+            `${target.displayName} от пыток теряет ${moraleDamage} боевого духа.`
+          );
+        }
         markDeadIfNeeded(state, target);
       }
       return { status: 'done' };

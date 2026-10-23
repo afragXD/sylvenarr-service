@@ -94,7 +94,7 @@ export const beerElementalAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1, source: 'WATER', forceStyle: 'magic' },
+        { damageMult: 1, armorIgnore: 0, source: 'WATER', forceStyle: 'magic' },
         state
       );
       if (damage === 0) {

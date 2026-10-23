@@ -70,6 +70,15 @@ export namespace MatchesModel {
   });
   export type battleEffect = typeof battleEffect.static;
 
+  export const resistBrief = t.Object({
+    source: t.String(),
+    label: t.String(),
+    value: t.Number(),
+    wardCharges: t.Nullable(t.Number()),
+    immune: t.Boolean(),
+  });
+  export type resistBrief = typeof resistBrief.static;
+
   export const battleUnit = t.Object({
     id: t.String(),
     playerId: t.String(),
@@ -99,6 +108,8 @@ export namespace MatchesModel {
     critBank: t.Number(),
     ultaCharges: t.Number(),
     lvl: t.Number(),
+    morale: t.Number(),
+    resists: t.Array(resistBrief),
   });
   export type battleUnit = typeof battleUnit.static;
 

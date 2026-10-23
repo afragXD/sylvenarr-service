@@ -43,7 +43,8 @@ export type EffectId =
   | 'MAGIC_SHACKLES'
   | 'ENSLAVED'
   | 'ROW_FORTIFY'
-  | 'ASHILLNESS';
+  | 'ASHILLNESS'
+  | 'ABSOLUTEPOWER';
 
 export type BattleEffect = {
   id: EffectId;
@@ -171,8 +172,10 @@ export type BattleUnit = {
   enslavedOriginTeam: 0 | 1 | null;
   /** Mermaid ENSLAVED: исходный playerId до порабощения. */
   enslavedOriginPlayerId: string | null;
-  /** Боевой дух из каталога (display-only; в формулах боя не участвует). */
+  /** Боевой дух (psycho, бонусы хода, классовые способности). */
   morale: number;
+  /** Уже сработала mental illness в этом бою (порт Hero.illness). */
+  illness: boolean;
 };
 
 /** Активные правила боя из Match.rules (без ярмарки). */

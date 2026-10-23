@@ -110,6 +110,7 @@ export function createSummon(
     enslavedOriginTeam: null,
     enslavedOriginPlayerId: null,
     morale: hero.morale ?? 0,
+    illness: false,
   };
   state.units.push(unit);
   // Уровень и статы = уровень призывателя в момент призыва (базовый каталог + прокачка).
@@ -198,6 +199,7 @@ export function createPhantomCopy(
     enslavedOriginTeam: null,
     enslavedOriginPlayerId: null,
     morale: template.morale,
+    illness: false,
   };
   state.units.push(unit);
   return unit;

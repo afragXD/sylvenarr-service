@@ -121,6 +121,7 @@ export const witchAbilities: AbilityHandler = {
         // AM: lvl>8 && 75%; при actor.lvl=5 — 25% proxy «двойного выстрела»
         if (actor.gun > 0 && target.alive && randInt(1, 100) <= 25) {
           fire('Второй выстрел');
+          actor.morale += 5;
         }
         return { status: 'done' };
       }

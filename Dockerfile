@@ -28,10 +28,13 @@ WORKDIR /app
 
 COPY --from=build /app/server server
 COPY --from=build /app/node_modules /app/node_modules
-COPY --from=build /app/static/public /app/static/public
+# Seed для volume `/app/static` (общий с Angie): images/scenes, …
+COPY --from=build /app/static /app/static-seed
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
 ENV NODE_ENV=production
 
-CMD ["./server"]
+CMD ["/app/docker-entrypoint.sh"]
 
 EXPOSE 4000

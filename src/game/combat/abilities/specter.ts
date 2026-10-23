@@ -170,8 +170,10 @@ export const specterAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       grantEffect(target, 'MARKED', 1 + Math.floor(actor.lvl / 4), 0);
-      grantEffect(target, 'UNLUCKY', 2, actor.lvl + 3);
-      state.log.push(`${actor.displayName} отмечает ${target.displayName} сглазом.`);
+      target.morale -= actor.lvl + 3;
+      state.log.push(
+        `${actor.displayName} отмечает ${target.displayName} сглазом (мораль −${actor.lvl + 3}).`
+      );
       return { status: 'done' };
     }
 

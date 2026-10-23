@@ -181,6 +181,7 @@ export const pyroAbilities: AbilityHandler = {
     }
     actor.health = 0;
     markDeadIfNeeded(state, actor);
+    target.morale -= actor.lvl * 6;
     grantEffect(target, 'FEAR', 2, 3);
     grantEffect(target, 'UNLUCKY', 2, actor.lvl * 2);
     const leader =

@@ -122,9 +122,9 @@ export const goldGolemAbilities: AbilityHandler = {
           `${actor.displayName}: загадки — ${target.displayName} −${drained} МР и помехи.`
         );
       } else {
-        grantEffect(target, 'HAPPY', 2, 10 + actor.lvl);
+        target.morale += 10;
         state.log.push(
-          `${actor.displayName}: загадки провалены — ${target.displayName} в радости.`
+          `${actor.displayName}: загадки провалены — мораль ${target.displayName} +10.`
         );
       }
       return { status: 'done' };
@@ -144,8 +144,7 @@ export const goldGolemAbilities: AbilityHandler = {
       const allies = alliesOf(state, actor).filter((unit) => unit.id !== actor.id);
       const frac = 0.25 + actor.lvl * 0.05;
       for (const ally of allies) {
-        const bonus = Math.max(1, Math.round(ally.power * frac));
-        ally.power += bonus;
+        grantEffect(ally, 'ABSOLUTEPOWER', randInt(1, 2), frac);
       }
       state.log.push(`${actor.displayName}: резонанс силы усиливает отряд.`);
       return { status: 'done' };

@@ -13,6 +13,7 @@ import { resolveAttackStyle } from './attack-style';
 import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt } from './damage';
 import { resistsForClass } from './defaultResists';
 import { levelUpLivingUnits, levelUpUnit } from './level';
+import { applyPsycho, maybeRewardHighMorale, normalizeUnit } from './morale';
 import { summarizeResists } from './resists';
 import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnEnd, tickEffectsOnTurnStart, addMana } from './effects';
 import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, MAX_TEAM_SIZE, ROW_FRONT } from './settings';
@@ -199,6 +200,7 @@ function buildTeamUnits(
         enslavedOriginTeam: null,
         enslavedOriginPlayerId: null,
         morale: hero.morale ?? 0,
+        illness: false,
       };
       initPilotFlags(unit);
       units.push(unit);
@@ -282,6 +284,12 @@ export function advanceToNextUnit(state: BattleState): void {
   const tickLog = tickEffectsOnTurnStart(next);
   state.log.push(...tickLog);
   markDeadIfNeeded(state, next);
+  if (next.alive) {
+    applyPsycho(state, next);
+  }
+  if (next.alive) {
+    normalizeUnit(next);
+  }
   if (!next.alive) {
     state.doneIds.push(next.id);
     resolveOutcome(state);
@@ -656,6 +664,7 @@ function resolveAttackWithClassMods(
 function finishUnitTurn(state: BattleState, actor: BattleUnit): void {
   if (actor.alive) {
     state.log.push(...tickEffectsOnTurnEnd(actor));
+    maybeRewardHighMorale(state, actor);
   }
   state.doneIds.push(actor.id);
   state.pendingPrompt = null;

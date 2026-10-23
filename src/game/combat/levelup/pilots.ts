@@ -118,7 +118,9 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     unit.luck += (Math.floor(unit.lvl / 2) + 1) * ind;
     unit.initiative = Math.round(28 * werewolfRage(unit));
     unit.maxHp += (unit.lvl * 2 + randInt(1, 5)) * ind;
-    // morale -= randint(4,6) — поле morale не на BattleUnit
+    if (ind > 0) {
+      unit.morale -= randInt(4, 6);
+    }
     bumpLevel(unit, ind);
   },
 

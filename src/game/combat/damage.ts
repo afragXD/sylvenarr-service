@@ -11,8 +11,8 @@ export const randInt = (min: number, max: number): number =>
 let counterDepth = 0;
 
 export type DealDamageOpts = {
-  readonly damageMult: number;
-  readonly armorIgnore: number;
+  readonly damageMult?: number;
+  readonly armorIgnore?: number;
   /** Источник урона; по умолчанию из attackStyle атакующего. */
   readonly source?: DamageSource;
   /** Принудительный стиль расчёта (огнемёт Pyro бьёт от power). */
@@ -63,7 +63,9 @@ function computeRawDamage(
       return { raw: 0, crit: false, critFromBank: false, naturalMiss: roll > 95 };
     }
   }
-  let armor = defender.armor * (1 - Math.min(1, Math.max(0, opts.armorIgnore)));
+  const armorIgnore = opts.armorIgnore ?? 0;
+  const damageMult = opts.damageMult ?? 1;
+  let armor = defender.armor * (1 - Math.min(1, Math.max(0, armorIgnore)));
   if (defender.defending) {
     armor = Math.round(armor * 1.5);
   }
@@ -76,14 +78,18 @@ function computeRawDamage(
   } else {
     raw = Math.max(1, Math.round(attacker.damage - armor + randInt(0, 2)));
   }
-  raw = Math.max(1, Math.round(raw * opts.damageMult));
+  raw = Math.max(1, Math.round(raw * damageMult));
   let crit = false;
   let critFromBank = false;
   if ((attacker.critBank ?? 0) > 0) {
     crit = true;
     critFromBank = true;
-  } else if (randInt(1, 100) <= Math.min(40, attacker.luck)) {
+  } else if (attacker.luck >= 0 && randInt(1, 100) <= Math.min(40, attacker.luck)) {
     crit = true;
+    attacker.morale += 5;
+  } else if (attacker.luck < 0 && randInt(1, 100) <= Math.min(40, Math.abs(attacker.luck))) {
+    // Антикрит (порт luck() при crit < 0): −5 морали.
+    attacker.morale -= 5;
   }
   if (crit) {
     raw = Math.round(raw * 1.5);
@@ -237,6 +243,7 @@ function tryFinalStrikeSave(state: BattleState, unit: BattleUnit): boolean {
 /**
  * Помечает юнита мёртвым при HP ≤ 0 и кладёт на кладбище (не саммоны).
  * Перед смертью проверяет спасение вардом/резистом FINALSTRIKE.
+ * При смерти хозяина уничтожает его саммонов (порт death() из бота).
  */
 export function markDeadIfNeeded(state: BattleState, unit: BattleUnit): void {
   if (unit.health > 0) {
@@ -260,5 +267,17 @@ export function markDeadIfNeeded(state: BattleState, unit: BattleUnit): void {
       displayName: unit.displayName,
       forbiddenResurrect: unit.forbiddenResurrect,
     });
+  }
+  if (!unit.isSummon) {
+    const summons = state.units.filter(
+      (other) => other.alive && other.isSummon && other.summonerId === unit.id
+    );
+    for (const summon of summons) {
+      summon.health = 0;
+      state.log.push(
+        `${summon.displayName} исчезает вместе с хозяином ${unit.displayName}.`
+      );
+      markDeadIfNeeded(state, summon);
+    }
   }
 }
