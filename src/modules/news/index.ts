@@ -3,6 +3,7 @@ import { Elysia, t } from 'elysia';
 import { playerSessionPlugin } from '../../shared/plugins/player-session';
 import { NewsModel } from './model';
 import { NewsService } from './service';
+import { saveNewsSceneFile } from './upload';
 
 export const newsController = new Elysia({ tags: ['News'] })
   .get(
@@ -85,6 +86,34 @@ export const newsController = new Elysia({ tags: ['News'] })
       },
       detail: {
         summary: 'Новость по id (админ)',
+      },
+    }
+  )
+  .post(
+    '/admin/news/upload',
+    async ({ body, status }) => {
+      const result = await saveNewsSceneFile(body.file);
+      if (!result.ok) {
+        return status(400, { message: result.message });
+      }
+      return { url: result.url, fileName: result.fileName };
+    },
+    {
+      requireAdmin: true,
+      body: t.Object({
+        file: t.File({ type: 'image', maxSize: '5m' }),
+      }),
+      response: {
+        200: t.Object({
+          url: t.String(),
+          fileName: t.String(),
+        }),
+        400: NewsModel.errorResponse,
+        401: NewsModel.errorResponse,
+        403: NewsModel.errorResponse,
+      },
+      detail: {
+        summary: 'Загрузить обложку/скрин новости в volume (/static/images/scenes)',
       },
     }
   )

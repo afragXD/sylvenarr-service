@@ -1,10 +1,14 @@
+import { join } from 'node:path';
+
 import env from 'env-var';
 
+const nodeEnv = env
+  .get('NODE_ENV')
+  .default('development')
+  .asEnum(['production', 'test', 'development']);
+
 export const config = {
-  NODE_ENV: env
-    .get('NODE_ENV')
-    .default('development')
-    .asEnum(['production', 'test', 'development']),
+  NODE_ENV: nodeEnv,
 
   PORT: env.get('PORT').default(4000).asPortNumber(),
   API_URL: env
@@ -25,4 +29,13 @@ export const config = {
 
   AUTH_SUCCESS_REDIRECT: env.get('AUTH_SUCCESS_REDIRECT').asString(),
   AUTH_ERROR_REDIRECT: env.get('AUTH_ERROR_REDIRECT').asString(),
+
+  /**
+   * Корень общего volume со статикой (Angie + service).
+   * Прод: `/app/static`. Локально: `./static` от cwd сервиса.
+   */
+  STATIC_ROOT: env
+    .get('STATIC_ROOT')
+    .default(nodeEnv === 'production' ? '/app/static' : join(process.cwd(), 'static'))
+    .asString(),
 };

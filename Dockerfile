@@ -28,7 +28,8 @@ WORKDIR /app
 
 COPY --from=build /app/server server
 COPY --from=build /app/node_modules /app/node_modules
-# Seed для volume `/app/static` (общий с Angie): images/scenes, …
+# Seed для volume `/app/static` (общий с Angie): public/avatars и т.п.
+# Сцены новостей на volume кладутся руками / через POST /admin/news/upload.
 COPY --from=build /app/static /app/static-seed
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
