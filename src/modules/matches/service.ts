@@ -52,8 +52,8 @@ type MatchRow = {
   finishedAt: Date | null;
   createdAt: Date;
   rules: unknown;
-  host: { id: string; displayName: string };
-  guest: { id: string; displayName: string } | null;
+  host: { id: string; displayName: string; avatarUrl: string | null };
+  guest: { id: string; displayName: string; avatarUrl: string | null } | null;
   picks: PickRow[];
 };
 
@@ -71,8 +71,8 @@ function draftLimitsOf(row: { rules: unknown }): DraftLimits {
 }
 
 const matchInclude = {
-  host: { select: { id: true, displayName: true } },
-  guest: { select: { id: true, displayName: true } },
+  host: { select: { id: true, displayName: true, avatarUrl: true } },
+  guest: { select: { id: true, displayName: true, avatarUrl: true } },
   picks: {
     orderBy: { pickOrder: 'asc' as const },
     select: {
@@ -940,8 +940,8 @@ export abstract class MatchesService {
       orderBy: { finishedAt: 'desc' },
       take: 50,
       include: {
-        host: { select: { id: true, displayName: true } },
-        guest: { select: { id: true, displayName: true } },
+        host: { select: { id: true, displayName: true, avatarUrl: true } },
+        guest: { select: { id: true, displayName: true, avatarUrl: true } },
       },
     });
 
@@ -958,6 +958,7 @@ export abstract class MatchesService {
         id: row.id,
         result,
         opponentName: opponent?.displayName ?? '—',
+        opponentAvatarUrl: opponent?.avatarUrl ?? null,
         finishedAt: (row.finishedAt ?? row.updatedAt).toISOString(),
         durationSeconds: durationSeconds(row.fightingStartedAt, row.finishedAt),
       };
@@ -977,8 +978,8 @@ export abstract class MatchesService {
     const row = await prisma.match.findUnique({
       where: { id: matchId },
       include: {
-        host: { select: { id: true, displayName: true } },
-        guest: { select: { id: true, displayName: true } },
+        host: { select: { id: true, displayName: true, avatarUrl: true } },
+        guest: { select: { id: true, displayName: true, avatarUrl: true } },
       },
     });
     if (!row) {
@@ -1024,6 +1025,7 @@ export abstract class MatchesService {
         id: row.id,
         result,
         opponentName: opponent?.displayName ?? '—',
+        opponentAvatarUrl: opponent?.avatarUrl ?? null,
         finishedAt: (row.finishedAt ?? row.updatedAt).toISOString(),
         durationSeconds: durationSeconds(row.fightingStartedAt, row.finishedAt),
         stage: snapshot?.stage ?? null,
@@ -1033,12 +1035,14 @@ export abstract class MatchesService {
         host: {
           playerId: row.hostId,
           displayName: snapshot?.host.displayName ?? row.host.displayName,
+          avatarUrl: row.host.avatarUrl,
           units: hostUnits,
         },
         guest: {
           playerId: row.guestId ?? '',
           displayName:
             snapshot?.guest.displayName ?? row.guest?.displayName ?? '—',
+          avatarUrl: row.guest?.avatarUrl ?? null,
           units: guestUnits,
         },
       },

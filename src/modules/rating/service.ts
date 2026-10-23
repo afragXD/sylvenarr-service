@@ -11,6 +11,7 @@ export abstract class RatingService {
       select: {
         id: true,
         displayName: true,
+        avatarUrl: true,
         pts: true,
         ratingEntries: { select: { result: true } },
       },
@@ -33,6 +34,7 @@ export abstract class RatingService {
         return {
           playerId: player.id,
           displayName: player.displayName,
+          avatarUrl: player.avatarUrl,
           pts: player.pts,
           wins,
           losses,

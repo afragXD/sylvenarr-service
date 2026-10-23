@@ -4,6 +4,7 @@ export namespace RatingModel {
   export const ratingRow = t.Object({
     playerId: t.String(),
     displayName: t.String(),
+    avatarUrl: t.Nullable(t.String()),
     pts: t.Number(),
     wins: t.Number(),
     losses: t.Number(),

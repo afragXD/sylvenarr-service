@@ -15,6 +15,7 @@ export namespace MatchesModel {
   export const playerBrief = t.Object({
     id: t.String(),
     displayName: t.String(),
+    avatarUrl: t.Nullable(t.String()),
   });
   export type playerBrief = typeof playerBrief.static;
 
@@ -258,6 +259,7 @@ export namespace MatchesModel {
     id: t.String(),
     result: t.Union([t.Literal('win'), t.Literal('loss'), t.Literal('draw')]),
     opponentName: t.String(),
+    opponentAvatarUrl: t.Nullable(t.String()),
     finishedAt: t.String(),
     durationSeconds: t.Nullable(t.Number()),
   });
@@ -282,6 +284,7 @@ export namespace MatchesModel {
   export const matchHistoryTeam = t.Object({
     playerId: t.String(),
     displayName: t.String(),
+    avatarUrl: t.Nullable(t.String()),
     units: t.Array(matchHistoryUnit),
   });
   export type matchHistoryTeam = typeof matchHistoryTeam.static;
@@ -290,6 +293,7 @@ export namespace MatchesModel {
     id: t.String(),
     result: t.Union([t.Literal('win'), t.Literal('loss'), t.Literal('draw')]),
     opponentName: t.String(),
+    opponentAvatarUrl: t.Nullable(t.String()),
     finishedAt: t.String(),
     durationSeconds: t.Nullable(t.Number()),
     stage: t.Nullable(t.Number()),
