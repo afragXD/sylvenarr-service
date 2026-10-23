@@ -471,7 +471,7 @@ const rawHeroes: ReadonlyArray<RawHero> = [
     dodge: -5,
     luck: 0,
     morale: 0,
-    mana: 5,
+    mana: 10,
     power: 30,
     gold: 320,
     accuracy: 92,

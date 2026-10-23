@@ -151,9 +151,9 @@ describe('combat fixes', () => {
     expect(lich.lvl).toBe(before + 6);
   });
 
-  test('EvilTree slot 5 «Взращивание»: 4 МР → +2+L уровней цели', () => {
+  test('EvilTree slot 5 «Взращивание»: 4 МР → +3 уровней цели', () => {
     const heroes = new Map([
-      ['EvilTree', hero('EvilTree', { initiative: 99, mana: 6 })],
+      ['EvilTree', hero('EvilTree', { initiative: 99, mana: 10 })],
       ['B', hero('B', { initiative: 50 })],
       ['C', hero('C', { initiative: 1 })],
     ]);
@@ -179,8 +179,8 @@ describe('combat fixes', () => {
       targetId: 'p2',
     });
     expect(cast.ok).toBe(true);
-    expect(tree.mana).toBe(2);
-    expect(ally.lvl).toBe(1 + 2 + 3);
+    expect(tree.mana).toBe(6);
+    expect(ally.lvl).toBe(1 + 3);
   });
 
   test('Patriarch воскрешение: ½ maxHp, ½ инициативы, повторно нельзя', () => {

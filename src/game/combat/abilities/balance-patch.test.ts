@@ -136,12 +136,12 @@ describe('balance patch 2026-10', () => {
         { id: 'e1', playerId: 'g', heroClassCode: 'Knight', row: 0, pickOrder: 1 },
       ],
       heroes: new Map([
-        ['EvilTree', hero('EvilTree', { mana: 5, maxMana: 5, initiative: 99 })],
+        ['EvilTree', hero('EvilTree', { mana: 10, maxMana: 10, initiative: 99 })],
         ['Knight', hero('Knight', { mana: 0, maxMana: 0 })],
       ]),
     });
     const tree = state.units.find((u) => u.id === 'p1')!;
-    expect(tree.mana).toBe(5);
-    expect(tree.maxMana).toBe(5);
+    expect(tree.mana).toBe(10);
+    expect(tree.maxMana).toBe(10);
   });
 });

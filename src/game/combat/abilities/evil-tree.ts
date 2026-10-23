@@ -224,7 +224,7 @@ export const evilTreeAbilities: AbilityHandler = {
         addMana(actor, 4);
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const levels = 2 + actor.lvl;
+      const levels = 3;
       levelUpUnit(target, levels, state);
       state.log.push(
         `${actor.displayName}: взращивание — ${target.displayName} получает +${levels} уровней.`
