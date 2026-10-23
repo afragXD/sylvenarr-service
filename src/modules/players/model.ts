@@ -17,6 +17,11 @@ export namespace PlayersModel {
   });
   export type player = typeof player.static;
 
+  export const updateProfileBody = t.Object({
+    displayName: t.String({ minLength: 2, maxLength: 32 }),
+  });
+  export type updateProfileBody = typeof updateProfileBody.static;
+
   export const matchHistoryItem = MatchesModel.matchHistoryItem;
   export type matchHistoryItem = MatchesModel.matchHistoryItem;
 

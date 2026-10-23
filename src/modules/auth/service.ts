@@ -51,12 +51,18 @@ export abstract class AuthService {
     });
 
     if (existingAccount) {
-      // Ник не трогаем: мог быть изменён вручную в БД / позже через профиль.
+      // Ник не трогаем: мог быть изменён вручную / через профиль.
+      // Свой аватар на volume (/static/…) не затираем провайдерским.
+      const current = await prisma.player.findUnique({
+        where: { id: existingAccount.playerId },
+        select: { avatarUrl: true },
+      });
+      const keepLocalAvatar = current?.avatarUrl?.startsWith('/static/') === true;
       await prisma.player.update({
         where: { id: existingAccount.playerId },
         data: {
           email: profile.email,
-          avatarUrl: profile.avatarUrl,
+          ...(keepLocalAvatar ? {} : { avatarUrl: profile.avatarUrl }),
         },
       });
       await prisma.oAuthAccount.update({

@@ -74,4 +74,65 @@ export abstract class PlayersService {
     }
     return PlayersService.mapPlayer(row);
   }
+
+  /**
+   * Смена displayName текущего игрока.
+   */
+  static async updateDisplayName(
+    playerId: string,
+    rawName: string
+  ): Promise<
+    | { ok: true; player: PlayersModel.player }
+    | { ok: false; status: 400 | 404 | 409; message: string }
+  > {
+    const displayName = rawName.trim();
+    if (displayName.length < 2 || displayName.length > 32) {
+      return { ok: false, status: 400, message: 'Имя: от 2 до 32 символов' };
+    }
+    const existing = await prisma.player.findUnique({
+      where: { displayName },
+      select: { id: true },
+    });
+    if (existing && existing.id !== playerId) {
+      return { ok: false, status: 409, message: 'Такое имя уже занято' };
+    }
+    try {
+      await prisma.player.update({
+        where: { id: playerId },
+        data: { displayName },
+      });
+    } catch {
+      return { ok: false, status: 404, message: 'Игрок не найден' };
+    }
+    const player = await PlayersService.findAuthenticatedById(playerId);
+    if (!player) {
+      return { ok: false, status: 404, message: 'Игрок не найден' };
+    }
+    return { ok: true, player };
+  }
+
+  /**
+   * Обновляет avatarUrl после загрузки файла на volume.
+   */
+  static async updateAvatarUrl(
+    playerId: string,
+    avatarUrl: string
+  ): Promise<
+    | { ok: true; player: PlayersModel.player }
+    | { ok: false; status: 404; message: string }
+  > {
+    try {
+      await prisma.player.update({
+        where: { id: playerId },
+        data: { avatarUrl },
+      });
+    } catch {
+      return { ok: false, status: 404, message: 'Игрок не найден' };
+    }
+    const player = await PlayersService.findAuthenticatedById(playerId);
+    if (!player) {
+      return { ok: false, status: 404, message: 'Игрок не найден' };
+    }
+    return { ok: true, player };
+  }
 }
