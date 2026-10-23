@@ -65,6 +65,7 @@ model HeroClass {
 
   ratingEntries RatingEntry[]
   matchPicks    MatchPick[]
+  pickStats     HeroPickStat[]
 }
 
 /// Игрок (OAuth и/или пароль).
@@ -86,6 +87,7 @@ model Player {
   ratingEntries  RatingEntry[]
   oauthAccounts  OAuthAccount[]
   matchPicks     MatchPick[]
+  pickStats      HeroPickStat[]
   news           News[]
 }
 
@@ -169,6 +171,21 @@ model MatchPick {
 
   @@index([matchId])
   @@index([playerId])
+}
+
+/// Счётчик выборов героя игроком (инкремент при финализации боя).
+model HeroPickStat {
+  playerId      String   @db.Uuid
+  heroClassCode String
+  pickCount     Int      @default(0)
+  updatedAt     DateTime @updatedAt
+
+  player    Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  heroClass HeroClass @relation(fields: [heroClassCode], references: [code])
+
+  @@id([playerId, heroClassCode])
+  @@index([heroClassCode])
+  @@index([pickCount])
 }
 
 /// Запись результата матча для рейтинга.

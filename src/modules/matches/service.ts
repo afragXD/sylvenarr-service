@@ -885,6 +885,29 @@ export abstract class MatchesService {
     const guestResult =
       outcome === 'draw' ? 'draw' : outcome === 'b_win' ? 'win' : 'loss';
 
+    const picks = await prisma.matchPick.findMany({
+      where: { matchId: input.matchId },
+      select: { playerId: true, heroClassCode: true },
+    });
+    const pickIncrements = picks.map((pick) =>
+      prisma.heroPickStat.upsert({
+        where: {
+          playerId_heroClassCode: {
+            playerId: pick.playerId,
+            heroClassCode: pick.heroClassCode,
+          },
+        },
+        create: {
+          playerId: pick.playerId,
+          heroClassCode: pick.heroClassCode,
+          pickCount: 1,
+        },
+        update: {
+          pickCount: { increment: 1 },
+        },
+      })
+    );
+
     await prisma.$transaction([
       prisma.match.update({
         where: { id: input.matchId },
@@ -923,6 +946,7 @@ export abstract class MatchesService {
           ptsAfter: change.ptsAfterB,
         },
       }),
+      ...pickIncrements,
       // Драфт больше не нужен — состав и лог уже в resultSnapshot.
       prisma.matchPick.deleteMany({ where: { matchId: input.matchId } }),
     ]);

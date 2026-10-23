@@ -57,6 +57,7 @@ export const ModelName = {
   OAuthAccount: 'OAuthAccount',
   Match: 'Match',
   MatchPick: 'MatchPick',
+  HeroPickStat: 'HeroPickStat',
   RatingEntry: 'RatingEntry'
 } as const
 
@@ -178,6 +179,16 @@ export const MatchPickScalarFieldEnum = {
 } as const
 
 export type MatchPickScalarFieldEnum = (typeof MatchPickScalarFieldEnum)[keyof typeof MatchPickScalarFieldEnum]
+
+
+export const HeroPickStatScalarFieldEnum = {
+  playerId: 'playerId',
+  heroClassCode: 'heroClassCode',
+  pickCount: 'pickCount',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HeroPickStatScalarFieldEnum = (typeof HeroPickStatScalarFieldEnum)[keyof typeof HeroPickStatScalarFieldEnum]
 
 
 export const RatingEntryScalarFieldEnum = {

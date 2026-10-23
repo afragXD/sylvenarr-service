@@ -48,6 +48,11 @@ export type Match = Prisma.MatchModel
  */
 export type MatchPick = Prisma.MatchPickModel
 /**
+ * Model HeroPickStat
+ * Счётчик выборов героя игроком (инкремент при финализации боя).
+ */
+export type HeroPickStat = Prisma.HeroPickStatModel
+/**
  * Model RatingEntry
  * Запись результата матча для рейтинга.
  */

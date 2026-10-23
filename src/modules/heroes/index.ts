@@ -19,6 +19,21 @@ export const heroesController = new Elysia({ prefix: '/heroes', tags: ['Heroes']
     }
   )
   .get(
+    '/favorites',
+    async ({ query }) => {
+      return await HeroesService.listFavorites(query.limit ?? 24);
+    },
+    {
+      query: HeroesModel.favoritesQuery,
+      response: {
+        200: HeroesModel.favoritesResponse,
+      },
+      detail: {
+        summary: 'Популярные герои по числу выборов на арене',
+      },
+    }
+  )
+  .get(
     '/:code',
     async ({ params, status }) => {
       const hero = await HeroesService.findByCode(params.code);

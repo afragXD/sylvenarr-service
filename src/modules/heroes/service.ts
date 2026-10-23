@@ -36,6 +36,34 @@ export abstract class HeroesService {
   }
 
   /**
+   * Глобальный топ героев по сумме выборов на арене.
+   */
+  static async listFavorites(limit = 24): Promise<HeroesModel.favoriteHero[]> {
+    const capped = Math.min(Math.max(1, limit), 24);
+    const grouped = await prisma.heroPickStat.groupBy({
+      by: ['heroClassCode'],
+      _sum: { pickCount: true },
+      orderBy: { _sum: { pickCount: 'desc' } },
+      take: capped,
+    });
+    if (grouped.length === 0) {
+      return [];
+    }
+    const heroes = await prisma.heroClass.findMany({
+      where: { code: { in: grouped.map((row) => row.heroClassCode) } },
+      select: { code: true, displayName: true },
+    });
+    const nameByCode = new Map(heroes.map((hero) => [hero.code, hero.displayName]));
+    return grouped
+      .map((row) => ({
+        code: row.heroClassCode,
+        displayName: nameByCode.get(row.heroClassCode) ?? row.heroClassCode,
+        pickCount: row._sum.pickCount ?? 0,
+      }))
+      .filter((row) => row.pickCount > 0);
+  }
+
+  /**
    * Возвращает класс героя по коду или null.
    */
   static async findByCode(code: string): Promise<HeroesModel.heroClass | null> {

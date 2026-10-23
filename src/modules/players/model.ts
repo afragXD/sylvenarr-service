@@ -28,6 +28,18 @@ export namespace PlayersModel {
   export const matchHistoryDetail = MatchesModel.matchHistoryDetail;
   export type matchHistoryDetail = MatchesModel.matchHistoryDetail;
 
+  export const favoriteHero = t.Object({
+    code: t.String(),
+    displayName: t.String(),
+    pickCount: t.Number(),
+  });
+  export type favoriteHero = typeof favoriteHero.static;
+
+  export const favoriteHeroesQuery = t.Object({
+    limit: t.Optional(t.Number({ minimum: 1, maximum: 24 })),
+  });
+  export type favoriteHeroesQuery = typeof favoriteHeroesQuery.static;
+
   export const errorResponse = t.Object({
     message: t.String(),
   });

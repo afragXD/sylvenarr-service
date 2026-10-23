@@ -39,6 +39,21 @@ export namespace HeroesModel {
   });
   export type codeParams = typeof codeParams.static;
 
+  export const favoriteHero = t.Object({
+    code: t.String(),
+    displayName: t.String(),
+    pickCount: t.Number(),
+  });
+  export type favoriteHero = typeof favoriteHero.static;
+
+  export const favoritesQuery = t.Object({
+    limit: t.Optional(t.Number({ minimum: 1, maximum: 24 })),
+  });
+  export type favoritesQuery = typeof favoritesQuery.static;
+
+  export const favoritesResponse = t.Array(favoriteHero);
+  export type favoritesResponse = typeof favoritesResponse.static;
+
   export const errorResponse = t.Object({
     message: t.String(),
   });

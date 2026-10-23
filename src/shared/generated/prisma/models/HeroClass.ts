@@ -398,6 +398,7 @@ export type HeroClassWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"HeroClass"> | Date | string
   ratingEntries?: Prisma.RatingEntryListRelationFilter
   matchPicks?: Prisma.MatchPickListRelationFilter
+  pickStats?: Prisma.HeroPickStatListRelationFilter
 }
 
 export type HeroClassOrderByWithRelationInput = {
@@ -424,6 +425,7 @@ export type HeroClassOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   ratingEntries?: Prisma.RatingEntryOrderByRelationAggregateInput
   matchPicks?: Prisma.MatchPickOrderByRelationAggregateInput
+  pickStats?: Prisma.HeroPickStatOrderByRelationAggregateInput
 }
 
 export type HeroClassWhereUniqueInput = Prisma.AtLeast<{
@@ -453,6 +455,7 @@ export type HeroClassWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"HeroClass"> | Date | string
   ratingEntries?: Prisma.RatingEntryListRelationFilter
   matchPicks?: Prisma.MatchPickListRelationFilter
+  pickStats?: Prisma.HeroPickStatListRelationFilter
 }, "code">
 
 export type HeroClassOrderByWithAggregationInput = {
@@ -535,6 +538,7 @@ export type HeroClassCreateInput = {
   updatedAt?: Date | string
   ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutHeroClassInput
   matchPicks?: Prisma.MatchPickCreateNestedManyWithoutHeroClassInput
+  pickStats?: Prisma.HeroPickStatCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassUncheckedCreateInput = {
@@ -561,6 +565,7 @@ export type HeroClassUncheckedCreateInput = {
   updatedAt?: Date | string
   ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutHeroClassInput
   matchPicks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutHeroClassInput
+  pickStats?: Prisma.HeroPickStatUncheckedCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassUpdateInput = {
@@ -587,6 +592,7 @@ export type HeroClassUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ratingEntries?: Prisma.RatingEntryUpdateManyWithoutHeroClassNestedInput
   matchPicks?: Prisma.MatchPickUpdateManyWithoutHeroClassNestedInput
+  pickStats?: Prisma.HeroPickStatUpdateManyWithoutHeroClassNestedInput
 }
 
 export type HeroClassUncheckedUpdateInput = {
@@ -613,6 +619,7 @@ export type HeroClassUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutHeroClassNestedInput
   matchPicks?: Prisma.MatchPickUncheckedUpdateManyWithoutHeroClassNestedInput
+  pickStats?: Prisma.HeroPickStatUncheckedUpdateManyWithoutHeroClassNestedInput
 }
 
 export type HeroClassCreateManyInput = {
@@ -837,6 +844,20 @@ export type HeroClassUpdateOneRequiredWithoutMatchPicksNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.HeroClassUpdateToOneWithWhereWithoutMatchPicksInput, Prisma.HeroClassUpdateWithoutMatchPicksInput>, Prisma.HeroClassUncheckedUpdateWithoutMatchPicksInput>
 }
 
+export type HeroClassCreateNestedOneWithoutPickStatsInput = {
+  create?: Prisma.XOR<Prisma.HeroClassCreateWithoutPickStatsInput, Prisma.HeroClassUncheckedCreateWithoutPickStatsInput>
+  connectOrCreate?: Prisma.HeroClassCreateOrConnectWithoutPickStatsInput
+  connect?: Prisma.HeroClassWhereUniqueInput
+}
+
+export type HeroClassUpdateOneRequiredWithoutPickStatsNestedInput = {
+  create?: Prisma.XOR<Prisma.HeroClassCreateWithoutPickStatsInput, Prisma.HeroClassUncheckedCreateWithoutPickStatsInput>
+  connectOrCreate?: Prisma.HeroClassCreateOrConnectWithoutPickStatsInput
+  upsert?: Prisma.HeroClassUpsertWithoutPickStatsInput
+  connect?: Prisma.HeroClassWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.HeroClassUpdateToOneWithWhereWithoutPickStatsInput, Prisma.HeroClassUpdateWithoutPickStatsInput>, Prisma.HeroClassUncheckedUpdateWithoutPickStatsInput>
+}
+
 export type HeroClassCreateNestedOneWithoutRatingEntriesInput = {
   create?: Prisma.XOR<Prisma.HeroClassCreateWithoutRatingEntriesInput, Prisma.HeroClassUncheckedCreateWithoutRatingEntriesInput>
   connectOrCreate?: Prisma.HeroClassCreateOrConnectWithoutRatingEntriesInput
@@ -876,6 +897,7 @@ export type HeroClassCreateWithoutMatchPicksInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutHeroClassInput
+  pickStats?: Prisma.HeroPickStatCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassUncheckedCreateWithoutMatchPicksInput = {
@@ -901,6 +923,7 @@ export type HeroClassUncheckedCreateWithoutMatchPicksInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutHeroClassInput
+  pickStats?: Prisma.HeroPickStatUncheckedCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassCreateOrConnectWithoutMatchPicksInput = {
@@ -942,6 +965,7 @@ export type HeroClassUpdateWithoutMatchPicksInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ratingEntries?: Prisma.RatingEntryUpdateManyWithoutHeroClassNestedInput
+  pickStats?: Prisma.HeroPickStatUpdateManyWithoutHeroClassNestedInput
 }
 
 export type HeroClassUncheckedUpdateWithoutMatchPicksInput = {
@@ -967,6 +991,127 @@ export type HeroClassUncheckedUpdateWithoutMatchPicksInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutHeroClassNestedInput
+  pickStats?: Prisma.HeroPickStatUncheckedUpdateManyWithoutHeroClassNestedInput
+}
+
+export type HeroClassCreateWithoutPickStatsInput = {
+  code: string
+  displayName: string
+  description?: string
+  roleSummary?: string
+  health: number
+  damage: number
+  armor: number
+  initiative: number
+  dodge: number
+  luck: number
+  morale: number
+  mana: number
+  maxMana?: number
+  power: number
+  gold: number
+  accuracy: number
+  size?: number
+  isPlayable?: boolean
+  sortOrder?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutHeroClassInput
+  matchPicks?: Prisma.MatchPickCreateNestedManyWithoutHeroClassInput
+}
+
+export type HeroClassUncheckedCreateWithoutPickStatsInput = {
+  code: string
+  displayName: string
+  description?: string
+  roleSummary?: string
+  health: number
+  damage: number
+  armor: number
+  initiative: number
+  dodge: number
+  luck: number
+  morale: number
+  mana: number
+  maxMana?: number
+  power: number
+  gold: number
+  accuracy: number
+  size?: number
+  isPlayable?: boolean
+  sortOrder?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutHeroClassInput
+  matchPicks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutHeroClassInput
+}
+
+export type HeroClassCreateOrConnectWithoutPickStatsInput = {
+  where: Prisma.HeroClassWhereUniqueInput
+  create: Prisma.XOR<Prisma.HeroClassCreateWithoutPickStatsInput, Prisma.HeroClassUncheckedCreateWithoutPickStatsInput>
+}
+
+export type HeroClassUpsertWithoutPickStatsInput = {
+  update: Prisma.XOR<Prisma.HeroClassUpdateWithoutPickStatsInput, Prisma.HeroClassUncheckedUpdateWithoutPickStatsInput>
+  create: Prisma.XOR<Prisma.HeroClassCreateWithoutPickStatsInput, Prisma.HeroClassUncheckedCreateWithoutPickStatsInput>
+  where?: Prisma.HeroClassWhereInput
+}
+
+export type HeroClassUpdateToOneWithWhereWithoutPickStatsInput = {
+  where?: Prisma.HeroClassWhereInput
+  data: Prisma.XOR<Prisma.HeroClassUpdateWithoutPickStatsInput, Prisma.HeroClassUncheckedUpdateWithoutPickStatsInput>
+}
+
+export type HeroClassUpdateWithoutPickStatsInput = {
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  roleSummary?: Prisma.StringFieldUpdateOperationsInput | string
+  health?: Prisma.IntFieldUpdateOperationsInput | number
+  damage?: Prisma.IntFieldUpdateOperationsInput | number
+  armor?: Prisma.IntFieldUpdateOperationsInput | number
+  initiative?: Prisma.IntFieldUpdateOperationsInput | number
+  dodge?: Prisma.IntFieldUpdateOperationsInput | number
+  luck?: Prisma.IntFieldUpdateOperationsInput | number
+  morale?: Prisma.IntFieldUpdateOperationsInput | number
+  mana?: Prisma.IntFieldUpdateOperationsInput | number
+  maxMana?: Prisma.IntFieldUpdateOperationsInput | number
+  power?: Prisma.IntFieldUpdateOperationsInput | number
+  gold?: Prisma.IntFieldUpdateOperationsInput | number
+  accuracy?: Prisma.IntFieldUpdateOperationsInput | number
+  size?: Prisma.IntFieldUpdateOperationsInput | number
+  isPlayable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ratingEntries?: Prisma.RatingEntryUpdateManyWithoutHeroClassNestedInput
+  matchPicks?: Prisma.MatchPickUpdateManyWithoutHeroClassNestedInput
+}
+
+export type HeroClassUncheckedUpdateWithoutPickStatsInput = {
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  roleSummary?: Prisma.StringFieldUpdateOperationsInput | string
+  health?: Prisma.IntFieldUpdateOperationsInput | number
+  damage?: Prisma.IntFieldUpdateOperationsInput | number
+  armor?: Prisma.IntFieldUpdateOperationsInput | number
+  initiative?: Prisma.IntFieldUpdateOperationsInput | number
+  dodge?: Prisma.IntFieldUpdateOperationsInput | number
+  luck?: Prisma.IntFieldUpdateOperationsInput | number
+  morale?: Prisma.IntFieldUpdateOperationsInput | number
+  mana?: Prisma.IntFieldUpdateOperationsInput | number
+  maxMana?: Prisma.IntFieldUpdateOperationsInput | number
+  power?: Prisma.IntFieldUpdateOperationsInput | number
+  gold?: Prisma.IntFieldUpdateOperationsInput | number
+  accuracy?: Prisma.IntFieldUpdateOperationsInput | number
+  size?: Prisma.IntFieldUpdateOperationsInput | number
+  isPlayable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutHeroClassNestedInput
+  matchPicks?: Prisma.MatchPickUncheckedUpdateManyWithoutHeroClassNestedInput
 }
 
 export type HeroClassCreateWithoutRatingEntriesInput = {
@@ -992,6 +1137,7 @@ export type HeroClassCreateWithoutRatingEntriesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   matchPicks?: Prisma.MatchPickCreateNestedManyWithoutHeroClassInput
+  pickStats?: Prisma.HeroPickStatCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassUncheckedCreateWithoutRatingEntriesInput = {
@@ -1017,6 +1163,7 @@ export type HeroClassUncheckedCreateWithoutRatingEntriesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   matchPicks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutHeroClassInput
+  pickStats?: Prisma.HeroPickStatUncheckedCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassCreateOrConnectWithoutRatingEntriesInput = {
@@ -1058,6 +1205,7 @@ export type HeroClassUpdateWithoutRatingEntriesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matchPicks?: Prisma.MatchPickUpdateManyWithoutHeroClassNestedInput
+  pickStats?: Prisma.HeroPickStatUpdateManyWithoutHeroClassNestedInput
 }
 
 export type HeroClassUncheckedUpdateWithoutRatingEntriesInput = {
@@ -1083,6 +1231,7 @@ export type HeroClassUncheckedUpdateWithoutRatingEntriesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matchPicks?: Prisma.MatchPickUncheckedUpdateManyWithoutHeroClassNestedInput
+  pickStats?: Prisma.HeroPickStatUncheckedUpdateManyWithoutHeroClassNestedInput
 }
 
 
@@ -1093,11 +1242,13 @@ export type HeroClassUncheckedUpdateWithoutRatingEntriesInput = {
 export type HeroClassCountOutputType = {
   ratingEntries: number
   matchPicks: number
+  pickStats: number
 }
 
 export type HeroClassCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ratingEntries?: boolean | HeroClassCountOutputTypeCountRatingEntriesArgs
   matchPicks?: boolean | HeroClassCountOutputTypeCountMatchPicksArgs
+  pickStats?: boolean | HeroClassCountOutputTypeCountPickStatsArgs
 }
 
 /**
@@ -1122,6 +1273,13 @@ export type HeroClassCountOutputTypeCountRatingEntriesArgs<ExtArgs extends runti
  */
 export type HeroClassCountOutputTypeCountMatchPicksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.MatchPickWhereInput
+}
+
+/**
+ * HeroClassCountOutputType without action
+ */
+export type HeroClassCountOutputTypeCountPickStatsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.HeroPickStatWhereInput
 }
 
 
@@ -1149,6 +1307,7 @@ export type HeroClassSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   updatedAt?: boolean
   ratingEntries?: boolean | Prisma.HeroClass$ratingEntriesArgs<ExtArgs>
   matchPicks?: boolean | Prisma.HeroClass$matchPicksArgs<ExtArgs>
+  pickStats?: boolean | Prisma.HeroClass$pickStatsArgs<ExtArgs>
   _count?: boolean | Prisma.HeroClassCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["heroClass"]>
 
@@ -1228,6 +1387,7 @@ export type HeroClassOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs 
 export type HeroClassInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ratingEntries?: boolean | Prisma.HeroClass$ratingEntriesArgs<ExtArgs>
   matchPicks?: boolean | Prisma.HeroClass$matchPicksArgs<ExtArgs>
+  pickStats?: boolean | Prisma.HeroClass$pickStatsArgs<ExtArgs>
   _count?: boolean | Prisma.HeroClassCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type HeroClassIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1238,6 +1398,7 @@ export type $HeroClassPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   objects: {
     ratingEntries: Prisma.$RatingEntryPayload<ExtArgs>[]
     matchPicks: Prisma.$MatchPickPayload<ExtArgs>[]
+    pickStats: Prisma.$HeroPickStatPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     code: string
@@ -1669,6 +1830,7 @@ export interface Prisma__HeroClassClient<T, Null = never, ExtArgs extends runtim
   readonly [Symbol.toStringTag]: "PrismaPromise"
   ratingEntries<T extends Prisma.HeroClass$ratingEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HeroClass$ratingEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RatingEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   matchPicks<T extends Prisma.HeroClass$matchPicksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HeroClass$matchPicksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MatchPickPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  pickStats<T extends Prisma.HeroClass$pickStatsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HeroClass$pickStatsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HeroPickStatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2152,6 +2314,30 @@ export type HeroClass$matchPicksArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.MatchPickScalarFieldEnum | Prisma.MatchPickScalarFieldEnum[]
+}
+
+/**
+ * HeroClass.pickStats
+ */
+export type HeroClass$pickStatsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the HeroPickStat
+   */
+  select?: Prisma.HeroPickStatSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the HeroPickStat
+   */
+  omit?: Prisma.HeroPickStatOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.HeroPickStatInclude<ExtArgs> | null
+  where?: Prisma.HeroPickStatWhereInput
+  orderBy?: Prisma.HeroPickStatOrderByWithRelationInput | Prisma.HeroPickStatOrderByWithRelationInput[]
+  cursor?: Prisma.HeroPickStatWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.HeroPickStatScalarFieldEnum | Prisma.HeroPickStatScalarFieldEnum[]
 }
 
 /**

@@ -112,6 +112,30 @@ export abstract class PlayersService {
   }
 
   /**
+   * Топ героев игрока по числу выборов в драфте.
+   */
+  static async listFavoriteHeroes(
+    playerId: string,
+    limit = 5
+  ): Promise<PlayersModel.favoriteHero[]> {
+    const capped = Math.min(Math.max(1, limit), 24);
+    const rows = await prisma.heroPickStat.findMany({
+      where: { playerId, pickCount: { gt: 0 } },
+      orderBy: [{ pickCount: 'desc' }, { heroClassCode: 'asc' }],
+      take: capped,
+      select: {
+        pickCount: true,
+        heroClass: { select: { code: true, displayName: true } },
+      },
+    });
+    return rows.map((row) => ({
+      code: row.heroClass.code,
+      displayName: row.heroClass.displayName,
+      pickCount: row.pickCount,
+    }));
+  }
+
+  /**
    * Обновляет avatarUrl после загрузки файла на volume.
    */
   static async updateAvatarUrl(

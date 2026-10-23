@@ -82,6 +82,23 @@ export const playersController = new Elysia({ prefix: '/players', tags: ['Player
     }
   )
   .get(
+    '/me/favorite-heroes',
+    async ({ player, query }) => {
+      return await PlayersService.listFavoriteHeroes(player.id, query.limit ?? 5);
+    },
+    {
+      requireAuth: true,
+      query: PlayersModel.favoriteHeroesQuery,
+      response: {
+        200: t.Array(PlayersModel.favoriteHero),
+        401: PlayersModel.errorResponse,
+      },
+      detail: {
+        summary: 'Любимые герои текущего игрока по числу выборов',
+      },
+    }
+  )
+  .get(
     '/me/matches',
     async ({ player }) => {
       return await MatchesService.listHistoryForPlayer(player.id);

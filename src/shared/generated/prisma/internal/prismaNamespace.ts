@@ -390,6 +390,7 @@ export const ModelName = {
   OAuthAccount: 'OAuthAccount',
   Match: 'Match',
   MatchPick: 'MatchPick',
+  HeroPickStat: 'HeroPickStat',
   RatingEntry: 'RatingEntry'
 } as const
 
@@ -406,7 +407,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "heroClass" | "player" | "news" | "oAuthAccount" | "match" | "matchPick" | "ratingEntry"
+    modelProps: "heroClass" | "player" | "news" | "oAuthAccount" | "match" | "matchPick" | "heroPickStat" | "ratingEntry"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -854,6 +855,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    HeroPickStat: {
+      payload: Prisma.$HeroPickStatPayload<ExtArgs>
+      fields: Prisma.HeroPickStatFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HeroPickStatFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPickStatPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HeroPickStatFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPickStatPayload>
+        }
+        findFirst: {
+          args: Prisma.HeroPickStatFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPickStatPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HeroPickStatFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPickStatPayload>
+        }
+        findMany: {
+          args: Prisma.HeroPickStatFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPickStatPayload>[]
+        }
+        create: {
+          args: Prisma.HeroPickStatCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPickStatPayload>
+        }
+        createMany: {
+          args: Prisma.HeroPickStatCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HeroPickStatCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPickStatPayload>[]
+        }
+        delete: {
+          args: Prisma.HeroPickStatDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPickStatPayload>
+        }
+        update: {
+          args: Prisma.HeroPickStatUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPickStatPayload>
+        }
+        deleteMany: {
+          args: Prisma.HeroPickStatDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HeroPickStatUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HeroPickStatUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPickStatPayload>[]
+        }
+        upsert: {
+          args: Prisma.HeroPickStatUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPickStatPayload>
+        }
+        aggregate: {
+          args: Prisma.HeroPickStatAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHeroPickStat>
+        }
+        groupBy: {
+          args: Prisma.HeroPickStatGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HeroPickStatGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HeroPickStatCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HeroPickStatCountAggregateOutputType> | number
+        }
+      }
+    }
     RatingEntry: {
       payload: Prisma.$RatingEntryPayload<ExtArgs>
       fields: Prisma.RatingEntryFieldRefs
@@ -1069,6 +1144,16 @@ export const MatchPickScalarFieldEnum = {
 } as const
 
 export type MatchPickScalarFieldEnum = (typeof MatchPickScalarFieldEnum)[keyof typeof MatchPickScalarFieldEnum]
+
+
+export const HeroPickStatScalarFieldEnum = {
+  playerId: 'playerId',
+  heroClassCode: 'heroClassCode',
+  pickCount: 'pickCount',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HeroPickStatScalarFieldEnum = (typeof HeroPickStatScalarFieldEnum)[keyof typeof HeroPickStatScalarFieldEnum]
 
 
 export const RatingEntryScalarFieldEnum = {
@@ -1366,6 +1451,7 @@ export type GlobalOmitConfig = {
   oAuthAccount?: Prisma.OAuthAccountOmit
   match?: Prisma.MatchOmit
   matchPick?: Prisma.MatchPickOmit
+  heroPickStat?: Prisma.HeroPickStatOmit
   ratingEntry?: Prisma.RatingEntryOmit
 }
 
