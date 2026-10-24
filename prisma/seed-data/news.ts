@@ -228,19 +228,19 @@ export const NEWS_SEED: readonly NewsSeed[] = [
     summary:
       'Собирайте отряды в профиле и берите их в лобби. Глобальный пакет «Зеркало драколича» — Драколич и Белый маг под клоны и сильные способности. Чужой пресет скрыт до боя.',
     category: 'update',
-    coverUrl: '/static/images/scenes/mvmwxee3-presets-pick.png',
+    coverUrl: '/static/images/scenes/mvmxki8v-presets-pick.png',
     publishedAt: '2026-10-24T21:34:13.849Z',
     body: `Набор отряда стал гибче: не только поочерёдный выбор, но и готовые составы.
 
 **Свои пресеты.** В профиле собирайте отряды на 3–6 слотов, давайте им имена и правьте когда угодно.
 
-![Создание пресета](/static/images/scenes/mvmwxdyv-presets-create.png)
+![Создание пресета](/static/images/scenes/mvmxkhx6-presets-create.png)
 
-![Просмотр пресета](/static/images/scenes/mvmwxe6b-presets-view.png)
+![Просмотр пресета](/static/images/scenes/mvmxki1c-presets-view.png)
 
 В лобби при размере отряда от трёх и пустом своём ряду нажмите «Пресет» — и состав встанет сразу.
 
-![Выбор пресета в матче](/static/images/scenes/mvmwxee3-presets-pick.png)
+![Выбор пресета в матче](/static/images/scenes/mvmxki8v-presets-pick.png)
 
 **Глобальные.** На старте — пакет **«Зеркало драколича»**: Драколич впереди, Белый маг сзади. Смысл — клонировать драколича и давить его сильными способностями. Копировать к себе не нужно — просто берите в матче.
 
