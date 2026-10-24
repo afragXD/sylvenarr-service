@@ -21,7 +21,8 @@ export const heroesController = new Elysia({ prefix: '/heroes', tags: ['Heroes']
   .get(
     '/favorites',
     async ({ query }) => {
-      return await HeroesService.listFavorites(query.limit ?? 24);
+      const limit = query.limit ? Number(query.limit) : 24;
+      return await HeroesService.listFavorites(Number.isFinite(limit) ? limit : 24);
     },
     {
       query: HeroesModel.favoritesQuery,

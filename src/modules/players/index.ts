@@ -84,7 +84,11 @@ export const playersController = new Elysia({ prefix: '/players', tags: ['Player
   .get(
     '/me/favorite-heroes',
     async ({ player, query }) => {
-      return await PlayersService.listFavoriteHeroes(player.id, query.limit ?? 5);
+      const limit = query.limit ? Number(query.limit) : 5;
+      return await PlayersService.listFavoriteHeroes(
+        player.id,
+        Number.isFinite(limit) ? limit : 5
+      );
     },
     {
       requireAuth: true,

@@ -47,7 +47,7 @@ export namespace HeroesModel {
   export type favoriteHero = typeof favoriteHero.static;
 
   export const favoritesQuery = t.Object({
-    limit: t.Optional(t.Number({ minimum: 1, maximum: 24 })),
+    limit: t.Optional(t.String()),
   });
   export type favoritesQuery = typeof favoritesQuery.static;
 
