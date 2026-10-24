@@ -43,6 +43,7 @@ export type MatchPickMinAggregateOutputType = {
   heroClassCode: string | null
   row: number | null
   pickOrder: number | null
+  source: $Enums.MatchPickSource | null
   createdAt: Date | null
 }
 
@@ -53,6 +54,7 @@ export type MatchPickMaxAggregateOutputType = {
   heroClassCode: string | null
   row: number | null
   pickOrder: number | null
+  source: $Enums.MatchPickSource | null
   createdAt: Date | null
 }
 
@@ -63,6 +65,7 @@ export type MatchPickCountAggregateOutputType = {
   heroClassCode: number
   row: number
   pickOrder: number
+  source: number
   createdAt: number
   _all: number
 }
@@ -85,6 +88,7 @@ export type MatchPickMinAggregateInputType = {
   heroClassCode?: true
   row?: true
   pickOrder?: true
+  source?: true
   createdAt?: true
 }
 
@@ -95,6 +99,7 @@ export type MatchPickMaxAggregateInputType = {
   heroClassCode?: true
   row?: true
   pickOrder?: true
+  source?: true
   createdAt?: true
 }
 
@@ -105,6 +110,7 @@ export type MatchPickCountAggregateInputType = {
   heroClassCode?: true
   row?: true
   pickOrder?: true
+  source?: true
   createdAt?: true
   _all?: true
 }
@@ -202,6 +208,7 @@ export type MatchPickGroupByOutputType = {
   heroClassCode: string
   row: number
   pickOrder: number
+  source: $Enums.MatchPickSource
   createdAt: Date
   _count: MatchPickCountAggregateOutputType | null
   _avg: MatchPickAvgAggregateOutputType | null
@@ -235,6 +242,7 @@ export type MatchPickWhereInput = {
   heroClassCode?: Prisma.StringFilter<"MatchPick"> | string
   row?: Prisma.IntFilter<"MatchPick"> | number
   pickOrder?: Prisma.IntFilter<"MatchPick"> | number
+  source?: Prisma.EnumMatchPickSourceFilter<"MatchPick"> | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFilter<"MatchPick"> | Date | string
   match?: Prisma.XOR<Prisma.MatchScalarRelationFilter, Prisma.MatchWhereInput>
   player?: Prisma.XOR<Prisma.PlayerScalarRelationFilter, Prisma.PlayerWhereInput>
@@ -248,6 +256,7 @@ export type MatchPickOrderByWithRelationInput = {
   heroClassCode?: Prisma.SortOrder
   row?: Prisma.SortOrder
   pickOrder?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   match?: Prisma.MatchOrderByWithRelationInput
   player?: Prisma.PlayerOrderByWithRelationInput
@@ -264,6 +273,7 @@ export type MatchPickWhereUniqueInput = Prisma.AtLeast<{
   heroClassCode?: Prisma.StringFilter<"MatchPick"> | string
   row?: Prisma.IntFilter<"MatchPick"> | number
   pickOrder?: Prisma.IntFilter<"MatchPick"> | number
+  source?: Prisma.EnumMatchPickSourceFilter<"MatchPick"> | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFilter<"MatchPick"> | Date | string
   match?: Prisma.XOR<Prisma.MatchScalarRelationFilter, Prisma.MatchWhereInput>
   player?: Prisma.XOR<Prisma.PlayerScalarRelationFilter, Prisma.PlayerWhereInput>
@@ -277,6 +287,7 @@ export type MatchPickOrderByWithAggregationInput = {
   heroClassCode?: Prisma.SortOrder
   row?: Prisma.SortOrder
   pickOrder?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.MatchPickCountOrderByAggregateInput
   _avg?: Prisma.MatchPickAvgOrderByAggregateInput
@@ -295,6 +306,7 @@ export type MatchPickScalarWhereWithAggregatesInput = {
   heroClassCode?: Prisma.StringWithAggregatesFilter<"MatchPick"> | string
   row?: Prisma.IntWithAggregatesFilter<"MatchPick"> | number
   pickOrder?: Prisma.IntWithAggregatesFilter<"MatchPick"> | number
+  source?: Prisma.EnumMatchPickSourceWithAggregatesFilter<"MatchPick"> | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"MatchPick"> | Date | string
 }
 
@@ -302,6 +314,7 @@ export type MatchPickCreateInput = {
   id?: string
   row: number
   pickOrder: number
+  source?: $Enums.MatchPickSource
   createdAt?: Date | string
   match: Prisma.MatchCreateNestedOneWithoutPicksInput
   player: Prisma.PlayerCreateNestedOneWithoutMatchPicksInput
@@ -315,6 +328,7 @@ export type MatchPickUncheckedCreateInput = {
   heroClassCode: string
   row: number
   pickOrder: number
+  source?: $Enums.MatchPickSource
   createdAt?: Date | string
 }
 
@@ -322,6 +336,7 @@ export type MatchPickUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   row?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.EnumMatchPickSourceFieldUpdateOperationsInput | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   match?: Prisma.MatchUpdateOneRequiredWithoutPicksNestedInput
   player?: Prisma.PlayerUpdateOneRequiredWithoutMatchPicksNestedInput
@@ -335,6 +350,7 @@ export type MatchPickUncheckedUpdateInput = {
   heroClassCode?: Prisma.StringFieldUpdateOperationsInput | string
   row?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.EnumMatchPickSourceFieldUpdateOperationsInput | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -345,6 +361,7 @@ export type MatchPickCreateManyInput = {
   heroClassCode: string
   row: number
   pickOrder: number
+  source?: $Enums.MatchPickSource
   createdAt?: Date | string
 }
 
@@ -352,6 +369,7 @@ export type MatchPickUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   row?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.EnumMatchPickSourceFieldUpdateOperationsInput | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -362,6 +380,7 @@ export type MatchPickUncheckedUpdateManyInput = {
   heroClassCode?: Prisma.StringFieldUpdateOperationsInput | string
   row?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.EnumMatchPickSourceFieldUpdateOperationsInput | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -382,6 +401,7 @@ export type MatchPickCountOrderByAggregateInput = {
   heroClassCode?: Prisma.SortOrder
   row?: Prisma.SortOrder
   pickOrder?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -397,6 +417,7 @@ export type MatchPickMaxOrderByAggregateInput = {
   heroClassCode?: Prisma.SortOrder
   row?: Prisma.SortOrder
   pickOrder?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -407,6 +428,7 @@ export type MatchPickMinOrderByAggregateInput = {
   heroClassCode?: Prisma.SortOrder
   row?: Prisma.SortOrder
   pickOrder?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -541,10 +563,15 @@ export type MatchPickUncheckedUpdateManyWithoutMatchNestedInput = {
   deleteMany?: Prisma.MatchPickScalarWhereInput | Prisma.MatchPickScalarWhereInput[]
 }
 
+export type EnumMatchPickSourceFieldUpdateOperationsInput = {
+  set?: $Enums.MatchPickSource
+}
+
 export type MatchPickCreateWithoutHeroClassInput = {
   id?: string
   row: number
   pickOrder: number
+  source?: $Enums.MatchPickSource
   createdAt?: Date | string
   match: Prisma.MatchCreateNestedOneWithoutPicksInput
   player: Prisma.PlayerCreateNestedOneWithoutMatchPicksInput
@@ -556,6 +583,7 @@ export type MatchPickUncheckedCreateWithoutHeroClassInput = {
   playerId: string
   row: number
   pickOrder: number
+  source?: $Enums.MatchPickSource
   createdAt?: Date | string
 }
 
@@ -595,6 +623,7 @@ export type MatchPickScalarWhereInput = {
   heroClassCode?: Prisma.StringFilter<"MatchPick"> | string
   row?: Prisma.IntFilter<"MatchPick"> | number
   pickOrder?: Prisma.IntFilter<"MatchPick"> | number
+  source?: Prisma.EnumMatchPickSourceFilter<"MatchPick"> | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFilter<"MatchPick"> | Date | string
 }
 
@@ -602,6 +631,7 @@ export type MatchPickCreateWithoutPlayerInput = {
   id?: string
   row: number
   pickOrder: number
+  source?: $Enums.MatchPickSource
   createdAt?: Date | string
   match: Prisma.MatchCreateNestedOneWithoutPicksInput
   heroClass: Prisma.HeroClassCreateNestedOneWithoutMatchPicksInput
@@ -613,6 +643,7 @@ export type MatchPickUncheckedCreateWithoutPlayerInput = {
   heroClassCode: string
   row: number
   pickOrder: number
+  source?: $Enums.MatchPickSource
   createdAt?: Date | string
 }
 
@@ -646,6 +677,7 @@ export type MatchPickCreateWithoutMatchInput = {
   id?: string
   row: number
   pickOrder: number
+  source?: $Enums.MatchPickSource
   createdAt?: Date | string
   player: Prisma.PlayerCreateNestedOneWithoutMatchPicksInput
   heroClass: Prisma.HeroClassCreateNestedOneWithoutMatchPicksInput
@@ -657,6 +689,7 @@ export type MatchPickUncheckedCreateWithoutMatchInput = {
   heroClassCode: string
   row: number
   pickOrder: number
+  source?: $Enums.MatchPickSource
   createdAt?: Date | string
 }
 
@@ -692,6 +725,7 @@ export type MatchPickCreateManyHeroClassInput = {
   playerId: string
   row: number
   pickOrder: number
+  source?: $Enums.MatchPickSource
   createdAt?: Date | string
 }
 
@@ -699,6 +733,7 @@ export type MatchPickUpdateWithoutHeroClassInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   row?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.EnumMatchPickSourceFieldUpdateOperationsInput | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   match?: Prisma.MatchUpdateOneRequiredWithoutPicksNestedInput
   player?: Prisma.PlayerUpdateOneRequiredWithoutMatchPicksNestedInput
@@ -710,6 +745,7 @@ export type MatchPickUncheckedUpdateWithoutHeroClassInput = {
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   row?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.EnumMatchPickSourceFieldUpdateOperationsInput | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -719,6 +755,7 @@ export type MatchPickUncheckedUpdateManyWithoutHeroClassInput = {
   playerId?: Prisma.StringFieldUpdateOperationsInput | string
   row?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.EnumMatchPickSourceFieldUpdateOperationsInput | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -728,6 +765,7 @@ export type MatchPickCreateManyPlayerInput = {
   heroClassCode: string
   row: number
   pickOrder: number
+  source?: $Enums.MatchPickSource
   createdAt?: Date | string
 }
 
@@ -735,6 +773,7 @@ export type MatchPickUpdateWithoutPlayerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   row?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.EnumMatchPickSourceFieldUpdateOperationsInput | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   match?: Prisma.MatchUpdateOneRequiredWithoutPicksNestedInput
   heroClass?: Prisma.HeroClassUpdateOneRequiredWithoutMatchPicksNestedInput
@@ -746,6 +785,7 @@ export type MatchPickUncheckedUpdateWithoutPlayerInput = {
   heroClassCode?: Prisma.StringFieldUpdateOperationsInput | string
   row?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.EnumMatchPickSourceFieldUpdateOperationsInput | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -755,6 +795,7 @@ export type MatchPickUncheckedUpdateManyWithoutPlayerInput = {
   heroClassCode?: Prisma.StringFieldUpdateOperationsInput | string
   row?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.EnumMatchPickSourceFieldUpdateOperationsInput | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -764,6 +805,7 @@ export type MatchPickCreateManyMatchInput = {
   heroClassCode: string
   row: number
   pickOrder: number
+  source?: $Enums.MatchPickSource
   createdAt?: Date | string
 }
 
@@ -771,6 +813,7 @@ export type MatchPickUpdateWithoutMatchInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   row?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.EnumMatchPickSourceFieldUpdateOperationsInput | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   player?: Prisma.PlayerUpdateOneRequiredWithoutMatchPicksNestedInput
   heroClass?: Prisma.HeroClassUpdateOneRequiredWithoutMatchPicksNestedInput
@@ -782,6 +825,7 @@ export type MatchPickUncheckedUpdateWithoutMatchInput = {
   heroClassCode?: Prisma.StringFieldUpdateOperationsInput | string
   row?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.EnumMatchPickSourceFieldUpdateOperationsInput | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -791,6 +835,7 @@ export type MatchPickUncheckedUpdateManyWithoutMatchInput = {
   heroClassCode?: Prisma.StringFieldUpdateOperationsInput | string
   row?: Prisma.IntFieldUpdateOperationsInput | number
   pickOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.EnumMatchPickSourceFieldUpdateOperationsInput | $Enums.MatchPickSource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -803,6 +848,7 @@ export type MatchPickSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   heroClassCode?: boolean
   row?: boolean
   pickOrder?: boolean
+  source?: boolean
   createdAt?: boolean
   match?: boolean | Prisma.MatchDefaultArgs<ExtArgs>
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
@@ -816,6 +862,7 @@ export type MatchPickSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   heroClassCode?: boolean
   row?: boolean
   pickOrder?: boolean
+  source?: boolean
   createdAt?: boolean
   match?: boolean | Prisma.MatchDefaultArgs<ExtArgs>
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
@@ -829,6 +876,7 @@ export type MatchPickSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   heroClassCode?: boolean
   row?: boolean
   pickOrder?: boolean
+  source?: boolean
   createdAt?: boolean
   match?: boolean | Prisma.MatchDefaultArgs<ExtArgs>
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
@@ -842,10 +890,11 @@ export type MatchPickSelectScalar = {
   heroClassCode?: boolean
   row?: boolean
   pickOrder?: boolean
+  source?: boolean
   createdAt?: boolean
 }
 
-export type MatchPickOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "matchId" | "playerId" | "heroClassCode" | "row" | "pickOrder" | "createdAt", ExtArgs["result"]["matchPick"]>
+export type MatchPickOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "matchId" | "playerId" | "heroClassCode" | "row" | "pickOrder" | "source" | "createdAt", ExtArgs["result"]["matchPick"]>
 export type MatchPickInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   match?: boolean | Prisma.MatchDefaultArgs<ExtArgs>
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
@@ -879,6 +928,7 @@ export type $MatchPickPayload<ExtArgs extends runtime.Types.Extensions.InternalA
      */
     row: number
     pickOrder: number
+    source: $Enums.MatchPickSource
     createdAt: Date
   }, ExtArgs["result"]["matchPick"]>
   composites: {}
@@ -1312,6 +1362,7 @@ export interface MatchPickFieldRefs {
   readonly heroClassCode: Prisma.FieldRef<"MatchPick", 'String'>
   readonly row: Prisma.FieldRef<"MatchPick", 'Int'>
   readonly pickOrder: Prisma.FieldRef<"MatchPick", 'Int'>
+  readonly source: Prisma.FieldRef<"MatchPick", 'MatchPickSource'>
   readonly createdAt: Prisma.FieldRef<"MatchPick", 'DateTime'>
 }
     

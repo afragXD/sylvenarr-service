@@ -331,6 +331,23 @@ export type EnumMatchStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumMatchStatusFilter<$PrismaModel>
 }
 
+export type EnumMatchPickSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.MatchPickSource | Prisma.EnumMatchPickSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.MatchPickSource[] | Prisma.ListEnumMatchPickSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MatchPickSource[] | Prisma.ListEnumMatchPickSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMatchPickSourceFilter<$PrismaModel> | $Enums.MatchPickSource
+}
+
+export type EnumMatchPickSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MatchPickSource | Prisma.EnumMatchPickSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.MatchPickSource[] | Prisma.ListEnumMatchPickSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MatchPickSource[] | Prisma.ListEnumMatchPickSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMatchPickSourceWithAggregatesFilter<$PrismaModel> | $Enums.MatchPickSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMatchPickSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMatchPickSourceFilter<$PrismaModel>
+}
+
 export type EnumRatingResultFilter<$PrismaModel = never> = {
   equals?: $Enums.RatingResult | Prisma.EnumRatingResultFieldRefInput<$PrismaModel>
   in?: $Enums.RatingResult[] | Prisma.ListEnumRatingResultFieldRefInput<$PrismaModel>
@@ -672,6 +689,23 @@ export type NestedEnumMatchStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumMatchStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumMatchStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumMatchPickSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.MatchPickSource | Prisma.EnumMatchPickSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.MatchPickSource[] | Prisma.ListEnumMatchPickSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MatchPickSource[] | Prisma.ListEnumMatchPickSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMatchPickSourceFilter<$PrismaModel> | $Enums.MatchPickSource
+}
+
+export type NestedEnumMatchPickSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MatchPickSource | Prisma.EnumMatchPickSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.MatchPickSource[] | Prisma.ListEnumMatchPickSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MatchPickSource[] | Prisma.ListEnumMatchPickSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMatchPickSourceWithAggregatesFilter<$PrismaModel> | $Enums.MatchPickSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMatchPickSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMatchPickSourceFilter<$PrismaModel>
 }
 
 export type NestedEnumRatingResultFilter<$PrismaModel = never> = {

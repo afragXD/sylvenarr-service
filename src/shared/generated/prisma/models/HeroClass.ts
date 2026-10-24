@@ -399,6 +399,7 @@ export type HeroClassWhereInput = {
   ratingEntries?: Prisma.RatingEntryListRelationFilter
   matchPicks?: Prisma.MatchPickListRelationFilter
   pickStats?: Prisma.HeroPickStatListRelationFilter
+  presetSlots?: Prisma.SquadPresetSlotListRelationFilter
 }
 
 export type HeroClassOrderByWithRelationInput = {
@@ -426,6 +427,7 @@ export type HeroClassOrderByWithRelationInput = {
   ratingEntries?: Prisma.RatingEntryOrderByRelationAggregateInput
   matchPicks?: Prisma.MatchPickOrderByRelationAggregateInput
   pickStats?: Prisma.HeroPickStatOrderByRelationAggregateInput
+  presetSlots?: Prisma.SquadPresetSlotOrderByRelationAggregateInput
 }
 
 export type HeroClassWhereUniqueInput = Prisma.AtLeast<{
@@ -456,6 +458,7 @@ export type HeroClassWhereUniqueInput = Prisma.AtLeast<{
   ratingEntries?: Prisma.RatingEntryListRelationFilter
   matchPicks?: Prisma.MatchPickListRelationFilter
   pickStats?: Prisma.HeroPickStatListRelationFilter
+  presetSlots?: Prisma.SquadPresetSlotListRelationFilter
 }, "code">
 
 export type HeroClassOrderByWithAggregationInput = {
@@ -539,6 +542,7 @@ export type HeroClassCreateInput = {
   ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutHeroClassInput
   matchPicks?: Prisma.MatchPickCreateNestedManyWithoutHeroClassInput
   pickStats?: Prisma.HeroPickStatCreateNestedManyWithoutHeroClassInput
+  presetSlots?: Prisma.SquadPresetSlotCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassUncheckedCreateInput = {
@@ -566,6 +570,7 @@ export type HeroClassUncheckedCreateInput = {
   ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutHeroClassInput
   matchPicks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutHeroClassInput
   pickStats?: Prisma.HeroPickStatUncheckedCreateNestedManyWithoutHeroClassInput
+  presetSlots?: Prisma.SquadPresetSlotUncheckedCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassUpdateInput = {
@@ -593,6 +598,7 @@ export type HeroClassUpdateInput = {
   ratingEntries?: Prisma.RatingEntryUpdateManyWithoutHeroClassNestedInput
   matchPicks?: Prisma.MatchPickUpdateManyWithoutHeroClassNestedInput
   pickStats?: Prisma.HeroPickStatUpdateManyWithoutHeroClassNestedInput
+  presetSlots?: Prisma.SquadPresetSlotUpdateManyWithoutHeroClassNestedInput
 }
 
 export type HeroClassUncheckedUpdateInput = {
@@ -620,6 +626,7 @@ export type HeroClassUncheckedUpdateInput = {
   ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutHeroClassNestedInput
   matchPicks?: Prisma.MatchPickUncheckedUpdateManyWithoutHeroClassNestedInput
   pickStats?: Prisma.HeroPickStatUncheckedUpdateManyWithoutHeroClassNestedInput
+  presetSlots?: Prisma.SquadPresetSlotUncheckedUpdateManyWithoutHeroClassNestedInput
 }
 
 export type HeroClassCreateManyInput = {
@@ -844,6 +851,20 @@ export type HeroClassUpdateOneRequiredWithoutMatchPicksNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.HeroClassUpdateToOneWithWhereWithoutMatchPicksInput, Prisma.HeroClassUpdateWithoutMatchPicksInput>, Prisma.HeroClassUncheckedUpdateWithoutMatchPicksInput>
 }
 
+export type HeroClassCreateNestedOneWithoutPresetSlotsInput = {
+  create?: Prisma.XOR<Prisma.HeroClassCreateWithoutPresetSlotsInput, Prisma.HeroClassUncheckedCreateWithoutPresetSlotsInput>
+  connectOrCreate?: Prisma.HeroClassCreateOrConnectWithoutPresetSlotsInput
+  connect?: Prisma.HeroClassWhereUniqueInput
+}
+
+export type HeroClassUpdateOneRequiredWithoutPresetSlotsNestedInput = {
+  create?: Prisma.XOR<Prisma.HeroClassCreateWithoutPresetSlotsInput, Prisma.HeroClassUncheckedCreateWithoutPresetSlotsInput>
+  connectOrCreate?: Prisma.HeroClassCreateOrConnectWithoutPresetSlotsInput
+  upsert?: Prisma.HeroClassUpsertWithoutPresetSlotsInput
+  connect?: Prisma.HeroClassWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.HeroClassUpdateToOneWithWhereWithoutPresetSlotsInput, Prisma.HeroClassUpdateWithoutPresetSlotsInput>, Prisma.HeroClassUncheckedUpdateWithoutPresetSlotsInput>
+}
+
 export type HeroClassCreateNestedOneWithoutPickStatsInput = {
   create?: Prisma.XOR<Prisma.HeroClassCreateWithoutPickStatsInput, Prisma.HeroClassUncheckedCreateWithoutPickStatsInput>
   connectOrCreate?: Prisma.HeroClassCreateOrConnectWithoutPickStatsInput
@@ -898,6 +919,7 @@ export type HeroClassCreateWithoutMatchPicksInput = {
   updatedAt?: Date | string
   ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutHeroClassInput
   pickStats?: Prisma.HeroPickStatCreateNestedManyWithoutHeroClassInput
+  presetSlots?: Prisma.SquadPresetSlotCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassUncheckedCreateWithoutMatchPicksInput = {
@@ -924,6 +946,7 @@ export type HeroClassUncheckedCreateWithoutMatchPicksInput = {
   updatedAt?: Date | string
   ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutHeroClassInput
   pickStats?: Prisma.HeroPickStatUncheckedCreateNestedManyWithoutHeroClassInput
+  presetSlots?: Prisma.SquadPresetSlotUncheckedCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassCreateOrConnectWithoutMatchPicksInput = {
@@ -966,6 +989,7 @@ export type HeroClassUpdateWithoutMatchPicksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ratingEntries?: Prisma.RatingEntryUpdateManyWithoutHeroClassNestedInput
   pickStats?: Prisma.HeroPickStatUpdateManyWithoutHeroClassNestedInput
+  presetSlots?: Prisma.SquadPresetSlotUpdateManyWithoutHeroClassNestedInput
 }
 
 export type HeroClassUncheckedUpdateWithoutMatchPicksInput = {
@@ -991,6 +1015,131 @@ export type HeroClassUncheckedUpdateWithoutMatchPicksInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutHeroClassNestedInput
+  pickStats?: Prisma.HeroPickStatUncheckedUpdateManyWithoutHeroClassNestedInput
+  presetSlots?: Prisma.SquadPresetSlotUncheckedUpdateManyWithoutHeroClassNestedInput
+}
+
+export type HeroClassCreateWithoutPresetSlotsInput = {
+  code: string
+  displayName: string
+  description?: string
+  roleSummary?: string
+  health: number
+  damage: number
+  armor: number
+  initiative: number
+  dodge: number
+  luck: number
+  morale: number
+  mana: number
+  maxMana?: number
+  power: number
+  gold: number
+  accuracy: number
+  size?: number
+  isPlayable?: boolean
+  sortOrder?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutHeroClassInput
+  matchPicks?: Prisma.MatchPickCreateNestedManyWithoutHeroClassInput
+  pickStats?: Prisma.HeroPickStatCreateNestedManyWithoutHeroClassInput
+}
+
+export type HeroClassUncheckedCreateWithoutPresetSlotsInput = {
+  code: string
+  displayName: string
+  description?: string
+  roleSummary?: string
+  health: number
+  damage: number
+  armor: number
+  initiative: number
+  dodge: number
+  luck: number
+  morale: number
+  mana: number
+  maxMana?: number
+  power: number
+  gold: number
+  accuracy: number
+  size?: number
+  isPlayable?: boolean
+  sortOrder?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutHeroClassInput
+  matchPicks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutHeroClassInput
+  pickStats?: Prisma.HeroPickStatUncheckedCreateNestedManyWithoutHeroClassInput
+}
+
+export type HeroClassCreateOrConnectWithoutPresetSlotsInput = {
+  where: Prisma.HeroClassWhereUniqueInput
+  create: Prisma.XOR<Prisma.HeroClassCreateWithoutPresetSlotsInput, Prisma.HeroClassUncheckedCreateWithoutPresetSlotsInput>
+}
+
+export type HeroClassUpsertWithoutPresetSlotsInput = {
+  update: Prisma.XOR<Prisma.HeroClassUpdateWithoutPresetSlotsInput, Prisma.HeroClassUncheckedUpdateWithoutPresetSlotsInput>
+  create: Prisma.XOR<Prisma.HeroClassCreateWithoutPresetSlotsInput, Prisma.HeroClassUncheckedCreateWithoutPresetSlotsInput>
+  where?: Prisma.HeroClassWhereInput
+}
+
+export type HeroClassUpdateToOneWithWhereWithoutPresetSlotsInput = {
+  where?: Prisma.HeroClassWhereInput
+  data: Prisma.XOR<Prisma.HeroClassUpdateWithoutPresetSlotsInput, Prisma.HeroClassUncheckedUpdateWithoutPresetSlotsInput>
+}
+
+export type HeroClassUpdateWithoutPresetSlotsInput = {
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  roleSummary?: Prisma.StringFieldUpdateOperationsInput | string
+  health?: Prisma.IntFieldUpdateOperationsInput | number
+  damage?: Prisma.IntFieldUpdateOperationsInput | number
+  armor?: Prisma.IntFieldUpdateOperationsInput | number
+  initiative?: Prisma.IntFieldUpdateOperationsInput | number
+  dodge?: Prisma.IntFieldUpdateOperationsInput | number
+  luck?: Prisma.IntFieldUpdateOperationsInput | number
+  morale?: Prisma.IntFieldUpdateOperationsInput | number
+  mana?: Prisma.IntFieldUpdateOperationsInput | number
+  maxMana?: Prisma.IntFieldUpdateOperationsInput | number
+  power?: Prisma.IntFieldUpdateOperationsInput | number
+  gold?: Prisma.IntFieldUpdateOperationsInput | number
+  accuracy?: Prisma.IntFieldUpdateOperationsInput | number
+  size?: Prisma.IntFieldUpdateOperationsInput | number
+  isPlayable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ratingEntries?: Prisma.RatingEntryUpdateManyWithoutHeroClassNestedInput
+  matchPicks?: Prisma.MatchPickUpdateManyWithoutHeroClassNestedInput
+  pickStats?: Prisma.HeroPickStatUpdateManyWithoutHeroClassNestedInput
+}
+
+export type HeroClassUncheckedUpdateWithoutPresetSlotsInput = {
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  roleSummary?: Prisma.StringFieldUpdateOperationsInput | string
+  health?: Prisma.IntFieldUpdateOperationsInput | number
+  damage?: Prisma.IntFieldUpdateOperationsInput | number
+  armor?: Prisma.IntFieldUpdateOperationsInput | number
+  initiative?: Prisma.IntFieldUpdateOperationsInput | number
+  dodge?: Prisma.IntFieldUpdateOperationsInput | number
+  luck?: Prisma.IntFieldUpdateOperationsInput | number
+  morale?: Prisma.IntFieldUpdateOperationsInput | number
+  mana?: Prisma.IntFieldUpdateOperationsInput | number
+  maxMana?: Prisma.IntFieldUpdateOperationsInput | number
+  power?: Prisma.IntFieldUpdateOperationsInput | number
+  gold?: Prisma.IntFieldUpdateOperationsInput | number
+  accuracy?: Prisma.IntFieldUpdateOperationsInput | number
+  size?: Prisma.IntFieldUpdateOperationsInput | number
+  isPlayable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutHeroClassNestedInput
+  matchPicks?: Prisma.MatchPickUncheckedUpdateManyWithoutHeroClassNestedInput
   pickStats?: Prisma.HeroPickStatUncheckedUpdateManyWithoutHeroClassNestedInput
 }
 
@@ -1018,6 +1167,7 @@ export type HeroClassCreateWithoutPickStatsInput = {
   updatedAt?: Date | string
   ratingEntries?: Prisma.RatingEntryCreateNestedManyWithoutHeroClassInput
   matchPicks?: Prisma.MatchPickCreateNestedManyWithoutHeroClassInput
+  presetSlots?: Prisma.SquadPresetSlotCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassUncheckedCreateWithoutPickStatsInput = {
@@ -1044,6 +1194,7 @@ export type HeroClassUncheckedCreateWithoutPickStatsInput = {
   updatedAt?: Date | string
   ratingEntries?: Prisma.RatingEntryUncheckedCreateNestedManyWithoutHeroClassInput
   matchPicks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutHeroClassInput
+  presetSlots?: Prisma.SquadPresetSlotUncheckedCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassCreateOrConnectWithoutPickStatsInput = {
@@ -1086,6 +1237,7 @@ export type HeroClassUpdateWithoutPickStatsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ratingEntries?: Prisma.RatingEntryUpdateManyWithoutHeroClassNestedInput
   matchPicks?: Prisma.MatchPickUpdateManyWithoutHeroClassNestedInput
+  presetSlots?: Prisma.SquadPresetSlotUpdateManyWithoutHeroClassNestedInput
 }
 
 export type HeroClassUncheckedUpdateWithoutPickStatsInput = {
@@ -1112,6 +1264,7 @@ export type HeroClassUncheckedUpdateWithoutPickStatsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ratingEntries?: Prisma.RatingEntryUncheckedUpdateManyWithoutHeroClassNestedInput
   matchPicks?: Prisma.MatchPickUncheckedUpdateManyWithoutHeroClassNestedInput
+  presetSlots?: Prisma.SquadPresetSlotUncheckedUpdateManyWithoutHeroClassNestedInput
 }
 
 export type HeroClassCreateWithoutRatingEntriesInput = {
@@ -1138,6 +1291,7 @@ export type HeroClassCreateWithoutRatingEntriesInput = {
   updatedAt?: Date | string
   matchPicks?: Prisma.MatchPickCreateNestedManyWithoutHeroClassInput
   pickStats?: Prisma.HeroPickStatCreateNestedManyWithoutHeroClassInput
+  presetSlots?: Prisma.SquadPresetSlotCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassUncheckedCreateWithoutRatingEntriesInput = {
@@ -1164,6 +1318,7 @@ export type HeroClassUncheckedCreateWithoutRatingEntriesInput = {
   updatedAt?: Date | string
   matchPicks?: Prisma.MatchPickUncheckedCreateNestedManyWithoutHeroClassInput
   pickStats?: Prisma.HeroPickStatUncheckedCreateNestedManyWithoutHeroClassInput
+  presetSlots?: Prisma.SquadPresetSlotUncheckedCreateNestedManyWithoutHeroClassInput
 }
 
 export type HeroClassCreateOrConnectWithoutRatingEntriesInput = {
@@ -1206,6 +1361,7 @@ export type HeroClassUpdateWithoutRatingEntriesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matchPicks?: Prisma.MatchPickUpdateManyWithoutHeroClassNestedInput
   pickStats?: Prisma.HeroPickStatUpdateManyWithoutHeroClassNestedInput
+  presetSlots?: Prisma.SquadPresetSlotUpdateManyWithoutHeroClassNestedInput
 }
 
 export type HeroClassUncheckedUpdateWithoutRatingEntriesInput = {
@@ -1232,6 +1388,7 @@ export type HeroClassUncheckedUpdateWithoutRatingEntriesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matchPicks?: Prisma.MatchPickUncheckedUpdateManyWithoutHeroClassNestedInput
   pickStats?: Prisma.HeroPickStatUncheckedUpdateManyWithoutHeroClassNestedInput
+  presetSlots?: Prisma.SquadPresetSlotUncheckedUpdateManyWithoutHeroClassNestedInput
 }
 
 
@@ -1243,12 +1400,14 @@ export type HeroClassCountOutputType = {
   ratingEntries: number
   matchPicks: number
   pickStats: number
+  presetSlots: number
 }
 
 export type HeroClassCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ratingEntries?: boolean | HeroClassCountOutputTypeCountRatingEntriesArgs
   matchPicks?: boolean | HeroClassCountOutputTypeCountMatchPicksArgs
   pickStats?: boolean | HeroClassCountOutputTypeCountPickStatsArgs
+  presetSlots?: boolean | HeroClassCountOutputTypeCountPresetSlotsArgs
 }
 
 /**
@@ -1282,6 +1441,13 @@ export type HeroClassCountOutputTypeCountPickStatsArgs<ExtArgs extends runtime.T
   where?: Prisma.HeroPickStatWhereInput
 }
 
+/**
+ * HeroClassCountOutputType without action
+ */
+export type HeroClassCountOutputTypeCountPresetSlotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SquadPresetSlotWhereInput
+}
+
 
 export type HeroClassSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   code?: boolean
@@ -1308,6 +1474,7 @@ export type HeroClassSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   ratingEntries?: boolean | Prisma.HeroClass$ratingEntriesArgs<ExtArgs>
   matchPicks?: boolean | Prisma.HeroClass$matchPicksArgs<ExtArgs>
   pickStats?: boolean | Prisma.HeroClass$pickStatsArgs<ExtArgs>
+  presetSlots?: boolean | Prisma.HeroClass$presetSlotsArgs<ExtArgs>
   _count?: boolean | Prisma.HeroClassCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["heroClass"]>
 
@@ -1388,6 +1555,7 @@ export type HeroClassInclude<ExtArgs extends runtime.Types.Extensions.InternalAr
   ratingEntries?: boolean | Prisma.HeroClass$ratingEntriesArgs<ExtArgs>
   matchPicks?: boolean | Prisma.HeroClass$matchPicksArgs<ExtArgs>
   pickStats?: boolean | Prisma.HeroClass$pickStatsArgs<ExtArgs>
+  presetSlots?: boolean | Prisma.HeroClass$presetSlotsArgs<ExtArgs>
   _count?: boolean | Prisma.HeroClassCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type HeroClassIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1399,6 +1567,7 @@ export type $HeroClassPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     ratingEntries: Prisma.$RatingEntryPayload<ExtArgs>[]
     matchPicks: Prisma.$MatchPickPayload<ExtArgs>[]
     pickStats: Prisma.$HeroPickStatPayload<ExtArgs>[]
+    presetSlots: Prisma.$SquadPresetSlotPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     code: string
@@ -1831,6 +2000,7 @@ export interface Prisma__HeroClassClient<T, Null = never, ExtArgs extends runtim
   ratingEntries<T extends Prisma.HeroClass$ratingEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HeroClass$ratingEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RatingEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   matchPicks<T extends Prisma.HeroClass$matchPicksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HeroClass$matchPicksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MatchPickPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pickStats<T extends Prisma.HeroClass$pickStatsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HeroClass$pickStatsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HeroPickStatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  presetSlots<T extends Prisma.HeroClass$presetSlotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HeroClass$presetSlotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SquadPresetSlotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2338,6 +2508,30 @@ export type HeroClass$pickStatsArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.HeroPickStatScalarFieldEnum | Prisma.HeroPickStatScalarFieldEnum[]
+}
+
+/**
+ * HeroClass.presetSlots
+ */
+export type HeroClass$presetSlotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SquadPresetSlot
+   */
+  select?: Prisma.SquadPresetSlotSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SquadPresetSlot
+   */
+  omit?: Prisma.SquadPresetSlotOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SquadPresetSlotInclude<ExtArgs> | null
+  where?: Prisma.SquadPresetSlotWhereInput
+  orderBy?: Prisma.SquadPresetSlotOrderByWithRelationInput | Prisma.SquadPresetSlotOrderByWithRelationInput[]
+  cursor?: Prisma.SquadPresetSlotWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SquadPresetSlotScalarFieldEnum | Prisma.SquadPresetSlotScalarFieldEnum[]
 }
 
 /**

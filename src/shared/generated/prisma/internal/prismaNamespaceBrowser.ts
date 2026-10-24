@@ -57,6 +57,8 @@ export const ModelName = {
   OAuthAccount: 'OAuthAccount',
   Match: 'Match',
   MatchPick: 'MatchPick',
+  SquadPreset: 'SquadPreset',
+  SquadPresetSlot: 'SquadPresetSlot',
   HeroPickStat: 'HeroPickStat',
   RatingEntry: 'RatingEntry'
 } as const
@@ -175,10 +177,35 @@ export const MatchPickScalarFieldEnum = {
   heroClassCode: 'heroClassCode',
   row: 'row',
   pickOrder: 'pickOrder',
+  source: 'source',
   createdAt: 'createdAt'
 } as const
 
 export type MatchPickScalarFieldEnum = (typeof MatchPickScalarFieldEnum)[keyof typeof MatchPickScalarFieldEnum]
+
+
+export const SquadPresetScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  teamSize: 'teamSize',
+  playerId: 'playerId',
+  catalogCode: 'catalogCode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SquadPresetScalarFieldEnum = (typeof SquadPresetScalarFieldEnum)[keyof typeof SquadPresetScalarFieldEnum]
+
+
+export const SquadPresetSlotScalarFieldEnum = {
+  id: 'id',
+  presetId: 'presetId',
+  heroClassCode: 'heroClassCode',
+  row: 'row',
+  slotOrder: 'slotOrder'
+} as const
+
+export type SquadPresetSlotScalarFieldEnum = (typeof SquadPresetSlotScalarFieldEnum)[keyof typeof SquadPresetSlotScalarFieldEnum]
 
 
 export const HeroPickStatScalarFieldEnum = {

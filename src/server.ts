@@ -10,6 +10,7 @@ import { matchesController } from './modules/matches';
 import { matchesWsController } from './modules/matches/ws';
 import { newsController } from './modules/news';
 import { playersController } from './modules/players';
+import { presetsController } from './modules/presets';
 import { ratingController } from './modules/rating';
 import { isDev } from './utils/isDev';
 
@@ -52,4 +53,5 @@ export const app = new Elysia({
   .use(matchesController)
   .use(matchesWsController)
   .use(ratingController)
-  .use(newsController);
+  .use(newsController)
+  .use(presetsController);

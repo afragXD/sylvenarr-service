@@ -48,6 +48,16 @@ export type Match = Prisma.MatchModel
  */
 export type MatchPick = Prisma.MatchPickModel
 /**
+ * Model SquadPreset
+ * Пресет отряда: личный (playerId) или глобальный (playerId = null, только admin).
+ */
+export type SquadPreset = Prisma.SquadPresetModel
+/**
+ * Model SquadPresetSlot
+ * 
+ */
+export type SquadPresetSlot = Prisma.SquadPresetSlotModel
+/**
  * Model HeroPickStat
  * Счётчик выборов героя игроком (инкремент при финализации боя).
  */

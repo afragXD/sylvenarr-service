@@ -1,3 +1,5 @@
+export type DraftPickSource = 'draft' | 'preset';
+
 export type DraftPick = {
   readonly id: string;
   readonly playerId: string;
@@ -6,6 +8,7 @@ export type DraftPick = {
   readonly size: number;
   readonly row: number;
   readonly pickOrder: number;
+  readonly source: DraftPickSource;
 };
 
 export type DraftHeroRef = {

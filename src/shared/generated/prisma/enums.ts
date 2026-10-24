@@ -47,3 +47,11 @@ export const NewsCategory = {
 } as const
 
 export type NewsCategory = (typeof NewsCategory)[keyof typeof NewsCategory]
+
+
+export const MatchPickSource = {
+  draft: 'draft',
+  preset: 'preset'
+} as const
+
+export type MatchPickSource = (typeof MatchPickSource)[keyof typeof MatchPickSource]

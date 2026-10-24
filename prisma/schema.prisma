@@ -35,6 +35,12 @@ enum NewsCategory {
   fix
 }
 
+/// Источник пика в draft.
+enum MatchPickSource {
+  draft
+  preset
+}
+
 /// Класс героя из каталога (статы из legacy stats_dict).
 model HeroClass {
   code         String   @id
@@ -63,9 +69,10 @@ model HeroClass {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  ratingEntries RatingEntry[]
-  matchPicks    MatchPick[]
-  pickStats     HeroPickStat[]
+  ratingEntries   RatingEntry[]
+  matchPicks      MatchPick[]
+  pickStats       HeroPickStat[]
+  presetSlots     SquadPresetSlot[]
 }
 
 /// Игрок (OAuth и/или пароль).
@@ -89,6 +96,7 @@ model Player {
   matchPicks     MatchPick[]
   pickStats      HeroPickStat[]
   news           News[]
+  squadPresets   SquadPreset[]
 }
 
 /// Новость хроники разработки.
@@ -156,14 +164,15 @@ model Match {
 
 /// Пик героя в draft.
 model MatchPick {
-  id            String   @id @default(uuid()) @db.Uuid
-  matchId       String   @db.Uuid
-  playerId      String   @db.Uuid
+  id            String          @id @default(uuid()) @db.Uuid
+  matchId       String          @db.Uuid
+  playerId      String          @db.Uuid
   heroClassCode String
   /// 0 = передний ряд, 1 = задний.
   row           Int
   pickOrder     Int
-  createdAt     DateTime @default(now())
+  source        MatchPickSource @default(draft)
+  createdAt     DateTime        @default(now())
 
   match     Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
   player    Player    @relation(fields: [playerId], references: [id])
@@ -171,6 +180,40 @@ model MatchPick {
 
   @@index([matchId])
   @@index([playerId])
+}
+
+/// Пресет отряда: личный (playerId) или глобальный (playerId = null, только admin).
+model SquadPreset {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  /// Сумма size слотов (3–6).
+  teamSize    Int
+  /// null = глобальный пресет.
+  playerId    String?  @db.Uuid
+  /// Стабильный код seed-глобальных; у личных null.
+  catalogCode String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  player Player?           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  slots  SquadPresetSlot[]
+
+  @@index([playerId, teamSize])
+}
+
+model SquadPresetSlot {
+  id            String @id @default(uuid()) @db.Uuid
+  presetId      String @db.Uuid
+  heroClassCode String
+  /// 0 = передний ряд, 1 = задний.
+  row           Int
+  slotOrder     Int
+
+  preset    SquadPreset @relation(fields: [presetId], references: [id], onDelete: Cascade)
+  heroClass HeroClass   @relation(fields: [heroClassCode], references: [code])
+
+  @@index([presetId])
+  @@unique([presetId, slotOrder])
 }
 
 /// Счётчик выборов героя игроком (инкремент при финализации боя).

@@ -20,6 +20,7 @@ const pick = (
   size: overrides.size,
   row: overrides.row,
   pickOrder: overrides.pickOrder ?? 1,
+  source: overrides.source ?? 'draft',
 });
 
 describe('draft rules', () => {

@@ -54,21 +54,52 @@ export const matchesController = new Elysia({ prefix: '/matches', tags: ['Matche
   )
   .get(
     '/:id',
-    async ({ params, status }) => {
-      const match = await MatchesService.findById(params.id);
+    async ({ params, player, status }) => {
+      const match = await MatchesService.findById(params.id, player.id);
       if (!match) {
         return status(404, { message: 'Матч не найден' });
       }
       return match;
     },
     {
+      requireAuth: true,
       params: MatchesModel.idParams,
       response: {
         200: MatchesModel.match,
+        401: MatchesModel.errorResponse,
         404: MatchesModel.errorResponse,
       },
       detail: {
         summary: 'Получить матч по id (включая draft state)',
+      },
+    }
+  )
+  .post(
+    '/:id/draft/preset',
+    async ({ params, body, player, status }) => {
+      const result = await MatchesService.draftPreset({
+        matchId: params.id,
+        playerId: player.id,
+        presetId: body.presetId,
+      });
+      if (!result.ok) {
+        return status(result.status, { message: result.message });
+      }
+      return result.match;
+    },
+    {
+      requireAuth: true,
+      params: MatchesModel.idParams,
+      body: MatchesModel.presetBody,
+      response: {
+        200: MatchesModel.match,
+        400: MatchesModel.errorResponse,
+        401: MatchesModel.errorResponse,
+        403: MatchesModel.errorResponse,
+        404: MatchesModel.errorResponse,
+      },
+      detail: {
+        summary: 'Применить пресет отряда в draft',
       },
     }
   )

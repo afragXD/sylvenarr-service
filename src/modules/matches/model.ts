@@ -27,8 +27,16 @@ export namespace MatchesModel {
     size: t.Number(),
     row: t.Number(),
     pickOrder: t.Number(),
+    source: t.Union([t.Literal('draft'), t.Literal('preset')]),
   });
   export type draftPick = typeof draftPick.static;
+
+  export const draftEntry = t.Union([
+    t.Literal('empty'),
+    t.Literal('draft'),
+    t.Literal('preset'),
+  ]);
+  export type draftEntry = typeof draftEntry.static;
 
   export const draftState = t.Object({
     turnPlayerId: t.Nullable(t.String()),
@@ -37,6 +45,8 @@ export namespace MatchesModel {
     hostSize: t.Number(),
     guestSize: t.Number(),
     initialTeamSize: t.Number(),
+    hostEntry: draftEntry,
+    guestEntry: draftEntry,
   });
   export type draftState = typeof draftState.static;
 
@@ -220,6 +230,11 @@ export namespace MatchesModel {
     row: t.Number({ minimum: 0, maximum: 1 }),
   });
   export type pickBody = typeof pickBody.static;
+
+  export const presetBody = t.Object({
+    presetId: t.String({ minLength: 1 }),
+  });
+  export type presetBody = typeof presetBody.static;
 
   export const randomBody = t.Object({
     row: t.Optional(t.Number({ minimum: 0, maximum: 1 })),

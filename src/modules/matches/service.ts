@@ -30,6 +30,7 @@ import {
 } from '../../game/matchRules';
 import { prisma } from '../../shared/db';
 import { createInviteCode } from '../../utils/create-invite-code';
+import { PresetsService } from '../presets/service';
 import { computePtsChange } from '../rating/pts';
 import type { MatchesModel } from './model';
 
@@ -39,6 +40,7 @@ type PickRow = {
   heroClassCode: string;
   row: number;
   pickOrder: number;
+  source: 'draft' | 'preset';
   heroClass: { displayName: string; size: number };
 };
 
@@ -81,10 +83,54 @@ const matchInclude = {
       heroClassCode: true,
       row: true,
       pickOrder: true,
+      source: true,
       heroClass: { select: { displayName: true, size: true } },
     },
   },
 };
+
+function draftEntryOf(
+  picks: ReadonlyArray<DraftPick>,
+  playerId: string
+): MatchesModel.draftEntry {
+  const own = picks.filter((pick) => pick.playerId === playerId);
+  if (own.length === 0) {
+    return 'empty';
+  }
+  if (own.some((pick) => pick.source === 'preset')) {
+    return 'preset';
+  }
+  return 'draft';
+}
+
+/**
+ * Скрывает состав пресетного игрока от соперника на этапе drafting.
+ */
+function redactPicksForViewer(
+  picks: ReadonlyArray<DraftPick>,
+  status: MatchesModel.matchStatus,
+  viewerId: string | null | undefined
+): DraftPick[] {
+  if (status !== 'drafting') {
+    return [...picks];
+  }
+  const presetOwners = new Set(
+    picks.filter((pick) => pick.source === 'preset').map((pick) => pick.playerId)
+  );
+  return picks.map((pick) => {
+    if (!presetOwners.has(pick.playerId)) {
+      return pick;
+    }
+    if (viewerId && pick.playerId === viewerId) {
+      return pick;
+    }
+    return {
+      ...pick,
+      heroClassCode: '',
+      displayName: 'Скрыто',
+    };
+  });
+}
 
 export abstract class MatchesService {
   /**
@@ -99,14 +145,21 @@ export abstract class MatchesService {
       size: pick.heroClass.size,
       row: pick.row,
       pickOrder: pick.pickOrder,
+      source: pick.source ?? 'draft',
     }));
   }
 
   /**
    * Преобразует матч из БД в DTO с draft (+ battle при наличии).
+   * viewerId — для скрытия чужого пресета на этапе drafting.
    */
-  static mapMatch(row: MatchRow, battle: BattleSummary | null = null): MatchesModel.match {
+  static mapMatch(
+    row: MatchRow,
+    battle: BattleSummary | null = null,
+    viewerId: string | null = null
+  ): MatchesModel.match {
     const picks = MatchesService.toDraftPicks(row.picks);
+    const visible = redactPicksForViewer(picks, row.status, viewerId);
     const rules = rulesOf(row);
     const limits = draftLimitsOf(row);
     const guestId = row.guestId ?? '';
@@ -129,11 +182,15 @@ export abstract class MatchesService {
       rules,
       draft: {
         turnPlayerId,
-        hostPicks: picks.filter((pick) => pick.playerId === row.hostId),
-        guestPicks: guestId ? picks.filter((pick) => pick.playerId === guestId) : [],
+        hostPicks: visible.filter((pick) => pick.playerId === row.hostId),
+        guestPicks: guestId
+          ? visible.filter((pick) => pick.playerId === guestId)
+          : [],
         hostSize,
         guestSize,
         initialTeamSize: rules.initialTeamSize,
+        hostEntry: draftEntryOf(picks, row.hostId),
+        guestEntry: guestId ? draftEntryOf(picks, guestId) : 'empty',
       },
       battle,
     };
@@ -142,7 +199,10 @@ export abstract class MatchesService {
   /**
    * DTO матча с подгрузкой battle state из store.
    */
-  static async mapMatchWithBattle(row: MatchRow): Promise<MatchesModel.match> {
+  static async mapMatchWithBattle(
+    row: MatchRow,
+    viewerId: string | null = null
+  ): Promise<MatchesModel.match> {
     let battle: BattleSummary | null = null;
     if (row.status === 'fighting' || row.status === 'finished') {
       const state = await getBattleStore().get(row.id);
@@ -150,7 +210,7 @@ export abstract class MatchesService {
         battle = toBattleSummary(state);
       }
     }
-    return MatchesService.mapMatch(row, battle);
+    return MatchesService.mapMatch(row, battle, viewerId);
   }
 
   /**
@@ -176,7 +236,7 @@ export abstract class MatchesService {
       },
       include: matchInclude,
     });
-    return { ok: true, match: MatchesService.mapMatch(row) };
+    return { ok: true, match: MatchesService.mapMatch(row, null, hostId) };
   }
 
   /**
@@ -204,7 +264,10 @@ export abstract class MatchesService {
       return { ok: false, message: 'Матч уже заполнен' };
     }
     if (existing.guestId === input.guestId) {
-      return { ok: true, match: MatchesService.mapMatch(existing) };
+      return {
+        ok: true,
+        match: MatchesService.mapMatch(existing, null, input.guestId),
+      };
     }
     if (existing.status !== 'waiting') {
       return { ok: false, message: 'К этому матчу уже нельзя присоединиться' };
@@ -217,13 +280,16 @@ export abstract class MatchesService {
       },
       include: matchInclude,
     });
-    return { ok: true, match: MatchesService.mapMatch(row) };
+    return { ok: true, match: MatchesService.mapMatch(row, null, input.guestId) };
   }
 
   /**
-   * Возвращает матч по id.
+   * Возвращает матч по id (viewerId — для редакции чужого пресета).
    */
-  static async findById(id: string): Promise<MatchesModel.match | null> {
+  static async findById(
+    id: string,
+    viewerId: string | null = null
+  ): Promise<MatchesModel.match | null> {
     const row = await prisma.match.findUnique({
       where: { id },
       include: matchInclude,
@@ -231,7 +297,7 @@ export abstract class MatchesService {
     if (!row) {
       return null;
     }
-    return MatchesService.mapMatchWithBattle(row);
+    return MatchesService.mapMatchWithBattle(row, viewerId);
   }
 
   /**
@@ -268,6 +334,9 @@ export abstract class MatchesService {
     }
 
     const picks = MatchesService.toDraftPicks(existing.picks);
+    if (picks.some((pick) => pick.playerId === input.playerId && pick.source === 'preset')) {
+      return { ok: false, message: 'Отряд уже зафиксирован пресетом', status: 400 };
+    }
     const limits = draftLimitsOf(existing);
     const turnPlayerId = resolveTurnPlayerId(
       picks,
@@ -306,6 +375,7 @@ export abstract class MatchesService {
         heroClassCode: hero.code,
         row: input.row,
         pickOrder: nextOrder,
+        source: 'draft',
       },
     });
 
@@ -319,6 +389,7 @@ export abstract class MatchesService {
         size: hero.size,
         row: input.row,
         pickOrder: nextOrder,
+        source: 'draft',
       },
     ];
     const drafted = isDraftComplete(
@@ -340,7 +411,148 @@ export abstract class MatchesService {
       where: { id: existing.id },
       include: matchInclude,
     });
-    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+    return {
+      ok: true,
+      match: await MatchesService.mapMatchWithBattle(row, input.playerId),
+    };
+  }
+
+  /**
+   * Применить пресет отряда целиком (свой или глобальный).
+   */
+  static async draftPreset(input: {
+    readonly matchId: string;
+    readonly playerId: string;
+    readonly presetId: string;
+  }): Promise<
+    | { ok: true; match: MatchesModel.match }
+    | { ok: false; message: string; status: 400 | 403 | 404 }
+  > {
+    const existing = await prisma.match.findUnique({
+      where: { id: input.matchId },
+      include: matchInclude,
+    });
+    if (!existing) {
+      return { ok: false, message: 'Матч не найден', status: 404 };
+    }
+    if (!MatchesService.isParticipant(existing, input.playerId)) {
+      return { ok: false, message: 'Вы не участник этого матча', status: 403 };
+    }
+    if (existing.status !== 'drafting' || !existing.guestId) {
+      return { ok: false, message: 'Сейчас нельзя выбирать героев', status: 400 };
+    }
+
+    const picks = MatchesService.toDraftPicks(existing.picks);
+    if (picks.some((pick) => pick.playerId === input.playerId)) {
+      return {
+        ok: false,
+        message: 'Пресет можно взять только с пустым отрядом',
+        status: 400,
+      };
+    }
+
+    const rules = rulesOf(existing);
+    if (rules.initialTeamSize < 3) {
+      return {
+        ok: false,
+        message: 'Пресеты доступны при размере отряда от 3',
+        status: 400,
+      };
+    }
+
+    const preset = await PresetsService.getUsableByPlayer(input.presetId, input.playerId);
+    if (!preset) {
+      return { ok: false, message: 'Пресет не найден', status: 404 };
+    }
+    if (preset.teamSize !== rules.initialTeamSize) {
+      return {
+        ok: false,
+        message: `Пресет на ${preset.teamSize}, в матче нужно ${rules.initialTeamSize}`,
+        status: 400,
+      };
+    }
+
+    const limits = draftLimitsOf(existing);
+    let working = [...picks];
+    const toCreate: Array<{
+      heroClassCode: string;
+      row: number;
+      pickOrder: number;
+    }> = [];
+    let nextOrder = existing.picks.length + 1;
+
+    for (const slot of [...preset.slots].sort((a, b) => a.slotOrder - b.slotOrder)) {
+      const hero = {
+        code: slot.heroClassCode,
+        displayName: slot.heroClass.displayName,
+        size: slot.heroClass.size,
+        isPlayable: true,
+      };
+      const validation = validatePick({
+        picks: working,
+        playerId: input.playerId,
+        hero,
+        row: slot.row,
+        limits,
+      });
+      if (!validation.ok) {
+        return { ok: false, message: validation.message, status: 400 };
+      }
+      working = [
+        ...working,
+        {
+          id: `pending-${nextOrder}`,
+          playerId: input.playerId,
+          heroClassCode: hero.code,
+          displayName: hero.displayName,
+          size: hero.size,
+          row: slot.row,
+          pickOrder: nextOrder,
+          source: 'preset',
+        },
+      ];
+      toCreate.push({
+        heroClassCode: hero.code,
+        row: slot.row,
+        pickOrder: nextOrder,
+      });
+      nextOrder += 1;
+    }
+
+    await prisma.matchPick.createMany({
+      data: toCreate.map((item) => ({
+        matchId: existing.id,
+        playerId: input.playerId,
+        heroClassCode: item.heroClassCode,
+        row: item.row,
+        pickOrder: item.pickOrder,
+        source: 'preset' as const,
+      })),
+    });
+
+    const drafted = isDraftComplete(
+      working,
+      existing.hostId,
+      existing.guestId,
+      limits
+    );
+    if (drafted && existing.guestId) {
+      await MatchesService.startBattle({
+        matchId: existing.id,
+        hostId: existing.hostId,
+        guestId: existing.guestId,
+        rules,
+      });
+    }
+
+    const row = await prisma.match.findUniqueOrThrow({
+      where: { id: existing.id },
+      include: matchInclude,
+    });
+    return {
+      ok: true,
+      match: await MatchesService.mapMatchWithBattle(row, input.playerId),
+    };
   }
 
   /**
@@ -452,7 +664,10 @@ export abstract class MatchesService {
       return { ok: false, message: 'Пик не найден', status: 404 };
     }
     if (target.row === input.row) {
-      return { ok: true, match: await MatchesService.mapMatchWithBattle(existing) };
+      return {
+        ok: true,
+        match: await MatchesService.mapMatchWithBattle(existing, input.playerId),
+      };
     }
 
     await prisma.matchPick.update({
@@ -464,7 +679,10 @@ export abstract class MatchesService {
       where: { id: existing.id },
       include: matchInclude,
     });
-    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+    return {
+      ok: true,
+      match: await MatchesService.mapMatchWithBattle(row, input.playerId),
+    };
   }
 
   /**
@@ -493,6 +711,9 @@ export abstract class MatchesService {
     }
 
     const picks = MatchesService.toDraftPicks(existing.picks);
+    if (picks.some((pick) => pick.playerId === input.playerId && pick.source === 'preset')) {
+      return { ok: false, message: 'Отряд уже зафиксирован пресетом', status: 400 };
+    }
     const limits = draftLimitsOf(existing);
     const turnPlayerId = resolveTurnPlayerId(
       picks,
@@ -548,7 +769,7 @@ export abstract class MatchesService {
       return { ok: false, message: 'Отменить матч может только хост', status: 403 };
     }
     if (existing.status === 'cancelled') {
-      return { ok: true, match: await MatchesService.mapMatchWithBattle(existing) };
+      return { ok: true, match: await MatchesService.mapMatchWithBattle(existing, input.playerId) };
     }
     if (existing.status !== 'waiting' && existing.status !== 'drafting') {
       return { ok: false, message: 'Матч нельзя отменить в текущем статусе', status: 400 };
@@ -558,7 +779,7 @@ export abstract class MatchesService {
       data: { status: 'cancelled' },
       include: matchInclude,
     });
-    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row, input.playerId) };
   }
 
   /**
@@ -609,7 +830,7 @@ export abstract class MatchesService {
       where: { id: existing.id },
       include: matchInclude,
     });
-    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row, input.playerId) };
   }
 
   /**
@@ -640,7 +861,7 @@ export abstract class MatchesService {
         where: { id: existing.id },
         include: matchInclude,
       });
-      return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+      return { ok: true, match: await MatchesService.mapMatchWithBattle(row, input.playerId) };
     }
 
     state.drawOfferByPlayerId = input.playerId;
@@ -652,7 +873,7 @@ export abstract class MatchesService {
       where: { id: existing.id },
       include: matchInclude,
     });
-    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row, input.playerId) };
   }
 
   /**
@@ -693,7 +914,7 @@ export abstract class MatchesService {
       where: { id: existing.id },
       include: matchInclude,
     });
-    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row, input.playerId) };
   }
 
   /**
@@ -728,7 +949,7 @@ export abstract class MatchesService {
       where: { id: existing.id },
       include: matchInclude,
     });
-    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row, input.playerId) };
   }
 
   private static async loadFightingBattle(input: {
@@ -838,7 +1059,7 @@ export abstract class MatchesService {
       where: { id: existing.id },
       include: matchInclude,
     });
-    return { ok: true, match: await MatchesService.mapMatchWithBattle(row) };
+    return { ok: true, match: await MatchesService.mapMatchWithBattle(row, input.playerId) };
   }
 
   /**

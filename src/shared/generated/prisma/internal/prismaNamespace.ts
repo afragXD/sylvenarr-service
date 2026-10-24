@@ -390,6 +390,8 @@ export const ModelName = {
   OAuthAccount: 'OAuthAccount',
   Match: 'Match',
   MatchPick: 'MatchPick',
+  SquadPreset: 'SquadPreset',
+  SquadPresetSlot: 'SquadPresetSlot',
   HeroPickStat: 'HeroPickStat',
   RatingEntry: 'RatingEntry'
 } as const
@@ -407,7 +409,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "heroClass" | "player" | "news" | "oAuthAccount" | "match" | "matchPick" | "heroPickStat" | "ratingEntry"
+    modelProps: "heroClass" | "player" | "news" | "oAuthAccount" | "match" | "matchPick" | "squadPreset" | "squadPresetSlot" | "heroPickStat" | "ratingEntry"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -855,6 +857,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SquadPreset: {
+      payload: Prisma.$SquadPresetPayload<ExtArgs>
+      fields: Prisma.SquadPresetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SquadPresetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SquadPresetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetPayload>
+        }
+        findFirst: {
+          args: Prisma.SquadPresetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SquadPresetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetPayload>
+        }
+        findMany: {
+          args: Prisma.SquadPresetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetPayload>[]
+        }
+        create: {
+          args: Prisma.SquadPresetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetPayload>
+        }
+        createMany: {
+          args: Prisma.SquadPresetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SquadPresetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetPayload>[]
+        }
+        delete: {
+          args: Prisma.SquadPresetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetPayload>
+        }
+        update: {
+          args: Prisma.SquadPresetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetPayload>
+        }
+        deleteMany: {
+          args: Prisma.SquadPresetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SquadPresetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SquadPresetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetPayload>[]
+        }
+        upsert: {
+          args: Prisma.SquadPresetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetPayload>
+        }
+        aggregate: {
+          args: Prisma.SquadPresetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSquadPreset>
+        }
+        groupBy: {
+          args: Prisma.SquadPresetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SquadPresetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SquadPresetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SquadPresetCountAggregateOutputType> | number
+        }
+      }
+    }
+    SquadPresetSlot: {
+      payload: Prisma.$SquadPresetSlotPayload<ExtArgs>
+      fields: Prisma.SquadPresetSlotFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SquadPresetSlotFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetSlotPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SquadPresetSlotFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetSlotPayload>
+        }
+        findFirst: {
+          args: Prisma.SquadPresetSlotFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetSlotPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SquadPresetSlotFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetSlotPayload>
+        }
+        findMany: {
+          args: Prisma.SquadPresetSlotFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetSlotPayload>[]
+        }
+        create: {
+          args: Prisma.SquadPresetSlotCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetSlotPayload>
+        }
+        createMany: {
+          args: Prisma.SquadPresetSlotCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SquadPresetSlotCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetSlotPayload>[]
+        }
+        delete: {
+          args: Prisma.SquadPresetSlotDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetSlotPayload>
+        }
+        update: {
+          args: Prisma.SquadPresetSlotUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetSlotPayload>
+        }
+        deleteMany: {
+          args: Prisma.SquadPresetSlotDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SquadPresetSlotUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SquadPresetSlotUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetSlotPayload>[]
+        }
+        upsert: {
+          args: Prisma.SquadPresetSlotUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SquadPresetSlotPayload>
+        }
+        aggregate: {
+          args: Prisma.SquadPresetSlotAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSquadPresetSlot>
+        }
+        groupBy: {
+          args: Prisma.SquadPresetSlotGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SquadPresetSlotGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SquadPresetSlotCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SquadPresetSlotCountAggregateOutputType> | number
+        }
+      }
+    }
     HeroPickStat: {
       payload: Prisma.$HeroPickStatPayload<ExtArgs>
       fields: Prisma.HeroPickStatFieldRefs
@@ -1140,10 +1290,35 @@ export const MatchPickScalarFieldEnum = {
   heroClassCode: 'heroClassCode',
   row: 'row',
   pickOrder: 'pickOrder',
+  source: 'source',
   createdAt: 'createdAt'
 } as const
 
 export type MatchPickScalarFieldEnum = (typeof MatchPickScalarFieldEnum)[keyof typeof MatchPickScalarFieldEnum]
+
+
+export const SquadPresetScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  teamSize: 'teamSize',
+  playerId: 'playerId',
+  catalogCode: 'catalogCode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SquadPresetScalarFieldEnum = (typeof SquadPresetScalarFieldEnum)[keyof typeof SquadPresetScalarFieldEnum]
+
+
+export const SquadPresetSlotScalarFieldEnum = {
+  id: 'id',
+  presetId: 'presetId',
+  heroClassCode: 'heroClassCode',
+  row: 'row',
+  slotOrder: 'slotOrder'
+} as const
+
+export type SquadPresetSlotScalarFieldEnum = (typeof SquadPresetSlotScalarFieldEnum)[keyof typeof SquadPresetSlotScalarFieldEnum]
 
 
 export const HeroPickStatScalarFieldEnum = {
@@ -1324,6 +1499,20 @@ export type ListEnumMatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
+ * Reference to a field of type 'MatchPickSource'
+ */
+export type EnumMatchPickSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MatchPickSource'>
+    
+
+
+/**
+ * Reference to a field of type 'MatchPickSource[]'
+ */
+export type ListEnumMatchPickSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MatchPickSource[]'>
+    
+
+
+/**
  * Reference to a field of type 'RatingResult'
  */
 export type EnumRatingResultFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RatingResult'>
@@ -1451,6 +1640,8 @@ export type GlobalOmitConfig = {
   oAuthAccount?: Prisma.OAuthAccountOmit
   match?: Prisma.MatchOmit
   matchPick?: Prisma.MatchPickOmit
+  squadPreset?: Prisma.SquadPresetOmit
+  squadPresetSlot?: Prisma.SquadPresetSlotOmit
   heroPickStat?: Prisma.HeroPickStatOmit
   ratingEntry?: Prisma.RatingEntryOmit
 }
