@@ -1,6 +1,13 @@
 import { t } from 'elysia';
 
 export namespace HeroesModel {
+  export const heroRoleTag = t.Object({
+    id: t.String(),
+    label: t.String(),
+    mood: t.String(),
+  });
+  export type heroRoleTag = typeof heroRoleTag.static;
+
   export const heroClass = t.Object({
     code: t.String(),
     displayName: t.String(),
@@ -21,6 +28,7 @@ export namespace HeroesModel {
     size: t.Number(),
     isPlayable: t.Boolean(),
     sortOrder: t.Number(),
+    tags: t.Array(heroRoleTag),
   });
   export type heroClass = typeof heroClass.static;
 

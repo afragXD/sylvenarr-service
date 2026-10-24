@@ -385,6 +385,8 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   HeroClass: 'HeroClass',
+  HeroRoleTag: 'HeroRoleTag',
+  HeroClassRoleTag: 'HeroClassRoleTag',
   Player: 'Player',
   News: 'News',
   OAuthAccount: 'OAuthAccount',
@@ -409,7 +411,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "heroClass" | "player" | "news" | "oAuthAccount" | "match" | "matchPick" | "squadPreset" | "squadPresetSlot" | "heroPickStat" | "ratingEntry"
+    modelProps: "heroClass" | "heroRoleTag" | "heroClassRoleTag" | "player" | "news" | "oAuthAccount" | "match" | "matchPick" | "squadPreset" | "squadPresetSlot" | "heroPickStat" | "ratingEntry"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -484,6 +486,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.HeroClassCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.HeroClassCountAggregateOutputType> | number
+        }
+      }
+    }
+    HeroRoleTag: {
+      payload: Prisma.$HeroRoleTagPayload<ExtArgs>
+      fields: Prisma.HeroRoleTagFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HeroRoleTagFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroRoleTagPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HeroRoleTagFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroRoleTagPayload>
+        }
+        findFirst: {
+          args: Prisma.HeroRoleTagFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroRoleTagPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HeroRoleTagFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroRoleTagPayload>
+        }
+        findMany: {
+          args: Prisma.HeroRoleTagFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroRoleTagPayload>[]
+        }
+        create: {
+          args: Prisma.HeroRoleTagCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroRoleTagPayload>
+        }
+        createMany: {
+          args: Prisma.HeroRoleTagCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HeroRoleTagCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroRoleTagPayload>[]
+        }
+        delete: {
+          args: Prisma.HeroRoleTagDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroRoleTagPayload>
+        }
+        update: {
+          args: Prisma.HeroRoleTagUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroRoleTagPayload>
+        }
+        deleteMany: {
+          args: Prisma.HeroRoleTagDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HeroRoleTagUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HeroRoleTagUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroRoleTagPayload>[]
+        }
+        upsert: {
+          args: Prisma.HeroRoleTagUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroRoleTagPayload>
+        }
+        aggregate: {
+          args: Prisma.HeroRoleTagAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHeroRoleTag>
+        }
+        groupBy: {
+          args: Prisma.HeroRoleTagGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HeroRoleTagGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HeroRoleTagCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HeroRoleTagCountAggregateOutputType> | number
+        }
+      }
+    }
+    HeroClassRoleTag: {
+      payload: Prisma.$HeroClassRoleTagPayload<ExtArgs>
+      fields: Prisma.HeroClassRoleTagFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HeroClassRoleTagFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroClassRoleTagPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HeroClassRoleTagFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroClassRoleTagPayload>
+        }
+        findFirst: {
+          args: Prisma.HeroClassRoleTagFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroClassRoleTagPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HeroClassRoleTagFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroClassRoleTagPayload>
+        }
+        findMany: {
+          args: Prisma.HeroClassRoleTagFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroClassRoleTagPayload>[]
+        }
+        create: {
+          args: Prisma.HeroClassRoleTagCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroClassRoleTagPayload>
+        }
+        createMany: {
+          args: Prisma.HeroClassRoleTagCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HeroClassRoleTagCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroClassRoleTagPayload>[]
+        }
+        delete: {
+          args: Prisma.HeroClassRoleTagDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroClassRoleTagPayload>
+        }
+        update: {
+          args: Prisma.HeroClassRoleTagUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroClassRoleTagPayload>
+        }
+        deleteMany: {
+          args: Prisma.HeroClassRoleTagDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HeroClassRoleTagUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HeroClassRoleTagUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroClassRoleTagPayload>[]
+        }
+        upsert: {
+          args: Prisma.HeroClassRoleTagUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroClassRoleTagPayload>
+        }
+        aggregate: {
+          args: Prisma.HeroClassRoleTagAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHeroClassRoleTag>
+        }
+        groupBy: {
+          args: Prisma.HeroClassRoleTagGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HeroClassRoleTagGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HeroClassRoleTagCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HeroClassRoleTagCountAggregateOutputType> | number
         }
       }
     }
@@ -1219,6 +1369,27 @@ export const HeroClassScalarFieldEnum = {
 export type HeroClassScalarFieldEnum = (typeof HeroClassScalarFieldEnum)[keyof typeof HeroClassScalarFieldEnum]
 
 
+export const HeroRoleTagScalarFieldEnum = {
+  id: 'id',
+  label: 'label',
+  mood: 'mood',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HeroRoleTagScalarFieldEnum = (typeof HeroRoleTagScalarFieldEnum)[keyof typeof HeroRoleTagScalarFieldEnum]
+
+
+export const HeroClassRoleTagScalarFieldEnum = {
+  heroClassCode: 'heroClassCode',
+  tagId: 'tagId',
+  sortOrder: 'sortOrder'
+} as const
+
+export type HeroClassRoleTagScalarFieldEnum = (typeof HeroClassRoleTagScalarFieldEnum)[keyof typeof HeroClassRoleTagScalarFieldEnum]
+
+
 export const PlayerScalarFieldEnum = {
   id: 'id',
   displayName: 'displayName',
@@ -1635,6 +1806,8 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   heroClass?: Prisma.HeroClassOmit
+  heroRoleTag?: Prisma.HeroRoleTagOmit
+  heroClassRoleTag?: Prisma.HeroClassRoleTagOmit
   player?: Prisma.PlayerOmit
   news?: Prisma.NewsOmit
   oAuthAccount?: Prisma.OAuthAccountOmit

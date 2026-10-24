@@ -1,6 +1,71 @@
 import { prisma } from '../../shared/db';
 import type { HeroesModel } from './model';
 
+const heroClassSelect = {
+  code: true,
+  displayName: true,
+  description: true,
+  roleSummary: true,
+  health: true,
+  damage: true,
+  armor: true,
+  initiative: true,
+  dodge: true,
+  luck: true,
+  morale: true,
+  mana: true,
+  maxMana: true,
+  power: true,
+  gold: true,
+  accuracy: true,
+  size: true,
+  isPlayable: true,
+  sortOrder: true,
+  roleTags: {
+    orderBy: { sortOrder: 'asc' as const },
+    select: {
+      tag: {
+        select: {
+          id: true,
+          label: true,
+          mood: true,
+        },
+      },
+    },
+  },
+} as const;
+
+type HeroRow = {
+  code: string;
+  displayName: string;
+  description: string;
+  roleSummary: string;
+  health: number;
+  damage: number;
+  armor: number;
+  initiative: number;
+  dodge: number;
+  luck: number;
+  morale: number;
+  mana: number;
+  maxMana: number;
+  power: number;
+  gold: number;
+  accuracy: number;
+  size: number;
+  isPlayable: boolean;
+  sortOrder: number;
+  roleTags: Array<{ tag: HeroesModel.heroRoleTag }>;
+};
+
+function mapHero(row: HeroRow): HeroesModel.heroClass {
+  const { roleTags, ...rest } = row;
+  return {
+    ...rest,
+    tags: roleTags.map((link) => link.tag),
+  };
+}
+
 export abstract class HeroesService {
   /**
    * Возвращает список классов героев.
@@ -9,30 +74,11 @@ export abstract class HeroesService {
     const playableOnly = query.playableOnly ?? true;
     const items = await prisma.heroClass.findMany({
       where: playableOnly ? { isPlayable: true } : undefined,
-      select: {
-        code: true,
-        displayName: true,
-        description: true,
-        roleSummary: true,
-        health: true,
-        damage: true,
-        armor: true,
-        initiative: true,
-        dodge: true,
-        luck: true,
-        morale: true,
-        mana: true,
-        maxMana: true,
-        power: true,
-        gold: true,
-        accuracy: true,
-        size: true,
-        isPlayable: true,
-        sortOrder: true,
-      },
+      select: heroClassSelect,
     });
-    items.sort((a, b) => a.displayName.localeCompare(b.displayName, 'ru'));
-    return { items };
+    const mapped = items.map(mapHero);
+    mapped.sort((a, b) => a.displayName.localeCompare(b.displayName, 'ru'));
+    return { items: mapped };
   }
 
   /**
@@ -67,29 +113,10 @@ export abstract class HeroesService {
    * Возвращает класс героя по коду или null.
    */
   static async findByCode(code: string): Promise<HeroesModel.heroClass | null> {
-    return prisma.heroClass.findUnique({
+    const row = await prisma.heroClass.findUnique({
       where: { code },
-      select: {
-        code: true,
-        displayName: true,
-        description: true,
-        roleSummary: true,
-        health: true,
-        damage: true,
-        armor: true,
-        initiative: true,
-        dodge: true,
-        luck: true,
-        morale: true,
-        mana: true,
-        maxMana: true,
-        power: true,
-        gold: true,
-        accuracy: true,
-        size: true,
-        isPlayable: true,
-        sortOrder: true,
-      },
+      select: heroClassSelect,
     });
+    return row ? mapHero(row) : null;
   }
 }

@@ -3,6 +3,10 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/shared/generated/prisma/client';
 import { heroSeeds } from './seed-data/heroes';
 import {
+  heroClassRoleTagMap,
+  heroRoleTagSeeds,
+} from './seed-data/hero-role-tags';
+import {
   globalSquadPresetSeeds,
   retiredSquadPresetCatalogCodes,
 } from './seed-data/squad-presets';
@@ -38,6 +42,58 @@ async function main(): Promise<void> {
     });
   }
   console.log(`Seed: upsert ${heroSeeds.length} hero classes`);
+
+  for (const tag of heroRoleTagSeeds) {
+    await prisma.heroRoleTag.upsert({
+      where: { id: tag.id },
+      create: { ...tag },
+      update: {
+        label: tag.label,
+        mood: tag.mood,
+        sortOrder: tag.sortOrder,
+      },
+    });
+  }
+  console.log(`Seed: upsert ${heroRoleTagSeeds.length} hero role tags`);
+
+  const linkRows: Array<{ heroClassCode: string; tagId: string; sortOrder: number }> = [];
+  for (const [heroClassCode, tagIds] of Object.entries(heroClassRoleTagMap)) {
+    tagIds.forEach((tagId, index) => {
+      linkRows.push({ heroClassCode, tagId, sortOrder: index });
+    });
+  }
+  for (const row of linkRows) {
+    await prisma.heroClassRoleTag.upsert({
+      where: {
+        heroClassCode_tagId: {
+          heroClassCode: row.heroClassCode,
+          tagId: row.tagId,
+        },
+      },
+      create: row,
+      update: { sortOrder: row.sortOrder },
+    });
+  }
+  const knownHeroCodes = Object.keys(heroClassRoleTagMap);
+  const desiredKeys = new Set(linkRows.map((row) => `${row.heroClassCode}:${row.tagId}`));
+  const existingLinks = await prisma.heroClassRoleTag.findMany({
+    where: { heroClassCode: { in: knownHeroCodes } },
+    select: { heroClassCode: true, tagId: true },
+  });
+  const stale = existingLinks.filter(
+    (link) => !desiredKeys.has(`${link.heroClassCode}:${link.tagId}`),
+  );
+  if (stale.length > 0) {
+    await prisma.heroClassRoleTag.deleteMany({
+      where: {
+        OR: stale.map((link) => ({
+          heroClassCode: link.heroClassCode,
+          tagId: link.tagId,
+        })),
+      },
+    });
+  }
+  console.log(`Seed: sync ${linkRows.length} hero–role-tag links`);
 
   if (retiredSquadPresetCatalogCodes.length > 0) {
     const retired = await prisma.squadPreset.deleteMany({

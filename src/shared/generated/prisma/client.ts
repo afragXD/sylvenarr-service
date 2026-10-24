@@ -45,6 +45,16 @@ export { Prisma }
  */
 export type HeroClass = Prisma.HeroClassModel
 /**
+ * Model HeroRoleTag
+ * Ролевой тег класса (ДД-МАГ, ПРИЗЫВАТЕЛЬ, …).
+ */
+export type HeroRoleTag = Prisma.HeroRoleTagModel
+/**
+ * Model HeroClassRoleTag
+ * Связь героя с ролевым тегом (порядок чипов у класса).
+ */
+export type HeroClassRoleTag = Prisma.HeroClassRoleTagModel
+/**
  * Model Player
  * Игрок (OAuth и/или пароль).
  */

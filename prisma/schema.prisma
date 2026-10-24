@@ -73,6 +73,34 @@ model HeroClass {
   matchPicks      MatchPick[]
   pickStats       HeroPickStat[]
   presetSlots     SquadPresetSlot[]
+  roleTags        HeroClassRoleTag[]
+}
+
+/// Ролевой тег класса (ДД-МАГ, ПРИЗЫВАТЕЛЬ, …).
+model HeroRoleTag {
+  id        String   @id
+  /// Подпись для UI (КАПСОМ).
+  label     String
+  /// Mood для цвета чипа: offense | support | heal | control | summon | curse | identity.
+  mood      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  heroes HeroClassRoleTag[]
+}
+
+/// Связь героя с ролевым тегом (порядок чипов у класса).
+model HeroClassRoleTag {
+  heroClassCode String
+  tagId         String
+  sortOrder     Int      @default(0)
+
+  heroClass HeroClass   @relation(fields: [heroClassCode], references: [code], onDelete: Cascade)
+  tag       HeroRoleTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([heroClassCode, tagId])
+  @@index([tagId])
 }
 
 /// Игрок (OAuth и/или пароль).

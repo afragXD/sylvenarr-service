@@ -52,6 +52,8 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   HeroClass: 'HeroClass',
+  HeroRoleTag: 'HeroRoleTag',
+  HeroClassRoleTag: 'HeroClassRoleTag',
   Player: 'Player',
   News: 'News',
   OAuthAccount: 'OAuthAccount',
@@ -104,6 +106,27 @@ export const HeroClassScalarFieldEnum = {
 } as const
 
 export type HeroClassScalarFieldEnum = (typeof HeroClassScalarFieldEnum)[keyof typeof HeroClassScalarFieldEnum]
+
+
+export const HeroRoleTagScalarFieldEnum = {
+  id: 'id',
+  label: 'label',
+  mood: 'mood',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HeroRoleTagScalarFieldEnum = (typeof HeroRoleTagScalarFieldEnum)[keyof typeof HeroRoleTagScalarFieldEnum]
+
+
+export const HeroClassRoleTagScalarFieldEnum = {
+  heroClassCode: 'heroClassCode',
+  tagId: 'tagId',
+  sortOrder: 'sortOrder'
+} as const
+
+export type HeroClassRoleTagScalarFieldEnum = (typeof HeroClassRoleTagScalarFieldEnum)[keyof typeof HeroClassRoleTagScalarFieldEnum]
 
 
 export const PlayerScalarFieldEnum = {

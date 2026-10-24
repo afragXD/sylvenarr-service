@@ -9,6 +9,8 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/HeroClass'
+export type * from './models/HeroRoleTag'
+export type * from './models/HeroClassRoleTag'
 export type * from './models/Player'
 export type * from './models/News'
 export type * from './models/OAuthAccount'
