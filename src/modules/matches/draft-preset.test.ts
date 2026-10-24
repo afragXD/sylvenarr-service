@@ -248,9 +248,9 @@ describe('draftPreset + redaction', () => {
     'global preset apply ok; repeat after lock rejected',
     async () => {
       const { host, matchId } = await openDraftMatch();
-      const global = await prisma.squadPreset.findFirst({
-        where: { catalogCode: 'balanced-3' },
-      });
+    const global = await prisma.squadPreset.findFirst({
+      where: { catalogCode: 'dracolich-mirror' },
+    });
       expect(global).not.toBeNull();
       if (!global) {
         return;

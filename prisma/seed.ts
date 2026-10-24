@@ -2,7 +2,10 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/shared/generated/prisma/client';
 import { heroSeeds } from './seed-data/heroes';
-import { globalSquadPresetSeeds } from './seed-data/squad-presets';
+import {
+  globalSquadPresetSeeds,
+  retiredSquadPresetCatalogCodes,
+} from './seed-data/squad-presets';
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -35,6 +38,15 @@ async function main(): Promise<void> {
     });
   }
   console.log(`Seed: upsert ${heroSeeds.length} hero classes`);
+
+  if (retiredSquadPresetCatalogCodes.length > 0) {
+    const retired = await prisma.squadPreset.deleteMany({
+      where: { catalogCode: { in: [...retiredSquadPresetCatalogCodes] } },
+    });
+    if (retired.count > 0) {
+      console.log(`Seed: removed ${retired.count} retired global squad presets`);
+    }
+  }
 
   for (const pack of globalSquadPresetSeeds) {
     const existing = await prisma.squadPreset.findUnique({

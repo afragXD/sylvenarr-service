@@ -17,43 +17,20 @@ export type SquadPresetSeed = {
 
 export const globalSquadPresetSeeds: ReadonlyArray<SquadPresetSeed> = [
   {
-    catalogCode: 'balanced-3',
-    name: 'Сбалансированная тройка',
+    catalogCode: 'dracolich-mirror',
+    name: 'Зеркало драколича',
     teamSize: 3,
     slots: [
-      { heroClassCode: 'Knight', row: 0, slotOrder: 0 },
-      { heroClassCode: 'Oracle', row: 1, slotOrder: 1 },
-      { heroClassCode: 'Herbalist', row: 1, slotOrder: 2 },
+      { heroClassCode: 'Dracolich', row: 0, slotOrder: 0 },
+      { heroClassCode: 'Demiurge', row: 1, slotOrder: 1 },
     ],
   },
-  {
-    catalogCode: 'aggro-3',
-    name: 'Агрессивная тройка',
-    teamSize: 3,
-    slots: [
-      { heroClassCode: 'Assassin', row: 0, slotOrder: 0 },
-      { heroClassCode: 'Marauder', row: 1, slotOrder: 1 },
-      { heroClassCode: 'Pyro', row: 1, slotOrder: 2 },
-    ],
-  },
-  {
-    catalogCode: 'control-3',
-    name: 'Контроль тройка',
-    teamSize: 3,
-    slots: [
-      { heroClassCode: 'Inquisitor', row: 0, slotOrder: 0 },
-      { heroClassCode: 'Mermaid', row: 1, slotOrder: 1 },
-      { heroClassCode: 'Specter', row: 1, slotOrder: 2 },
-    ],
-  },
-  {
-    catalogCode: 'giant-core-4',
-    name: 'Ядро с гигантом',
-    teamSize: 4,
-    slots: [
-      { heroClassCode: 'DemonLord', row: 0, slotOrder: 0 },
-      { heroClassCode: 'Abbess', row: 1, slotOrder: 1 },
-      { heroClassCode: 'Detective', row: 0, slotOrder: 2 },
-    ],
-  },
+];
+
+/** catalogCode старых сидов — удаляем при ресиде, чтобы не плодить мёртвые глобальные. */
+export const retiredSquadPresetCatalogCodes: ReadonlyArray<string> = [
+  'balanced-3',
+  'aggro-3',
+  'control-3',
+  'giant-core-4',
 ];
