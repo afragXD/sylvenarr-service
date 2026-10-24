@@ -187,9 +187,14 @@ function buildTeamUnits(
         lichGrade: 0,
         isLichSummon: false,
         ultaCharges: 0,
+        soulShatterCasts: 0,
+        soulShatterCd: 0,
+        momentPowerCd: 0,
         darts: 0,
         deathNote: 0,
         deathNoteCd: 0,
+        mindCloudCd: 0,
+        tortureLightningCd: 0,
         gun: 0,
         forbiddenResurrect: false,
         polymorphSavedArmor: -1,
@@ -301,7 +306,7 @@ export function advanceToNextUnit(state: BattleState): void {
 
   if (stunned) {
     state.log.push(`${next.displayName} оглушён и пропускает ход.`);
-    const endLog = tickEffectsOnTurnEnd(next);
+    const endLog = tickEffectsOnTurnEnd(next, state);
     state.log.push(...endLog);
     state.doneIds.push(next.id);
     resolveOutcome(state);
@@ -363,7 +368,7 @@ export function applyAction(
   if (input.action === 'wait') {
     state.delayedPhase = state.delayedPhase ?? false;
     if (state.delayedPhase) {
-      state.log.push(...tickEffectsOnTurnEnd(actor));
+      state.log.push(...tickEffectsOnTurnEnd(actor, state));
       state.doneIds.push(actor.id);
       state.preChoiceDoneIds = state.preChoiceDoneIds.filter((id) => id !== actor.id);
       state.log.push(`${actor.displayName} ждёт.`);
@@ -374,7 +379,7 @@ export function applyAction(
       state.delayedIds.push(actor.id);
     }
     state.preChoiceDoneIds = state.preChoiceDoneIds.filter((id) => id !== actor.id);
-    state.log.push(...tickEffectsOnTurnEnd(actor));
+    state.log.push(...tickEffectsOnTurnEnd(actor, state));
     state.log.push(`${actor.displayName} ждёт.`);
     advanceToNextUnit(state);
     return { ok: true };
@@ -383,7 +388,7 @@ export function applyAction(
   if (input.action === 'defend') {
     actor.defending = true;
     applyDefendPassives(actor);
-    state.log.push(...tickEffectsOnTurnEnd(actor));
+    state.log.push(...tickEffectsOnTurnEnd(actor, state));
     state.doneIds.push(actor.id);
     state.log.push(`${actor.displayName} встаёт в защиту.`);
     advanceToNextUnit(state);
@@ -663,7 +668,7 @@ function resolveAttackWithClassMods(
 
 function finishUnitTurn(state: BattleState, actor: BattleUnit): void {
   if (actor.alive) {
-    state.log.push(...tickEffectsOnTurnEnd(actor));
+    state.log.push(...tickEffectsOnTurnEnd(actor, state));
     maybeRewardHighMorale(state, actor);
   }
   state.doneIds.push(actor.id);

@@ -18,7 +18,13 @@ export function applyClassLevelUp(
   ind: number,
   state: BattleState
 ): void {
-  const handler = CLASS_LEVELUPS[unit.heroClassCode];
+  // Под POLYMORPH качаем исходный класс (Ассасин-мимик), не текущий облик.
+  const polymorphed = unit.effects.some((effect) => effect.id === 'POLYMORPH');
+  const code =
+    polymorphed && unit.transformParentCode
+      ? unit.transformParentCode
+      : unit.heroClassCode;
+  const handler = CLASS_LEVELUPS[code];
   if (handler) {
     handler(unit, ind, state);
     return;

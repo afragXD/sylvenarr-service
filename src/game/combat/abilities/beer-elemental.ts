@@ -11,7 +11,8 @@ function abilityMeta(
 ): AbilityInfo {
   switch (slot) {
     case 1: {
-      const targets = enemiesOf(state, actor);
+      // Порт: слот не через Pattern; охрана не блокирует.
+      const targets = enemiesOf(state, actor, { ignoreGuard: true });
       return {
         slot: 1,
         label: 'Homie De Flanders',
@@ -87,7 +88,9 @@ export const beerElementalAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+      const target = enemiesOf(state, actor, { ignoreGuard: true }).find(
+        (unit) => unit.id === input.targetId
+      );
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }

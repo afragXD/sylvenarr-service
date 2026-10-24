@@ -2,24 +2,12 @@ import { resolveAttackStyle } from '../attack-style';
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { resistsForClass } from '../defaultResists';
 import { grantEffect, hasEffect } from '../effects';
+import { mindResistFactor } from '../resists';
 import { isArtificialClass, isUndeadClass } from '../races';
 import { ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, listAttackTargets } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
-
-/** Множитель резиста к источнику без траты варда (для морали). */
-function mindResistFactor(unit: BattleUnit): number {
-  const entry = unit.resists.MIND;
-  if (!entry) {
-    return 1;
-  }
-  if (entry.immune) {
-    return 0;
-  }
-  const value = entry.value;
-  return value > 0 ? Math.max(0, 1 - value / 100) : 1 + Math.abs(value) / 100;
-}
 
 function transformToZombie(state: BattleState, target: BattleUnit): boolean {
   const hero = state.catalog.Zombie;

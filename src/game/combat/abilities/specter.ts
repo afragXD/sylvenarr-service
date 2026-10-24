@@ -1,6 +1,7 @@
 import { markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, tryStun } from '../effects';
 import { setWard } from '../resists';
+import { unitChoiceLabel } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, enemyTeamLeader } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -141,7 +142,10 @@ export const specterAbilities: AbilityHandler = {
         unitId: actor.id,
         kind: 'specter_second_mind',
         slot: 1,
-        options: others.map((unit) => ({ id: unit.id, label: unit.displayName })),
+        options: others.map((unit) => ({
+          id: unit.id,
+          label: unitChoiceLabel(unit),
+        })),
         context: { firstTargetId: target.id },
       };
       state.log.push(`${actor.displayName}: выберите вторую цель паралича.`);
@@ -170,9 +174,11 @@ export const specterAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       grantEffect(target, 'MARKED', 1 + Math.floor(actor.lvl / 4), 0);
-      target.morale -= actor.lvl + 3;
+      const dodgeLoss = 15 + Math.floor(actor.lvl / 2);
+      const rounds = 2 + Math.floor(actor.lvl / 7);
+      grantEffect(target, 'FATMAN', rounds, dodgeLoss);
       state.log.push(
-        `${actor.displayName} отмечает ${target.displayName} сглазом (мораль −${actor.lvl + 3}).`
+        `${actor.displayName} отмечает ${target.displayName} сглазом (−${dodgeLoss} уклонения, ${rounds} р.).`
       );
       return { status: 'done' };
     }

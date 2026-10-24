@@ -91,10 +91,11 @@ export const mermaidAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const bonusForLowHp = Math.round(20 * (2 - target.health / target.maxHp));
-      const amount = actor.lvl * 5 + bonusForLowHp;
+      // Было: 20×(2−оз/max) + L×5, точность L×2+2 — слишком жирно.
+      const bonusForLowHp = Math.round(actor.power * (2 - target.health / target.maxHp));
+      const amount = actor.lvl * 2 + bonusForLowHp;
       const healed = healUnit(target, amount);
-      const accGain = actor.lvl * 2 + 2;
+      const accGain = actor.lvl + 2;
       target.accuracy += accGain;
       state.log.push(
         `${actor.displayName}: морской бриз — ${target.displayName} +${healed} ОЗ, +${accGain} точности.`

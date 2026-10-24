@@ -635,6 +635,7 @@ export abstract class MatchesService {
       return MatchesService.acceptDraw(input);
     }
     if (state.drawOfferByPlayerId === input.playerId) {
+      publishBattle(existing.id, 'battle:state', toBattleSummary(state));
       const row = await prisma.match.findUniqueOrThrow({
         where: { id: existing.id },
         include: matchInclude,

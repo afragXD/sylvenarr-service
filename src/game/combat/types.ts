@@ -28,6 +28,9 @@ export type EffectId =
   | 'INTERFERENCE'
   | 'SILENCE'
   | 'IMPISH'
+  | 'POLYMORPH'
+  | 'FIRESHIELD'
+  | 'AIRSHIELD'
   | 'LUCKY'
   | 'FOCUSED'
   | 'STUNNED'
@@ -37,6 +40,7 @@ export type EffectId =
   | 'GALL'
   | 'SANCTUM'
   | 'FIREDWEAPON'
+  | 'AIRWEAPON'
   | 'MIND_WARD'
   | 'INVISIBLE'
   | 'INTERDICT'
@@ -148,12 +152,22 @@ export type BattleUnit = {
   isLichSummon: boolean;
   /** Заряды ульты (DemonLord / Paladin / Marauder / Patriarch). */
   ultaCharges: number;
+  /** Paladin «Разбить душу»: устаревший счётчик кастов (не используется для шанса). */
+  soulShatterCasts: number;
+  /** Paladin «Разбить душу»: кулдаун в раундах. */
+  soulShatterCd: number;
+  /** Oracle «Миг могущества»: кулдаун в раундах. */
+  momentPowerCd: number;
   /** Assassin: отравленные дротики. */
   darts: number;
   /** Assassin: шанс «тетради» (%). */
   deathNote: number;
   /** Assassin: кулдаун тетради в раундах. */
   deathNoteCd: number;
+  /** Demiurge: кулдаун «Помрачение рассудка» в раундах. */
+  mindCloudCd: number;
+  /** Inquisitor: кулдаун «Пыточная молния» в раундах. */
+  tortureLightningCd: number;
   /** Witch: патроны револьвера. */
   gun: number;
   /** Abbess: запрет воскрешения. */

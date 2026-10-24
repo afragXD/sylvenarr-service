@@ -1,8 +1,23 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect } from '../effects';
+import { delEffect, grantEffect, hasEffect } from '../effects';
+import { levelUpUnit } from '../level';
+import { applyCatalogStats } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
+
+function mimicTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {
+  return state.units.filter((unit) => {
+    if (!unit.alive || unit.id === actor.id) {
+      return false;
+    }
+    const size = state.catalog[unit.heroClassCode]?.size ?? 1;
+    if (size >= 2 && actor.lvl < 10) {
+      return false;
+    }
+    return true;
+  });
+}
 
 function abilityMeta(
   state: BattleState,
@@ -20,14 +35,16 @@ function abilityMeta(
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
-    case 2:
+    case 2: {
+      const targets = mimicTargets(state, actor);
       return {
         slot: 2,
         label: 'Звон смерти',
-        needsTarget: false,
-        disabledReason: null,
-        legalTargetIds: [],
+        needsTarget: true,
+        disabledReason: targets.length === 0 ? 'Нет целей для облика' : null,
+        legalTargetIds: targets.map((unit) => unit.id),
       };
+    }
     case 3:
       return {
         slot: 3,
@@ -64,7 +81,7 @@ function abilityMeta(
 }
 
 /**
- * Assassin: стилет, мимик-lite, тетрадь, яд, хамелеон.
+ * Assassin: стилет, полиморф, тетрадь, яд, хамелеон.
  */
 export const assassinAbilities: AbilityHandler = {
   listAbilities(state, actor) {
@@ -101,15 +118,30 @@ export const assassinAbilities: AbilityHandler = {
     }
 
     if (input.slot === 2) {
-      const others = state.units.filter(
-        (unit) => unit.alive && unit.heroClassCode !== 'Assassin'
-      );
-      const sample = others[randInt(0, Math.max(0, others.length - 1))];
-      const name = sample?.displayName ?? 'неизвестный облик';
-      actor.morale += actor.lvl + 3;
-      actor.damage += 2;
+      const target = mimicTargets(state, actor).find((unit) => unit.id === input.targetId);
+      if (!target) {
+        return { status: 'reject', message: 'Цель не найдена' };
+      }
+      const code = target.heroClassCode;
+      const size = state.catalog[code]?.size ?? 1;
+      if (size >= 2 && actor.lvl < 10) {
+        return { status: 'reject', message: 'Гигант с 10 уровня' };
+      }
+      if (hasEffect(actor, 'POLYMORPH')) {
+        delEffect(actor, 'POLYMORPH', state);
+      }
+      actor.transformParentCode = 'Assassin';
+      if (!applyCatalogStats(state, actor, code)) {
+        actor.transformParentCode = null;
+        return { status: 'reject', message: 'Не удалось принять облик' };
+      }
+      actor.displayName = `Мимик ${actor.displayName}`;
+      const moraleGain = actor.lvl + 3;
+      actor.morale += moraleGain;
+      grantEffect(actor, 'POLYMORPH', 2, 0);
+      levelUpUnit(actor, 1, state);
       state.log.push(
-        `${actor.displayName} на миг принимает облик ${name} (мораль +${actor.lvl + 3}).`
+        `${actor.displayName} принимает облик ${target.displayName} (+1 ур., мораль +${moraleGain}).`
       );
       return { status: 'done' };
     }

@@ -1,3 +1,4 @@
+import { enemiesOf, listAttackTargets } from './abilities/targets';
 import type { BattleState, BattleUnit } from './types';
 
 /** Множители базовой атаки по классам. */
@@ -247,11 +248,9 @@ export function listSkillTargets(state: BattleState, actor: BattleUnit): BattleU
   if (skill.kind === 'heal_ally') {
     return state.units.filter((unit) => unit.alive && unit.team === actor.team);
   }
-  // offensive skills
-  const enemies = state.units.filter((unit) => unit.alive && unit.team !== actor.team);
+  // offensive skills — SANCTUM/GUARDED как у Pattern.
   if (skill.ignoreMelee) {
-    return enemies;
+    return enemiesOf(state, actor);
   }
-  const enemyFront = enemies.filter((unit) => unit.row === 0);
-  return enemyFront.length > 0 ? enemyFront : enemies;
+  return listAttackTargets(state, actor);
 }

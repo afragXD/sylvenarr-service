@@ -54,6 +54,105 @@ describe('phase 3.7 pilots', () => {
     expect(after.some((unit, i) => unit.health < (before[i] ?? 0))).toBe(true);
   });
 
+  test('DemonLord slot 4 grants FIRESHIELD, HASTE and burns attacker', () => {
+    const heroes = new Map([
+      ['DemonLord', hero('DemonLord', { initiative: 30, mana: 5 })],
+      ['Ally', hero('Ally', { initiative: 1 })],
+      ['B', hero('B', { initiative: 99, damage: 40, armor: 10, accuracy: 100, luck: 0 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'DemonLord', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'h', heroClassCode: 'Ally', row: 0, pickOrder: 2 },
+        { id: 'p3', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const demon = state.units.find((unit) => unit.id === 'p1')!;
+    const ally = state.units.find((unit) => unit.id === 'p2')!;
+    const foe = state.units.find((unit) => unit.id === 'p3')!;
+    const initBefore = demon.initiative;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const cast = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 4,
+      targetId: 'p2',
+    });
+    expect(cast.ok).toBe(true);
+    expect(demon.effects.some((effect) => effect.id === 'FIRESHIELD')).toBe(true);
+    expect(demon.effects.some((effect) => effect.id === 'GUARDED')).toBe(false);
+    expect(demon.effects.some((effect) => effect.id === 'HASTE')).toBe(true);
+    expect(demon.initiative).toBe(initBefore + 15);
+    expect(ally.effects.some((effect) => effect.id === 'REGENHP')).toBe(true);
+
+    const armorBefore = foe.armor;
+    const hpBefore = foe.health;
+    state.activeUnitId = 'p3';
+    state.turnPlayerId = 'g';
+    const hit = applyAction(state, {
+      playerId: 'g',
+      unitId: 'p3',
+      action: 'attack',
+      targetId: 'p1',
+    });
+    expect(hit.ok).toBe(true);
+    expect(foe.health).toBeLessThan(hpBefore);
+    expect(foe.armor).toBe(armorBefore - demon.lvl);
+    expect(state.log.some((line) => line.includes('Огненный щит'))).toBe(true);
+  });
+
+  test('Assassin slot 2 polymorphs into target and gains a level', () => {
+    const heroes = new Map([
+      ['Assassin', hero('Assassin', { initiative: 99, damage: 28 })],
+      ['Paladin', hero('Paladin', { initiative: 1, health: 200, damage: 16, armor: 15 })],
+      ['DemonLord', hero('DemonLord', { initiative: 1, health: 300, size: 2 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Assassin', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'h', heroClassCode: 'Paladin', row: 0, pickOrder: 2 },
+        { id: 'p3', playerId: 'g', heroClassCode: 'DemonLord', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const assassin = state.units.find((unit) => unit.id === 'p1')!;
+    const beforeLvl = assassin.lvl;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+
+    const giantBlocked = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 2,
+      targetId: 'p3',
+    });
+    expect(giantBlocked.ok).toBe(false);
+
+    const result = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 2,
+      targetId: 'p2',
+    });
+    expect(result.ok).toBe(true);
+    expect(assassin.heroClassCode).toBe('Paladin');
+    expect(assassin.displayName.startsWith('Мимик')).toBe(true);
+    expect(assassin.transformParentCode).toBe('Assassin');
+    expect(assassin.effects.some((effect) => effect.id === 'POLYMORPH')).toBe(true);
+    expect(assassin.lvl).toBe(beforeLvl + 1);
+  });
+
   test('Assassin dart applies poison', () => {
     const heroes = new Map([
       ['Assassin', hero('Assassin', { initiative: 99 })],

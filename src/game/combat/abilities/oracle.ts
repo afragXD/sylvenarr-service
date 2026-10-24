@@ -34,11 +34,13 @@ function abilityMeta(
         label: 'Миг могущества',
         needsTarget: true,
         disabledReason:
-          actor.mana < 3
-            ? 'Нужно 3 МР'
-            : allies.length === 0
-              ? 'Нет союзника, уже ходившего'
-              : null,
+          actor.momentPowerCd > 0
+            ? `Кулдаун ${actor.momentPowerCd} р.`
+            : actor.mana < 3
+              ? 'Нужно 3 МР'
+              : allies.length === 0
+                ? 'Нет союзника, уже ходившего'
+                : null,
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -72,11 +74,17 @@ function abilityMeta(
 }
 
 /**
- * Oracle: heal+maxHp, extra turn, mind ward, row mana.
+ * Oracle: heal+maxHp, extra turn, weapon omen, row mana.
  */
 export const oracleAbilities: AbilityHandler = {
   listAbilities(state, actor) {
     return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
+  },
+
+  preChoice(_state, actor) {
+    if (actor.momentPowerCd > 0) {
+      actor.momentPowerCd -= 1;
+    }
   },
 
   apply(state, actor, input): AbilityOutcome {
@@ -113,12 +121,9 @@ export const oracleAbilities: AbilityHandler = {
       if (!target || !state.doneIds.includes(target.id)) {
         return { status: 'reject', message: 'Цель ещё не ходила' };
       }
-      if (randInt(1, 100) <= 70 + actor.lvl * 3) {
-        state.log.push(`${actor.displayName} даёт доп. ход ${target.displayName}.`);
-        return { status: 'done', extraTurnForUnitId: target.id };
-      }
-      state.log.push(`${actor.displayName}: миг могущества не сработал.`);
-      return { status: 'done' };
+      actor.momentPowerCd = 2;
+      state.log.push(`${actor.displayName} даёт доп. ход ${target.displayName}.`);
+      return { status: 'done', extraTurnForUnitId: target.id };
     }
 
     if (input.slot === 3) {
@@ -126,12 +131,19 @@ export const oracleAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Нужен союзник' };
       }
-      grantEffect(target, 'MIND_WARD', 2, 0);
-      const moraleGain = actor.lvl * 2;
-      target.morale += moraleGain;
-      state.log.push(
-        `${actor.displayName}: знамение защищает разум ${target.displayName} (мораль +${moraleGain}).`
-      );
+      // Нечётный уровень — электрическое оружие; чётный — вампиризм.
+      if (actor.lvl % 2 === 1) {
+        grantEffect(target, 'AIRWEAPON', 2, 0);
+        state.log.push(
+          `${actor.displayName}: знамение зачаровывает оружие ${target.displayName} электричеством.`
+        );
+      } else {
+        const vampPower = 0.2 + actor.lvl * 0.02;
+        grantEffect(target, 'VAMPWEAPON', 2, vampPower);
+        state.log.push(
+          `${actor.displayName}: знамение даёт ${target.displayName} вампирическое оружие (${Math.round(vampPower * 100)}%).`
+        );
+      }
       return { status: 'done' };
     }
 

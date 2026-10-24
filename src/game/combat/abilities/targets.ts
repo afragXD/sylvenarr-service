@@ -2,12 +2,26 @@ import { hasEffect } from '../effects';
 import { ROW_FRONT } from '../settings';
 import type { BattleState, BattleUnit } from '../types';
 
+/** Опции фильтра врагов (порт ignoreGuard из Pattern). */
+export type EnemyFilterOpts = {
+  /** Не отсекать «Под охраной» (детектив, укус оборотня и т.п.). */
+  readonly ignoreGuard?: boolean;
+};
+
 /**
- * Все живые враги (без SANCTUM — нельзя выбрать целью).
+ * Все живые враги (без SANCTUM; без GUARDED, если не ignoreGuard).
  */
-export function enemiesOf(state: BattleState, actor: BattleUnit): BattleUnit[] {
+export function enemiesOf(
+  state: BattleState,
+  actor: BattleUnit,
+  opts: EnemyFilterOpts = {}
+): BattleUnit[] {
   return state.units.filter(
-    (unit) => unit.alive && unit.team !== actor.team && !hasEffect(unit, 'SANCTUM')
+    (unit) =>
+      unit.alive &&
+      unit.team !== actor.team &&
+      !hasEffect(unit, 'SANCTUM') &&
+      (opts.ignoreGuard === true || !hasEffect(unit, 'GUARDED'))
   );
 }
 
@@ -72,10 +86,14 @@ export function livingEnemyFront(state: BattleState, actor: BattleUnit): BattleU
 
 /**
  * Доступные цели для атаки (melee-правила).
- * Передний ряд с живыми (в т.ч. под SANCTUM) блокирует задний; SANCTUM из целей исключается.
+ * Передний ряд с живыми (в т.ч. под SANCTUM) блокирует задний; SANCTUM/GUARDED из целей исключаются.
  */
-export function listAttackTargets(state: BattleState, attacker: BattleUnit): BattleUnit[] {
-  const enemies = enemiesOf(state, attacker);
+export function listAttackTargets(
+  state: BattleState,
+  attacker: BattleUnit,
+  opts: EnemyFilterOpts = {}
+): BattleUnit[] {
+  const enemies = enemiesOf(state, attacker, opts);
   if (attacker.attackStyle !== 'melee') {
     return enemies;
   }
@@ -98,12 +116,13 @@ export function listAttackTargets(state: BattleState, attacker: BattleUnit): Bat
 export function meleeOrAll(
   state: BattleState,
   actor: BattleUnit,
-  ignoreMelee: boolean
+  ignoreMelee: boolean,
+  opts: EnemyFilterOpts = {}
 ): BattleUnit[] {
   if (ignoreMelee) {
-    return enemiesOf(state, actor);
+    return enemiesOf(state, actor, opts);
   }
-  return listAttackTargets(state, actor);
+  return listAttackTargets(state, actor, opts);
 }
 
 /**

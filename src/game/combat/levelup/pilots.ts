@@ -124,13 +124,10 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     bumpLevel(unit, ind);
   },
 
-  Archlich(unit, ind, state) {
+  Archlich(unit, ind, _state) {
     if (unit.hiddenLvl % 5 === 0 && ind > 0) {
       // radius += 1 — вне скоупа до использования в ability
       setWard(unit, 'FIRE', 1);
-    }
-    if (state.stage === 10 && ind > 0) {
-      unit.maxSummons += 1;
     }
     // Python: randint(0,2) * lvl // 2 * ind
     unit.power += Math.floor((randInt(0, 2) * unit.lvl) / 2) * ind;

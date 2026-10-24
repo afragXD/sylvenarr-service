@@ -1,4 +1,10 @@
-import { applyVampWeaponHeal, grantEffect, hasEffect } from './effects';
+import {
+  applyVampWeaponHeal,
+  delEffect,
+  grantEffect,
+  hasEffect,
+  tryStun,
+} from './effects';
 import type { DamageSource } from './damageSources';
 import { DAMAGE_SOURCE_LABELS, sourceFromAttackStyle } from './damageSources';
 import { applyResistMultiplier } from './resists';
@@ -19,6 +25,8 @@ export type DealDamageOpts = {
   readonly forceStyle?: 'melee' | 'ranged' | 'magic';
   /** Пропуск проверки попадания (тесты / гарантированный удар). */
   readonly forceHit?: boolean;
+  /** Множитель вклада уклонения в шанс промаха (цепь молнии и т.п.). */
+  readonly evadeCoef?: number;
 };
 
 export type DealDamageResult = {
@@ -53,11 +61,16 @@ function computeRawDamage(
     readonly armorIgnore: number;
     readonly forceStyle?: 'melee' | 'ranged' | 'magic';
     readonly forceHit?: boolean;
+    readonly evadeCoef?: number;
   },
   forceMelee = false
 ): RawDamageResult {
   if (!opts.forceHit) {
-    const hitChance = Math.min(95, Math.max(20, attacker.accuracy - defender.dodge / 2));
+    const evadeCoef = opts.evadeCoef ?? 1;
+    const hitChance = Math.min(
+      95,
+      Math.max(20, attacker.accuracy - (defender.dodge / 2) * evadeCoef)
+    );
     const roll = randInt(1, 100);
     if (roll > hitChance) {
       return { raw: 0, crit: false, critFromBank: false, naturalMiss: roll > 95 };
@@ -160,6 +173,47 @@ export function dealDamage(
     }
   }
 
+  // Электрическое оружие: доп. урон воздухом (слабее огня) + шанс оглушения.
+  if (
+    amount > 0 &&
+    defender.alive &&
+    defender.health > 0 &&
+    hasEffect(attacker, 'AIRWEAPON') &&
+    counterDepth === 0
+  ) {
+    counterDepth += 1;
+    const sparkRaw = Math.max(1, Math.round(attacker.power / 5 + 4));
+    const sparkResist = applyResistMultiplier(defender, 'AIR');
+    if (sparkResist.blocked) {
+      if (state && sparkResist.blockReason) {
+        state.log.push(sparkResist.blockReason);
+      }
+    } else {
+      const spark = Math.max(0, Math.round(sparkRaw * sparkResist.multiplier));
+      if (spark > 0) {
+        defender.health -= spark;
+        if (state) {
+          state.log.push(
+            `Электрическое оружие бьёт ${defender.displayName} воздухом (${spark}).`
+          );
+        }
+      }
+    }
+    const stunChance = Math.min(85, 50 + Math.floor(attacker.power / 5));
+    if (state && defender.alive && defender.health > 0 && randInt(1, 100) <= stunChance) {
+      if (tryStun(state, defender, 1)) {
+        state.log.push(`${defender.displayName} оглушён разрядом оружия.`);
+      }
+    }
+    if (state) {
+      markDeadIfNeeded(state, defender);
+    } else if (defender.health <= 0) {
+      defender.health = 0;
+      defender.alive = false;
+    }
+    counterDepth -= 1;
+  }
+
   if (
     counterDepth === 0 &&
     defender.alive &&
@@ -199,6 +253,42 @@ export function dealDamage(
             attacker.health = 0;
             attacker.alive = false;
           }
+        }
+      }
+    }
+    counterDepth -= 1;
+  }
+
+  // Огненный щит: обжигает атакующего (можно сработать и по трупу с щитом — как в боте).
+  if (counterDepth === 0 && amount > 0 && hasEffect(defender, 'FIRESHIELD') && attacker.alive) {
+    counterDepth += 1;
+    const shield = defender.effects.find((effect) => effect.id === 'FIRESHIELD');
+    if (shield) {
+      shield.rounds -= 1;
+      if (shield.rounds <= 0) {
+        delEffect(defender, 'FIRESHIELD', state);
+      }
+    }
+    const armorStrip = Math.max(1, defender.lvl);
+    attacker.armor -= armorStrip;
+    const burnRaw = Math.max(1, Math.round(attacker.damage * 0.6 + defender.lvl));
+    const burnResist = applyResistMultiplier(attacker, 'FIRE');
+    if (burnResist.blocked) {
+      if (state && burnResist.blockReason) {
+        state.log.push(burnResist.blockReason);
+      }
+    } else {
+      const burn = Math.max(0, Math.round(burnRaw * burnResist.multiplier));
+      if (burn > 0) {
+        attacker.health -= burn;
+        if (state) {
+          state.log.push(
+            `Огненный щит ${defender.displayName} обжигает ${attacker.displayName} (${burn}) и ломает броню на ${armorStrip}.`
+          );
+          markDeadIfNeeded(state, attacker);
+        } else if (attacker.health <= 0) {
+          attacker.health = 0;
+          attacker.alive = false;
         }
       }
     }

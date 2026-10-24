@@ -1,5 +1,11 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, hasEffect, trySpendMana } from '../effects';
+import {
+  dealDamage,
+  lastDealDamageResult,
+  markDeadIfNeeded,
+  randInt,
+} from '../damage';
+import { grantEffect, hasEffect, trySpendMana, tryStun } from '../effects';
+import { rollMindChance } from '../resists';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { createPhantomCopy, createSummon } from './summon';
@@ -19,13 +25,11 @@ function abilityMeta(
         label: 'Цепная молния',
         needsTarget: true,
         disabledReason:
-          actor.row !== ROW_FRONT
-            ? 'Нужен передний ряд'
-            : actor.mana < 3
-              ? 'Нужно 3 МР'
-              : targets.length === 0
-                ? 'Нет целей'
-                : null,
+          actor.mana < 3
+            ? 'Нужно 3 МР'
+            : targets.length === 0
+              ? 'Нет целей'
+              : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -55,11 +59,13 @@ function abilityMeta(
         label: 'Помрачение рассудка',
         needsTarget: true,
         disabledReason:
-          actor.mana < 2
-            ? 'Нужно 2 МР'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+          actor.mindCloudCd > 0
+            ? `Кулдаун ${actor.mindCloudCd} р.`
+            : actor.mana < 2
+              ? 'Нужно 2 МР'
+              : targets.length === 0
+                ? 'Нет целей'
+                : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -82,6 +88,44 @@ function abilityMeta(
   }
 }
 
+function maybeFrontRowStun(
+  state: BattleState,
+  actor: BattleUnit,
+  target: BattleUnit,
+  fromFront: boolean
+): void {
+  if (!fromFront) {
+    return;
+  }
+  const deal = lastDealDamageResult();
+  if (deal.missed || deal.damage <= 0) {
+    return;
+  }
+  if (randInt(1, 100) > 50 + actor.lvl) {
+    return;
+  }
+  if (tryStun(state, target, 1)) {
+    state.log.push(`${target.displayName} оглушён разрядом.`);
+  }
+}
+
+/** Союзники жертвы с минимальным (ОЗ − уровень); при ничьей — случайный. */
+function pickFragileAlly(allies: BattleUnit[]): BattleUnit {
+  let best = Number.POSITIVE_INFINITY;
+  const pool: BattleUnit[] = [];
+  for (const unit of allies) {
+    const score = unit.health - unit.lvl;
+    if (score < best) {
+      best = score;
+      pool.length = 0;
+      pool.push(unit);
+    } else if (score === best) {
+      pool.push(unit);
+    }
+  }
+  return pool[randInt(0, pool.length - 1)]!;
+}
+
 /**
  * Demiurge: chain lightning, phantom, mind control, ectoplasm.
  */
@@ -91,14 +135,17 @@ export const demiurgeAbilities: AbilityHandler = {
   },
 
   preChoice(state, actor) {
+    if (actor.mindCloudCd > 0) {
+      actor.mindCloudCd -= 1;
+    }
     const others = alliesOf(state, actor).filter((unit) => unit.id !== actor.id);
     if (others.length === 0 || randInt(1, 100) > 50) {
       return;
     }
     const ally = others[randInt(0, others.length - 1)]!;
-    grantEffect(ally, 'GUARDED', 2, 3);
+    grantEffect(ally, 'AIRSHIELD', 2, 33);
     state.log.push(
-      `${actor.displayName}: воздушный щит → ${ally.displayName} (Под охраной).`
+      `${actor.displayName}: воздушный щит → ${ally.displayName}.`
     );
   },
 
@@ -117,6 +164,7 @@ export const demiurgeAbilities: AbilityHandler = {
       if (!primary) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
+      const fromFront = actor.row === ROW_FRONT;
       const d1 = dealDamage(
         actor,
         primary,
@@ -127,6 +175,8 @@ export const demiurgeAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: молния → ${primary.displayName} (${d1}).`);
         markDeadIfNeeded(state, primary);
       }
+      maybeFrontRowStun(state, actor, primary, fromFront);
+
       const pool = enemiesOf(state, actor).filter((unit) => unit.id !== primary.id);
       for (let i = 0; i < 2 && pool.length > 0; i += 1) {
         const idx = randInt(0, pool.length - 1);
@@ -135,7 +185,7 @@ export const demiurgeAbilities: AbilityHandler = {
         const dmg = dealDamage(
           actor,
           next,
-          { damageMult: mult, armorIgnore: 0.1, source: 'AIR' },
+          { damageMult: mult, armorIgnore: 0.1, source: 'AIR', evadeCoef: 1.2 },
           state
         );
         if (dmg > 0) {
@@ -144,6 +194,7 @@ export const demiurgeAbilities: AbilityHandler = {
           );
           markDeadIfNeeded(state, next);
         }
+        maybeFrontRowStun(state, actor, next, fromFront);
       }
       return { status: 'done' };
     }
@@ -176,6 +227,7 @@ export const demiurgeAbilities: AbilityHandler = {
       if (!victim) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
+      actor.mindCloudCd = 2;
       if (hasEffect(victim, 'MIND_WARD')) {
         state.log.push(`${victim.displayName} защищён от помрачения.`);
         return { status: 'done' };
@@ -185,8 +237,9 @@ export const demiurgeAbilities: AbilityHandler = {
         state.log.push(`Для ${victim.displayName} нет целей атаки.`);
         return { status: 'done' };
       }
-      if (randInt(1, 100) <= 85) {
-        const target = allies[randInt(0, allies.length - 1)]!;
+      const chance = 80 + actor.lvl;
+      if (rollMindChance(state, victim, chance)) {
+        const target = pickFragileAlly(allies);
         const dmg = dealDamage(victim, target, { damageMult: 1, armorIgnore: 0 }, state);
         state.log.push(
           `${actor.displayName} подчиняет ${victim.displayName} → ${target.displayName} (${dmg}).`

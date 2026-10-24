@@ -1,5 +1,6 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect } from '../effects';
+import { unitChoiceLabel } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { availableSummonRows, createSummon } from './summon';
 import { enemiesOf, meleeOrAll, moveToOtherRow, ownRowAllies } from './targets';
@@ -188,7 +189,10 @@ export const orcKingAbilities: AbilityHandler = {
         unitId: actor.id,
         kind: 'orc_axe_second',
         slot: 4,
-        options: others.map((unit) => ({ id: unit.id, label: unit.displayName })),
+        options: others.map((unit) => ({
+          id: unit.id,
+          label: unitChoiceLabel(unit),
+        })),
         context: { firstTargetId: target.id },
       };
       state.log.push(`${actor.displayName}: выберите цель второго топора.`);

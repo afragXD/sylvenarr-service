@@ -61,7 +61,12 @@ function abilityMeta(
         slot: 5,
         label: 'Поглотить душу',
         needsTarget: true,
-        disabledReason: allies.length === 0 ? 'Нет союзников' : null,
+        disabledReason:
+          actor.mana < 3
+            ? 'Нужно 3 МР'
+            : allies.length === 0
+              ? 'Нет союзников'
+              : null,
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -181,7 +186,8 @@ export const archlichAbilities: AbilityHandler = {
       target.lichGrade += 1;
       state.log.push(`${target.displayName}: эволюция (${target.lichGrade}).`);
 
-      if (target.lichGrade === 3) {
+      // Было 3 применения; −1 → скелет-чемпион на 2-м.
+      if (target.lichGrade === 2) {
         const ratio = Math.min(1, target.health / target.maxHp + 0.2);
         const summon = createSummon(state, {
           summoner: actor,
@@ -285,12 +291,14 @@ export const archlichAbilities: AbilityHandler = {
     if (!victim || victim.id === actor.id) {
       return { status: 'reject', message: 'Нужен союзник' };
     }
+    if (!spendMana(actor, 3, state)) {
+      return { status: 'reject', message: 'Нужно 3 МР' };
+    }
     const manaBoost = Math.max(1, Math.round(victim.health / 30));
     addMana(actor, manaBoost);
     actor.power += Math.max(1, Math.round(actor.lvl * 0.75));
     actor.damage += 2;
-    // Поглощение уровней души (порт lich.py: levelup(max(1, round(lvl * 0.75)))).
-    const levels = Math.max(1, Math.round(victim.lvl * 0.75));
+    const levels = Math.max(1, Math.round(victim.lvl * 0.5));
     levelUpUnit(actor, levels, state);
     victim.alive = false;
     victim.health = 0;

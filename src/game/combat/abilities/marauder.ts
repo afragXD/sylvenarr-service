@@ -1,9 +1,8 @@
-import { resolveAttackStyle } from '../attack-style';
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { resistsForClass } from '../defaultResists';
 import { grantEffect, hasEffect, healUnit, trySpendMana, addMana } from '../effects';
 import { setWard } from '../resists';
 import { ROW_BACK, ROW_FRONT } from '../settings';
+import { applyCatalogStats } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesInColumn, enemiesOf, meleeOrAll, moveToOtherRow, unitsOnSameRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -87,7 +86,8 @@ function werewolfMeta(
       };
     }
     case 2: {
-      const targets = meleeOrAll(state, actor, true);
+      // ignoreGuard — порт Werewolf.secondAction(MeleePattern ignoreGuard=True).
+      const targets = meleeOrAll(state, actor, true, { ignoreGuard: true });
       return {
         slot: 2,
         label: 'Вечный голод',
@@ -128,30 +128,6 @@ function werewolfMeta(
         legalTargetIds: [],
       };
   }
-}
-
-function applyCatalogStats(state: BattleState, unit: BattleUnit, code: string): boolean {
-  const hero = state.catalog[code];
-  if (!hero) {
-    return false;
-  }
-  const ratio = unit.maxHp > 0 ? unit.health / unit.maxHp : 1;
-  const maxHp = Math.max(1, Math.round(hero.health * state.rules.healthBonus));
-  unit.heroClassCode = hero.code;
-  unit.displayName = hero.displayName;
-  unit.maxHp = maxHp;
-  unit.health = Math.max(1, Math.min(maxHp, Math.round(maxHp * ratio)));
-  unit.damage = hero.damage;
-  unit.armor = hero.armor;
-  unit.initiative = hero.initiative;
-  unit.dodge = hero.dodge;
-  unit.luck = hero.luck;
-  unit.accuracy = hero.accuracy;
-  unit.power = hero.power;
-  unit.mana = Math.max(unit.mana, hero.mana);
-  unit.attackStyle = resolveAttackStyle(hero.code);
-  unit.resists = resistsForClass(hero.code);
-  return true;
 }
 
 function applyMarauder(
@@ -312,7 +288,9 @@ function applyWerewolf(
   }
 
   if (input.slot === 2) {
-    const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+    const target = enemiesOf(state, actor, { ignoreGuard: true }).find(
+      (unit) => unit.id === input.targetId
+    );
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }

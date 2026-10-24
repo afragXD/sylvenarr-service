@@ -145,4 +145,41 @@ describe('phase 3.8 pilots', () => {
     const summary = toBattleSummary(state);
     expect(summary.abilities).toHaveLength(5);
   });
+
+  test('Inquisitor slot 2 sets tortureLightningCd 2', () => {
+    const heroes = new Map([
+      ['Inquisitor', hero('Inquisitor', { initiative: 99, mana: 10, power: 30, luck: 0 })],
+      ['B', hero('B', { initiative: 1, armor: 0, dodge: 0 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Inquisitor', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const mage = state.units.find((unit) => unit.id === 'p1')!;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const result = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 2,
+      targetId: 'p2',
+    });
+    expect(result.ok).toBe(true);
+    expect(mage.tortureLightningCd).toBe(2);
+    const blocked = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 2,
+      targetId: 'p2',
+    });
+    expect(blocked.ok).toBe(false);
+  });
 });

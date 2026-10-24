@@ -1,5 +1,5 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, hasEffect, healUnit, tryLevelDrain, trySpendMana } from '../effects';
+import { grantEffect, healUnit, tryLevelDrain, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll } from './targets';
@@ -48,7 +48,7 @@ function abilityMeta(
       };
     }
     case 4: {
-      const targets = enemiesOf(state, actor).filter((unit) => !hasEffect(unit, 'GUARDED'));
+      const targets = enemiesOf(state, actor);
       return {
         slot: 4,
         label: 'Деградация',
@@ -63,7 +63,7 @@ function abilityMeta(
       };
     }
     case 5: {
-      const targets = enemiesOf(state, actor).filter((unit) => !hasEffect(unit, 'GUARDED'));
+      const targets = enemiesOf(state, actor);
       return {
         slot: 5,
         label: 'Превращение',
@@ -193,7 +193,7 @@ export const witchAbilities: AbilityHandler = {
         return { status: 'reject', message: err };
       }
       const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
-      if (!target || hasEffect(target, 'GUARDED')) {
+      if (!target) {
         return { status: 'reject', message: 'Цель недоступна' };
       }
       if (randInt(1, 100) <= 70 + actor.lvl * 2) {
@@ -217,7 +217,7 @@ export const witchAbilities: AbilityHandler = {
       return { status: 'reject', message: err };
     }
     const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
-    if (!target || hasEffect(target, 'GUARDED')) {
+    if (!target) {
       return { status: 'reject', message: 'Цель недоступна' };
     }
     if (randInt(1, 100) <= 65 + actor.lvl) {

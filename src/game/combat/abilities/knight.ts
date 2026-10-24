@@ -160,7 +160,7 @@ export const knightAbilities: AbilityHandler = {
       if (!ally || ally.id === actor.id) {
         return { status: 'reject', message: 'Нужен союзник' };
       }
-      grantEffect(ally, 'GUARDED', 2, 3);
+      grantEffect(ally, 'GUARDED', 2);
       state.log.push(`${ally.displayName} под охраной ${actor.displayName}.`);
       return { status: 'done' };
     }

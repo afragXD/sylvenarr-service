@@ -58,9 +58,14 @@ const unit = (overrides: Partial<BattleUnit> = {}): BattleUnit => ({
   lichGrade: 0,
   isLichSummon: false,
   ultaCharges: 0,
+  soulShatterCasts: 0,
   darts: 0,
   deathNote: 0,
   deathNoteCd: 0,
+  mindCloudCd: 0,
+  tortureLightningCd: 0,
+  soulShatterCd: 0,
+  momentPowerCd: 0,
   gun: 0,
   forbiddenResurrect: false,
   polymorphSavedArmor: -1,
@@ -173,14 +178,28 @@ describe('effects', () => {
   });
 
   test('fresh: self-buff не тикает в конце хода наложения', () => {
-    const u = unit();
-    grantEffect(u, 'GUARDED', 2, 3);
+    const u = unit({ armor: 8 });
+    grantEffect(u, 'GUARDED', 2);
+    expect(u.armor).toBe(8);
     tickEffectsOnTurnEnd(u);
     expect(hasEffect(u, 'GUARDED')).toBe(true);
     expect(u.effects.find((effect) => effect.id === 'GUARDED')?.rounds).toBe(2);
     tickEffectsOnTurnStart(u);
     tickEffectsOnTurnEnd(u);
     expect(u.effects.find((effect) => effect.id === 'GUARDED')?.rounds).toBe(1);
+    expect(u.armor).toBe(8);
+  });
+
+  test('AIRSHIELD: +ARROWS resist, откат при спадении', () => {
+    const u = unit({ resists: {} });
+    grantEffect(u, 'AIRSHIELD', 2, 33);
+    expect(u.resists.ARROWS?.value).toBe(33);
+    tickEffectsOnTurnStart(u);
+    tickEffectsOnTurnEnd(u);
+    tickEffectsOnTurnStart(u);
+    tickEffectsOnTurnEnd(u);
+    expect(hasEffect(u, 'AIRSHIELD')).toBe(false);
+    expect(u.resists.ARROWS?.value ?? 0).toBe(0);
   });
 
   test('tryStun: стан + иммунитет на 2 раунда после него', () => {

@@ -134,4 +134,42 @@ describe('phase 3.11 pilots', () => {
     }
     expect(full).toBeGreaterThan(empty);
   });
+
+  test('Specter slot 3 Сглаз: MARKED + FATMAN на уклонение, не мораль', () => {
+    const heroes = new Map([
+      ['Specter', hero('Specter', { initiative: 99 })],
+      ['B', hero('B', { initiative: 1, dodge: 40 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Specter', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const specter = state.units.find((unit) => unit.id === 'p1')!;
+    specter.lvl = 5;
+    const foe = state.units.find((unit) => unit.id === 'p2')!;
+    const moraleBefore = foe.morale;
+    const dodgeBefore = foe.dodge;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const result = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 3,
+      targetId: 'p2',
+    });
+    expect(result.ok).toBe(true);
+    expect(foe.effects.some((effect) => effect.id === 'MARKED')).toBe(true);
+    const fatman = foe.effects.find((effect) => effect.id === 'FATMAN');
+    expect(fatman?.power).toBe(15 + Math.floor(5 / 2));
+    expect(fatman?.rounds).toBe(2 + Math.floor(5 / 7));
+    expect(foe.dodge).toBe(dodgeBefore - (15 + Math.floor(5 / 2)));
+    expect(foe.morale).toBe(moraleBefore);
+  });
 });

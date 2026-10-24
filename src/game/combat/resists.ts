@@ -1,6 +1,81 @@
 import type { DamageSource } from './damageSources';
 import { DAMAGE_SOURCE_LABELS } from './damageSources';
-import type { BattleUnit, ResistEntry, ResistMap } from './types';
+import type { BattleState, BattleUnit, ResistEntry, ResistMap } from './types';
+
+const randInt = (min: number, max: number): number =>
+  min + Math.floor(Math.random() * (max - min + 1));
+
+/** Множитель шанса/эффекта по резисту MIND без траты варда. */
+export function mindResistFactor(unit: BattleUnit): number {
+  const entry = unit.resists.MIND;
+  if (!entry) {
+    return 1;
+  }
+  if (entry.immune) {
+    return 0;
+  }
+  const value = entry.value;
+  return value > 0 ? Math.max(0, 1 - value / 100) : 1 + Math.abs(value) / 100;
+}
+
+/**
+ * Множитель Chance по источнику (порт getSRCFactor): иммун/вард → 0 и тратят заряд;
+ * value% режет/усиливает. Без лога — для цепочки из нескольких SRC.
+ */
+export function consumeSrcFactor(unit: BattleUnit, source: DamageSource): number {
+  const entry = unit.resists[source];
+  if (!entry) {
+    return 1;
+  }
+  if (entry.immune) {
+    return 0;
+  }
+  if ((entry.wardCharges ?? 0) > 0) {
+    entry.wardCharges = (entry.wardCharges ?? 1) - 1;
+    if ((entry.wardCharges ?? 0) <= 0) {
+      entry.wardCharges = undefined;
+    }
+    return 0;
+  }
+  const value = entry.value;
+  return value > 0 ? Math.max(0, 1 - value / 100) : 1 + Math.abs(value) / 100;
+}
+
+/**
+ * Chance(base, ...sources).roll — произведение множителей источников.
+ */
+export function rollSrcChance(
+  state: BattleState,
+  target: BattleUnit,
+  baseChance: number,
+  ...sources: DamageSource[]
+): boolean {
+  let factor = 1;
+  for (const source of sources) {
+    const next = consumeSrcFactor(target, source);
+    if (next <= 0) {
+      state.log.push(
+        `${target.displayName}: «${DAMAGE_SOURCE_LABELS[source]}» блокирует воздействие.`
+      );
+      return false;
+    }
+    factor *= next;
+  }
+  const effective = Math.round(baseChance * factor);
+  return randInt(1, 100) <= effective;
+}
+
+/**
+ * Бросок шанса с источником Разум: иммун/вард MIND блокируют, value режет шанс.
+ * @returns true при успехе.
+ */
+export function rollMindChance(
+  state: BattleState,
+  target: BattleUnit,
+  baseChance: number
+): boolean {
+  return rollSrcChance(state, target, baseChance, 'MIND');
+}
 
 export type ResistApplyResult = {
   /** Множитель урона (0 = полный блок). */

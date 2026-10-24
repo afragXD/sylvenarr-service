@@ -1,7 +1,8 @@
 import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, healUnit, tryLevelDrain } from '../effects';
+import { grantEffect, healUnit } from '../effects';
 import { levelUpUnit } from '../level';
-import { setWard } from '../resists';
+import { unholyDamageMult } from '../races';
+import { rollSrcChance, setWard } from '../resists';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll, moveToOtherRow } from './targets';
@@ -38,7 +39,13 @@ function abilityMeta(
         label: 'Разбить душу',
         needsTarget: true,
         disabledReason:
-          actor.mana < 2 ? 'Нужно 2 МР' : targets.length === 0 ? 'Нет целей' : null,
+          actor.soulShatterCd > 0
+            ? `Кулдаун ${actor.soulShatterCd} р.`
+            : actor.mana < 2
+              ? 'Нужно 2 МР'
+              : targets.length === 0
+                ? 'Нет целей'
+                : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -76,6 +83,12 @@ export const paladinAbilities: AbilityHandler = {
     return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
   },
 
+  preChoice(_state, actor) {
+    if (actor.soulShatterCd > 0) {
+      actor.soulShatterCd -= 1;
+    }
+  },
+
   apply(state, actor, input): AbilityOutcome {
     const meta = abilityMeta(state, actor, input.slot);
     if (meta.disabledReason) {
@@ -111,7 +124,6 @@ export const paladinAbilities: AbilityHandler = {
 
     if (input.slot === 2) {
       actor.ultaCharges -= 1;
-      // Как в боте: пылающие мечи и вард от Огня на себя.
       setWard(actor, 'FIRE', 1);
       grantEffect(actor, 'FIREDWEAPON', 2 + Math.floor(actor.lvl / 5), 0);
       state.log.push(`${actor.displayName}: клинки окутаны святым пламенем; вард от Огня.`);
@@ -127,6 +139,7 @@ export const paladinAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Нужно 2 МР' };
       }
       actor.mana -= 2;
+      actor.soulShatterCd = 3;
       // Порт MagicPattern(HOLY, meleeFlag): урон от силы, касание.
       const damage = dealDamage(
         actor,
@@ -135,7 +148,6 @@ export const paladinAbilities: AbilityHandler = {
         state
       );
       const deal = lastDealDamageResult();
-      // В боте промах (evade) обрывает действие; вард HOLY оставляет 1 урона и не мешает дрену.
       if (deal.missed) {
         state.log.push(`${actor.displayName}: разбить душу — промах.`);
         return { status: 'done' };
@@ -145,16 +157,12 @@ export const paladinAbilities: AbilityHandler = {
           `${actor.displayName} разбивает душу ${target.displayName} (${damage}).`
         );
       }
-      // Поглощение уровней — до markDead: в боте levelup идёт пока юнит ещё в бою,
-      // даже после смертельного удара; levelUpUnit игнорирует !alive.
-      // Chance(70, HOLY, LOWERINGLEVEL) из paladin.py — при провале шанса пишем в лог.
-      if (randInt(1, 100) <= 70) {
-        if (tryLevelDrain(state, target)) {
-          const n = 1 + Math.floor(actor.lvl / 5);
-          levelUpUnit(target, -n, state);
-          levelUpUnit(actor, n, state);
-          state.log.push(`${actor.displayName} поглощает ${n} уровней у ${target.displayName}.`);
-        }
+      // Chance(100, HOLY, LOWERINGLEVEL) — вард/иммун режут шанс и тратят заряд.
+      if (rollSrcChance(state, target, 100, 'HOLY', 'LOWERINGLEVEL')) {
+        const n = 1 + Math.floor(actor.lvl / 5);
+        levelUpUnit(target, -n, state);
+        levelUpUnit(actor, n, state);
+        state.log.push(`${actor.displayName} поглощает ${n} уровней у ${target.displayName}.`);
       } else {
         state.log.push(
           `${actor.displayName}: душа ${target.displayName} устояла — уровни не поглощены.`,
@@ -171,26 +179,18 @@ export const paladinAbilities: AbilityHandler = {
       }
       actor.row = ROW_FRONT;
       grantEffect(actor, 'HASTE', 2, 20);
-      const undeadBonus =
-        target.heroClassCode === 'Archlich' ||
-        target.heroClassCode === 'Zombie' ||
-        target.heroClassCode === 'SkeletonChampion' ||
-        target.heroClassCode === 'GhostWarrior' ||
-        target.heroClassCode === 'Dracolich' ||
-        target.isLichSummon
-          ? 1.25
-          : 1;
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: undeadBonus, armorIgnore: 0, source: 'HOLY' },
+        { damageMult: unholyDamageMult(target), armorIgnore: 0, source: 'HOLY' },
         state
       );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: святое копьё — промах.`);
       } else {
+        const vsUnholy = unholyDamageMult(target) > 1;
         state.log.push(
-          `${actor.displayName} вырывается вперёд копьём по ${target.displayName} (${damage}).`
+          `${actor.displayName} вырывается вперёд копьём по ${target.displayName} (${damage}${vsUnholy ? ', +25% по нечестивым' : ''}).`
         );
         markDeadIfNeeded(state, target);
       }
@@ -203,7 +203,6 @@ export const paladinAbilities: AbilityHandler = {
     }
     actor.mana -= 3;
     grantEffect(actor, 'REGENHP', 2 + Math.floor(actor.lvl / 5), 1.1);
-    // Как в боте: STUNRESIST 3 р. power 50 — 50% сопротивление оглушению.
     grantEffect(actor, 'STUN_IMMUNE', 3, 50);
     moveToOtherRow(actor);
     const hush = healUnit(actor, randInt(5, 12));

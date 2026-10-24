@@ -3,6 +3,7 @@ import { afterEach, describe, expect, spyOn, test } from 'bun:test';
 import { applyAction, createBattleState } from '../engine';
 import { hasEffect } from '../effects';
 import type { HeroClassStats } from '../types';
+import { paladinAbilities } from './paladin';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
   code,
@@ -141,7 +142,7 @@ describe('petrify and level drain', () => {
     expect(state.log.some((line) => line.includes('поглощает'))).toBe(true);
   });
 
-  test('Paladin slot 3 still drains after HOLY ward blocks damage', () => {
+  test('Paladin slot 3: HOLY ward on Chance blocks level drain', () => {
     randomSpy = spyOn(Math, 'random').mockReturnValue(0);
     const heroes = new Map([
       ['Paladin', hero('Paladin', { initiative: 99, mana: 10, power: 40 })],
@@ -159,8 +160,8 @@ describe('petrify and level drain', () => {
     });
     const paladin = state.units.find((unit) => unit.id === 'p1')!;
     const foe = state.units.find((unit) => unit.id === 'p2')!;
-    // Вард HOLY как у цели с щитом от святого (не дефолт Abbess — выставим вручную).
-    foe.resists.HOLY = { value: 0, wardCharges: 1 };
+    // Два заряда HOLY: один съест урон, второй — Chance(HOLY, LOWERING).
+    foe.resists.HOLY = { value: 0, wardCharges: 2 };
     paladin.lvl = 5;
     paladin.hiddenLvl = 5;
     foe.lvl = 4;
@@ -175,9 +176,61 @@ describe('petrify and level drain', () => {
       targetId: 'p2',
     });
     expect(result.ok).toBe(true);
-    const n = 1 + Math.floor(5 / 5);
-    expect(paladin.lvl).toBe(5 + n);
-    expect(foe.lvl).toBe(4 - n);
+    expect(paladin.lvl).toBe(5);
+    expect(foe.lvl).toBe(4);
+    expect(state.log.some((line) => line.includes('устояла') || line.includes('блокирует'))).toBe(
+      true
+    );
+  });
+
+  test('Paladin soul shatter sets CD 3 and drains on Chance(100, HOLY, LOWERING)', () => {
+    randomSpy = spyOn(Math, 'random').mockReturnValue(0);
+    const heroes = new Map([
+      ['Paladin', hero('Paladin', { initiative: 99, mana: 6 })],
+      ['B', hero('B', { initiative: 1 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Paladin', row: 1, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const paladin = state.units.find((unit) => unit.id === 'p1')!;
+    const foe = state.units.find((unit) => unit.id === 'p2')!;
+    paladin.lvl = 5;
+    paladin.hiddenLvl = 5;
+    foe.lvl = 6;
+    foe.hiddenLvl = 6;
+    const before = paladin.lvl;
+    const foeBefore = foe.lvl;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const result = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 3,
+      targetId: 'p2',
+    });
+    expect(result.ok).toBe(true);
+    expect(paladin.soulShatterCd).toBe(3);
+    expect(paladin.lvl).toBeGreaterThan(before);
+    expect(foe.lvl).toBeLessThan(foeBefore);
+    const blocked = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 3,
+      targetId: 'p2',
+    });
+    expect(blocked.ok).toBe(false);
+    expect(
+      paladinAbilities.listAbilities(state, paladin).find((item) => item.slot === 3)?.disabledReason
+    ).toContain('Кулдаун');
   });
 
   test('Witch slot 4 lowers target level', () => {

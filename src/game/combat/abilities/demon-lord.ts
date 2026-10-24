@@ -166,10 +166,11 @@ export const demonLordAbilities: AbilityHandler = {
       if (!ally) {
         return { status: 'reject', message: 'Нужен союзник' };
       }
-      grantEffect(actor, 'GUARDED', 2, 5);
+      grantEffect(actor, 'FIRESHIELD', 2, 0);
+      grantEffect(actor, 'HASTE', 2, 15);
       grantEffect(ally, 'REGENHP', 2 + Math.floor(actor.lvl / 5), 1.25);
       state.log.push(
-        `${actor.displayName} окутывает себя огненным щитом и дарует регенерацию ${ally.displayName}.`
+        `${actor.displayName} окутывает себя огненным щитом, ускоряется и дарует регенерацию ${ally.displayName}.`
       );
       return { status: 'done' };
     }

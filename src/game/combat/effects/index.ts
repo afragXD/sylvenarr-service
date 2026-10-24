@@ -1,6 +1,7 @@
 import { DAMAGE_SOURCE_LABELS, type DamageSource } from '../damageSources';
 import { effectLogLabel } from '../effect-labels';
-import { applyResistMultiplier } from '../resists';
+import { applyResistMultiplier, changeResist } from '../resists';
+import { applyCatalogStats } from '../transform';
 import type { BattleEffect, BattleState, BattleUnit, EffectId } from '../types';
 
 /** Локальный randInt — чтобы не тянуть damage.ts (цикл damage ↔ effects). */
@@ -38,7 +39,7 @@ function dotTickAmount(unit: BattleUnit, effect: BattleEffect): number {
 /**
  * Снимает эффект и откатывает числовые баффы, если применимо.
  */
-export function delEffect(unit: BattleUnit, id: EffectId): void {
+export function delEffect(unit: BattleUnit, id: EffectId, state?: BattleState): void {
   const idx = unit.effects.findIndex((effect) => effect.id === id);
   if (idx < 0) {
     return;
@@ -47,15 +48,15 @@ export function delEffect(unit: BattleUnit, id: EffectId): void {
   if (!removed) {
     return;
   }
-  reverseEffect(unit, removed);
+  reverseEffect(unit, removed, state);
 }
 
 /**
  * Снимает все эффекты с юнита.
  */
-export function clearAllEffects(unit: BattleUnit): void {
+export function clearAllEffects(unit: BattleUnit, state?: BattleState): void {
   for (const effect of [...unit.effects]) {
-    delEffect(unit, effect.id);
+    delEffect(unit, effect.id, state);
   }
 }
 
@@ -296,7 +297,7 @@ export function addMana(unit: BattleUnit, amount: number): number {
  * Тик в конце хода юнита: уменьшение rounds и спадание эффектов.
  * Эффекты, наложенные в этот же ход (fresh), первый тик пропускают.
  */
-export function tickEffectsOnTurnEnd(unit: BattleUnit): string[] {
+export function tickEffectsOnTurnEnd(unit: BattleUnit, state?: BattleState): string[] {
   const log: string[] = [];
   for (const effect of [...unit.effects]) {
     if (effect.fresh) {
@@ -304,7 +305,7 @@ export function tickEffectsOnTurnEnd(unit: BattleUnit): string[] {
     }
     effect.rounds -= 1;
     if (effect.rounds <= 0) {
-      delEffect(unit, effect.id);
+      delEffect(unit, effect.id, state);
       log.push(
         `Эффект ${effectLogLabel(effect.id)} спадает с ${unit.displayName}.`
       );
@@ -339,8 +340,14 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
       unit.dodge = Math.max(0, unit.dodge - Math.round(effect.power));
       break;
     case 'GUARDED':
-      unit.armor += Math.max(1, Math.round(effect.power || 3));
+      // TempLabels: только метка (блок выбора цели), без брони.
       break;
+    case 'AIRSHIELD': {
+      const delta = Math.max(1, Math.round(effect.power || 33));
+      effect.power = delta;
+      changeResist(unit, 'ARROWS', delta);
+      break;
+    }
     case 'FEAR':
       unit.damage = Math.max(1, unit.damage - Math.round(effect.power || 3));
       break;
@@ -413,7 +420,7 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
   }
 }
 
-function reverseEffect(unit: BattleUnit, effect: BattleEffect): void {
+function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleState): void {
   switch (effect.id) {
     case 'STRENGTH':
       unit.damage = Math.max(0, unit.damage - Math.round(effect.power));
@@ -428,7 +435,9 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect): void {
       unit.dodge += Math.round(effect.power);
       break;
     case 'GUARDED':
-      unit.armor = Math.max(0, unit.armor - Math.max(1, Math.round(effect.power || 3)));
+      break;
+    case 'AIRSHIELD':
+      changeResist(unit, 'ARROWS', -Math.max(1, Math.round(effect.power || 33)));
       break;
     case 'FEAR':
       unit.damage += Math.round(effect.power || 3);
@@ -461,6 +470,14 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect): void {
         unit.polymorphSavedArmor = -1;
       }
       break;
+    case 'POLYMORPH': {
+      const parent = unit.transformParentCode;
+      unit.transformParentCode = null;
+      if (parent && state) {
+        applyCatalogStats(state, unit, parent);
+      }
+      break;
+    }
     case 'LUCKY':
       unit.luck = Math.max(0, unit.luck - Math.round(effect.power || 20));
       break;

@@ -136,8 +136,21 @@ describe('combat fixes', () => {
     });
     const lich = state.units.find((unit) => unit.id === 'p1')!;
     const victim = state.units.find((unit) => unit.id === 'p2')!;
+    expect(lich.maxSummons).toBe(1);
     victim.lvl = 8;
     const before = lich.lvl;
+    lich.mana = 2;
+    const noMana = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 5,
+      targetId: 'p2',
+    });
+    expect(noMana.ok).toBe(false);
+    expect(victim.alive).toBe(true);
+
+    lich.mana = 10;
     const cast = applyAction(state, {
       playerId: 'h',
       unitId: 'p1',
@@ -147,8 +160,8 @@ describe('combat fixes', () => {
     });
     expect(cast.ok).toBe(true);
     expect(victim.alive).toBe(false);
-    // max(1, round(8 * 0.75)) = 6 уровней.
-    expect(lich.lvl).toBe(before + 6);
+    // max(1, round(8 * 0.5)) = 4 уровня.
+    expect(lich.lvl).toBe(before + 4);
   });
 
   test('EvilTree slot 5 «Взращивание»: 4 МР → +3 уровней цели', () => {

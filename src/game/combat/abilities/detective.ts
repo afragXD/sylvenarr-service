@@ -5,9 +5,11 @@ import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types
 import { enemiesOf, meleeOrAll, moveToOtherRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-/** Под INVISIBLE — как дальник; иначе melee. GUARDED не блокирует выбор цели. */
+const IGNORE_GUARD = { ignoreGuard: true } as const;
+
+/** Под INVISIBLE — как дальник; иначе melee. GUARDED не блокирует (ignoreGuard). */
 function rapierTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {
-  return meleeOrAll(state, actor, hasEffect(actor, 'INVISIBLE'));
+  return meleeOrAll(state, actor, hasEffect(actor, 'INVISIBLE'), IGNORE_GUARD);
 }
 
 function abilityMeta(
@@ -34,7 +36,7 @@ function abilityMeta(
         disabledReason:
           actor.ultaCharges <= 0
             ? 'Нет яда'
-            : enemiesOf(state, actor).length === 0
+            : enemiesOf(state, actor, IGNORE_GUARD).length === 0
               ? 'Нет врагов'
               : null,
         legalTargetIds: [],
@@ -48,7 +50,7 @@ function abilityMeta(
         legalTargetIds: [],
       };
     case 4: {
-      const targets = enemiesOf(state, actor);
+      const targets = enemiesOf(state, actor, IGNORE_GUARD);
       return {
         slot: 4,
         label: 'Выпад дуэлянта',
@@ -72,7 +74,7 @@ function abilityMeta(
           legalTargetIds: [],
         };
       }
-      const targets = enemiesOf(state, actor);
+      const targets = enemiesOf(state, actor, IGNORE_GUARD);
       return {
         slot: 5,
         label: 'Выстрел в упор',
@@ -125,7 +127,7 @@ export const detectiveAbilities: AbilityHandler = {
 
     if (input.slot === 2) {
       actor.ultaCharges -= 1;
-      for (const enemy of enemiesOf(state, actor)) {
+      for (const enemy of enemiesOf(state, actor, IGNORE_GUARD)) {
         grantEffect(enemy, 'POISON', 2, 0.8);
       }
       state.log.push(`${actor.displayName} отравляет вражеский отряд.`);
@@ -140,7 +142,9 @@ export const detectiveAbilities: AbilityHandler = {
     }
 
     if (input.slot === 4) {
-      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+      const target = enemiesOf(state, actor, IGNORE_GUARD).find(
+        (unit) => unit.id === input.targetId
+      );
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
@@ -167,7 +171,9 @@ export const detectiveAbilities: AbilityHandler = {
       return { status: 'done' };
     }
 
-    const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+    const target = enemiesOf(state, actor, IGNORE_GUARD).find(
+      (unit) => unit.id === input.targetId
+    );
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }

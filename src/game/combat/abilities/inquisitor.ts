@@ -1,5 +1,5 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, hasEffect, trySpendMana, tryStun } from '../effects';
+import { grantEffect, trySpendMana, tryStun } from '../effects';
 import { isArtificialClass, isUndeadClass } from '../races';
 import { ROW_BACK } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -29,16 +29,18 @@ function abilityMeta(
         label: 'Пыточная молния',
         needsTarget: true,
         disabledReason:
-          actor.mana < 3
-            ? 'Нужно 3 МР'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+          actor.tortureLightningCd > 0
+            ? `Кулдаун ${actor.tortureLightningCd} р.`
+            : actor.mana < 3
+              ? 'Нужно 3 МР'
+              : targets.length === 0
+                ? 'Нет целей'
+                : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
     case 3: {
-      const targets = enemiesOf(state, actor).filter((unit) => !hasEffect(unit, 'GUARDED'));
+      const targets = enemiesOf(state, actor);
       return {
         slot: 3,
         label: 'Телекинез',
@@ -90,6 +92,12 @@ export const inquisitorAbilities: AbilityHandler = {
     return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
   },
 
+  preChoice(_state, actor) {
+    if (actor.tortureLightningCd > 0) {
+      actor.tortureLightningCd -= 1;
+    }
+  },
+
   apply(state, actor, input): AbilityOutcome {
     const meta = abilityMeta(state, actor, input.slot);
     if (meta.disabledReason) {
@@ -122,6 +130,7 @@ export const inquisitorAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
+      actor.tortureLightningCd = 2;
       const damage = dealDamage(
         actor,
         target,
@@ -157,7 +166,7 @@ export const inquisitorAbilities: AbilityHandler = {
         return { status: 'reject', message: err };
       }
       const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
-      if (!target || hasEffect(target, 'GUARDED')) {
+      if (!target) {
         return { status: 'reject', message: 'Цель недоступна' };
       }
       if (randInt(1, 100) <= 75 + actor.lvl) {
@@ -184,7 +193,8 @@ export const inquisitorAbilities: AbilityHandler = {
         state.log.push(
           `${actor.displayName} мощным ударом бьёт ${target.displayName} (${damage}).`
         );
-        if (randInt(1, 100) <= 62 + actor.lvl && tryStun(state, target, 1)) {
+        // options.py: 62+L; fourthAction ошибочно 162+L — берём 62+L×2.
+        if (randInt(1, 100) <= 62 + actor.lvl * 2 && tryStun(state, target, 1)) {
           state.log.push(`${target.displayName} оглушён.`);
         } else {
           const broken = Math.max(1, Math.round(damage * 0.25));

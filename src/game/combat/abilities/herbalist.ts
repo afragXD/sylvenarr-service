@@ -90,9 +90,9 @@ export const herbalistAbilities: AbilityHandler = {
         return { status: 'reject', message: err };
       }
       for (const ally of ownRowAllies(state, actor)) {
-        const atk = Math.max(1, Math.round(ally.damage * 0.2));
-        grantEffect(ally, 'STRENGTH', 2, atk);
-        grantEffect(ally, 'FOCUSED', 2, 20 + actor.lvl);
+        const atk = Math.max(1, Math.round(ally.damage * 0.25));
+        grantEffect(ally, 'STRENGTH', 1, atk);
+        grantEffect(ally, 'FOCUSED', 1, 20 + actor.lvl);
       }
       state.log.push(`${actor.displayName}: укрепляющие пары на ряд.`);
       return { status: 'done' };
@@ -104,7 +104,12 @@ export const herbalistAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Нужен союзник' };
       }
       clearDebuffs(target);
-      state.log.push(`${actor.displayName} снимает дебаффы с ${target.displayName}.`);
+      clearDebuffs(actor);
+      state.log.push(
+        target.id === actor.id
+          ? `${actor.displayName} снимает дебаффы с себя.`
+          : `${actor.displayName} снимает дебаффы с ${target.displayName} и с себя.`
+      );
       return { status: 'done' };
     }
 

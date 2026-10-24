@@ -126,7 +126,7 @@ export function initPilotFlags(unit: BattleUnit): void {
       unit.authority = 2 + Math.floor(Math.random() * 2);
       break;
     case 'Archlich':
-      unit.maxSummons = 2;
+      unit.maxSummons = 1;
       break;
     case 'DemonLord':
       unit.ultaCharges = 2;
@@ -152,7 +152,7 @@ export function initPilotFlags(unit: BattleUnit): void {
       unit.ultaCharges = 1;
       break;
     case 'Demiurge':
-      unit.maxSummons = 1;
+      unit.maxSummons = 2;
       break;
     case 'Detective':
       unit.gun = 1;
