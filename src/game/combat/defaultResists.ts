@@ -47,7 +47,8 @@ export const DEFAULT_RESISTS: Record<string, ResistMap> = {
   ]),
   Knight: map([['FINALSTRIKE', { value: 25 }]]),
   Archlich: map([
-    ['FIRE', { value: -20, ward: 1 }],
+    // Вард огня — только с levelup (каждые 5 ур.), как в боте.
+    ['FIRE', { value: -20 }],
     ['DEATH', { value: 75, ward: 1 }],
     ['HOLY', { value: -20 }],
   ]),
@@ -71,16 +72,19 @@ export const DEFAULT_RESISTS: Record<string, ResistMap> = {
     ['LOWERINGLEVEL', { ward: 1 }],
   ]),
   Dracolich: map([
+    ['FIRE', { value: -15 }],
     ['MOVEMENT', { ward: 1 }],
     ['DEATH', { value: 80, ward: 1 }],
     ['LOWERINGLEVEL', { immune: true }],
     ['POLYMORPH', { ward: 1 }],
   ]),
   GhostWarrior: map([
+    ['FIRE', { value: -15 }],
     ['DEATH', { value: 85 }],
     ['HOLY', { value: -35 }],
     ['WEAPON', { value: 20 }],
   ]),
+  Specter: map([['FIRE', { value: -15 }]]),
   Demiurge: map([
     ['IMITATION', { immune: true }],
     ['AIR', { value: 20 }],
@@ -106,6 +110,7 @@ export const DEFAULT_RESISTS: Record<string, ResistMap> = {
     ['HOLY', { value: -40 }],
   ]),
   SkeletonChampion: map([
+    ['FIRE', { value: -15 }],
     ['AIR', { value: -25 }],
     ['DEATH', { value: 65 }],
     ['ARROWS', { value: 50, ward: 1 }],

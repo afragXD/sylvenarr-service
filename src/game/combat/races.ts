@@ -5,13 +5,14 @@ const UNDEAD_CODES = new Set([
   'Dracolich',
   'Zombie',
   'SkeletonChampion',
-  'Ectoplasm',
-  'Witch',
   'Specter',
 ]);
 
 /** Демоны / бездна. */
-const DEMON_CODES = new Set(['DemonLord']);
+const DEMON_CODES = new Set(['DemonLord', 'Witch']);
+
+/** Мистика. */
+const MYSTIC_CODES = new Set(['Ectoplasm', 'Demiurge', 'EvilTree', 'BeerElemental']);
 
 /** Механизмы / искусственные (иммунитет к порабощению русалки). */
 const ARTIFICIAL_CODES = new Set(['GoldGolem', 'Imp']);
@@ -28,6 +29,13 @@ export function isUndeadClass(code: string): boolean {
  */
 export function isDemonClass(code: string): boolean {
   return DEMON_CODES.has(code);
+}
+
+/**
+ * Мистика по коду класса.
+ */
+export function isMysticClass(code: string): boolean {
+  return MYSTIC_CODES.has(code);
 }
 
 /**
