@@ -53,3 +53,11 @@ export function sourceFromAttackStyle(
   }
   return 'WEAPON';
 }
+
+/**
+ * Число урона в логе с машинным маркером источника для подсветки на клиенте.
+ * Формат: `(42)⟦FIRE⟧` — маркер клиент скрывает, число красит по SRC.
+ */
+export function formatLogDamage(amount: number, source: DamageSource): string {
+  return `(${amount})⟦${source}⟧`;
+}

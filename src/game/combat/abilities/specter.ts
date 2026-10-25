@@ -1,4 +1,5 @@
 import { markDeadIfNeeded, randInt } from '../damage';
+import { formatLogDamage } from '../damageSources';
 import { grantEffect, tryStun } from '../effects';
 import { setWard } from '../resists';
 import { unitChoiceLabel } from '../transform';
@@ -74,7 +75,7 @@ function ghostParalysis(state: BattleState, actor: BattleUnit, target: BattleUni
     const dmg = Math.max(1, Math.round(actor.power * 0.5));
     target.health -= dmg;
     state.log.push(
-      `${target.displayName} сопротивляется ужасу и теряет ${dmg} ОЗ.`
+      `${target.displayName} сопротивляется ужасу и теряет ${formatLogDamage(dmg, 'MIND')} ОЗ.`
     );
     markDeadIfNeeded(state, target);
   }

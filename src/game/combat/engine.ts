@@ -10,7 +10,13 @@ import {
 import { maybeKillHorse } from './abilities/knight';
 import { moveToOtherRow } from './abilities/targets';
 import { resolveAttackStyle } from './attack-style';
-import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt } from './damage';
+import {
+  dealDamage,
+  formatLastLogDamage,
+  lastDealDamageResult,
+  markDeadIfNeeded,
+  randInt,
+} from './damage';
 import { resistsForClass } from './defaultResists';
 import { levelUpLivingUnits, levelUpUnit } from './level';
 import { applyPsycho, maybeRewardHighMorale, normalizeUnit } from './morale';
@@ -429,7 +435,7 @@ export function applyAction(
         listPilotAbilities(state, actor).find((ability) => ability.slot === slot)?.label ??
         `Слот ${slot}`;
       capsLogAt = state.log.length;
-      state.log.push(`${actor.displayName}: ${label.toLocaleUpperCase('ru-RU')}`);
+      state.log.push(label.toLocaleUpperCase('ru-RU'));
     }
     const outcome = applyAbility(state, actor, {
       slot,
@@ -454,7 +460,7 @@ export function applyAction(
     const label =
       listPilotAbilities(state, actor).find((ability) => ability.slot === 1)?.label ?? 'Слот 1';
     const capsLogAt = state.log.length;
-    state.log.push(`${actor.displayName}: ${label.toLocaleUpperCase('ru-RU')}`);
+    state.log.push(label.toLocaleUpperCase('ru-RU'));
     const outcome = applyAbility(state, actor, {
       slot: 1,
       targetId: input.targetId,
@@ -476,6 +482,7 @@ export function applyAction(
     return { ok: false, message: 'Цель не найдена' };
   }
 
+  state.log.push('АТАКА');
   resolveAttackWithClassMods(state, actor, target);
   finishUnitTurn(state, actor);
   return { ok: true };
@@ -525,6 +532,7 @@ function applySkillAction(
   }
 
   if (skill.kind === 'heal_self') {
+    state.log.push(skill.label.toLocaleUpperCase('ru-RU'));
     const base = Math.max(1, Math.round(actor.maxHp * skill.healFraction));
     const healed = healUnit(actor, base);
     state.log.push(`${actor.displayName}: ${skill.label} (+${healed} ОЗ).`);
@@ -537,6 +545,7 @@ function applySkillAction(
     if (enemies.length === 0) {
       return { ok: false, message: 'Нет целей' };
     }
+    state.log.push(skill.label.toLocaleUpperCase('ru-RU'));
     for (const enemy of enemies) {
       const damage = dealDamage(
         actor,
@@ -545,7 +554,9 @@ function applySkillAction(
         state
       );
       if (damage > 0) {
-        state.log.push(`${actor.displayName}: ${skill.label} → ${enemy.displayName} (${damage}).`);
+        state.log.push(
+          `${actor.displayName}: ${skill.label} → ${enemy.displayName} ${formatLastLogDamage(damage)}.`
+        );
       }
       markDeadIfNeeded(state, enemy);
     }
@@ -562,6 +573,8 @@ function applySkillAction(
   if (!target) {
     return { ok: false, message: 'Цель навыка не найдена' };
   }
+
+  state.log.push(skill.label.toLocaleUpperCase('ru-RU'));
 
   if (skill.kind === 'heal_ally') {
     const base = Math.max(1, Math.round(target.maxHp * skill.healFraction));
@@ -586,7 +599,7 @@ function applySkillAction(
     state.log.push(`${actor.displayName}: ${skill.label} — промах по ${target.displayName}.`);
   } else if (damage > 0) {
     state.log.push(
-      `${actor.displayName}: ${skill.label} → ${target.displayName} на ${damage}. Осталось ${Math.max(0, target.health)} ОЗ.`
+      `${actor.displayName}: ${skill.label} → ${target.displayName} ${formatLastLogDamage(damage)}. Осталось ${Math.max(0, target.health)} ОЗ.`
     );
   }
   markDeadIfNeeded(state, target);
@@ -613,7 +626,7 @@ function resolveAttackWithClassMods(
     state.log.push(`${actor.displayName} промахнулся по ${target.displayName}.`);
   } else if (damage > 0) {
     state.log.push(
-      `${actor.displayName} бьёт ${target.displayName} на ${damage}. Осталось ${Math.max(0, target.health)} ОЗ.`
+      `${actor.displayName} бьёт ${target.displayName} ${formatLastLogDamage(damage)}. Осталось ${Math.max(0, target.health)} ОЗ.`
     );
     if (mods.lifesteal > 0) {
       const heal = healUnit(actor, Math.max(1, Math.round(damage * mods.lifesteal)));
@@ -633,7 +646,9 @@ function resolveAttackWithClassMods(
       state
     );
     if (second > 0) {
-      state.log.push(`${actor.displayName} наносит повторный удар на ${second}.`);
+      state.log.push(
+        `${actor.displayName} наносит повторный удар ${formatLastLogDamage(second)}.`
+      );
       markDeadIfNeeded(state, target);
     }
   }
@@ -652,7 +667,7 @@ function resolveAttackWithClassMods(
       );
       if (splash > 0) {
         state.log.push(
-          `Атака задевает ${behind.displayName} на ${splash}. Осталось ${Math.max(0, behind.health)} ОЗ.`
+          `Атака задевает ${behind.displayName} ${formatLastLogDamage(splash)}. Осталось ${Math.max(0, behind.health)} ОЗ.`
         );
         markDeadIfNeeded(state, behind);
       }
@@ -678,7 +693,9 @@ function resolveAttackWithClassMods(
         state
       );
       if (cleave > 0) {
-        state.log.push(`${actor.displayName} задевает ${enemy.displayName} на ${cleave}.`);
+        state.log.push(
+          `${actor.displayName} задевает ${enemy.displayName} ${formatLastLogDamage(cleave)}.`
+        );
         markDeadIfNeeded(state, enemy);
       }
     }

@@ -1,5 +1,5 @@
 import { resolveAttackStyle } from '../attack-style';
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { resistsForClass } from '../defaultResists';
 import { grantEffect, hasEffect } from '../effects';
 import { mindResistFactor } from '../resists';
@@ -134,7 +134,7 @@ export const zombieAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: укус — промах.`);
         return { status: 'done' };
       }
-      state.log.push(`${actor.displayName} кусает ${target.displayName} (${damage}).`);
+      state.log.push(`${actor.displayName} кусает ${target.displayName} ${formatLastLogDamage(damage)}.`);
       const cf = target.morale <= 0 ? 1 : 1.5;
       const dirt = Math.round(randInt(3, 4 + actor.lvl) * mindResistFactor(target) * cf);
       if (dirt > 0) {

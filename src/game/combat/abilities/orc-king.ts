@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect } from '../effects';
 import { unitChoiceLabel } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -125,7 +125,7 @@ export const orcKingAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName} промахнулся бердышом.`);
       } else {
         state.log.push(
-          `${actor.displayName} бьёт бердышом ${target.displayName} на ${damage} (ярость ×${rage}).`
+          `${actor.displayName} бьёт бердышом ${target.displayName} ${formatLastLogDamage(damage)} (ярость ×${rage}).`
         );
         markDeadIfNeeded(state, target);
       }
@@ -160,7 +160,7 @@ export const orcKingAbilities: AbilityHandler = {
         return { status: 'done' };
       }
       state.log.push(
-        `${actor.displayName} бьёт кастетом ${target.displayName} на ${damage}.`
+        `${actor.displayName} бьёт кастетом ${target.displayName} ${formatLastLogDamage(damage)}.`
       );
       markDeadIfNeeded(state, target);
       if (target.alive && randInt(1, 100) <= 60 + actor.lvl) {
@@ -304,7 +304,7 @@ function throwAxe(state: BattleState, actor: BattleUnit, target: BattleUnit): vo
     return;
   }
   state.log.push(
-    `Метательный топор ${actor.displayName} попадает в ${target.displayName} на ${damage}.`
+    `Метательный топор ${actor.displayName} попадает в ${target.displayName} ${formatLastLogDamage(damage)}.`
   );
   markDeadIfNeeded(state, target);
   if (target.alive && randInt(1, 100) <= 60 + actor.lvl) {

@@ -18,10 +18,15 @@ export const summonLevelUps: Record<string, ClassLevelUpFn> = {
   GoblinTrapper(unit, ind, _state) {
     unit.lvl = Math.max(1, unit.lvl + ind);
     unit.accuracy += ind * 2;
-    unit.damage += 4 * ind;
-    unit.luck += 3 * ind;
-    unit.maxHp += 2 * ind;
-    healUnit(unit, 2 * ind);
+    unit.damage += 3 * ind;
+    unit.luck += 2 * ind;
+    unit.maxHp += ind;
+    healUnit(unit, ind);
+  },
+
+  Ectoplasm(unit, ind, _state) {
+    unit.power += 2 * ind;
+    bumpLevel(unit, ind);
   },
 
   Zombie(unit, ind, _state) {

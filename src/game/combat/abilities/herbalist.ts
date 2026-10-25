@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded } from '../damage';
 import { clearDebuffs, grantEffect, healUnit, trySpendMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, ownRowAllies } from './targets';
@@ -126,7 +126,11 @@ export const herbalistAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const graves = state.graveyard.filter((entry) => entry.team === actor.team).length;
+      const graves =
+        state.graveyard.filter((entry) => entry.team === actor.team).length +
+        state.units.filter(
+          (unit) => !unit.alive && unit.team === actor.team && unit.isSummon
+        ).length;
       const damageMult = 1 + 0.15 * graves;
       const armorIgnore = (20 + actor.lvl) / 100;
       const damage = dealDamage(
@@ -140,7 +144,7 @@ export const herbalistAbilities: AbilityHandler = {
         return { status: 'done' };
       }
       state.log.push(
-        `${actor.displayName} бьёт пращой ${target.displayName} (${damage}${graves > 0 ? `, +${graves * 15}% за могилы` : ''}).`
+        `${actor.displayName} бьёт пращой ${target.displayName} ${formatLastLogDamage(damage)}${graves > 0 ? ` (+${graves * 15}% за могилы)` : ''}.`
       );
       markDeadIfNeeded(state, target);
       return { status: 'done' };

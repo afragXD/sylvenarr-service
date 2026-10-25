@@ -1,4 +1,5 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
+import { formatLogDamage } from '../damageSources';
 import { grantEffect, hasEffect, healUnit, trySpendMana, addMana } from '../effects';
 import { setWard } from '../resists';
 import { ROW_BACK, ROW_FRONT } from '../settings';
@@ -156,7 +157,7 @@ function applyMarauder(
       state.log.push(`${actor.displayName}: лук — промах.`);
     } else {
       state.log.push(
-        `${actor.displayName} стреляет в ${target.displayName} (${damage}${mult > 1 ? ', метка' : ''}).`
+        `${actor.displayName} стреляет в ${target.displayName} ${formatLastLogDamage(damage)}${mult > 1 ? ' (метка)' : ''}.`
       );
       markDeadIfNeeded(state, target);
     }
@@ -179,7 +180,7 @@ function applyMarauder(
         state
       );
       if (damage > 0) {
-        state.log.push(`${actor.displayName}: подавляющий огонь → ${enemy.displayName} (${damage}).`);
+        state.log.push(`${actor.displayName}: подавляющий огонь → ${enemy.displayName} ${formatLastLogDamage(damage)}.`);
         if (randInt(1, 100) <= 60 + actor.lvl) {
           grantEffect(enemy, 'UNLUCKY', 1 + Math.floor(actor.lvl / 5), 20);
           grantEffect(enemy, 'SLOW', 1 + Math.floor(actor.lvl / 5), 15);
@@ -209,7 +210,7 @@ function applyMarauder(
     if (damage === 0) {
       state.log.push(`${actor.displayName}: мощный выстрел — промах.`);
     } else {
-      state.log.push(`${actor.displayName} мощным выстрелом бьёт ${target.displayName} (${damage}).`);
+      state.log.push(`${actor.displayName} мощным выстрелом бьёт ${target.displayName} ${formatLastLogDamage(damage)}.`);
       markDeadIfNeeded(state, target);
     }
     return { status: 'done' };
@@ -247,7 +248,7 @@ function applyMarauder(
   const burn = Math.max(1, Math.round(actor.power * moraleBoost));
   target.health -= burn;
   state.log.push(
-    `${actor.displayName}: тёмное пламя жжёт ${target.displayName} (${burn}, ×${moraleBoost}).`
+    `${actor.displayName}: тёмное пламя жжёт ${target.displayName} ${formatLogDamage(burn, 'FIRE')} (×${moraleBoost}).`
   );
   if (randInt(1, 100) <= 67) {
     const manaBurn = randInt(3, 4);
@@ -277,7 +278,7 @@ function applyWerewolf(
     if (damage === 0) {
       state.log.push(`${actor.displayName}: промах.`);
     } else {
-      state.log.push(`${actor.displayName} рвёт ${target.displayName} (${damage}).`);
+      state.log.push(`${actor.displayName} рвёт ${target.displayName} ${formatLastLogDamage(damage)}.`);
       if (randInt(1, 100) <= 71 + actor.lvl * 2) {
         const lose = Math.max(1, Math.round(target.damage * 0.5));
         grantEffect(target, 'WEAKNESS', 2, lose);
@@ -305,7 +306,7 @@ function applyWerewolf(
       const healed = healUnit(actor, vamp);
       addMana(actor, Math.floor(vamp / 5));
       state.log.push(
-        `${actor.displayName} кусает ${target.displayName} (${damage}), +${healed} ОЗ.`
+        `${actor.displayName} кусает ${target.displayName} ${formatLastLogDamage(damage)}, +${healed} ОЗ.`
       );
       markDeadIfNeeded(state, target);
     }

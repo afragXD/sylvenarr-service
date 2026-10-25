@@ -1,4 +1,5 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
+import { formatLogDamage } from '../damageSources';
 import { grantEffect, hasEffect } from '../effects';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -119,7 +120,7 @@ export const detectiveAbilities: AbilityHandler = {
       if (damage === 0) {
         state.log.push(`${actor.displayName}: рапира — промах.`);
       } else {
-        state.log.push(`${actor.displayName} бьёт рапирой ${target.displayName} (${damage}).`);
+        state.log.push(`${actor.displayName} бьёт рапирой ${target.displayName} ${formatLastLogDamage(damage)}.`);
         markDeadIfNeeded(state, target);
       }
       return { status: 'done' };
@@ -155,7 +156,7 @@ export const detectiveAbilities: AbilityHandler = {
       } else {
         grantEffect(actor, 'CONTR', 2 + Math.floor(actor.lvl / 6), 0);
         state.log.push(
-          `${actor.displayName}: выпад дуэлянта → ${target.displayName} (${damage}).`
+          `${actor.displayName}: выпад дуэлянта → ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
         markDeadIfNeeded(state, target);
       }
@@ -185,7 +186,7 @@ export const detectiveAbilities: AbilityHandler = {
     target.health -= shotgun;
     actor.gun = 0;
     state.log.push(
-      `${actor.displayName} стреляет в упор в ${target.displayName} (${shotgun}).`
+      `${actor.displayName} стреляет в упор в ${target.displayName} ${formatLogDamage(shotgun, 'WEAPON')}.`
     );
     if (randInt(1, 100) <= 50) {
       moveToOtherRow(actor);

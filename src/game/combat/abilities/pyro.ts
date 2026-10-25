@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect, hasEffect } from '../effects';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -100,7 +100,7 @@ export const pyroAbilities: AbilityHandler = {
           state
         );
         if (damage > 0) {
-          state.log.push(`${actor.displayName}: огнемёт → ${enemy.displayName} (${damage}).`);
+          state.log.push(`${actor.displayName}: огнемёт → ${enemy.displayName} ${formatLastLogDamage(damage)}.`);
           if (randInt(1, 100) <= 50) {
             grantEffect(enemy, 'BURNING', 2, 1.3);
           }
@@ -129,7 +129,7 @@ export const pyroAbilities: AbilityHandler = {
         const broken = randInt(2, 6 + actor.lvl);
         target.armor = Math.max(0, target.armor - broken);
         state.log.push(
-          `${actor.displayName}: паровой болт → ${target.displayName} (${damage}, −${broken} брони).`
+          `${actor.displayName}: паровой болт → ${target.displayName} ${formatLastLogDamage(damage)} (−${broken} брони).`
         );
         markDeadIfNeeded(state, target);
       }

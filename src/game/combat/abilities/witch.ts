@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect, healUnit, tryLevelDrain, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
 import { rollSrcChance } from '../resists';
@@ -120,7 +120,7 @@ export const witchAbilities: AbilityHandler = {
             state.log.push(`${actor.displayName}: ${label} — промах.`);
           } else {
             state.log.push(
-              `${actor.displayName} стреляет в ${target.displayName} (${damage}).`
+              `${actor.displayName} стреляет в ${target.displayName} ${formatLastLogDamage(damage)}.`
             );
             markDeadIfNeeded(state, target);
           }
@@ -148,7 +148,7 @@ export const witchAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: каблучок — промах.`);
       } else {
         state.log.push(
-          `${actor.displayName} бьёт каблучком ${target.displayName} на ${damage}.`
+          `${actor.displayName} бьёт каблучком ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
         markDeadIfNeeded(state, target);
       }
@@ -178,7 +178,7 @@ export const witchAbilities: AbilityHandler = {
           Math.max(1, Math.round(damage / 3 + target.health * 0.12))
         );
         state.log.push(
-          `${actor.displayName} кусает ${target.displayName} (${damage}), +${healed} ОЗ.`
+          `${actor.displayName} кусает ${target.displayName} ${formatLastLogDamage(damage)}, +${healed} ОЗ.`
         );
         markDeadIfNeeded(state, target);
       }

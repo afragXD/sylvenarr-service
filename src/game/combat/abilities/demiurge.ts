@@ -1,14 +1,14 @@
-import {
-  dealDamage,
-  lastDealDamageResult,
-  markDeadIfNeeded,
-  randInt,
-} from '../damage';
+import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect, hasEffect, trySpendMana, tryStun } from '../effects';
 import { rollMindChance } from '../resists';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { createPhantomCopy, createSummon, preferSummonRow } from './summon';
+import {
+  createPhantomCopy,
+  createSummon,
+  preferPhantomRow,
+  preferSummonRow,
+} from './summon';
 import { alliesOf, enemiesOf } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
@@ -74,7 +74,7 @@ function abilityMeta(
         slot: 4,
         label: 'Призыв эктоплазмы',
         needsTarget: false,
-        disabledReason: null,
+        disabledReason: actor.mana < 2 ? 'Нужно 2 МР' : null,
         legalTargetIds: [],
       };
     case 5:
@@ -172,7 +172,7 @@ export const demiurgeAbilities: AbilityHandler = {
         state
       );
       if (d1 > 0) {
-        state.log.push(`${actor.displayName}: молния → ${primary.displayName} (${d1}).`);
+        state.log.push(`${actor.displayName}: молния → ${primary.displayName} ${formatLastLogDamage(d1)}.`);
         markDeadIfNeeded(state, primary);
       }
       maybeFrontRowStun(state, actor, primary, fromFront);
@@ -190,7 +190,7 @@ export const demiurgeAbilities: AbilityHandler = {
         );
         if (dmg > 0) {
           state.log.push(
-            `${actor.displayName}: разряд → ${next.displayName} (${dmg}).`
+            `${actor.displayName}: разряд → ${next.displayName} ${formatLastLogDamage(dmg)}.`
           );
           markDeadIfNeeded(state, next);
         }
@@ -210,9 +210,15 @@ export const demiurgeAbilities: AbilityHandler = {
       if (!template) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const phantom = createPhantomCopy(state, actor, template, actor.row);
+      const row = preferPhantomRow(state, actor);
+      if (row === null) {
+        state.log.push(`${actor.displayName}: нет места для фантома.`);
+        return { status: 'done' };
+      }
+      const phantom = createPhantomCopy(state, actor, template, row);
       if (!phantom) {
-        return { status: 'reject', message: 'Не удалось создать фантом' };
+        state.log.push(`${actor.displayName}: нет места для фантома.`);
+        return { status: 'done' };
       }
       state.log.push(`${actor.displayName} копирует ${template.displayName}.`);
       return { status: 'done' };
@@ -242,7 +248,7 @@ export const demiurgeAbilities: AbilityHandler = {
         const target = pickFragileAlly(allies);
         const dmg = dealDamage(victim, target, { damageMult: 1, armorIgnore: 0 }, state);
         state.log.push(
-          `${actor.displayName} подчиняет ${victim.displayName} → ${target.displayName} (${dmg}).`
+          `${actor.displayName} подчиняет ${victim.displayName} → ${target.displayName} ${formatLastLogDamage(dmg)}.`
         );
         markDeadIfNeeded(state, target);
       } else {
@@ -252,9 +258,14 @@ export const demiurgeAbilities: AbilityHandler = {
     }
 
     if (input.slot === 4) {
+      const manaErr = trySpendMana(actor, 2);
+      if (manaErr) {
+        return { status: 'reject', message: manaErr };
+      }
       const row = preferSummonRow(state, actor);
       if (row === null) {
-        return { status: 'reject', message: 'Нет места для саммона' };
+        state.log.push(`${actor.displayName}: нет места для эктоплазмы.`);
+        return { status: 'done' };
       }
       const summon = createSummon(state, {
         summoner: actor,
@@ -262,7 +273,8 @@ export const demiurgeAbilities: AbilityHandler = {
         row,
       });
       if (!summon) {
-        return { status: 'reject', message: 'Не удалось призвать' };
+        state.log.push(`${actor.displayName}: не удалось призвать эктоплазму.`);
+        return { status: 'done' };
       }
       state.log.push(`${actor.displayName} призывает эктоплазму.`);
       return { status: 'done' };

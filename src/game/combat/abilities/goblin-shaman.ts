@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { addMana, grantEffect, healUnit, trySpendMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, unitsOnSameRow } from './targets';
@@ -119,7 +119,7 @@ export const goblinShamanAbilities: AbilityHandler = {
           state.log.push(`${actor.displayName}: буря — промах по ${enemy.displayName}.`);
         } else {
           state.log.push(
-            `Зачарованная гроза нанесла ${damage} урона ${enemy.displayName}.`
+            `Зачарованная гроза нанесла ${formatLastLogDamage(damage)} урона ${enemy.displayName}.`
           );
           markDeadIfNeeded(state, enemy);
         }

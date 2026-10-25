@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect } from '../effects';
 import { changeResist } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -103,7 +103,7 @@ export const skeletonChampionAbilities: AbilityHandler = {
       const destroyed = Math.min(target.armor, randInt(5, 10 + masterLvl));
       target.armor = Math.max(0, target.armor - destroyed);
       state.log.push(
-        `${actor.displayName} бьёт молотом ${target.displayName} (${damage}), уничтожено ${destroyed} брони.`
+        `${actor.displayName} бьёт молотом ${target.displayName} ${formatLastLogDamage(damage)}, уничтожено ${destroyed} брони.`
       );
       markDeadIfNeeded(state, target);
       return { status: 'done' };

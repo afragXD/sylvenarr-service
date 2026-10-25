@@ -167,7 +167,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
 
   Herbalist(unit, ind, _state) {
     unit.armor += 2 * ind;
-    unit.damage += randInt(1, 2) * ind;
+    unit.damage += randInt(2, 3) * ind;
     bumpLevel(unit, ind);
   },
 

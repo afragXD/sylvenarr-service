@@ -2,7 +2,7 @@
 export const INITIAL_TEAM_SIZE = 3;
 
 /** Макс. юнитов на одном ряду, legacy MAX_ROW_SIZE. */
-export const MAX_ROW_SIZE = 3;
+export const MAX_ROW_SIZE = 4;
 
 /** Передний ряд. */
 export const ROW_FRONT = 0;

@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded } from '../damage';
+import { dealDamage, markDeadIfNeeded, formatLastLogDamage } from '../damage';
 import { grantEffect, healUnit, resurrectUnit, trySpendMana, addMana } from '../effects';
 import { ROW_BACK } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -157,7 +157,7 @@ export const patriarchAbilities: AbilityHandler = {
         );
         if (damage > 0) {
           state.log.push(
-            `${actor.displayName}: гнев богов → ${enemy.displayName} (${damage}).`
+            `${actor.displayName}: гнев богов → ${enemy.displayName} ${formatLastLogDamage(damage)}.`
           );
           markDeadIfNeeded(state, enemy);
         }

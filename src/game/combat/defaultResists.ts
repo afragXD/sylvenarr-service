@@ -116,7 +116,10 @@ export const DEFAULT_RESISTS: Record<string, ResistMap> = {
     ['ARROWS', { value: 50, ward: 1 }],
     ['HOLY', { value: -30 }],
   ]),
-  Ectoplasm: map([['WEAPON', { ward: 1 }]]),
+  Ectoplasm: map([
+    ['WEAPON', { ward: 1 }],
+    ['FIRE', { value: -20 }],
+  ]),
 };
 
 /**

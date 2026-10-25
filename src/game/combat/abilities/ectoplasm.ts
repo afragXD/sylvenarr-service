@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { createSummon, preferSummonRow } from './summon';
 import { listAttackTargets } from './targets';
@@ -103,7 +103,7 @@ export const ectoplasmAbilities: AbilityHandler = {
         return { status: 'done' };
       }
       state.log.push(
-        `${actor.displayName} шлёпает слизью ${target.displayName} (${damage}).`
+        `${actor.displayName} шлёпает слизью ${target.displayName} ${formatLastLogDamage(damage)}.`
       );
       markDeadIfNeeded(state, target);
       return { status: 'done' };

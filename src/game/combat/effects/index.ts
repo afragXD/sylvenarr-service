@@ -1,4 +1,8 @@
-import { DAMAGE_SOURCE_LABELS, type DamageSource } from '../damageSources';
+import {
+  DAMAGE_SOURCE_LABELS,
+  formatLogDamage,
+  type DamageSource,
+} from '../damageSources';
 import { effectLogLabel } from '../effect-labels';
 import { applyResistMultiplier, changeResist, mindResistFactor } from '../resists';
 import { applyCatalogStats } from '../transform';
@@ -282,7 +286,7 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
         const dot = Math.max(1, Math.round(raw * resist.multiplier));
         unit.health -= dot;
         log.push(
-          `${unit.displayName} получает ${dot} урона от ${effectLogLabel(effect.id)}.`
+          `${unit.displayName} получает ${formatLogDamage(dot, dotSource)} урона от ${effectLogLabel(effect.id)}.`
         );
       }
     }

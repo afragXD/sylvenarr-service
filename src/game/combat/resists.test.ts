@@ -152,6 +152,7 @@ describe('ResistManager', () => {
       displayName: 'Эктоплазма',
       resists: resistsForClass('Ectoplasm'),
     });
+    expect(ecto.resists.FIRE?.value).toBe(-20);
     const attacker = unit({
       id: 'a',
       damage: 30,

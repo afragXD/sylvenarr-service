@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { effectLogLabel } from '../effect-labels';
 import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana, addMana } from '../effects';
 import { levelUpUnit } from '../level';
@@ -136,7 +136,7 @@ export const evilTreeAbilities: AbilityHandler = {
         return { status: 'done' };
       }
       state.log.push(
-        `${actor.displayName} опутывает ${target.displayName} (${damage}).`
+        `${actor.displayName} опутывает ${target.displayName} ${formatLastLogDamage(damage)}.`
       );
       grantEffect(target, 'SLOW', 1 + Math.floor(actor.lvl / 5), 15 + actor.lvl);
       markDeadIfNeeded(state, target);

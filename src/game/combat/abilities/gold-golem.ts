@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect, tryStun, addMana } from '../effects';
 import { setWard } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -97,7 +97,7 @@ export const goldGolemAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: апперкот — промах.`);
       } else {
         state.log.push(
-          `${actor.displayName} бьёт апперкотом ${target.displayName} (${damage}).`
+          `${actor.displayName} бьёт апперкотом ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
         if (randInt(1, 100) <= 20 + actor.lvl && tryStun(state, target, 1)) {
           state.log.push(`${target.displayName} в нокауте.`);

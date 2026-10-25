@@ -1,4 +1,5 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
+import { formatLogDamage } from '../damageSources';
 import { delEffect, grantEffect, hasEffect } from '../effects';
 import { levelUpUnit } from '../level';
 import { applyCatalogStats } from '../transform';
@@ -110,7 +111,7 @@ export const assassinAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName} промахивается стилетом.`);
       } else {
         state.log.push(
-          `${actor.displayName} бьёт стилетом ${target.displayName} на ${damage}.`
+          `${actor.displayName} бьёт стилетом ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
         markDeadIfNeeded(state, target);
       }
@@ -180,7 +181,7 @@ export const assassinAbilities: AbilityHandler = {
       target.health -= poke;
       grantEffect(target, 'POISON', 2, 1.2);
       state.log.push(
-        `${actor.displayName} бросает дротик в ${target.displayName} (${poke} + яд).`
+        `${actor.displayName} бросает дротик в ${target.displayName} ${formatLogDamage(poke, 'WEAPON')} (+ яд).`
       );
       markDeadIfNeeded(state, target);
       return { status: 'done' };

@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { DAMAGE_SOURCE_LABELS, type DamageSource } from '../damageSources';
 import {
   clearAllEffects,
@@ -121,7 +121,7 @@ export const abbessAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: Копьё Солнца — промах.`);
       } else {
         state.log.push(
-          `${actor.displayName} поражает ${target.displayName} Копьём Солнца (${damage}).`
+          `${actor.displayName} поражает ${target.displayName} Копьём Солнца ${formatLastLogDamage(damage)}.`
         );
         if (randInt(1, 100) <= 75 + actor.lvl) {
           grantEffect(target, 'SLOW', 2, 15 + actor.lvl);

@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { addMana, delEffect, grantEffect, healUnit } from '../effects';
 import { levelUpUnit } from '../level';
 import { rollMindChance } from '../resists';
@@ -110,7 +110,7 @@ export const archlichAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: облако смерти — промах.`);
       } else {
         state.log.push(
-          `${actor.displayName} насылает смерть на ${target.displayName} (${damage}).`
+          `${actor.displayName} насылает смерть на ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
         markDeadIfNeeded(state, target);
       }
@@ -129,7 +129,7 @@ export const archlichAbilities: AbilityHandler = {
           state
         );
         if (splash > 0) {
-          state.log.push(`Облако задевает ${extra.displayName} на ${splash}.`);
+          state.log.push(`Облако задевает ${extra.displayName} ${formatLastLogDamage(splash)}.`);
           markDeadIfNeeded(state, extra);
         }
       }

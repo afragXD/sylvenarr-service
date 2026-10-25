@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { delEffect, grantEffect, hasEffect } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, meleeOrAll, neighbourBehind, ownRowAllies } from './targets';
@@ -102,7 +102,7 @@ export const knightAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName} промахнулся копьём по ${target.displayName}.`);
       } else {
         state.log.push(
-          `${actor.displayName} бьёт копьём ${target.displayName} на ${damage}.`
+          `${actor.displayName} бьёт копьём ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
         markDeadIfNeeded(state, target);
         maybeKillHorse(actor, state);
@@ -111,7 +111,7 @@ export const knightAbilities: AbilityHandler = {
           if (behind) {
             const splash = dealDamage(actor, behind, { damageMult: 0.6, armorIgnore: 0 });
             if (splash > 0) {
-              state.log.push(`Копьё задевает ${behind.displayName} на ${splash}.`);
+              state.log.push(`Копьё задевает ${behind.displayName} ${formatLastLogDamage(splash)}.`);
               markDeadIfNeeded(state, behind);
             }
           }
@@ -133,7 +133,7 @@ export const knightAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: удар пикой — промах.`);
       } else {
         state.log.push(
-          `${actor.displayName} наносит кавалерийский удар по ${target.displayName} на ${damage}.`
+          `${actor.displayName} наносит кавалерийский удар по ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
         markDeadIfNeeded(state, target);
         maybeKillHorse(actor, state);

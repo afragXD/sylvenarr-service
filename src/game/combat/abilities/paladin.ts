@@ -1,4 +1,4 @@
-import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect, healUnit } from '../effects';
 import { levelUpUnit } from '../level';
 import { unholyDamageMult } from '../races';
@@ -114,7 +114,7 @@ export const paladinAbilities: AbilityHandler = {
           state.log.push(`${actor.displayName}: клинок ${i + 1} — промах.`);
         } else {
           state.log.push(
-            `${actor.displayName} бьёт парным клинком (${i + 1}) ${target.displayName} на ${damage}.`
+            `${actor.displayName} бьёт парным клинком (${i + 1}) ${target.displayName} ${formatLastLogDamage(damage)}.`
           );
           markDeadIfNeeded(state, target);
         }
@@ -154,7 +154,7 @@ export const paladinAbilities: AbilityHandler = {
       }
       if (damage > 0) {
         state.log.push(
-          `${actor.displayName} разбивает душу ${target.displayName} (${damage}).`
+          `${actor.displayName} разбивает душу ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
       }
       // Chance(100, HOLY, LOWERINGLEVEL) — вард/иммун режут шанс и тратят заряд.
@@ -190,7 +190,7 @@ export const paladinAbilities: AbilityHandler = {
       } else {
         const vsUnholy = unholyDamageMult(target) > 1;
         state.log.push(
-          `${actor.displayName} вырывается вперёд копьём по ${target.displayName} (${damage}${vsUnholy ? ', +25% по нечестивым' : ''}).`
+          `${actor.displayName} вырывается вперёд копьём по ${target.displayName} ${formatLastLogDamage(damage)}${vsUnholy ? ' (+25% по нечестивым)' : ''}.`
         );
         markDeadIfNeeded(state, target);
       }

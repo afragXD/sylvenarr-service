@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect, hasEffect, healUnit, resurrectUnit } from '../effects';
 import { isUndeadClass } from '../races';
 import { ROW_FRONT } from '../settings';
@@ -183,7 +183,7 @@ export const dracolichAbilities: AbilityHandler = {
           continue;
         }
         state.log.push(
-          `${actor.displayName}: дыхание смерти → ${enemy.displayName} (${damage}).`
+          `${actor.displayName}: дыхание смерти → ${enemy.displayName} ${formatLastLogDamage(damage)}.`
         );
         if (randInt(1, 100) <= 70 + actor.lvl) {
           grantEffect(enemy, 'POISON', 2, 1.3 + actor.lvl * 0.03);
@@ -276,7 +276,7 @@ export const dracolichAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: хвост — промах.`);
       } else {
         state.log.push(
-          `${actor.displayName} бьёт хвостом ${target.displayName} (${damage}).`
+          `${actor.displayName} бьёт хвостом ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
         markDeadIfNeeded(state, target);
       }

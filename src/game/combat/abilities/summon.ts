@@ -218,7 +218,7 @@ export function createPhantomCopy(
 }
 
 /**
- * Свободные ряды для размещения саммона (есть слот по размеру команды).
+ * Свободные ряды: команда не полна и на ряду есть слот по maxRowSize.
  */
 export function availableSummonRows(state: BattleState, summoner: BattleUnit): number[] {
   const teamAlive = state.units.filter(
@@ -227,11 +227,20 @@ export function availableSummonRows(state: BattleState, summoner: BattleUnit): n
   if (teamAlive >= state.rules.maxTeamSize) {
     return [];
   }
-  return [0, 1];
+  const open: number[] = [];
+  for (const row of [0, 1] as const) {
+    const onRow = state.units.filter(
+      (unit) => unit.alive && unit.team === summoner.team && unit.row === row
+    ).length;
+    if (onRow < state.rules.maxRowSize) {
+      open.push(row);
+    }
+  }
+  return open;
 }
 
 /**
- * Ряд для саммона: сначала фронт, иначе тыл; null если команда полна.
+ * Ряд для саммона: сначала фронт, иначе тыл; null если нет места.
  */
 export function preferSummonRow(state: BattleState, summoner: BattleUnit): 0 | 1 | null {
   const rows = availableSummonRows(state, summoner);
@@ -242,4 +251,19 @@ export function preferSummonRow(state: BattleState, summoner: BattleUnit): 0 | 1
     return 1;
   }
   return null;
+}
+
+/**
+ * Ряд для фантома: сначала ряд призывателя, иначе другой; null если нет места.
+ */
+export function preferPhantomRow(state: BattleState, summoner: BattleUnit): 0 | 1 | null {
+  const rows = availableSummonRows(state, summoner);
+  if (rows.length === 0) {
+    return null;
+  }
+  const preferred = summoner.row === 1 ? 1 : 0;
+  if (rows.includes(preferred)) {
+    return preferred;
+  }
+  return rows[0] === 1 ? 1 : 0;
 }

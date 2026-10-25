@@ -227,7 +227,7 @@ describe('class level-up growth', () => {
     const dmgBefore = trapper.damage;
     levelUpUnit(trapper, 1, state);
     expect(trapper.lvl).toBe(2);
-    expect(trapper.damage).toBe(dmgBefore + 4);
+    expect(trapper.damage).toBe(dmgBefore + 3);
     expect(trapper.hiddenLvl).toBe(1);
   });
 

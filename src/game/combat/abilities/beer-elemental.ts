@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf } from './targets';
@@ -105,7 +105,7 @@ export const beerElementalAbilities: AbilityHandler = {
         return { status: 'done' };
       }
       state.log.push(
-        `${actor.displayName} напаивает ${target.displayName} некачественным пивом (${damage}).`
+        `${actor.displayName} напаивает ${target.displayName} некачественным пивом ${formatLastLogDamage(damage)}.`
       );
       markDeadIfNeeded(state, target);
       return { status: 'done' };

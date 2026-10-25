@@ -6,7 +6,11 @@ import {
   tryStun,
 } from './effects';
 import type { DamageSource } from './damageSources';
-import { DAMAGE_SOURCE_LABELS, sourceFromAttackStyle } from './damageSources';
+import {
+  DAMAGE_SOURCE_LABELS,
+  formatLogDamage,
+  sourceFromAttackStyle,
+} from './damageSources';
 import { applyResistMultiplier } from './resists';
 import type { BattleState, BattleUnit } from './types';
 
@@ -35,13 +39,26 @@ export type DealDamageResult = {
   blocked: boolean;
   crit: boolean;
   critFail: boolean;
+  source: DamageSource;
 };
 
-let lastDeal: DealDamageResult = { damage: 0, missed: false, blocked: false, crit: false, critFail: false };
+let lastDeal: DealDamageResult = {
+  damage: 0,
+  missed: false,
+  blocked: false,
+  crit: false,
+  critFail: false,
+  source: 'WEAPON',
+};
 
 /** Метаданные последнего вызова dealDamage (промах / вард / крит). */
 export function lastDealDamageResult(): DealDamageResult {
   return lastDeal;
+}
+
+/** `(N)⟦SRC⟧` по источнику последнего dealDamage (для логов способностей). */
+export function formatLastLogDamage(amount: number): string {
+  return formatLogDamage(amount, lastDeal.source);
 }
 
 type RawDamageResult = {
@@ -121,22 +138,36 @@ export function dealDamage(
   opts: DealDamageOpts,
   state?: BattleState
 ): number {
+  const source = opts.source ?? sourceFromAttackStyle(attacker.attackStyle);
   const result = computeRawDamage(attacker, defender, opts);
   if (result.raw <= 0) {
     if (state && result.naturalMiss) {
       state.log.push(`${attacker.displayName}: критический провал!`);
     }
-    lastDeal = { damage: 0, missed: true, blocked: false, crit: false, critFail: result.naturalMiss };
+    lastDeal = {
+      damage: 0,
+      missed: true,
+      blocked: false,
+      crit: false,
+      critFail: result.naturalMiss,
+      source,
+    };
     return 0;
   }
 
-  const source = opts.source ?? sourceFromAttackStyle(attacker.attackStyle);
   const resist = applyResistMultiplier(defender, source);
   if (resist.blocked) {
     if (state && resist.blockReason) {
       state.log.push(resist.blockReason);
     }
-    lastDeal = { damage: 0, missed: false, blocked: true, crit: false, critFail: false };
+    lastDeal = {
+      damage: 0,
+      missed: false,
+      blocked: true,
+      crit: false,
+      critFail: false,
+      source,
+    };
     return 0;
   }
 
@@ -150,7 +181,14 @@ export function dealDamage(
 
   const amount = Math.max(0, Math.round(result.raw * resist.multiplier));
   if (amount <= 0) {
-    lastDeal = { damage: 0, missed: false, blocked: false, crit: result.crit, critFail: false };
+    lastDeal = {
+      damage: 0,
+      missed: false,
+      blocked: false,
+      crit: result.crit,
+      critFail: false,
+      source,
+    };
     return 0;
   }
 
@@ -194,7 +232,7 @@ export function dealDamage(
         defender.health -= spark;
         if (state) {
           state.log.push(
-            `Электрическое оружие бьёт ${defender.displayName} воздухом (${spark}).`
+            `Электрическое оружие бьёт ${defender.displayName} воздухом ${formatLogDamage(spark, 'AIR')}.`
           );
         }
       }
@@ -244,7 +282,7 @@ export function dealDamage(
           applyVampWeaponHeal(defender, counter);
           if (state) {
             state.log.push(
-              `${defender.displayName} отвечает контрударом по ${attacker.displayName} (${counter}).`
+              `${defender.displayName} отвечает контрударом по ${attacker.displayName} ${formatLogDamage(counter, 'WEAPON')}.`
             );
           }
           if (state) {
@@ -283,7 +321,7 @@ export function dealDamage(
         attacker.health -= burn;
         if (state) {
           state.log.push(
-            `Огненный щит ${defender.displayName} обжигает ${attacker.displayName} (${burn}) и ломает броню на ${armorStrip}.`
+            `Огненный щит ${defender.displayName} обжигает ${attacker.displayName} ${formatLogDamage(burn, 'FIRE')} и ломает броню на ${armorStrip}.`
           );
           markDeadIfNeeded(state, attacker);
         } else if (attacker.health <= 0) {
@@ -295,7 +333,14 @@ export function dealDamage(
     counterDepth -= 1;
   }
 
-  lastDeal = { damage: amount, missed: false, blocked: false, crit: result.crit, critFail: false };
+  lastDeal = {
+    damage: amount,
+    missed: false,
+    blocked: false,
+    crit: result.crit,
+    critFail: false,
+    source,
+  };
   return amount;
 }
 
@@ -349,6 +394,27 @@ export function markDeadIfNeeded(state: BattleState, unit: BattleUnit): void {
     return;
   }
   state.log.push(`${unit.displayName} погибает.`);
+  if (unit.isSummon && unit.summonerId) {
+    const master = state.units.find(
+      (other) =>
+        other.id === unit.summonerId &&
+        other.alive &&
+        other.heroClassCode === 'OrcKing'
+    );
+    if (master) {
+      if (unit.heroClassCode === 'GoblinTrapper') {
+        master.cumRage += 0.05;
+        state.log.push(
+          `${unit.displayName} погиб. Хан орков оплакивает его, как родного сына. Он поклялся отомстить.`
+        );
+      } else if (unit.heroClassCode === 'GoblinShaman') {
+        master.cumRage += 0.03;
+        state.log.push(
+          `${unit.displayName} погиб, и ярость его Хана немного растёт.`
+        );
+      }
+    }
+  }
   if (!unit.isSummon && !state.graveyard.some((entry) => entry.unitId === unit.id)) {
     state.graveyard.push({
       unitId: unit.id,

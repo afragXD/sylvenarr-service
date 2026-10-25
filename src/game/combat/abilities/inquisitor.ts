@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect, trySpendMana, tryStun } from '../effects';
 import { isArtificialClass, isUndeadClass } from '../races';
 import { ROW_BACK } from '../settings';
@@ -114,7 +114,7 @@ export const inquisitorAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: булава — промах.`);
       } else {
         state.log.push(
-          `${actor.displayName} бьёт булавой ${target.displayName} на ${damage}.`
+          `${actor.displayName} бьёт булавой ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
         markDeadIfNeeded(state, target);
       }
@@ -143,7 +143,7 @@ export const inquisitorAbilities: AbilityHandler = {
         const lose = Math.max(1, Math.round(target.power * (0.25 + 0.02 * actor.lvl)));
         grantEffect(target, 'INTERFERENCE', 1 + Math.floor(actor.lvl / 6), lose);
         state.log.push(
-          `${actor.displayName} пыточной молнией бьёт ${target.displayName} (${damage}).`
+          `${actor.displayName} пыточной молнией бьёт ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
         if (
           !isUndeadClass(target.heroClassCode) &&
@@ -191,7 +191,7 @@ export const inquisitorAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: мощный удар — промах.`);
       } else {
         state.log.push(
-          `${actor.displayName} мощным ударом бьёт ${target.displayName} (${damage}).`
+          `${actor.displayName} мощным ударом бьёт ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
         // options.py: 62+L; fourthAction ошибочно 162+L — берём 62+L×2.
         if (randInt(1, 100) <= 62 + actor.lvl * 2 && tryStun(state, target, 1)) {
@@ -220,7 +220,7 @@ export const inquisitorAbilities: AbilityHandler = {
       state.log.push(`${actor.displayName}: град кристаллов — промах.`);
     } else {
       state.log.push(
-        `${actor.displayName} обрушивает кристаллы на ${target.displayName} (${damage}).`
+        `${actor.displayName} обрушивает кристаллы на ${target.displayName} ${formatLastLogDamage(damage)}.`
       );
       if (randInt(1, 100) <= 50 + actor.lvl * 3) {
         grantEffect(target, 'SILENCE', 2, 0);

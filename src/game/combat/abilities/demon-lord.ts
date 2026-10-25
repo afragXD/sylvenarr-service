@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect, healUnit, tryStun } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, meleeOrAll } from './targets';
@@ -91,7 +91,7 @@ export const demonLordAbilities: AbilityHandler = {
         );
         if (damage > 0) {
           state.log.push(
-            `${actor.displayName} бьёт ${enemy.displayName} на ${damage} (трёхглавый удар).`
+            `${actor.displayName} бьёт ${enemy.displayName} ${formatLastLogDamage(damage)} (трёхглавый удар).`
           );
         }
         markDeadIfNeeded(state, enemy);
@@ -122,7 +122,7 @@ export const demonLordAbilities: AbilityHandler = {
         return { status: 'done' };
       }
       state.log.push(
-        `${actor.displayName} обрушивает клинок Бездны на ${target.displayName} (${damage}).`
+        `${actor.displayName} обрушивает клинок Бездны на ${target.displayName} ${formatLastLogDamage(damage)}.`
       );
       markDeadIfNeeded(state, target);
       if (target.alive && randInt(1, 100) <= 70 + actor.lvl) {
@@ -150,7 +150,7 @@ export const demonLordAbilities: AbilityHandler = {
         return { status: 'done' };
       }
       state.log.push(
-        `${actor.displayName} плюёт кислотой в ${target.displayName} на ${damage}.`
+        `${actor.displayName} плюёт кислотой в ${target.displayName} ${formatLastLogDamage(damage)}.`
       );
       markDeadIfNeeded(state, target);
       if (target.alive && randInt(1, 100) <= 75) {
