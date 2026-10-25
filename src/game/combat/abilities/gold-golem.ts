@@ -144,7 +144,7 @@ export const goldGolemAbilities: AbilityHandler = {
       const allies = alliesOf(state, actor).filter((unit) => unit.id !== actor.id);
       const frac = 0.25 + actor.lvl * 0.05;
       for (const ally of allies) {
-        grantEffect(ally, 'ABSOLUTEPOWER', randInt(1, 2), frac);
+        grantEffect(ally, 'ABSOLUTEPOWER', 1, frac);
       }
       state.log.push(`${actor.displayName}: резонанс силы усиливает отряд.`);
       return { status: 'done' };

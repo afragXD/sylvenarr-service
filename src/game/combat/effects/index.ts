@@ -514,7 +514,7 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
     case 'GALL':
       unit.armor += Math.max(1, Math.round(effect.power || 2));
       break;
-    case 'ENSLAVED':
+    case 'ENSLAVED': {
       if (unit.enslavedOriginTeam !== null) {
         unit.team = unit.enslavedOriginTeam;
       }
@@ -523,7 +523,16 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
       }
       unit.enslavedOriginTeam = null;
       unit.enslavedOriginPlayerId = null;
+      if (state) {
+        for (const summon of state.units) {
+          if (summon.alive && summon.isSummon && summon.summonerId === unit.id) {
+            summon.team = unit.team;
+            summon.playerId = unit.playerId;
+          }
+        }
+      }
       break;
+    }
     case 'ROW_FORTIFY':
       unit.armor = Math.max(
         0,

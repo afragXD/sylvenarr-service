@@ -235,6 +235,70 @@ describe('phase 3.10 pilots', () => {
     expect(foe.effects.some((effect) => effect.id === 'STUNNED')).toBe(false);
   });
 
+  test('Demiurge slot 4 costs 3 MP, sets ectoplasmCd, rejects at summon cap without turn loss', () => {
+    const heroes = new Map([
+      ['Demiurge', hero('Demiurge', { initiative: 99, mana: 20 })],
+      ['Ectoplasm', hero('Ectoplasm', { health: 40, damage: 8 })],
+      ['B', hero('B', { initiative: 1 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm-ecto',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Demiurge', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const mage = state.units.find((unit) => unit.id === 'p1')!;
+    expect(mage.maxSummons).toBe(2);
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const first = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 4,
+    });
+    expect(first.ok).toBe(true);
+    expect(mage.mana).toBe(17);
+    expect(mage.ectoplasmCd).toBe(2);
+    expect(state.units.some((unit) => unit.heroClassCode === 'Ectoplasm' && unit.alive)).toBe(
+      true
+    );
+
+    // Второй призыв на следующем «ходе» мага: сбросим кд и вернём активность.
+    mage.ectoplasmCd = 0;
+    mage.mana = 20;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const second = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 4,
+    });
+    expect(second.ok).toBe(true);
+    expect(mage.mana).toBe(17);
+
+    mage.ectoplasmCd = 0;
+    mage.mana = 20;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const blocked = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 4,
+    });
+    expect(blocked.ok).toBe(false);
+    expect(blocked.message).toMatch(/лимит|Лимит/i);
+    expect(mage.mana).toBe(20);
+    expect(state.activeUnitId).toBe('p1');
+    expect(state.turnPlayerId).toBe('h');
+  });
+
   test('Demiurge slot 3 sets mindCloudCd and prefers fragile ally', () => {
     const heroes = new Map([
       ['Demiurge', hero('Demiurge', { initiative: 99, mana: 15 })],

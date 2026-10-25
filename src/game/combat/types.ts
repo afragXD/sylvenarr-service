@@ -166,6 +166,8 @@ export type BattleUnit = {
   deathNoteCd: number;
   /** Demiurge: кулдаун «Помрачение рассудка» в раундах. */
   mindCloudCd: number;
+  /** Demiurge: кулдаун «Призыв эктоплазмы» в раундах. */
+  ectoplasmCd: number;
   /** Inquisitor: кулдаун «Пыточная молния» в раундах. */
   tortureLightningCd: number;
   /** Witch: патроны револьвера. */

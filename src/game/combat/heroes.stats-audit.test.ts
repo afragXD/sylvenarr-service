@@ -222,7 +222,7 @@ const LEGACY_STATS_DICT: Record<
   Herbalist: {
     displayName: 'Травница',
     health: 165,
-    damage: 10,
+    damage: 18,
     armor: 20,
     initiative: 50,
     dodge: 5,

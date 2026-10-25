@@ -151,6 +151,11 @@ describe('phase 3.7 pilots', () => {
     expect(assassin.transformParentCode).toBe('Assassin');
     expect(assassin.effects.some((effect) => effect.id === 'POLYMORPH')).toBe(true);
     expect(assassin.lvl).toBe(beforeLvl + 1);
+    expect(assassin.ultaCharges).toBe(1);
+    expect(state.log.some((line) => line.startsWith('Мимик принимает облик Paladin'))).toBe(
+      true
+    );
+    expect(state.log.some((line) => line.includes('Мимик Paladin принимает облик'))).toBe(false);
   });
 
   test('Assassin dart applies poison', () => {

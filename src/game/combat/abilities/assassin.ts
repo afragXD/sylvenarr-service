@@ -136,13 +136,15 @@ export const assassinAbilities: AbilityHandler = {
         actor.transformParentCode = null;
         return { status: 'reject', message: 'Не удалось принять облик' };
       }
-      actor.displayName = `Мимик ${actor.displayName}`;
+      const formName = actor.displayName;
+      actor.displayName = `Мимик ${formName}`;
+      actor.ultaCharges += 1;
       const moraleGain = actor.lvl + 3;
       actor.morale += moraleGain;
       grantEffect(actor, 'POLYMORPH', 2, 0);
       levelUpUnit(actor, 1, state);
       state.log.push(
-        `${actor.displayName} принимает облик ${target.displayName} (+1 ур., мораль +${moraleGain}).`
+        `Мимик принимает облик ${formName} (+1 ур., мораль +${moraleGain}).`
       );
       return { status: 'done' };
     }

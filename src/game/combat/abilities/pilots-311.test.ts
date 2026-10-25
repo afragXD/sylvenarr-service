@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
+import { dealDamage } from '../damage';
 import { applyAction, createBattleState } from '../engine';
 import type { HeroClassStats } from '../types';
 
@@ -56,6 +57,83 @@ describe('phase 3.11 pilots', () => {
     });
     expect(second.ok).toBe(true);
     expect(state.pendingPrompt).toBeNull();
+  });
+
+  test('Detective slot 2 poisons target row for 1 round with chance', () => {
+    const heroes = new Map([
+      ['Detective', hero('Detective', { initiative: 99 })],
+      ['B', hero('B', { initiative: 1 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Detective', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+        { id: 'p3', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 2 },
+        { id: 'p4', playerId: 'g', heroClassCode: 'B', row: 1, pickOrder: 3 },
+      ],
+      heroes,
+    });
+    const det = state.units.find((unit) => unit.id === 'p1')!;
+    det.lvl = 50; // 100% chance
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const result = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 2,
+      targetId: 'p2',
+    });
+    expect(result.ok).toBe(true);
+    expect(det.ultaCharges).toBe(1);
+    const front = ['p2', 'p3'].map((id) => state.units.find((unit) => unit.id === id)!);
+    const back = state.units.find((unit) => unit.id === 'p4')!;
+    for (const foe of front) {
+      const poison = foe.effects.find((effect) => effect.id === 'POISON');
+      expect(poison).toBeTruthy();
+      expect(poison!.rounds).toBe(1);
+    }
+    expect(back.effects.some((effect) => effect.id === 'POISON')).toBe(false);
+  });
+
+  test('Detective slot 4 grants CONTR that counters next hit', () => {
+    const heroes = new Map([
+      ['Detective', hero('Detective', { initiative: 99, accuracy: 100, luck: 0, damage: 40 })],
+      ['B', hero('B', { initiative: 1, armor: 0, health: 400, accuracy: 100, luck: 0, damage: 25, dodge: 0 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Detective', row: 1, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const det = state.units.find((unit) => unit.id === 'p1')!;
+    const foe = state.units.find((unit) => unit.id === 'p2')!;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const lunge = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 4,
+      targetId: 'p2',
+    });
+    expect(lunge.ok).toBe(true);
+    const contr = det.effects.find((effect) => effect.id === 'CONTR');
+    expect(contr).toBeTruthy();
+    expect(contr!.rounds).toBe(2 + Math.floor(det.lvl / 6));
+    // Гарантированный удар по детективу с CONTR → ответный удар.
+    const foeHpBefore = foe.health;
+    dealDamage(foe, det, { damageMult: 1, armorIgnore: 0, forceHit: true }, state);
+    expect(state.log.some((line) => line.includes('контрударом'))).toBe(true);
+    expect(foe.health).toBeLessThan(foeHpBefore);
   });
 
   test('Detective slot 3 spends ulta and grants INVISIBLE', () => {

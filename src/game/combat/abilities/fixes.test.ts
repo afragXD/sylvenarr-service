@@ -74,6 +74,55 @@ describe('combat fixes', () => {
     expect(foe.playerId).toBe('g');
   });
 
+  test('Mermaid enslave: саммоны очарованного хозяина возвращаются с ним', () => {
+    const heroes = new Map([
+      ['Mermaid', hero('Mermaid', { initiative: 99 })],
+      ['Demiurge', hero('Demiurge', { initiative: 50, mana: 20 })],
+      ['Ectoplasm', hero('Ectoplasm', { health: 40, damage: 8 })],
+      ['C', hero('C', { initiative: 1 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm-enslave-summon',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Mermaid', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'Demiurge', row: 0, pickOrder: 1 },
+        { id: 'p3', playerId: 'h', heroClassCode: 'C', row: 1, pickOrder: 2 },
+      ],
+      heroes,
+    });
+    const cast = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 3,
+      targetId: 'p2',
+    });
+    expect(cast.ok).toBe(true);
+    const mage = state.units.find((unit) => unit.id === 'p2')!;
+    expect(mage.team).toBe(0);
+    expect(state.activeUnitId).toBe('p2');
+    expect(state.turnPlayerId).toBe('h');
+    const summon = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p2',
+      action: 'ability',
+      slot: 4,
+    });
+    expect(summon.ok).toBe(true);
+    const slime = state.units.find(
+      (unit) => unit.isSummon && unit.summonerId === 'p2' && unit.alive
+    )!;
+    expect(slime).toBeTruthy();
+    // Ход жертвы завершён призывом — ENSLAVED спадает, хозяин и саммон возвращаются.
+    expect(mage.effects.some((effect) => effect.id === 'ENSLAVED')).toBe(false);
+    expect(mage.team).toBe(1);
+    expect(mage.playerId).toBe('g');
+    expect(slime.team).toBe(1);
+    expect(slime.playerId).toBe('g');
+  });
+
   test('Archlich slot 3 ритуал: саммон +1+master.lvl//4 уровней', () => {
     const heroes = new Map([
       ['Archlich', hero('Archlich', { initiative: 99, mana: 10 })],
@@ -287,6 +336,38 @@ describe('combat fixes', () => {
     expect(state.log.some((line) => line.startsWith('Marauder превращается в оборотня'))).toBe(
       true
     );
+  });
+
+  test('GoldGolem slot 4 ABSOLUTEPOWER always 1 round', () => {
+    const heroes = new Map([
+      ['GoldGolem', hero('GoldGolem', { initiative: 99 })],
+      ['B', hero('B', { initiative: 50, power: 40 })],
+      ['C', hero('C', { initiative: 1 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm-golem-power',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'GoldGolem', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'h', heroClassCode: 'B', row: 0, pickOrder: 2 },
+        { id: 'p3', playerId: 'g', heroClassCode: 'C', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const cast = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 4,
+    });
+    expect(cast.ok).toBe(true);
+    const ally = state.units.find((unit) => unit.id === 'p2')!;
+    const buff = ally.effects.find((effect) => effect.id === 'ABSOLUTEPOWER');
+    expect(buff).toBeTruthy();
+    expect(buff!.rounds).toBe(1);
   });
 
   test('GoldGolem preChoice: вард LOWERINGLEVEL союзнику', () => {

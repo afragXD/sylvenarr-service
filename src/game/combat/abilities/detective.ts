@@ -29,19 +29,21 @@ function abilityMeta(
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
-    case 2:
+    case 2: {
+      const targets = enemiesOf(state, actor, IGNORE_GUARD);
       return {
         slot: 2,
         label: `Диверсия — яд (${actor.ultaCharges})`,
-        needsTarget: false,
+        needsTarget: true,
         disabledReason:
           actor.ultaCharges <= 0
             ? 'Нет яда'
-            : enemiesOf(state, actor, IGNORE_GUARD).length === 0
+            : targets.length === 0
               ? 'Нет врагов'
               : null,
-        legalTargetIds: [],
+        legalTargetIds: targets.map((unit) => unit.id),
       };
+    }
     case 3:
       return {
         slot: 3,
@@ -127,11 +129,29 @@ export const detectiveAbilities: AbilityHandler = {
     }
 
     if (input.slot === 2) {
-      actor.ultaCharges -= 1;
-      for (const enemy of enemiesOf(state, actor, IGNORE_GUARD)) {
-        grantEffect(enemy, 'POISON', 2, 0.8);
+      const target = enemiesOf(state, actor, IGNORE_GUARD).find(
+        (unit) => unit.id === input.targetId
+      );
+      if (!target) {
+        return { status: 'reject', message: 'Цель не найдена' };
       }
-      state.log.push(`${actor.displayName} отравляет вражеский отряд.`);
+      actor.ultaCharges -= 1;
+      const chance = 50 + actor.lvl;
+      const rowEnemies = enemiesOf(state, actor, IGNORE_GUARD).filter(
+        (unit) => unit.row === target.row
+      );
+      let poisoned = 0;
+      for (const enemy of rowEnemies) {
+        if (randInt(1, 100) <= chance) {
+          grantEffect(enemy, 'POISON', 1, 0.8);
+          poisoned += 1;
+        }
+      }
+      state.log.push(
+        poisoned > 0
+          ? `${actor.displayName} отравляет ряд (${poisoned}).`
+          : `${actor.displayName}: диверсия — яд не сработал.`
+      );
       return { status: 'done' };
     }
 

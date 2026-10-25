@@ -132,7 +132,7 @@ export const herbalistAbilities: AbilityHandler = {
           (unit) => !unit.alive && unit.team === actor.team && unit.isSummon
         ).length;
       const damageMult = 1 + 0.15 * graves;
-      const armorIgnore = (20 + actor.lvl) / 100;
+      const armorIgnore = (50 + actor.lvl) / 100;
       const damage = dealDamage(
         actor,
         target,

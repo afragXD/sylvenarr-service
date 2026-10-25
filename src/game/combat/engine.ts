@@ -200,6 +200,7 @@ function buildTeamUnits(
         deathNote: 0,
         deathNoteCd: 0,
         mindCloudCd: 0,
+        ectoplasmCd: 0,
         tortureLightningCd: 0,
         gun: 0,
         impPolymorphCd: 0,

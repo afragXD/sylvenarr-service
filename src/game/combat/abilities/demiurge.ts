@@ -69,14 +69,27 @@ function abilityMeta(
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
-    case 4:
+    case 4: {
+      const owned = state.units.filter(
+        (unit) => unit.alive && unit.isSummon && unit.summonerId === actor.id
+      ).length;
       return {
         slot: 4,
         label: 'Призыв эктоплазмы',
         needsTarget: false,
-        disabledReason: actor.mana < 2 ? 'Нужно 2 МР' : null,
+        disabledReason:
+          actor.ectoplasmCd > 0
+            ? `Кулдаун ${actor.ectoplasmCd} р.`
+            : actor.mana < 3
+              ? 'Нужно 3 МР'
+              : owned >= actor.maxSummons
+                ? 'Лимит саммонов'
+                : preferSummonRow(state, actor) === null
+                  ? 'Нет места'
+                  : null,
         legalTargetIds: [],
       };
+    }
     case 5:
       return {
         slot: 5,
@@ -137,6 +150,9 @@ export const demiurgeAbilities: AbilityHandler = {
   preChoice(state, actor) {
     if (actor.mindCloudCd > 0) {
       actor.mindCloudCd -= 1;
+    }
+    if (actor.ectoplasmCd > 0) {
+      actor.ectoplasmCd -= 1;
     }
     const others = alliesOf(state, actor).filter((unit) => unit.id !== actor.id);
     if (others.length === 0 || randInt(1, 100) > 50) {
@@ -258,14 +274,19 @@ export const demiurgeAbilities: AbilityHandler = {
     }
 
     if (input.slot === 4) {
-      const manaErr = trySpendMana(actor, 2);
-      if (manaErr) {
-        return { status: 'reject', message: manaErr };
-      }
       const row = preferSummonRow(state, actor);
       if (row === null) {
-        state.log.push(`${actor.displayName}: нет места для эктоплазмы.`);
-        return { status: 'done' };
+        return { status: 'reject', message: 'Нет места для эктоплазмы' };
+      }
+      const owned = state.units.filter(
+        (unit) => unit.alive && unit.isSummon && unit.summonerId === actor.id
+      ).length;
+      if (owned >= actor.maxSummons) {
+        return { status: 'reject', message: 'Достигнут лимит саммонов' };
+      }
+      const manaErr = trySpendMana(actor, 3);
+      if (manaErr) {
+        return { status: 'reject', message: manaErr };
       }
       const summon = createSummon(state, {
         summoner: actor,
@@ -273,9 +294,10 @@ export const demiurgeAbilities: AbilityHandler = {
         row,
       });
       if (!summon) {
-        state.log.push(`${actor.displayName}: не удалось призвать эктоплазму.`);
-        return { status: 'done' };
+        actor.mana += 3;
+        return { status: 'reject', message: 'Не удалось призвать эктоплазму' };
       }
+      actor.ectoplasmCd = 2;
       state.log.push(`${actor.displayName} призывает эктоплазму.`);
       return { status: 'done' };
     }
