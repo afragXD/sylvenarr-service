@@ -1,6 +1,6 @@
 import { DAMAGE_SOURCE_LABELS, type DamageSource } from '../damageSources';
 import { effectLogLabel } from '../effect-labels';
-import { applyResistMultiplier, changeResist } from '../resists';
+import { applyResistMultiplier, changeResist, mindResistFactor } from '../resists';
 import { applyCatalogStats } from '../transform';
 import type { BattleEffect, BattleState, BattleUnit, EffectId } from '../types';
 
@@ -247,6 +247,7 @@ export function enslaveUnit(target: BattleUnit, enslaver: BattleUnit): void {
  */
 export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
   const log: string[] = [];
+  let fearTicked = false;
   for (const effect of [...unit.effects]) {
     effect.fresh = undefined;
     if (effect.id === 'REGENHP' && unit.alive) {
@@ -257,6 +258,17 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
       if (healed > 0) {
         log.push(`${unit.displayName} восстанавливает ${healed} ОЗ (регенерация).`);
       }
+    }
+    // FEAR — VOT бота: каждый тик −мораль, без мгновенного −урона.
+    if (effect.id === 'FEAR' && unit.alive && !unit.wasEffected) {
+      const loss = Math.round((5 + (effect.power || 3)) * mindResistFactor(unit));
+      if (loss > 0) {
+        unit.morale -= loss;
+        log.push(
+          `От магического страха ${unit.displayName} теряет ${loss} единиц боевого духа.`
+        );
+      }
+      fearTicked = true;
     }
     const dotSource = DOT_SOURCES[effect.id];
     if (dotSource && unit.alive && !unit.wasEffected) {
@@ -275,7 +287,10 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
       }
     }
   }
-  if ([...unit.effects].some((effect) => DOT_SOURCES[effect.id])) {
+  if (
+    fearTicked ||
+    [...unit.effects].some((effect) => DOT_SOURCES[effect.id])
+  ) {
     unit.wasEffected = true;
   }
   return log;
@@ -349,7 +364,7 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
       break;
     }
     case 'FEAR':
-      unit.damage = Math.max(1, unit.damage - Math.round(effect.power || 3));
+      // VOT: мораль тикает в tickEffectsOnTurnStart, не на apply.
       break;
     case 'HASTE':
       unit.initiative += Math.round(effect.power || 20);
@@ -440,7 +455,6 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
       changeResist(unit, 'ARROWS', -Math.max(1, Math.round(effect.power || 33)));
       break;
     case 'FEAR':
-      unit.damage += Math.round(effect.power || 3);
       break;
     case 'HASTE':
       unit.initiative = Math.max(1, unit.initiative - Math.round(effect.power || 20));

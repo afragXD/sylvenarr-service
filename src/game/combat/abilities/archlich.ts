@@ -1,6 +1,7 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, healUnit, addMana } from '../effects';
+import { addMana, delEffect, grantEffect, healUnit } from '../effects';
 import { levelUpUnit } from '../level';
+import { rollMindChance } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { availableSummonRows, createSummon } from './summon';
 import { alliesOf, enemiesOf } from './targets';
@@ -273,13 +274,18 @@ export const archlichAbilities: AbilityHandler = {
       if (!spendMana(actor, 3, state)) {
         return { status: 'reject', message: 'Нужно 3 МР' };
       }
+      // Порт evade(other, 1) из бота.
       if (randInt(1, 100) > Math.min(95, actor.accuracy - target.dodge / 2)) {
         state.log.push(`${target.displayName} сопротивляется ужасу.`);
         return { status: 'done' };
       }
-      if (randInt(1, 100) <= 80) {
+      // Chance(80, SRC.MIND) → FEAR 2р power=3 + снять CONTR.
+      if (rollMindChance(state, target, 80)) {
         grantEffect(target, 'FEAR', 2, 3);
-        state.log.push(`${target.displayName} охвачен ужасом.`);
+        delEffect(target, 'CONTR');
+        state.log.push(
+          `${actor.displayName} проводит экскурсию по коллекции — ${target.displayName} охвачен ужасом.`
+        );
       } else {
         state.log.push(`${target.displayName} не поддаётся провокациям лича.`);
       }

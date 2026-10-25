@@ -88,10 +88,16 @@ describe('effects', () => {
     expect(healed).toBe(30);
   });
 
-  test('FEAR reduces damage and restores on expire', () => {
-    const u = unit({ damage: 20 });
-    grantEffect(u, 'FEAR', 1, 3);
-    expect(u.damage).toBe(17);
+  test('FEAR ticks morale via mind resist (bot VOT)', () => {
+    const u = unit({ damage: 20, morale: 40 });
+    grantEffect(u, 'FEAR', 2, 3);
+    expect(u.damage).toBe(20);
+    expect(u.morale).toBe(40);
+    u.wasEffected = false;
+    const log = tickEffectsOnTurnStart(u);
+    // (5 + 3) * mindResistFactor(1) = 8
+    expect(u.morale).toBe(32);
+    expect(log.some((line) => line.includes('боевого духа'))).toBe(true);
     delEffect(u, 'FEAR');
     expect(u.damage).toBe(20);
   });
