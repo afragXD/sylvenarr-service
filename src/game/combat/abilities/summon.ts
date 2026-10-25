@@ -106,6 +106,7 @@ export function createSummon(
     mindCloudCd: 0,
     tortureLightningCd: 0,
     gun: 0,
+    impPolymorphCd: 0,
     forbiddenResurrect: false,
     polymorphSavedArmor: -1,
     transformParentCode: null,
@@ -200,6 +201,7 @@ export function createPhantomCopy(
     mindCloudCd: 0,
     tortureLightningCd: 0,
     gun: 0,
+    impPolymorphCd: 0,
     forbiddenResurrect: true,
     polymorphSavedArmor: -1,
     transformParentCode: null,
@@ -226,4 +228,18 @@ export function availableSummonRows(state: BattleState, summoner: BattleUnit): n
     return [];
   }
   return [0, 1];
+}
+
+/**
+ * Ряд для саммона: сначала фронт, иначе тыл; null если команда полна.
+ */
+export function preferSummonRow(state: BattleState, summoner: BattleUnit): 0 | 1 | null {
+  const rows = availableSummonRows(state, summoner);
+  if (rows.includes(0)) {
+    return 0;
+  }
+  if (rows.includes(1)) {
+    return 1;
+  }
+  return null;
 }

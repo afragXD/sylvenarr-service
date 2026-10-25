@@ -125,7 +125,7 @@ export const paladinAbilities: AbilityHandler = {
     if (input.slot === 2) {
       actor.ultaCharges -= 1;
       setWard(actor, 'FIRE', 1);
-      grantEffect(actor, 'FIREDWEAPON', 2 + Math.floor(actor.lvl / 5), 0);
+      grantEffect(actor, 'FIREDWEAPON', Math.min(3, 2 + Math.floor(actor.lvl / 5)), 0);
       state.log.push(`${actor.displayName}: клинки окутаны святым пламенем; вард от Огня.`);
       return { status: 'done' };
     }

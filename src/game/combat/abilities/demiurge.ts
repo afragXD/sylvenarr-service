@@ -8,7 +8,7 @@ import { grantEffect, hasEffect, trySpendMana, tryStun } from '../effects';
 import { rollMindChance } from '../resists';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { createPhantomCopy, createSummon } from './summon';
+import { createPhantomCopy, createSummon, preferSummonRow } from './summon';
 import { alliesOf, enemiesOf } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
@@ -252,10 +252,14 @@ export const demiurgeAbilities: AbilityHandler = {
     }
 
     if (input.slot === 4) {
+      const row = preferSummonRow(state, actor);
+      if (row === null) {
+        return { status: 'reject', message: 'Нет места для саммона' };
+      }
       const summon = createSummon(state, {
         summoner: actor,
         heroCode: 'Ectoplasm',
-        row: actor.row,
+        row,
       });
       if (!summon) {
         return { status: 'reject', message: 'Не удалось призвать' };

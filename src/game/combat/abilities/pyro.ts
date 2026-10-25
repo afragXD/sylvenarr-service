@@ -167,7 +167,7 @@ export const pyroAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Нужен союзник' };
       }
-      grantEffect(target, 'FIREDWEAPON', 1 + Math.floor(actor.lvl / 6), 0);
+      grantEffect(target, 'FIREDWEAPON', Math.min(3, 1 + Math.floor(actor.lvl / 6)), 0);
       state.log.push(
         `${actor.displayName} зачаровывает оружие ${target.displayName} пламенем.`
       );

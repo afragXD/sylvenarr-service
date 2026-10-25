@@ -91,10 +91,10 @@ export function livingEnemyFront(state: BattleState, actor: BattleUnit): BattleU
 export function listAttackTargets(
   state: BattleState,
   attacker: BattleUnit,
-  opts: EnemyFilterOpts = {}
+  opts: EnemyFilterOpts & { forceMeleeReach?: boolean } = {}
 ): BattleUnit[] {
   const enemies = enemiesOf(state, attacker, opts);
-  if (attacker.attackStyle !== 'melee') {
+  if (attacker.attackStyle !== 'melee' && !opts.forceMeleeReach) {
     return enemies;
   }
   const ownFrontAlive = state.units.some(

@@ -33,19 +33,23 @@ function abilityMeta(
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
-    case 2:
+    case 2: {
+      const allies = alliesOf(state, actor);
       return {
         slot: 2,
         label: 'Божественная длань',
-        needsTarget: false,
+        needsTarget: true,
         disabledReason:
           actor.mana < 3
             ? 'Нужно 3 МР'
             : actor.row !== ROW_BACK
               ? 'Нужен задний ряд'
-              : null,
-        legalTargetIds: [],
+              : allies.length === 0
+                ? 'Нет союзников'
+                : null,
+        legalTargetIds: allies.map((unit) => unit.id),
       };
+    }
     case 3: {
       const allies = alliesOf(state, actor);
       return {
@@ -137,7 +141,14 @@ export const abbessAbilities: AbilityHandler = {
       if (err) {
         return { status: 'reject', message: err };
       }
-      for (const ally of alliesOf(state, actor)) {
+      const target = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
+      if (!target) {
+        return { status: 'reject', message: 'Цель не найдена' };
+      }
+      for (const ally of unitsOnSameRow(state, target)) {
+        if (ally.team !== actor.team || !ally.alive) {
+          continue;
+        }
         const amount = actor.power + actor.lvl + randInt(1, 15);
         const healed = healUnit(ally, amount);
         state.log.push(`${ally.displayName} восстанавливает ${healed} ОЗ.`);

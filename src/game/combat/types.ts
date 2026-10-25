@@ -170,6 +170,8 @@ export type BattleUnit = {
   tortureLightningCd: number;
   /** Witch: патроны револьвера. */
   gun: number;
+  /** Witch «Превращение»: кулдаун в раундах. */
+  impPolymorphCd: number;
   /** Abbess: запрет воскрешения. */
   forbiddenResurrect: boolean;
   /** Witch polymorph: броня до превращения (−1 = нет). */

@@ -1,6 +1,7 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, healUnit, tryLevelDrain, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
+import { rollSrcChance } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -69,11 +70,13 @@ function abilityMeta(
         label: 'Превращение',
         needsTarget: true,
         disabledReason:
-          actor.mana < 4
-            ? 'Нужно 4 МР'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+          actor.impPolymorphCd > 0
+            ? `Кулдаун ${actor.impPolymorphCd} р.`
+            : actor.mana < 4
+              ? 'Нужно 4 МР'
+              : targets.length === 0
+                ? 'Нет целей'
+                : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -86,6 +89,12 @@ function abilityMeta(
 export const witchAbilities: AbilityHandler = {
   listAbilities(state, actor) {
     return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
+  },
+
+  preChoice(_state, actor) {
+    if (actor.impPolymorphCd > 0) {
+      actor.impPolymorphCd -= 1;
+    }
   },
 
   apply(state, actor, input): AbilityOutcome {
@@ -211,7 +220,7 @@ export const witchAbilities: AbilityHandler = {
       return { status: 'done' };
     }
 
-    // slot 5
+    // slot 5 — 100% (EARTH+POLYMORPH) + КД 3
     const err = trySpendMana(actor, 4);
     if (err) {
       return { status: 'reject', message: err };
@@ -220,11 +229,12 @@ export const witchAbilities: AbilityHandler = {
     if (!target) {
       return { status: 'reject', message: 'Цель недоступна' };
     }
-    if (randInt(1, 100) <= 65 + actor.lvl) {
+    actor.impPolymorphCd = 3;
+    if (rollSrcChance(state, target, 100, 'EARTH', 'POLYMORPH')) {
       grantEffect(target, 'IMPISH', 2, 5);
       state.log.push(`${actor.displayName} превращает ${target.displayName} в беса.`);
     } else {
-      state.log.push(`${actor.displayName}: превращение не удалось.`);
+      state.log.push(`${actor.displayName}: превращение заблокировано сопротивлением.`);
     }
     return { status: 'done' };
   },

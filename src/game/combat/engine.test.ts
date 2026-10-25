@@ -447,4 +447,40 @@ describe('combat engine', () => {
     expect(state.winnerPlayerId).toBeNull();
     expect(state.drawOfferByPlayerId).toBeNull();
   });
+
+  test('wait does not re-tick ability CD or DoT in the same round', () => {
+    const heroes = catalogHeroes(
+      hero('Paladin', { initiative: 99, mana: 10 }),
+      hero('B', { initiative: 1, health: 300 }),
+    );
+    const state = createBattleState({
+      matchId: 'm-wait-cd',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Paladin', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const paladin = state.units.find((unit) => unit.id === 'p1')!;
+    expect(state.activeUnitId).toBe('p1');
+    expect(state.preChoiceDoneIds.includes('p1')).toBe(true);
+
+    // После preChoice в этом заходе хода: КД=1 остался, DoT уже тикнул.
+    paladin.soulShatterCd = 1;
+    grantEffect(paladin, 'POISON', 5, 1);
+    paladin.wasEffected = true;
+    const hpBeforeWait = paladin.health;
+
+    expect(applyAction(state, { playerId: 'h', unitId: 'p1', action: 'wait' }).ok).toBe(true);
+    expect(applyAction(state, { playerId: 'g', unitId: 'p2', action: 'wait' }).ok).toBe(true);
+
+    expect(state.delayedPhase).toBe(true);
+    expect(state.activeUnitId).toBe('p1');
+    expect(state.preChoiceDoneIds.includes('p1')).toBe(true);
+    expect(paladin.soulShatterCd).toBe(1);
+    expect(paladin.wasEffected).toBe(true);
+    expect(paladin.health).toBe(hpBeforeWait);
+  });
 });

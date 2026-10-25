@@ -67,6 +67,7 @@ const unit = (overrides: Partial<BattleUnit> = {}): BattleUnit => ({
   soulShatterCd: 0,
   momentPowerCd: 0,
   gun: 0,
+  impPolymorphCd: 0,
   forbiddenResurrect: false,
   polymorphSavedArmor: -1,
   transformParentCode: null,

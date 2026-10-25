@@ -196,6 +196,7 @@ function buildTeamUnits(
         mindCloudCd: 0,
         tortureLightningCd: 0,
         gun: 0,
+        impPolymorphCd: 0,
         forbiddenResurrect: false,
         polymorphSavedArmor: -1,
         transformParentCode: null,
@@ -239,7 +240,7 @@ export function advanceToNextUnit(state: BattleState): void {
       const delayedSet = new Set(state.delayedIds);
       state.delayedIds = [];
       state.delayedPhase = true;
-      state.preChoiceDoneIds = state.preChoiceDoneIds.filter((id) => !delayedSet.has(id));
+      // Не чистим preChoiceDoneIds: иначе КД/preChoice тикнут повторно после wait.
       order = state.units
         .filter((unit) => unit.alive && delayedSet.has(unit.id) && !state.doneIds.includes(unit.id))
         .map((unit) => ({ unit, roll: unit.initiative + randInt(1, 5) }))
@@ -318,6 +319,7 @@ export function advanceToNextUnit(state: BattleState): void {
 
   state.activeUnitId = next.id;
   state.turnPlayerId = next.playerId;
+  state.log.push(`—— ХОД: ${next.displayName} ——`);
 
   if (isPilotClass(next.heroClassCode) && !state.preChoiceDoneIds.includes(next.id)) {
     runPreChoice(state, next);
@@ -370,7 +372,7 @@ export function applyAction(
     if (state.delayedPhase) {
       state.log.push(...tickEffectsOnTurnEnd(actor, state));
       state.doneIds.push(actor.id);
-      state.preChoiceDoneIds = state.preChoiceDoneIds.filter((id) => id !== actor.id);
+      // preChoiceDoneIds не трогаем — DoT держит wasEffected, КД не тикает снова.
       state.log.push(`${actor.displayName} ждёт.`);
       advanceToNextUnit(state);
       return { ok: true };
@@ -378,7 +380,6 @@ export function applyAction(
     if (!state.delayedIds.includes(actor.id)) {
       state.delayedIds.push(actor.id);
     }
-    state.preChoiceDoneIds = state.preChoiceDoneIds.filter((id) => id !== actor.id);
     state.log.push(...tickEffectsOnTurnEnd(actor, state));
     state.log.push(`${actor.displayName} ждёт.`);
     advanceToNextUnit(state);
@@ -422,11 +423,22 @@ export function applyAction(
     if (!slot || slot < 1 || slot > 5) {
       return { ok: false, message: 'Нужен слот 1–5' };
     }
+    let capsLogAt: number | null = null;
+    if (!state.pendingPrompt) {
+      const label =
+        listPilotAbilities(state, actor).find((ability) => ability.slot === slot)?.label ??
+        `Слот ${slot}`;
+      capsLogAt = state.log.length;
+      state.log.push(`${actor.displayName}: ${label.toLocaleUpperCase('ru-RU')}`);
+    }
     const outcome = applyAbility(state, actor, {
       slot,
       targetId: input.targetId,
       choice: input.choice,
     });
+    if (outcome.status === 'reject' && capsLogAt !== null) {
+      state.log.splice(capsLogAt, 1);
+    }
     return settleAbility(state, actor, outcome);
   }
 
@@ -439,10 +451,17 @@ export function applyAction(
 
   // attack — для пилотов = слот 1
   if (isPilotClass(actor.heroClassCode)) {
+    const label =
+      listPilotAbilities(state, actor).find((ability) => ability.slot === 1)?.label ?? 'Слот 1';
+    const capsLogAt = state.log.length;
+    state.log.push(`${actor.displayName}: ${label.toLocaleUpperCase('ru-RU')}`);
     const outcome = applyAbility(state, actor, {
       slot: 1,
       targetId: input.targetId,
     });
+    if (outcome.status === 'reject') {
+      state.log.splice(capsLogAt, 1);
+    }
     return settleAbility(state, actor, outcome);
   }
 

@@ -100,7 +100,7 @@ describe('balance patch 2026-10', () => {
 
   test('Pyro and Archlich resists', () => {
     expect(DEFAULT_RESISTS.Pyro?.FIRE).toEqual({ value: 25, wardCharges: 1 });
-    expect(DEFAULT_RESISTS.Archlich?.FIRE).toEqual({ value: -20, wardCharges: 1 });
+    expect(DEFAULT_RESISTS.Archlich?.FIRE).toEqual({ value: -20 });
   });
 
   test('BeerElemental slot 1 Homie De Flanders deals water magic', () => {

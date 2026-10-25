@@ -1,7 +1,7 @@
 import { dealDamage, markDeadIfNeeded, randInt } from '../damage';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { createSummon } from './summon';
-import { enemiesOf } from './targets';
+import { createSummon, preferSummonRow } from './summon';
+import { listAttackTargets } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function findMaster(state: BattleState, actor: BattleUnit): BattleUnit | null {
@@ -24,7 +24,7 @@ function abilityMeta(
 ): AbilityInfo {
   switch (slot) {
     case 1: {
-      const targets = enemiesOf(state, actor);
+      const targets = listAttackTargets(state, actor, { forceMeleeReach: true });
       return {
         slot: 1,
         label: 'Шлепок слизи',
@@ -45,7 +45,7 @@ function abilityMeta(
 }
 
 /**
- * Ectoplasm: магический шлепок водой; preChoice — размножение при ранении.
+ * Ectoplasm: магический шлепок водой с мили-reach; preChoice — размножение при ранении.
  */
 export const ectoplasmAbilities: AbilityHandler = {
   listAbilities(state, actor) {
@@ -62,12 +62,16 @@ export const ectoplasmAbilities: AbilityHandler = {
       return;
     }
     const master = findMaster(state, actor) ?? actor;
+    const row = preferSummonRow(state, master);
+    if (row === null) {
+      return;
+    }
     const prevMax = master.maxSummons;
     master.maxSummons = Math.max(prevMax, 99);
     const child = createSummon(state, {
       summoner: master,
       heroCode: 'Ectoplasm',
-      row: actor.row,
+      row,
     });
     master.maxSummons = prevMax;
     if (child) {
@@ -82,7 +86,9 @@ export const ectoplasmAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+      const target = listAttackTargets(state, actor, { forceMeleeReach: true }).find(
+        (unit) => unit.id === input.targetId
+      );
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
