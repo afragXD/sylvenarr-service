@@ -242,6 +242,18 @@ export type BattleState = {
   preChoiceDoneIds: string[];
   /** Мёртвые не-саммоны для воскрешения. */
   graveyard: GraveyardEntry[];
+  /** Счётчик seq для sfxEvents (в старых снимках боя поля нет). */
+  sfxSeq?: number;
+  /** Звуковые события для клиентов (хвост, как у log). */
+  sfxEvents?: BattleSfxEvent[];
+};
+
+export type BattleSfxEvent = {
+  seq: number;
+  unitId: string;
+  heroClassCode: string;
+  kind: 'ability' | 'death';
+  slot?: AbilitySlot;
 };
 
 export type HeroClassStats = {

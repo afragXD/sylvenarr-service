@@ -23,6 +23,7 @@ import { applyPsycho, maybeRewardHighMorale, normalizeUnit } from './morale';
 import { summarizeResists } from './resists';
 import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnEnd, tickEffectsOnTurnStart, addMana } from './effects';
 import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, MAX_TEAM_SIZE, ROW_FRONT } from './settings';
+import { dropSfx, pushSfx } from './sfx';
 import {
   classAttackMods,
   classSkill,
@@ -443,6 +444,7 @@ export function applyAction(
       capsLogAt = state.log.length;
       state.log.push(label.toLocaleUpperCase('ru-RU'));
     }
+    const sfxSeq = pushSfx(state, actor, 'ability', slot);
     const outcome = applyAbility(state, actor, {
       slot,
       targetId: input.targetId,
@@ -450,6 +452,9 @@ export function applyAction(
     });
     if (outcome.status === 'reject' && capsLogAt !== null) {
       state.log.splice(capsLogAt, 1);
+    }
+    if (outcome.status === 'reject' || outcome.status === 'pending') {
+      dropSfx(state, sfxSeq);
     }
     return settleAbility(state, actor, outcome);
   }
@@ -467,12 +472,16 @@ export function applyAction(
       listPilotAbilities(state, actor).find((ability) => ability.slot === 1)?.label ?? 'Слот 1';
     const capsLogAt = state.log.length;
     state.log.push(label.toLocaleUpperCase('ru-RU'));
+    const sfxSeq = pushSfx(state, actor, 'ability', 1);
     const outcome = applyAbility(state, actor, {
       slot: 1,
       targetId: input.targetId,
     });
     if (outcome.status === 'reject') {
       state.log.splice(capsLogAt, 1);
+    }
+    if (outcome.status === 'reject' || outcome.status === 'pending') {
+      dropSfx(state, sfxSeq);
     }
     return settleAbility(state, actor, outcome);
   }
@@ -871,6 +880,7 @@ export function toBattleSummary(state: BattleState) {
     winnerPlayerId: state.winnerPlayerId,
     drawOfferByPlayerId: state.drawOfferByPlayerId ?? null,
     log: state.log.slice(-40),
+    sfxEvents: (state.sfxEvents ?? []).slice(-20),
     turnOrder: buildTurnOrder(state),
     legalTargetIds: targets,
     skillLabel: skill && skill.kind !== 'none' ? skill.label : null,

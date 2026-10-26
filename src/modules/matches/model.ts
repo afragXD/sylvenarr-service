@@ -177,6 +177,17 @@ export namespace MatchesModel {
   });
   export type pendingPrompt = typeof pendingPrompt.static;
 
+  export const battleSfxEvent = t.Object({
+    seq: t.Number(),
+    unitId: t.String(),
+    heroClassCode: t.String(),
+    kind: t.Union([t.Literal('ability'), t.Literal('death')]),
+    slot: t.Optional(
+      t.Union([t.Literal(1), t.Literal(2), t.Literal(3), t.Literal(4), t.Literal(5)])
+    ),
+  });
+  export type battleSfxEvent = typeof battleSfxEvent.static;
+
   export const battleState = t.Object({
     stage: t.Number(),
     activeUnitId: t.Nullable(t.String()),
@@ -190,6 +201,7 @@ export namespace MatchesModel {
     winnerPlayerId: t.Nullable(t.String()),
     drawOfferByPlayerId: t.Nullable(t.String()),
     log: t.Array(t.String()),
+    sfxEvents: t.Array(battleSfxEvent),
     turnOrder: t.Array(turnOrderEntry),
     legalTargetIds: t.Array(t.String()),
     skillLabel: t.Nullable(t.String()),

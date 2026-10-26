@@ -12,6 +12,7 @@ import {
   sourceFromAttackStyle,
 } from './damageSources';
 import { applyResistMultiplier } from './resists';
+import { pushSfx } from './sfx';
 import type { BattleState, BattleUnit } from './types';
 
 export const randInt = (min: number, max: number): number =>
@@ -394,6 +395,7 @@ export function markDeadIfNeeded(state: BattleState, unit: BattleUnit): void {
     return;
   }
   state.log.push(`${unit.displayName} погибает.`);
+  pushSfx(state, unit, 'death');
   if (unit.isSummon && unit.summonerId) {
     const master = state.units.find(
       (other) =>

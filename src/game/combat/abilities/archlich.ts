@@ -2,6 +2,7 @@ import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../d
 import { addMana, delEffect, grantEffect, healUnit } from '../effects';
 import { levelUpUnit } from '../level';
 import { rollMindChance } from '../resists';
+import { pushSfx } from '../sfx';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { availableSummonRows, createSummon } from './summon';
 import { alliesOf, enemiesOf } from './targets';
@@ -308,6 +309,7 @@ export const archlichAbilities: AbilityHandler = {
     levelUpUnit(actor, levels, state);
     victim.alive = false;
     victim.health = 0;
+    pushSfx(state, victim, 'death');
     state.log.push(
       `${actor.displayName} поглощает душу ${victim.displayName} (+${manaBoost} МР, +${levels} ур.).`
     );
