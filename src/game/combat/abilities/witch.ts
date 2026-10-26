@@ -55,11 +55,13 @@ function abilityMeta(
         label: 'Деградация',
         needsTarget: true,
         disabledReason:
-          actor.mana < 4
-            ? 'Нужно 4 МР'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+          actor.degradationCd > 0
+            ? `Кулдаун ${actor.degradationCd} р.`
+            : actor.mana < 4
+              ? 'Нужно 4 МР'
+              : targets.length === 0
+                ? 'Нет целей'
+                : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -94,6 +96,9 @@ export const witchAbilities: AbilityHandler = {
   preChoice(_state, actor) {
     if (actor.impPolymorphCd > 0) {
       actor.impPolymorphCd -= 1;
+    }
+    if (actor.degradationCd > 0) {
+      actor.degradationCd -= 1;
     }
   },
 
@@ -205,11 +210,12 @@ export const witchAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель недоступна' };
       }
-      if (randInt(1, 100) <= 70 + actor.lvl * 2) {
+      actor.degradationCd = 2;
+      if (randInt(1, 100) <= 85 + actor.lvl * 2) {
         if (!tryLevelDrain(state, target)) {
           return { status: 'done' };
         }
-        const n = Math.floor(actor.lvl / 6) + 1;
+        const n = Math.floor(actor.lvl / 5) + 1;
         levelUpUnit(target, -n, state);
         state.log.push(
           `${actor.displayName}: деградация ${target.displayName} (−${n} уровня).`

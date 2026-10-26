@@ -122,6 +122,13 @@ export function setWard(unit: BattleUnit, source: DamageSource, charges = 1): vo
   entry.wardCharges = (entry.wardCharges ?? 0) + charges;
 }
 
+/** Выставляет число зарядов варда без накопления. */
+export function setWardExact(unit: BattleUnit, source: DamageSource, charges = 1): void {
+  const entry = getOrCreateResist(unit, source);
+  entry.immune = false;
+  entry.wardCharges = charges;
+}
+
 export function setImmunity(unit: BattleUnit, source: DamageSource): void {
   const entry = getOrCreateResist(unit, source);
   entry.immune = true;

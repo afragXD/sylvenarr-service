@@ -274,13 +274,26 @@ describe('class morale deltas', () => {
     expect(lowered).toBe(true);
   });
 
-  test('Specter slot 3 lowers morale', () => {
+  test('Specter slot 3 does not lower morale (FATMAN instead)', () => {
     const state = twoUnitState('Specter', 'Knight', {}, { morale: 20 });
     const specter = state.units.find((u) => u.id === 'p1')!;
     const foe = state.units.find((u) => u.id === 'p2')!;
     const before = foe.morale;
     const outcome = applyAbility(state, specter, { slot: 3, targetId: 'p2' });
     expect(outcome.status).toBe('done');
-    expect(foe.morale).toBe(before - (specter.lvl + 3));
+    expect(foe.morale).toBe(before);
+    expect(foe.effects.some((e) => e.id === 'FATMAN')).toBe(true);
+  });
+
+  test('Specter dark ritual lowers ally morale by 7', () => {
+    const state = twoUnitState('Specter', 'Knight', {}, {});
+    const specter = state.units.find((u) => u.id === 'p1')!;
+    // Добавим союзника на ту же команду
+    const ally = state.units.find((u) => u.id === 'p1')!;
+    ally.morale = 20;
+    const before = ally.morale;
+    const outcome = applyAbility(state, specter, { slot: 2, targetId: 'p1' });
+    expect(outcome.status).toBe('done');
+    expect(ally.morale).toBe(before - 7);
   });
 });

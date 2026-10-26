@@ -2,7 +2,7 @@ import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../d
 import { grantEffect, hasEffect } from '../effects';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { alliesOf, enemiesOf } from './targets';
+import { alliesOf, enemiesOf, moveToOtherRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function pickRandom<T>(items: T[], count: number): T[] {
@@ -13,6 +13,10 @@ function pickRandom<T>(items: T[], count: number): T[] {
     picked.push(pool.splice(idx, 1)[0]!);
   }
   return picked;
+}
+
+function flamethrowerTargetCount(actor: BattleUnit): number {
+  return 2 + Math.floor(actor.lvl / 7) + Math.floor(Math.max(0, actor.morale) / 30);
 }
 
 function abilityMeta(
@@ -47,9 +51,9 @@ function abilityMeta(
     case 3:
       return {
         slot: 3,
-        label: 'Огненная бомба',
+        label: `Огненная бомба (${actor.ultaCharges})`,
         needsTarget: false,
-        disabledReason: null,
+        disabledReason: actor.ultaCharges <= 0 ? 'Нет бутылок' : null,
         legalTargetIds: [],
       };
     case 4: {
@@ -63,20 +67,25 @@ function abilityMeta(
       };
     }
     case 5: {
-      const targets = enemiesOf(state, actor);
+      const halfHp = actor.maxHp / 2;
       return {
         slot: 5,
-        label: 'Акт самосожжения',
-        needsTarget: true,
-        disabledReason: targets.length === 0 ? 'Нет целей' : null,
-        legalTargetIds: targets.map((unit) => unit.id),
+        label: 'Самосожжение',
+        needsTarget: false,
+        disabledReason:
+          actor.health < halfHp
+            ? 'Нужно ≥ половины ОЗ'
+            : alliesOf(state, actor).filter((unit) => unit.id !== actor.id).length === 0
+              ? 'Нет союзников'
+              : null,
+        legalTargetIds: [],
       };
     }
   }
 }
 
 /**
- * Pyro: flamethrower, crossbow, bomb, fired weapon, self-immolation.
+ * Pyro: flamethrower, crossbow, bomb bottles, fired weapon, self-immolation.
  */
 export const pyroAbilities: AbilityHandler = {
   listAbilities(state, actor) {
@@ -90,9 +99,8 @@ export const pyroAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const targets = pickRandom(enemiesOf(state, actor), 2);
+      const targets = pickRandom(enemiesOf(state, actor), flamethrowerTargetCount(actor));
       for (const enemy of targets) {
-        // Огнемёт бьёт магией огня от power (как MagicPattern в боте), а не от melee-урона.
         const damage = dealDamage(
           actor,
           enemy,
@@ -100,10 +108,9 @@ export const pyroAbilities: AbilityHandler = {
           state
         );
         if (damage > 0) {
-          state.log.push(`${actor.displayName}: огнемёт → ${enemy.displayName} ${formatLastLogDamage(damage)}.`);
-          if (randInt(1, 100) <= 50) {
-            grantEffect(enemy, 'BURNING', 2, 1.3);
-          }
+          state.log.push(
+            `${actor.displayName}: огнемёт → ${enemy.displayName} ${formatLastLogDamage(damage)}.`
+          );
           markDeadIfNeeded(state, enemy);
         }
       }
@@ -137,27 +144,19 @@ export const pyroAbilities: AbilityHandler = {
     }
 
     if (input.slot === 3) {
-      const fronts = state.units.filter(
-        (unit) => unit.alive && unit.row === ROW_FRONT
-      );
+      actor.ultaCharges -= 1;
+      const burnPower = (80 + actor.lvl) / 100;
+      const fronts = enemiesOf(state, actor).filter((unit) => unit.row === ROW_FRONT);
+      const retreatChance = 35 + actor.lvl;
       for (const unit of fronts) {
-        grantEffect(unit, 'BURNING', 2 + Math.floor(actor.lvl / 7), 1.3);
+        grantEffect(unit, 'BURNING', 2, burnPower);
+        if (unit.row === ROW_FRONT && randInt(1, 100) <= retreatChance) {
+          moveToOtherRow(unit);
+          state.log.push(`${unit.displayName} отступает назад от огненной бомбы.`);
+        }
       }
-      const enemies = state.units.filter(
-        (unit) => unit.alive && unit.team !== actor.team
-      );
-      const columns = enemies.map((unit) => unit.column);
-      for (let i = columns.length - 1; i > 0; i -= 1) {
-        const j = randInt(0, i);
-        const tmp = columns[i]!;
-        columns[i] = columns[j]!;
-        columns[j] = tmp;
-      }
-      enemies.forEach((unit, i) => {
-        unit.column = columns[i] ?? unit.column;
-      });
       state.log.push(
-        `${actor.displayName}: огненная бомба поджигает фронты и перемешивает врагов.`
+        `${actor.displayName}: огненная бомба (${actor.ultaCharges} бут. осталось) поджигает передний ряд врага.`
       );
       return { status: 'done' };
     }
@@ -174,31 +173,17 @@ export const pyroAbilities: AbilityHandler = {
       return { status: 'done' };
     }
 
-    // slot 5
-    const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
-    if (!target) {
-      return { status: 'reject', message: 'Цель не найдена' };
-    }
+    // slot 5 — самосожжение
+    const allies = alliesOf(state, actor).filter((unit) => unit.id !== actor.id);
     actor.health = 0;
     markDeadIfNeeded(state, actor);
-    // В боте только −мораль (lvl×6), без FEAR.
-    target.morale -= actor.lvl * 6;
-    grantEffect(target, 'UNLUCKY', 2, actor.lvl * 2);
-    const leader =
-      alliesOf(state, actor)
-        .filter((unit) => unit.id !== actor.id)
-        .sort((a, b) => b.initiative - a.initiative)[0] ?? null;
-    if (leader) {
-      leader.damage = Math.round(leader.damage * 1.2);
-      leader.power = Math.round(leader.power * 1.2);
-      state.log.push(
-        `${actor.displayName} самосожжением усиливает ${leader.displayName}; ${target.displayName} в ужасе.`
-      );
-    } else {
-      state.log.push(
-        `${actor.displayName} самосожжением пугает ${target.displayName}.`
-      );
+    for (const ally of allies) {
+      grantEffect(ally, 'FOCUSED', 2, 15 + actor.lvl);
+      ally.critBank += 1;
     }
+    state.log.push(
+      `${actor.displayName} приносит себя в жертву — союзники вдохновлены (+точность, крит-банк).`
+    );
     return { status: 'done' };
   },
 };

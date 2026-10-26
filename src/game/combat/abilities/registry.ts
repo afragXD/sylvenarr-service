@@ -170,6 +170,12 @@ export function initPilotFlags(unit: BattleUnit): void {
     case 'Mermaid':
       unit.ultaCharges = 1;
       break;
+    case 'Pyro':
+      unit.ultaCharges = 1;
+      break;
+    case 'Zombie':
+      unit.ultaCharges = 1;
+      break;
     default:
       break;
   }

@@ -84,7 +84,11 @@ export const DEFAULT_RESISTS: Record<string, ResistMap> = {
     ['HOLY', { value: -35 }],
     ['WEAPON', { value: 20 }],
   ]),
-  Specter: map([['FIRE', { value: -15 }]]),
+  Specter: map([
+    ['FIRE', { value: -15 }],
+    ['ARROWS', { value: 20 }],
+    ['WEAPON', { value: 15 }],
+  ]),
   Demiurge: map([
     ['IMITATION', { immune: true }],
     ['AIR', { value: 20 }],

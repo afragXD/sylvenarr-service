@@ -1,7 +1,6 @@
 import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect, trySpendMana, tryStun } from '../effects';
 import { isArtificialClass, isUndeadClass } from '../races';
-import { ROW_BACK } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll, moveToOtherRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -46,11 +45,13 @@ function abilityMeta(
         label: 'Телекинез',
         needsTarget: true,
         disabledReason:
-          actor.mana < 3
-            ? 'Нужно 3 МР'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+          actor.telekinesisCd > 0
+            ? `Кулдаун ${actor.telekinesisCd} р.`
+            : actor.mana < 3
+              ? 'Нужно 3 МР'
+              : targets.length === 0
+                ? 'Нет целей'
+                : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -68,13 +69,13 @@ function abilityMeta(
       const targets = enemiesOf(state, actor);
       return {
         slot: 5,
-        label: 'Град кристаллов',
+        label: 'Любитель кристальных чар',
         needsTarget: true,
         disabledReason:
-          actor.row !== ROW_BACK
-            ? 'Нужен задний ряд'
-            : actor.mana < 2
-              ? 'Нужно 2 МР'
+          actor.crystalCharmsCd > 0
+            ? `Кулдаун ${actor.crystalCharmsCd} р.`
+            : actor.mana < 3
+              ? 'Нужно 3 МР'
               : targets.length === 0
                 ? 'Нет целей'
                 : null,
@@ -85,7 +86,7 @@ function abilityMeta(
 }
 
 /**
- * Inquisitor: булава, молния, телекинез, оглушение, silence.
+ * Inquisitor: булава, молния, телекинез, оглушение, кристальные чары.
  */
 export const inquisitorAbilities: AbilityHandler = {
   listAbilities(state, actor) {
@@ -95,6 +96,12 @@ export const inquisitorAbilities: AbilityHandler = {
   preChoice(_state, actor) {
     if (actor.tortureLightningCd > 0) {
       actor.tortureLightningCd -= 1;
+    }
+    if (actor.telekinesisCd > 0) {
+      actor.telekinesisCd -= 1;
+    }
+    if (actor.crystalCharmsCd > 0) {
+      actor.crystalCharmsCd -= 1;
     }
   },
 
@@ -169,7 +176,8 @@ export const inquisitorAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель недоступна' };
       }
-      if (randInt(1, 100) <= 75 + actor.lvl) {
+      actor.telekinesisCd = 2;
+      if (randInt(1, 100) <= 85 + actor.lvl) {
         const before = target.row;
         moveToOtherRow(target);
         state.log.push(
@@ -193,7 +201,6 @@ export const inquisitorAbilities: AbilityHandler = {
         state.log.push(
           `${actor.displayName} мощным ударом бьёт ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
-        // options.py: 62+L; fourthAction ошибочно 162+L — берём 62+L×2.
         if (randInt(1, 100) <= 62 + actor.lvl * 2 && tryStun(state, target, 1)) {
           state.log.push(`${target.displayName} оглушён.`);
         } else {
@@ -206,8 +213,8 @@ export const inquisitorAbilities: AbilityHandler = {
       return { status: 'done' };
     }
 
-    // slot 5
-    const err = trySpendMana(actor, 2);
+    // slot 5 — Любитель кристальных чар
+    const err = trySpendMana(actor, 3);
     if (err) {
       return { status: 'reject', message: err };
     }
@@ -215,9 +222,15 @@ export const inquisitorAbilities: AbilityHandler = {
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }
-    const damage = dealDamage(actor, target, { damageMult: 0.9, armorIgnore: 0.15 }, state);
+    actor.crystalCharmsCd = 2;
+    const damage = dealDamage(
+      actor,
+      target,
+      { damageMult: 0.9, armorIgnore: 0.15, source: 'EARTH' },
+      state
+    );
     if (damage === 0) {
-      state.log.push(`${actor.displayName}: град кристаллов — промах.`);
+      state.log.push(`${actor.displayName}: кристальные чары — промах.`);
     } else {
       state.log.push(
         `${actor.displayName} обрушивает кристаллы на ${target.displayName} ${formatLastLogDamage(damage)}.`

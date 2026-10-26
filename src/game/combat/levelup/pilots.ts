@@ -223,9 +223,12 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   /** Quirk: damage += 2 без * ind. */
-  Pyro(unit, ind, _state) {
+  Pyro(unit, ind, state) {
     unit.damage += 2;
     unit.power += (2 + Math.floor(unit.lvl / 3)) * ind;
+    if (state.stage % 5 === 0 && ind > 0) {
+      unit.ultaCharges += 1;
+    }
     bumpLevel(unit, ind);
   },
 

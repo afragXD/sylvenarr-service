@@ -170,10 +170,20 @@ export type BattleUnit = {
   ectoplasmCd: number;
   /** Inquisitor: кулдаун «Пыточная молния» в раундах. */
   tortureLightningCd: number;
+  /** Inquisitor: кулдаун «Телекинез» в раундах. */
+  telekinesisCd: number;
+  /** Inquisitor: кулдаун «Любитель кристальных чар» в раундах. */
+  crystalCharmsCd: number;
   /** Witch: патроны револьвера. */
   gun: number;
   /** Witch «Превращение»: кулдаун в раундах. */
   impPolymorphCd: number;
+  /** Witch «Деградация»: кулдаун в раундах. */
+  degradationCd: number;
+  /** Specter «Тёмный ритуал»: кулдаун в раундах. */
+  darkRitualCd: number;
+  /** Specter «Покров тьмы»: кулдаун в раундах. */
+  darkVeilCd: number;
   /** Abbess: запрет воскрешения. */
   forbiddenResurrect: boolean;
   /** Witch polymorph: броня до превращения (−1 = нет). */

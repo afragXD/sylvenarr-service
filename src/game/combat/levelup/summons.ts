@@ -29,10 +29,13 @@ export const summonLevelUps: Record<string, ClassLevelUpFn> = {
     bumpLevel(unit, ind);
   },
 
-  Zombie(unit, ind, _state) {
+  Zombie(unit, ind, state) {
     unit.maxHp += 5 * ind;
     healUnit(unit, 3 * ind);
     unit.damage += 4 * ind;
+    if (state.stage % 4 === 0 && ind > 0) {
+      unit.ultaCharges += 1;
+    }
     bumpLevel(unit, ind);
   },
 
