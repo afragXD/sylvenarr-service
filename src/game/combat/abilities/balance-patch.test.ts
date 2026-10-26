@@ -103,7 +103,7 @@ describe('balance patch 2026-10', () => {
     expect(DEFAULT_RESISTS.Archlich?.FIRE).toEqual({ value: -20 });
   });
 
-  test('BeerElemental slot 1 Homie De Flanders deals water magic', () => {
+  test('BeerElemental slot 5 Сливняк deals water magic', () => {
     const heroes = new Map([
       ['BeerElemental', hero('BeerElemental', { initiative: 99, power: 18, luck: 20, mana: 0 })],
       ['B', hero('B', { initiative: 1, health: 300 })],
@@ -121,9 +121,36 @@ describe('balance patch 2026-10', () => {
     const actor = state.units.find((u) => u.id === 'p1')!;
     const foe = state.units.find((u) => u.id === 'e1')!;
     const hpBefore = foe.health;
-    const outcome = applyAbility(state, actor, { slot: 1, targetId: 'e1' });
+    const outcome = applyAbility(state, actor, { slot: 5, targetId: 'e1' });
     expect(outcome.status).toBe('done');
     expect(foe.health).toBeLessThan(hpBefore);
+  });
+
+  test('BeerElemental slot 1 Homie raises ally morale', () => {
+    const heroes = new Map([
+      ['BeerElemental', hero('BeerElemental', { initiative: 99 })],
+      ['Ally', hero('Ally', { initiative: 1 })],
+      ['B', hero('B', { initiative: 1 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'BeerElemental', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'h', heroClassCode: 'Ally', row: 0, pickOrder: 2 },
+        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes,
+    });
+    const actor = state.units.find((u) => u.id === 'p1')!;
+    const ally = state.units.find((u) => u.id === 'p2')!;
+    actor.lvl = 3;
+    const before = ally.morale;
+    const outcome = applyAbility(state, actor, { slot: 1, targetId: 'p2' });
+    expect(outcome.status).toBe('done');
+    expect(ally.morale).toBe(before + 7 + actor.lvl * 2);
+    expect(state.log.some((line) => line.includes('Пиво течёт во мне'))).toBe(true);
   });
 
   test('units start with maxMana from hero stats', () => {

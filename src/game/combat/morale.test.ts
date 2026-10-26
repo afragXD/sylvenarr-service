@@ -226,7 +226,7 @@ describe('golem resonance + beer Homie', () => {
     expect(ally.power).toBeGreaterThan(powerBefore);
   });
 
-  test('BeerElemental Homie deals numeric water damage', () => {
+  test('BeerElemental Сливняк deals numeric water damage', () => {
     const state = twoUnitState(
       'BeerElemental',
       'GoldGolem',
@@ -236,11 +236,21 @@ describe('golem resonance + beer Homie', () => {
     const actor = state.units.find((u) => u.id === 'p1')!;
     const foe = state.units.find((u) => u.id === 'p2')!;
     const hpBefore = foe.health;
-    const outcome = applyAbility(state, actor, { slot: 1, targetId: 'p2' });
+    const outcome = applyAbility(state, actor, { slot: 5, targetId: 'p2' });
     expect(outcome.status).toBe('done');
     expect(Number.isFinite(foe.health)).toBe(true);
     expect(foe.health).toBeLessThan(hpBefore);
     expect(state.log.some((line) => line.includes('NaN'))).toBe(false);
+  });
+
+  test('BeerElemental Homie raises ally morale', () => {
+    const state = twoUnitState('BeerElemental', 'GoldGolem', {}, {});
+    const actor = state.units.find((u) => u.id === 'p1')!;
+    actor.lvl = 2;
+    const before = actor.morale;
+    const outcome = applyAbility(state, actor, { slot: 1, targetId: 'p1' });
+    expect(outcome.status).toBe('done');
+    expect(actor.morale).toBe(before + 7 + actor.lvl * 2);
   });
 });
 

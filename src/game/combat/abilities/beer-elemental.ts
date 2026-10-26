@@ -11,14 +11,13 @@ function abilityMeta(
 ): AbilityInfo {
   switch (slot) {
     case 1: {
-      // Порт: слот не через Pattern; охрана не блокирует.
-      const targets = enemiesOf(state, actor, { ignoreGuard: true });
+      const allies = alliesOf(state, actor);
       return {
         slot: 1,
         label: 'Homie De Flanders',
         needsTarget: true,
-        disabledReason: targets.length === 0 ? 'Нет целей' : null,
-        legalTargetIds: targets.map((unit) => unit.id),
+        disabledReason: allies.length === 0 ? 'Нет союзников' : null,
+        legalTargetIds: allies.map((unit) => unit.id),
       };
     }
     case 2: {
@@ -56,19 +55,22 @@ function abilityMeta(
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
-    case 5:
+    case 5: {
+      // Порт: слот не через Pattern; охрана не блокирует.
+      const targets = enemiesOf(state, actor, { ignoreGuard: true });
       return {
         slot: 5,
-        label: 'Базовые действия',
-        needsTarget: false,
-        disabledReason: 'Используйте защиту / ожидание',
-        legalTargetIds: [],
+        label: 'Сливняк',
+        needsTarget: true,
+        disabledReason: targets.length === 0 ? 'Нет целей' : null,
+        legalTargetIds: targets.map((unit) => unit.id),
       };
+    }
   }
 }
 
 /**
- * BeerElemental: happy, drunk, critBank, poison ulta; preChoice gold loss.
+ * BeerElemental: morale toast, drunk, critBank, poison ulta, water dump; preChoice gold loss.
  */
 export const beerElementalAbilities: AbilityHandler = {
   listAbilities(state, actor) {
@@ -88,26 +90,18 @@ export const beerElementalAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const target = enemiesOf(state, actor, { ignoreGuard: true }).find(
-        (unit) => unit.id === input.targetId
-      );
+      const target = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(
-        actor,
-        target,
-        { damageMult: 1, armorIgnore: 0, source: 'WATER', forceStyle: 'magic' },
-        state
-      );
-      if (damage === 0) {
-        state.log.push(`${actor.displayName}: напоить — промах.`);
-        return { status: 'done' };
-      }
+      const gain = 7 + actor.lvl * 2;
+      target.morale += gain;
       state.log.push(
-        `${actor.displayName} напаивает ${target.displayName} некачественным пивом ${formatLastLogDamage(damage)}.`
+        'Пиво течёт во мне, я един с пивом ... Пиво течёт во мне, я един с пивом! Пиво течёт во мне, я един с пивом!!!'
       );
-      markDeadIfNeeded(state, target);
+      state.log.push(
+        `${actor.displayName}: ${target.displayName} получает +${gain} боевого духа.`
+      );
       return { status: 'done' };
     }
 
@@ -151,6 +145,27 @@ export const beerElementalAbilities: AbilityHandler = {
       return { status: 'done' };
     }
 
-    return { status: 'reject', message: 'Используйте защиту / ожидание' };
+    // slot 5 — Сливняк (бывший Homie De Flanders)
+    const target = enemiesOf(state, actor, { ignoreGuard: true }).find(
+      (unit) => unit.id === input.targetId
+    );
+    if (!target) {
+      return { status: 'reject', message: 'Цель не найдена' };
+    }
+    const damage = dealDamage(
+      actor,
+      target,
+      { damageMult: 1, armorIgnore: 0, source: 'WATER', forceStyle: 'magic' },
+      state
+    );
+    if (damage === 0) {
+      state.log.push(`${actor.displayName}: сливняк — промах.`);
+      return { status: 'done' };
+    }
+    state.log.push(
+      `${actor.displayName} обливает ${target.displayName} некачественным пивом ${formatLastLogDamage(damage)}.`
+    );
+    markDeadIfNeeded(state, target);
+    return { status: 'done' };
   },
 };
