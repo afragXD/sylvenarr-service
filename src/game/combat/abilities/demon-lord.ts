@@ -14,7 +14,7 @@ function abilityMeta(
       const targets = meleeOrAll(state, actor, false);
       return {
         slot: 1,
-        label: 'Трёхглавый удар',
+        label: 'Трёхглавый удар (по ряду)',
         needsTarget: true,
         attackKind: 'melee',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
@@ -81,7 +81,10 @@ export const demonLordAbilities: AbilityHandler = {
       if (!primary) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const rowTargets = enemiesOf(state, actor).filter((unit) => unit.row === primary.row);
+      // Как в боте: все живые враги на ряду цели (без отсечения GUARDED/SANCTUM).
+      const rowTargets = state.units.filter(
+        (unit) => unit.alive && unit.team !== actor.team && unit.row === primary.row
+      );
       let killed = false;
       for (const enemy of rowTargets) {
         const damage = dealDamage(

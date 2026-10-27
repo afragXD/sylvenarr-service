@@ -145,6 +145,32 @@ describe('class level-up growth', () => {
     expect(unit.lvl).toBe(2);
   });
 
+  test('multi-levelup applies growth per intermediate level', () => {
+    const state = makeDuel('Assassin', { damage: 28 });
+    const unit = state.units.find((u) => u.id === 'p1')!;
+    unit.lvl = 1;
+    unit.hiddenLvl = 1;
+    const dmgBefore = unit.damage;
+    // Честно: +1 +2 +3 = +6, а не пакетный 1×3 = +3.
+    levelUpUnit(unit, 3, state);
+    expect(unit.lvl).toBe(4);
+    expect(unit.hiddenLvl).toBe(4);
+    expect(unit.damage).toBe(dmgBefore + 6);
+  });
+
+  test('multi-levelup hits milestones that a single ind jump would skip', () => {
+    const state = makeDuel('Paladin', { damage: 20, armor: 10 });
+    const unit = state.units.find((u) => u.id === 'p1')!;
+    unit.lvl = 1;
+    unit.hiddenLvl = 1;
+    unit.ultaCharges = 2;
+    // hiddenLvl % 7 === 0 срабатывает на шаге, когда hiddenLvl уже 7.
+    levelUpUnit(unit, 7, state);
+    expect(unit.lvl).toBe(8);
+    expect(unit.hiddenLvl).toBe(8);
+    expect(unit.ultaCharges).toBe(3);
+  });
+
   test('Patriarch: armor+3, power+4, mana+1', () => {
     const state = makeDuel('Patriarch', { armor: 5, power: 25, mana: 12 });
     const unit = state.units.find((u) => u.id === 'p1')!;

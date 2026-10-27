@@ -149,8 +149,15 @@ export function dealDamage(
   const melee = opts.kind === 'melee';
   const result = computeRawDamage(attacker, defender, opts);
   if (result.raw <= 0) {
-    if (state && result.naturalMiss) {
-      state.log.push(`${attacker.displayName}: критический провал!`);
+    if (state) {
+      if (result.naturalMiss) {
+        state.log.push(`${attacker.displayName}: критический провал!`);
+      } else {
+        // Порт evade(): обычный промах тоже пишется в журнал (иначе AoE выглядит как «1 цель»).
+        state.log.push(
+          `${attacker.displayName} промахивается по ${defender.displayName}.`
+        );
+      }
     }
     lastDeal = {
       damage: 0,

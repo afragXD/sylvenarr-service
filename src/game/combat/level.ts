@@ -2,20 +2,29 @@ import { applyClassLevelUp } from './levelup';
 import type { BattleState, BattleUnit } from './types';
 
 /**
- * Повышает уровень юнита на ind (legacy Hero.levelup + классовые приросты).
+ * Повышает (или понижает) уровень юнита на ind.
+ * При |ind| > 1 вызывает прирост по одному уровню: в формулах классов
+ * участвует текущий lvl/hiddenLvl, поэтому пакетный ind даёт неверный результат.
  */
 export function levelUpUnit(unit: BattleUnit, ind = 1, state?: BattleState): void {
   if (!unit.alive || ind === 0) {
     return;
   }
-  if (state) {
-    applyClassLevelUp(unit, ind, state);
-    return;
-  }
-  // Без state (точечные вызовы): только базовый bump lvl/hiddenLvl.
-  unit.lvl = Math.max(1, unit.lvl + ind);
-  if (ind > 0) {
-    unit.hiddenLvl += ind;
+  const step = ind > 0 ? 1 : -1;
+  const times = Math.abs(ind);
+  for (let i = 0; i < times; i += 1) {
+    if (!unit.alive) {
+      return;
+    }
+    if (state) {
+      applyClassLevelUp(unit, step, state);
+    } else {
+      // Без state (точечные вызовы): только базовый bump lvl/hiddenLvl.
+      unit.lvl = Math.max(1, unit.lvl + step);
+      if (step > 0) {
+        unit.hiddenLvl += step;
+      }
+    }
   }
 }
 

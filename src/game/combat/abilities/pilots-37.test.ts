@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
+import { grantEffect } from '../effects';
 import { applyAction, createBattleState, toBattleSummary } from '../engine';
 import type { HeroClassStats } from '../types';
 
@@ -24,7 +25,7 @@ describe('phase 3.7 pilots', () => {
   test('DemonLord slot 1 hits whole enemy row', () => {
     const heroes = new Map([
       ['DemonLord', hero('DemonLord', { initiative: 99, accuracy: 100, luck: 0 })],
-      ['B', hero('B', { initiative: 1, health: 80 })],
+      ['B', hero('B', { initiative: 1, health: 200 })],
     ]);
     const state = createBattleState({
       matchId: 'm',
@@ -34,14 +35,19 @@ describe('phase 3.7 pilots', () => {
         { id: 'p1', playerId: 'h', heroClassCode: 'DemonLord', row: 0, pickOrder: 1 },
         { id: 'p2', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
         { id: 'p3', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 2 },
+        { id: 'p4', playerId: 'g', heroClassCode: 'B', row: 1, pickOrder: 3 },
       ],
       heroes,
     });
     state.activeUnitId = 'p1';
     state.turnPlayerId = 'h';
-    const before = state.units
-      .filter((unit) => unit.team === 1)
-      .map((unit) => unit.health);
+    const frontA = state.units.find((unit) => unit.id === 'p2')!;
+    const frontB = state.units.find((unit) => unit.id === 'p3')!;
+    const back = state.units.find((unit) => unit.id === 'p4')!;
+    grantEffect(frontB, 'GUARDED', 2, 0);
+    const beforeA = frontA.health;
+    const beforeB = frontB.health;
+    const beforeBack = back.health;
     const result = applyAction(state, {
       playerId: 'h',
       unitId: 'p1',
@@ -50,8 +56,47 @@ describe('phase 3.7 pilots', () => {
       targetId: 'p2',
     });
     expect(result.ok).toBe(true);
-    const after = state.units.filter((unit) => unit.team === 1);
-    expect(after.some((unit, i) => unit.health < (before[i] ?? 0))).toBe(true);
+    expect(frontA.health).toBeLessThan(beforeA);
+    expect(frontB.health).toBeLessThan(beforeB);
+    expect(back.health).toBe(beforeBack);
+  });
+
+  test('DemonLord slot 1 hits all 3 Assassins on the back row', () => {
+    const heroes = new Map([
+      ['DemonLord', hero('DemonLord', { initiative: 99, accuracy: 100, luck: 0, damage: 40 })],
+      ['Assassin', hero('Assassin', { initiative: 1, health: 200, dodge: 0 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'DemonLord', row: 0, pickOrder: 1 },
+        { id: 'a1', playerId: 'g', heroClassCode: 'Assassin', row: 1, pickOrder: 1 },
+        { id: 'a2', playerId: 'g', heroClassCode: 'Assassin', row: 1, pickOrder: 2 },
+        { id: 'a3', playerId: 'g', heroClassCode: 'Assassin', row: 1, pickOrder: 3 },
+      ],
+      heroes,
+    });
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const assassins = ['a1', 'a2', 'a3'].map(
+      (id) => state.units.find((unit) => unit.id === id)!
+    );
+    const before = assassins.map((unit) => unit.health);
+    const result = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 1,
+      targetId: 'a2',
+    });
+    expect(result.ok).toBe(true);
+    for (let i = 0; i < assassins.length; i += 1) {
+      expect(assassins[i]!.health).toBeLessThan(before[i]!);
+    }
+    const hitLines = state.log.filter((line) => line.includes('трёхглавый удар'));
+    expect(hitLines.length).toBe(3);
   });
 
   test('DemonLord slot 4 grants FIRESHIELD, HASTE and burns attacker', () => {
