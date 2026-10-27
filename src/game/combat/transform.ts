@@ -1,4 +1,3 @@
-import { resolveAttackStyle } from './attack-style';
 import { resistsForClass } from './defaultResists';
 import type { BattleState, BattleUnit } from './types';
 
@@ -29,7 +28,6 @@ export function applyCatalogStats(
   unit.power = hero.power;
   unit.mana = Math.max(unit.mana, hero.mana);
   unit.maxMana = Math.max(unit.maxMana, hero.maxMana ?? hero.mana);
-  unit.attackStyle = resolveAttackStyle(hero.code);
   unit.resists = resistsForClass(hero.code);
   return true;
 }

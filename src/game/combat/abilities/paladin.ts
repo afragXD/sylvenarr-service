@@ -5,8 +5,13 @@ import { unholyDamageMult } from '../races';
 import { rollSrcChance, setWard } from '../resists';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { enemiesOf, meleeOrAll, moveToOtherRow } from './targets';
+import { meleeOrAll, meleeTargets, moveToOtherRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
+
+/** Святое копьё: рывок в передний ряд, затем удар по правилам ближнего боя. */
+function holySpearTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {
+  return meleeTargets(state, { ...actor, row: ROW_FRONT });
+}
 
 function abilityMeta(
   state: BattleState,
@@ -20,6 +25,7 @@ function abilityMeta(
         slot: 1,
         label: 'Парные клинки',
         needsTarget: true,
+        attackKind: 'melee',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -33,7 +39,7 @@ function abilityMeta(
         legalTargetIds: [],
       };
     case 3: {
-      const targets = enemiesOf(state, actor);
+      const targets = meleeTargets(state, actor);
       return {
         slot: 3,
         label: 'Разбить душу',
@@ -50,7 +56,7 @@ function abilityMeta(
       };
     }
     case 4: {
-      const targets = enemiesOf(state, actor);
+      const targets = holySpearTargets(state, actor);
       return {
         slot: 4,
         label: 'Святое копьё',
@@ -107,7 +113,7 @@ export const paladinAbilities: AbilityHandler = {
         const damage = dealDamage(
           actor,
           target,
-          { damageMult: 1.05, armorIgnore: 0, source: 'WEAPON' },
+          { kind: 'melee', damageMult: 1.05, armorIgnore: 0, source: 'WEAPON' },
           state
         );
         if (damage === 0) {
@@ -131,7 +137,7 @@ export const paladinAbilities: AbilityHandler = {
     }
 
     if (input.slot === 3) {
-      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+      const target = meleeTargets(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
@@ -144,7 +150,7 @@ export const paladinAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1.1, armorIgnore: 0.15, source: 'HOLY', forceStyle: 'magic' },
+        { kind: 'magic', damageMult: 1.1, armorIgnore: 0.15, source: 'HOLY' },
         state
       );
       const deal = lastDealDamageResult();
@@ -173,7 +179,7 @@ export const paladinAbilities: AbilityHandler = {
     }
 
     if (input.slot === 4) {
-      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+      const target = holySpearTargets(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
@@ -182,7 +188,7 @@ export const paladinAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: unholyDamageMult(target), armorIgnore: 0, source: 'HOLY' },
+        { kind: 'melee', damageMult: unholyDamageMult(target), armorIgnore: 0, source: 'HOLY' },
         state
       );
       if (damage === 0) {

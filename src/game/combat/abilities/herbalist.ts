@@ -52,6 +52,7 @@ function abilityMeta(
         slot: 5,
         label: 'Праща',
         needsTarget: true,
+        attackKind: 'ranged',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -136,7 +137,7 @@ export const herbalistAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult, armorIgnore, forceStyle: 'ranged', source: 'ARROWS' },
+        { kind: 'ranged', damageMult, armorIgnore, source: 'ARROWS' },
         state
       );
       if (damage === 0) {

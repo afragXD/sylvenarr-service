@@ -16,6 +16,7 @@ function abilityMeta(
         slot: 1,
         label: 'Копьё',
         needsTarget: true,
+        attackKind: 'melee',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -97,7 +98,12 @@ export const knightAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 1.05, armorIgnore: 0 });
+      const damage = dealDamage(actor, target, {
+        kind: 'melee',
+        damageMult: 1.05,
+        armorIgnore: 0,
+        noCounter: true,
+      });
       if (damage === 0) {
         state.log.push(`${actor.displayName} промахнулся копьём по ${target.displayName}.`);
       } else {
@@ -109,7 +115,11 @@ export const knightAbilities: AbilityHandler = {
         if (target.alive && randInt(1, 100) <= 50 + actor.lvl * 2) {
           const behind = neighbourBehind(state, target);
           if (behind) {
-            const splash = dealDamage(actor, behind, { damageMult: 0.6, armorIgnore: 0 });
+            const splash = dealDamage(actor, behind, {
+              kind: 'melee',
+              damageMult: 0.6,
+              armorIgnore: 0,
+            });
             if (splash > 0) {
               state.log.push(`Копьё задевает ${behind.displayName} ${formatLastLogDamage(splash)}.`);
               markDeadIfNeeded(state, behind);
@@ -128,7 +138,7 @@ export const knightAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 0.75, armorIgnore: 0 });
+      const damage = dealDamage(actor, target, { kind: 'melee', damageMult: 0.75, armorIgnore: 0 });
       if (damage === 0) {
         state.log.push(`${actor.displayName}: удар пикой — промах.`);
       } else {

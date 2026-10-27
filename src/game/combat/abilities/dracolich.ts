@@ -1,24 +1,12 @@
 import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect, hasEffect, healUnit, resurrectUnit } from '../effects';
 import { isUndeadClass } from '../races';
-import { ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { enemiesOf } from './targets';
+import { enemiesOf, meleeTargets } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function lowHpDamageMult(actor: BattleUnit): number {
   return 1 + (1 - actor.health / actor.maxHp) * 0.36;
-}
-
-function meleeTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {
-  const enemies = enemiesOf(state, actor);
-  const frontAlive = state.units.filter(
-    (unit) => unit.alive && unit.team !== actor.team && unit.row === ROW_FRONT
-  );
-  if (frontAlive.length > 0) {
-    return enemies.filter((unit) => unit.row === ROW_FRONT);
-  }
-  return enemies;
 }
 
 function abilityMeta(
@@ -33,6 +21,7 @@ function abilityMeta(
         slot: 1,
         label: 'Дыхание смерти',
         needsTarget: false,
+        attackKind: 'magic',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: [],
       };
@@ -175,7 +164,7 @@ export const dracolichAbilities: AbilityHandler = {
         const damage = dealDamage(
           actor,
           enemy,
-          { damageMult: mult, armorIgnore: 0.15, source: 'DEATH' },
+          { kind: 'magic', damageMult: mult, armorIgnore: 0.15, source: 'DEATH' },
           state
         );
         if (damage === 0) {
@@ -269,7 +258,7 @@ export const dracolichAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1, armorIgnore, source: 'WEAPON' },
+        { kind: 'melee', damageMult: 1, armorIgnore, source: 'WEAPON' },
         state
       );
       if (damage === 0) {

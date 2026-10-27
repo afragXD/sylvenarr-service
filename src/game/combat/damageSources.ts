@@ -41,7 +41,7 @@ export const DAMAGE_SOURCE_LABELS: Record<DamageSource, string> = {
   LOWERINGLEVEL: 'Понижение уровня',
 };
 
-/** Источник урона по стилю базовой атаки. */
+/** Источник урона по умолчанию для типа атаки. */
 export function sourceFromAttackStyle(
   style: 'melee' | 'ranged' | 'magic'
 ): DamageSource {

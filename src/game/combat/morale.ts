@@ -1,3 +1,4 @@
+import { primaryAttackKindOrNull } from './abilities/primary-attack';
 import { markDeadIfNeeded, randInt } from './damage';
 import { grantEffect } from './effects';
 import { levelUpUnit } from './level';
@@ -128,7 +129,7 @@ export function applyPsycho(state: BattleState, unit: BattleUnit): void {
 
 /**
  * Бонус за высокую мораль после хода (порт rewardForHighMorale).
- * Chance(morale) → STRENGTH 2 раунда на +25% урона.
+ * Chance(morale) → на 2 раунда: маги +25% силы магии (ABSOLUTEPOWER), воины +33% урона (STRENGTH).
  */
 export function maybeRewardHighMorale(state: BattleState, unit: BattleUnit): void {
   if (!unit.alive || unit.morale <= 0) {
@@ -137,7 +138,14 @@ export function maybeRewardHighMorale(state: BattleState, unit: BattleUnit): voi
   if (!chancePercent(unit.morale)) {
     return;
   }
-  const bonus = Math.max(1, Math.round(unit.damage * 0.25));
+  const kind = primaryAttackKindOrNull(state, unit);
+  const isMage = kind === null ? unit.power > unit.damage : kind === 'magic';
+  if (isMage) {
+    grantEffect(unit, 'ABSOLUTEPOWER', 2, 0.25);
+    state.log.push(`${unit.displayName}: высокий боевой дух усиливает магию (+25% СМ на 2 р.).`);
+    return;
+  }
+  const bonus = Math.max(1, Math.round(unit.damage * 0.33));
   grantEffect(unit, 'STRENGTH', 2, bonus);
   state.log.push(
     `${unit.displayName}: высокий боевой дух даёт силу (+${bonus} урона на 2 р.).`

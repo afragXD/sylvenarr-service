@@ -17,6 +17,7 @@ function abilityMeta(
         slot: 1,
         label: 'Апперкот машины',
         needsTarget: true,
+        attackKind: 'melee',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -92,7 +93,12 @@ export const goldGolemAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 0.9, armorIgnore: 0.2 }, state);
+      const damage = dealDamage(
+        actor,
+        target,
+        { kind: 'melee', damageMult: 0.9, armorIgnore: 0.2 },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: апперкот — промах.`);
       } else {

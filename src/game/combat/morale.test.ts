@@ -154,7 +154,7 @@ describe('morale + battle summary', () => {
       dealDamage(
         attacker,
         defender,
-        { damageMult: 1, armorIgnore: 0, forceHit: true },
+        { kind: 'melee', damageMult: 1, armorIgnore: 0, forceHit: true },
         state
       );
       if (attacker.morale === 5) {

@@ -27,6 +27,7 @@ function abilityMeta(
       return {
         slot: 1,
         label: `Бердыш ×${getRage(actor)}`,
+        attackKind: 'melee',
         needsTarget: true,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
@@ -118,6 +119,7 @@ export const orcKingAbilities: AbilityHandler = {
       }
       const rage = getRage(actor);
       const damage = dealDamage(actor, target, {
+        kind: 'melee',
         damageMult: 1.1 * rage,
         armorIgnore: 0.25,
       });
@@ -154,7 +156,7 @@ export const orcKingAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 0.75, armorIgnore: 0.5 });
+      const damage = dealDamage(actor, target, { kind: 'melee', damageMult: 0.75, armorIgnore: 0.5 });
       if (damage === 0) {
         state.log.push(`${actor.displayName}: кастет — промах.`);
         return { status: 'done' };
@@ -298,7 +300,7 @@ function resolvePrompt(
 }
 
 function throwAxe(state: BattleState, actor: BattleUnit, target: BattleUnit): void {
-  const damage = dealDamage(actor, target, { damageMult: 0.5, armorIgnore: 0 });
+  const damage = dealDamage(actor, target, { kind: 'ranged', damageMult: 0.5, armorIgnore: 0 });
   if (damage === 0) {
     state.log.push(`Топор ${actor.displayName} промахивается мимо ${target.displayName}.`);
     return;

@@ -25,6 +25,7 @@ function abilityMeta(
         slot: 1,
         label: 'Короткая рапира',
         needsTarget: true,
+        attackKind: 'melee',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -117,7 +118,12 @@ export const detectiveAbilities: AbilityHandler = {
       if (hasEffect(target, 'MARKED')) {
         actor.luck = Math.min(80, actor.luck * 2);
       }
-      const damage = dealDamage(actor, target, { damageMult: 1.1, armorIgnore: 0.25 }, state);
+      const damage = dealDamage(
+        actor,
+        target,
+        { kind: 'melee', damageMult: 1.1, armorIgnore: 0.25 },
+        state
+      );
       actor.luck = savedLuck;
       if (damage === 0) {
         state.log.push(`${actor.displayName}: рапира — промах.`);
@@ -170,7 +176,12 @@ export const detectiveAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       moveToOtherRow(actor);
-      const damage = dealDamage(actor, target, { damageMult: 0.5, armorIgnore: 0.1 }, state);
+      const damage = dealDamage(
+        actor,
+        target,
+        { kind: 'melee', damageMult: 0.5, armorIgnore: 0.1 },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: выпад — промах.`);
       } else {

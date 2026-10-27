@@ -62,6 +62,7 @@ function abilityMeta(
         slot: 5,
         label: 'Сливняк',
         needsTarget: true,
+        attackKind: 'magic',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -155,7 +156,7 @@ export const beerElementalAbilities: AbilityHandler = {
     const damage = dealDamage(
       actor,
       target,
-      { damageMult: 1, armorIgnore: 0, source: 'WATER', forceStyle: 'magic' },
+      { kind: 'magic', damageMult: 1, armorIgnore: 0, source: 'WATER' },
       state
     );
     if (damage === 0) {

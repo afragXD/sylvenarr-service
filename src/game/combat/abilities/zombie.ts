@@ -1,4 +1,3 @@
-import { resolveAttackStyle } from '../attack-style';
 import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { formatLogDamage } from '../damageSources';
 import { resistsForClass } from '../defaultResists';
@@ -7,11 +6,12 @@ import { applyResistMultiplier, mindResistFactor, rollSrcChance } from '../resis
 import { isArtificialClass, isUndeadClass } from '../races';
 import { ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { alliesOf, enemiesOf, listAttackTargets, unitsOnSameRow } from './targets';
+import { alliesOf, enemiesOf, meleeTargets, unitsOnSameRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function transformToZombie(state: BattleState, target: BattleUnit): boolean {
   const hero = state.catalog.Zombie;
+  target.ultaCharges = 1;
   if (!hero) {
     target.heroClassCode = 'Zombie';
     target.displayName = 'Зомби';
@@ -30,7 +30,6 @@ function transformToZombie(state: BattleState, target: BattleUnit): boolean {
   target.luck = hero.luck;
   target.accuracy = hero.accuracy;
   target.power = hero.power;
-  target.attackStyle = resolveAttackStyle(hero.code);
   target.resists = resistsForClass(hero.code);
   target.morale = hero.morale ?? target.morale;
   return true;
@@ -74,10 +73,11 @@ function abilityMeta(
 ): AbilityInfo {
   switch (slot) {
     case 1: {
-      const targets = listAttackTargets(state, actor);
+      const targets = meleeTargets(state, actor);
       return {
         slot: 1,
         label: 'Укус вслепую',
+        attackKind: 'melee',
         needsTarget: true,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
@@ -123,7 +123,11 @@ function abilityMeta(
         slot: 4,
         label: 'Камикадзе',
         needsTarget: true,
-        disabledReason: targets.length === 0 ? 'Нет целей' : null,
+        disabledReason: hasEffect(actor, 'ENSLAVED')
+          ? 'Нельзя под порабощением'
+          : targets.length === 0
+            ? 'Нет целей'
+            : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -153,7 +157,7 @@ export const zombieAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const target = listAttackTargets(state, actor).find((unit) => unit.id === input.targetId);
+      const target = meleeTargets(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
@@ -164,7 +168,7 @@ export const zombieAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1, armorIgnore: 0, source: 'WEAPON' },
+        { kind: 'melee', damageMult: 1, armorIgnore: 0, source: 'WEAPON' },
         state
       );
       if (marked) {

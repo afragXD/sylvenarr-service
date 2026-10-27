@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { applyAction, createBattleState, listAttackTargets } from '../engine';
+import { applyAction, createBattleState, meleeTargets } from '../engine';
 import { grantEffect } from '../effects';
 import type { HeroClassStats } from '../types';
 
@@ -160,7 +160,7 @@ describe('phase 3.9 pilots', () => {
     });
     expect(result.ok).toBe(true);
     const attacker = state.units.find((unit) => unit.id === 'p3')!;
-    const targets = listAttackTargets(state, attacker).map((unit) => unit.id);
+    const targets = meleeTargets(state, attacker).map((unit) => unit.id);
     expect(targets).not.toContain('p2');
   });
 
@@ -199,7 +199,7 @@ describe('phase 3.9 pilots', () => {
     expect(ally.armor).toBe(armorBefore);
 
     const foe = state.units.find((unit) => unit.id === 'p3')!;
-    expect(listAttackTargets(state, foe).map((unit) => unit.id)).not.toContain('p2');
+    expect(meleeTargets(state, foe).map((unit) => unit.id)).not.toContain('p2');
 
     const detective = state.units.find((unit) => unit.id === 'p4')!;
     state.activeUnitId = 'p4';

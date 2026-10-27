@@ -32,6 +32,7 @@ function abilityMeta(
         slot: 1,
         label: 'Стилет',
         needsTarget: true,
+        attackKind: 'melee',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -106,7 +107,12 @@ export const assassinAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 1.15, armorIgnore: 0.35 }, state);
+      const damage = dealDamage(
+        actor,
+        target,
+        { kind: 'melee', damageMult: 1.15, armorIgnore: 0.35 },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName} промахивается стилетом.`);
       } else {

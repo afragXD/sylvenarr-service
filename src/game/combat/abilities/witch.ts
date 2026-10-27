@@ -19,6 +19,7 @@ function abilityMeta(
         slot: 1,
         label: ranged ? `Револьвер (${actor.gun})` : 'Каблучок',
         needsTarget: true,
+        attackKind: ranged ? 'ranged' : 'melee',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -118,7 +119,7 @@ export const witchAbilities: AbilityHandler = {
           const damage = dealDamage(
             actor,
             target,
-            { damageMult: 1, armorIgnore: 0.2, source: 'ARROWS' },
+            { kind: 'ranged', damageMult: 1, armorIgnore: 0.2, source: 'ARROWS' },
             state
           );
           if (damage === 0) {
@@ -146,7 +147,7 @@ export const witchAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1, armorIgnore: 0.5, source: 'WEAPON' },
+        { kind: 'melee', damageMult: 1, armorIgnore: 0.5, source: 'WEAPON' },
         state
       );
       if (damage === 0) {
@@ -172,7 +173,7 @@ export const witchAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1, armorIgnore: 0.15, source: 'DEATH' },
+        { kind: 'magic', damageMult: 1, armorIgnore: 0.15, source: 'DEATH' },
         state
       );
       if (damage === 0) {

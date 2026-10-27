@@ -16,6 +16,7 @@ function abilityMeta(
       return {
         slot: 1,
         label: 'Гнев богов',
+        attackKind: 'magic',
         needsTarget: true,
         disabledReason:
           actor.mana < 2
@@ -152,7 +153,7 @@ export const patriarchAbilities: AbilityHandler = {
         const damage = dealDamage(
           actor,
           enemy,
-          { damageMult: 1, armorIgnore: 0.1, source: 'HOLY' },
+          { kind: 'magic', damageMult: 1, armorIgnore: 0.1, source: 'HOLY' },
           state
         );
         if (damage > 0) {

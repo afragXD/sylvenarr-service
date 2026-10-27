@@ -131,7 +131,7 @@ describe('phase 3.11 pilots', () => {
     expect(contr!.rounds).toBe(2 + Math.floor(det.lvl / 6));
     // Гарантированный удар по детективу с CONTR → ответный удар.
     const foeHpBefore = foe.health;
-    dealDamage(foe, det, { damageMult: 1, armorIgnore: 0, forceHit: true }, state);
+    dealDamage(foe, det, { kind: 'melee', damageMult: 1, armorIgnore: 0, forceHit: true }, state);
     expect(state.log.some((line) => line.includes('контрударом'))).toBe(true);
     expect(foe.health).toBeLessThan(foeHpBefore);
   });

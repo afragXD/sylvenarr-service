@@ -9,6 +9,7 @@ import {
   preferPhantomRow,
   preferSummonRow,
 } from './summon';
+import { primaryAttackKind } from './primary-attack';
 import { alliesOf, enemiesOf } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
@@ -24,6 +25,7 @@ function abilityMeta(
         slot: 1,
         label: 'Цепная молния',
         needsTarget: true,
+        attackKind: 'magic',
         disabledReason:
           actor.mana < 3
             ? 'Нужно 3 МР'
@@ -184,7 +186,7 @@ export const demiurgeAbilities: AbilityHandler = {
       const d1 = dealDamage(
         actor,
         primary,
-        { damageMult: 1, armorIgnore: 0.1, source: 'AIR' },
+        { kind: 'magic', damageMult: 1, armorIgnore: 0.1, source: 'AIR' },
         state
       );
       if (d1 > 0) {
@@ -201,7 +203,7 @@ export const demiurgeAbilities: AbilityHandler = {
         const dmg = dealDamage(
           actor,
           next,
-          { damageMult: mult, armorIgnore: 0.1, source: 'AIR', evadeCoef: 1.2 },
+          { kind: 'magic', damageMult: mult, armorIgnore: 0.1, source: 'AIR', evadeCoef: 1.2 },
           state
         );
         if (dmg > 0) {
@@ -262,7 +264,12 @@ export const demiurgeAbilities: AbilityHandler = {
       const chance = 80 + actor.lvl;
       if (rollMindChance(state, victim, chance)) {
         const target = pickFragileAlly(allies);
-        const dmg = dealDamage(victim, target, { damageMult: 1, armorIgnore: 0 }, state);
+        const dmg = dealDamage(
+          victim,
+          target,
+          { kind: primaryAttackKind(state, victim), damageMult: 1, armorIgnore: 0 },
+          state
+        );
         state.log.push(
           `${actor.displayName} подчиняет ${victim.displayName} → ${target.displayName} ${formatLastLogDamage(dmg)}.`
         );

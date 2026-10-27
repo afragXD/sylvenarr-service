@@ -111,10 +111,10 @@ describe('phase 3.12 pilots', () => {
     beer.critBank = 1;
     beer.luck = 0;
     // forceHit — исключаем флаки натурального промаха (кап попадания 95%).
-    const withBank = dealDamage(beer, foe, { damageMult: 1, armorIgnore: 1, forceHit: true }, state);
+    const withBank = dealDamage(beer, foe, { kind: 'magic', damageMult: 1, armorIgnore: 1, forceHit: true }, state);
     expect(beer.critBank).toBe(0);
     foe.health = 500;
-    const without = dealDamage(beer, foe, { damageMult: 1, armorIgnore: 1, forceHit: true }, state);
+    const without = dealDamage(beer, foe, { kind: 'magic', damageMult: 1, armorIgnore: 1, forceHit: true }, state);
     expect(withBank).toBeGreaterThan(without);
   });
 

@@ -4,7 +4,7 @@ export {
   createBattleState,
   forceDraw,
   forceSurrender,
-  listAttackTargets,
+  meleeTargets,
   toBattleSummary,
 } from './engine';
 export { publishBattle, subscribeBattle } from './hub';

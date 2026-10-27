@@ -1,4 +1,5 @@
-import { enemiesOf, listAttackTargets } from './abilities/targets';
+import { enemiesOf, meleeTargets } from './abilities/targets';
+import { basicAttackKind } from './attack-style';
 import type { BattleState, BattleUnit } from './types';
 
 /** Множители базовой атаки по классам. */
@@ -199,22 +200,13 @@ export function classSkill(code: string): ClassSkillDef {
  * Подпись основной атаки.
  */
 export function attackLabel(unit: BattleUnit): string {
-  switch (unit.attackStyle) {
+  switch (basicAttackKind(unit.heroClassCode)) {
     case 'ranged':
-      return unit.heroClassCode === 'Assassin' ? 'Удар из тени' : 'Выстрел';
+      return 'Выстрел';
     case 'magic':
-      if (unit.heroClassCode === 'Archlich') {
-        return 'Смерть';
-      }
-      if (unit.heroClassCode === 'Demiurge') {
-        return 'Свет';
-      }
       return 'Заклинание';
     default:
-      if (unit.heroClassCode === 'Knight') {
-        return 'Удар копья';
-      }
-      return 'Удар';
+      return unit.heroClassCode === 'Knight' ? 'Удар копья' : 'Удар';
   }
 }
 
@@ -252,5 +244,5 @@ export function listSkillTargets(state: BattleState, actor: BattleUnit): BattleU
   if (skill.ignoreMelee) {
     return enemiesOf(state, actor);
   }
-  return listAttackTargets(state, actor);
+  return meleeTargets(state, actor);
 }

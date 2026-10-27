@@ -16,6 +16,7 @@ function abilityMeta(
         slot: 1,
         label: 'Трёхглавый удар',
         needsTarget: true,
+        attackKind: 'melee',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -86,7 +87,7 @@ export const demonLordAbilities: AbilityHandler = {
         const damage = dealDamage(
           actor,
           enemy,
-          { damageMult: 1.15, armorIgnore: 0, source: 'WEAPON' },
+          { kind: 'melee', damageMult: 1.15, armorIgnore: 0, source: 'WEAPON' },
           state
         );
         if (damage > 0) {
@@ -114,7 +115,7 @@ export const demonLordAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 2, armorIgnore: 0, source: 'WEAPON' },
+        { kind: 'melee', damageMult: 2, armorIgnore: 0, source: 'WEAPON' },
         state
       );
       if (damage === 0) {
@@ -142,7 +143,7 @@ export const demonLordAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1, armorIgnore: 0.2, source: 'FIRE' },
+        { kind: 'magic', damageMult: 1, armorIgnore: 0.2, source: 'FIRE' },
         state
       );
       if (damage === 0) {

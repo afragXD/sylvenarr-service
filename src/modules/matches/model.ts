@@ -102,7 +102,6 @@ export namespace MatchesModel {
     maxHp: t.Number(),
     alive: t.Boolean(),
     defending: t.Boolean(),
-    attackStyle: t.Union([t.Literal('melee'), t.Literal('ranged'), t.Literal('magic')]),
     effects: t.Array(battleEffect),
     isSummon: t.Boolean(),
     horseIsDead: t.Boolean(),
@@ -142,6 +141,8 @@ export namespace MatchesModel {
   });
   export type turnOrderEntry = typeof turnOrderEntry.static;
 
+  export const attackKind = t.Union([t.Literal('melee'), t.Literal('ranged'), t.Literal('magic')]);
+
   export const abilityInfo = t.Object({
     slot: t.Union([
       t.Literal(1),
@@ -154,6 +155,7 @@ export namespace MatchesModel {
     needsTarget: t.Boolean(),
     disabledReason: t.Nullable(t.String()),
     legalTargetIds: t.Array(t.String()),
+    attackKind: t.Optional(t.Nullable(attackKind)),
   });
   export type abilityInfo = typeof abilityInfo.static;
 
@@ -204,6 +206,7 @@ export namespace MatchesModel {
     sfxEvents: t.Array(battleSfxEvent),
     turnOrder: t.Array(turnOrderEntry),
     legalTargetIds: t.Array(t.String()),
+    attackKind: t.Nullable(attackKind),
     skillLabel: t.Nullable(t.String()),
     legalSkillTargetIds: t.Array(t.String()),
     abilities: t.Array(abilityInfo),

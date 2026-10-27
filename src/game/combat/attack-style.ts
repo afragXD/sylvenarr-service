@@ -1,37 +1,9 @@
+import type { AttackKind } from './damage';
+
 /**
- * Упрощённый стиль атаки по коду класса (до порта уникальных скиллов).
+ * Тип базовой атаки для классов без слотов способностей (Бес и т.п. — MeleePattern в боте).
+ * У пилотов тип задаёт каждая способность сама.
  */
-export function resolveAttackStyle(code: string): 'melee' | 'ranged' | 'magic' {
-  const ranged = new Set([
-    'Assassin',
-    'GoblinArcher',
-    'GoblinTrapper',
-    'Detective',
-    'Marauder',
-  ]);
-  const magic = new Set([
-    'Archlich',
-    'Demiurge',
-    'Witch',
-    'Oracle',
-    'Herbalist',
-    'Abbess',
-    'Patriarch',
-    'Dracolich',
-    'GoblinShaman',
-    'DemonLord',
-    'Noonwraith',
-    'Specter',
-    'Pyro',
-    'EvilTree',
-    'BeerElemental',
-    'Ectoplasm',
-  ]);
-  if (ranged.has(code)) {
-    return 'ranged';
-  }
-  if (magic.has(code)) {
-    return 'magic';
-  }
+export function basicAttackKind(_code: string): AttackKind {
   return 'melee';
 }

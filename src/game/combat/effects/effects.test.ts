@@ -37,7 +37,6 @@ const unit = (overrides: Partial<BattleUnit> = {}): BattleUnit => ({
   dodge: 10,
   luck: 5,
   accuracy: 100,
-  attackStyle: 'melee',
   power: 10,
   mana: 5,
   maxMana: 5,
@@ -130,7 +129,7 @@ describe('effects', () => {
     const dmg = dealDamage(
       attacker,
       defender,
-      { damageMult: 1, armorIgnore: 0, forceHit: true },
+      { kind: 'melee', damageMult: 1, armorIgnore: 0, forceHit: true },
       state
     );
     expect(dmg).toBeGreaterThan(0);
@@ -158,7 +157,7 @@ describe('effects', () => {
       damage: 30,
     });
     grantEffect(defender, 'CONTR', 2, 0);
-    dealDamage(attacker, defender, { damageMult: 1, armorIgnore: 0, forceHit: true });
+    dealDamage(attacker, defender, { kind: 'melee', damageMult: 1, armorIgnore: 0, forceHit: true });
     expect(attacker.health).toBeLessThan(100);
   });
 
@@ -183,7 +182,7 @@ describe('effects', () => {
     // Начало хода носителя: fresh сбрасывается, эффект жив.
     tickEffectsOnTurnStart(attacker);
     expect(hasEffect(attacker, 'VAMPWEAPON')).toBe(true);
-    dealDamage(attacker, defender, { damageMult: 1, armorIgnore: 0, forceHit: true }, state);
+    dealDamage(attacker, defender, { kind: 'melee', damageMult: 1, armorIgnore: 0, forceHit: true }, state);
     expect(attacker.health).toBeGreaterThan(50);
     // Спадение — в конце хода носителя.
     tickEffectsOnTurnEnd(attacker);

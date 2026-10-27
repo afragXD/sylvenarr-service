@@ -1,9 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
-import { resolveAttackStyle } from '../attack-style';
 import { DEFAULT_RESISTS } from '../defaultResists';
 import { grantEffect, tickEffectsOnTurnStart } from '../effects';
-import { applyAction, createBattleState, listAttackTargets } from '../engine';
+import { applyAction, createBattleState, meleeTargets } from '../engine';
 import type { HeroClassStats } from '../types';
 import { applyAbility } from './registry';
 
@@ -56,8 +55,7 @@ describe('balance patch 2026-10', () => {
     });
     expect(result.ok).toBe(true);
     const attacker = state.units.find((unit) => unit.id === 'e1')!;
-    attacker.attackStyle = 'melee';
-    const targets = listAttackTargets(state, attacker).map((unit) => unit.id);
+    const targets = meleeTargets(state, attacker).map((unit) => unit.id);
     expect(targets).not.toContain('p2');
     expect(targets).not.toContain('p3');
     expect(targets).toEqual([]);
@@ -88,14 +86,6 @@ describe('balance patch 2026-10', () => {
     const log2 = tickEffectsOnTurnStart(unit);
     expect(log2.some((line) => line.includes('урона'))).toBe(false);
     expect(unit.health).toBe(hp1);
-  });
-
-  test('attack styles: Pyro/EvilTree/Specter/BeerElemental magic; GoblinTrapper ranged', () => {
-    expect(resolveAttackStyle('Pyro')).toBe('magic');
-    expect(resolveAttackStyle('EvilTree')).toBe('magic');
-    expect(resolveAttackStyle('Specter')).toBe('magic');
-    expect(resolveAttackStyle('BeerElemental')).toBe('magic');
-    expect(resolveAttackStyle('GoblinTrapper')).toBe('ranged');
   });
 
   test('Pyro and Archlich resists', () => {

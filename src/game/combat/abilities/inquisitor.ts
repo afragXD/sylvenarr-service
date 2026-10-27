@@ -17,6 +17,7 @@ function abilityMeta(
         slot: 1,
         label: 'Булава Порядка',
         needsTarget: true,
+        attackKind: 'melee',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -116,7 +117,12 @@ export const inquisitorAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 1, armorIgnore: 0 }, state);
+      const damage = dealDamage(
+        actor,
+        target,
+        { kind: 'melee', damageMult: 1, armorIgnore: 0 },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: булава — промах.`);
       } else {
@@ -141,7 +147,7 @@ export const inquisitorAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1, armorIgnore: 0.1, source: 'AIR' },
+        { kind: 'magic', damageMult: 1, armorIgnore: 0.1, source: 'AIR' },
         state
       );
       if (damage === 0) {
@@ -194,7 +200,12 @@ export const inquisitorAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { damageMult: 1.25, armorIgnore: 0 }, state);
+      const damage = dealDamage(
+        actor,
+        target,
+        { kind: 'melee', damageMult: 1.25, armorIgnore: 0 },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: мощный удар — промах.`);
       } else {
@@ -226,7 +237,7 @@ export const inquisitorAbilities: AbilityHandler = {
     const damage = dealDamage(
       actor,
       target,
-      { damageMult: 0.9, armorIgnore: 0.15, source: 'EARTH' },
+      { kind: 'magic', damageMult: 0.9, armorIgnore: 0.15, source: 'EARTH' },
       state
     );
     if (damage === 0) {

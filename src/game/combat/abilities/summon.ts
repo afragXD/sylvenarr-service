@@ -1,8 +1,8 @@
-import { resolveAttackStyle } from '../attack-style';
 import { resistsForClass } from '../defaultResists';
 import { levelUpUnit } from '../level';
 import { cloneResists } from '../resists';
 import type { BattleState, BattleUnit } from '../types';
+import { initPilotFlags } from './registry';
 
 /**
  * Создаёт саммона на поле с учётом лимитов команды и владельца.
@@ -76,7 +76,6 @@ export function createSummon(
     dodge: hero.dodge,
     luck: hero.luck,
     accuracy: hero.accuracy,
-    attackStyle: resolveAttackStyle(hero.code),
     power: hero.power,
     mana: hero.mana,
     maxMana: hero.maxMana ?? hero.mana,
@@ -124,6 +123,7 @@ export function createSummon(
     morale: hero.morale ?? 0,
     illness: false,
   };
+  initPilotFlags(unit);
   state.units.push(unit);
   // Уровень и статы = уровень призывателя в момент призыва (базовый каталог + прокачка).
   const catchUp = Math.max(0, input.summoner.lvl - 1);
@@ -177,7 +177,6 @@ export function createPhantomCopy(
     dodge: Math.max(0, Math.round(template.dodge * 0.5)),
     luck: Math.max(0, Math.round(template.luck * 0.5)),
     accuracy: template.accuracy,
-    attackStyle: template.attackStyle,
     power: Math.max(0, Math.round(template.power * 0.5)),
     mana: Math.floor(template.maxMana / 3),
     maxMana: template.maxMana,

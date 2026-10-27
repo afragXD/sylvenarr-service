@@ -25,6 +25,7 @@ function abilityMeta(
         slot: 1,
         label: `Хитиновый лук | Яд (${poisonChance}%)`,
         needsTarget: true,
+        attackKind: 'ranged',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -92,7 +93,7 @@ export const goblinTrapperAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1, armorIgnore: 0, source: 'ARROWS', forceStyle: 'ranged' },
+        { kind: 'ranged', damageMult: 1, armorIgnore: 0, source: 'ARROWS' },
         state
       );
       if (damage === 0) {

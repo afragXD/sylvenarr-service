@@ -24,6 +24,7 @@ function abilityMeta(
         slot: 1,
         label: 'Копьё Солнца',
         needsTarget: true,
+        attackKind: 'magic',
         disabledReason:
           actor.mana < 2
             ? 'Нужно 2 МР'
@@ -114,7 +115,7 @@ export const abbessAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1, armorIgnore: 0.1, source: 'HOLY' },
+        { kind: 'magic', damageMult: 1, armorIgnore: 0.1, source: 'HOLY' },
         state
       );
       if (damage === 0) {

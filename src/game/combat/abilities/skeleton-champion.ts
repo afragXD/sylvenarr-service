@@ -2,7 +2,7 @@ import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../d
 import { grantEffect } from '../effects';
 import { changeResist } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { enemiesOf, listAttackTargets } from './targets';
+import { enemiesOf, meleeTargets } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function findMaster(state: BattleState, actor: BattleUnit): BattleUnit | null {
@@ -19,10 +19,11 @@ function abilityMeta(
 ): AbilityInfo {
   switch (slot) {
     case 1: {
-      const targets = listAttackTargets(state, actor);
+      const targets = meleeTargets(state, actor);
       return {
         slot: 1,
         label: 'Боевой молот',
+        attackKind: 'melee',
         needsTarget: true,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
@@ -84,7 +85,7 @@ export const skeletonChampionAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const target = listAttackTargets(state, actor).find((unit) => unit.id === input.targetId);
+      const target = meleeTargets(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
@@ -92,7 +93,7 @@ export const skeletonChampionAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1, armorIgnore: 0, source: 'WEAPON' },
+        { kind: 'melee', damageMult: 1, armorIgnore: 0, source: 'WEAPON' },
         state
       );
       if (damage === 0) {

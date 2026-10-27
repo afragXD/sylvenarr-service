@@ -1,7 +1,7 @@
 import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { createSummon, preferSummonRow } from './summon';
-import { listAttackTargets } from './targets';
+import { meleeTargets } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function findMaster(state: BattleState, actor: BattleUnit): BattleUnit | null {
@@ -24,11 +24,12 @@ function abilityMeta(
 ): AbilityInfo {
   switch (slot) {
     case 1: {
-      const targets = listAttackTargets(state, actor, { forceMeleeReach: true });
+      const targets = meleeTargets(state, actor);
       return {
         slot: 1,
         label: 'Шлепок слизи',
         needsTarget: true,
+        attackKind: 'magic',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -86,7 +87,7 @@ export const ectoplasmAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const target = listAttackTargets(state, actor, { forceMeleeReach: true }).find(
+      const target = meleeTargets(state, actor).find(
         (unit) => unit.id === input.targetId
       );
       if (!target) {
@@ -95,7 +96,7 @@ export const ectoplasmAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: 1, armorIgnore: 0, source: 'WATER', forceStyle: 'magic' },
+        { kind: 'magic', damageMult: 1, armorIgnore: 0, source: 'WATER' },
         state
       );
       if (damage === 0) {

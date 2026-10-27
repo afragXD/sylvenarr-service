@@ -1,3 +1,4 @@
+import type { AttackKind } from '../damage';
 import { hasEffect } from '../effects';
 import { ROW_FRONT } from '../settings';
 import type { BattleState, BattleUnit } from '../types';
@@ -85,18 +86,15 @@ export function livingEnemyFront(state: BattleState, actor: BattleUnit): BattleU
 }
 
 /**
- * Доступные цели для атаки (melee-правила).
+ * Цели атаки ближнего боя (порт isReachableForMelee) — правило атаки, не юнита.
  * Передний ряд с живыми (в т.ч. под SANCTUM) блокирует задний; SANCTUM/GUARDED из целей исключаются.
  */
-export function listAttackTargets(
+export function meleeTargets(
   state: BattleState,
   attacker: BattleUnit,
-  opts: EnemyFilterOpts & { forceMeleeReach?: boolean } = {}
+  opts: EnemyFilterOpts = {}
 ): BattleUnit[] {
   const enemies = enemiesOf(state, attacker, opts);
-  if (attacker.attackStyle !== 'melee' && !opts.forceMeleeReach) {
-    return enemies;
-  }
   const ownFrontAlive = state.units.some(
     (unit) => unit.alive && unit.team === attacker.team && unit.row === ROW_FRONT
   );
@@ -122,7 +120,19 @@ export function meleeOrAll(
   if (ignoreMelee) {
     return enemiesOf(state, actor, opts);
   }
-  return listAttackTargets(state, actor, opts);
+  return meleeTargets(state, actor, opts);
+}
+
+/**
+ * Цели атаки заданного типа: ближняя — по правилам рядов, дальняя/магия — все враги.
+ */
+export function attackTargets(
+  state: BattleState,
+  actor: BattleUnit,
+  kind: AttackKind,
+  opts: EnemyFilterOpts = {}
+): BattleUnit[] {
+  return kind === 'melee' ? meleeTargets(state, actor, opts) : enemiesOf(state, actor, opts);
 }
 
 /**

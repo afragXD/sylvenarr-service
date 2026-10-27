@@ -30,6 +30,7 @@ function abilityMeta(
         slot: 2,
         label: 'Опутать корнями',
         needsTarget: true,
+        attackKind: 'magic',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -124,10 +125,10 @@ export const evilTreeAbilities: AbilityHandler = {
         actor,
         target,
         {
+          kind: 'magic',
           damageMult: 1.2,
           armorIgnore: 0.4,
           source: 'EARTH',
-          forceStyle: 'magic',
         },
         state
       );

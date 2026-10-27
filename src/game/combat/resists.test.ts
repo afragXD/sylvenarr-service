@@ -27,7 +27,6 @@ const unit = (overrides: Partial<BattleUnit> = {}): BattleUnit => ({
   dodge: 0,
   luck: 0,
   accuracy: 100,
-  attackStyle: 'melee',
   power: 10,
   mana: 0,
   maxMana: 0,
@@ -96,6 +95,7 @@ describe('ResistManager', () => {
     });
     const before = defender.health;
     const dmg = dealDamage(attacker, defender, {
+      kind: 'melee',
       damageMult: 1,
       armorIgnore: 1,
       forceHit: true,
@@ -124,7 +124,7 @@ describe('ResistManager', () => {
     const dmg = dealDamage(
       attacker,
       defender,
-      { damageMult: 1, armorIgnore: 1, forceHit: true },
+      { kind: 'melee', damageMult: 1, armorIgnore: 1, forceHit: true },
       state
     );
     expect(dmg).toBe(0);
@@ -167,10 +167,10 @@ describe('ResistManager', () => {
     });
     const state = emptyState();
     expect(
-      dealDamage(attacker, ecto, { damageMult: 1, armorIgnore: 1, forceHit: true }, state)
+      dealDamage(attacker, ecto, { kind: 'melee', damageMult: 1, armorIgnore: 1, forceHit: true }, state)
     ).toBe(0);
     expect(
-      dealDamage(attacker, ecto, { damageMult: 1, armorIgnore: 1, forceHit: true }, state)
+      dealDamage(attacker, ecto, { kind: 'melee', damageMult: 1, armorIgnore: 1, forceHit: true }, state)
     ).toBeGreaterThan(0);
   });
 

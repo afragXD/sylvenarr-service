@@ -22,6 +22,7 @@ function abilityMeta(
         slot: 1,
         label: `Призрачная катана ×${hunger}`,
         needsTarget: true,
+        attackKind: 'melee',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -84,7 +85,7 @@ export const ghostWarriorAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: mult, armorIgnore: 0, source: 'WEAPON' },
+        { kind: 'melee', damageMult: mult, armorIgnore: 0, source: 'WEAPON' },
         state
       );
       if (damage === 0) {

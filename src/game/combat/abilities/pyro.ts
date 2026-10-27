@@ -2,7 +2,7 @@ import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../d
 import { grantEffect, hasEffect } from '../effects';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { alliesOf, enemiesOf, moveToOtherRow } from './targets';
+import { alliesOf, enemiesOf, meleeTargets, moveToOtherRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function pickRandom<T>(items: T[], count: number): T[] {
@@ -30,7 +30,8 @@ function abilityMeta(
         slot: 1,
         label: 'Огнемёт',
         needsTarget: false,
-        disabledReason: enemiesOf(state, actor).length === 0 ? 'Нет целей' : null,
+        attackKind: 'magic',
+        disabledReason: meleeTargets(state, actor).length === 0 ? 'Нет целей' : null,
         legalTargetIds: [],
       };
     case 2: {
@@ -72,8 +73,9 @@ function abilityMeta(
         slot: 5,
         label: 'Самосожжение',
         needsTarget: false,
-        disabledReason:
-          actor.health < halfHp
+        disabledReason: hasEffect(actor, 'ENSLAVED')
+          ? 'Нельзя под порабощением'
+          : actor.health < halfHp
             ? 'Нужно ≥ половины ОЗ'
             : alliesOf(state, actor).filter((unit) => unit.id !== actor.id).length === 0
               ? 'Нет союзников'
@@ -99,12 +101,12 @@ export const pyroAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const targets = pickRandom(enemiesOf(state, actor), flamethrowerTargetCount(actor));
+      const targets = pickRandom(meleeTargets(state, actor), flamethrowerTargetCount(actor));
       for (const enemy of targets) {
         const damage = dealDamage(
           actor,
           enemy,
-          { damageMult: 1, armorIgnore: 0.1, source: 'FIRE', forceStyle: 'magic' },
+          { kind: 'magic', damageMult: 1, armorIgnore: 0.1, source: 'FIRE' },
           state
         );
         if (damage > 0) {
@@ -127,7 +129,7 @@ export const pyroAbilities: AbilityHandler = {
       const damage = dealDamage(
         actor,
         target,
-        { damageMult: mult, armorIgnore: 0.2, source: 'FIRE' },
+        { kind: 'ranged', damageMult: mult, armorIgnore: 0.2, source: 'FIRE' },
         state
       );
       if (damage === 0) {

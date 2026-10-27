@@ -1,15 +1,15 @@
 import {
   applyAbility,
+  attackTargets,
   initPilotFlags,
   isPilotClass,
-  listAttackTargets,
   listPilotAbilities,
   neighbourBehind,
   runPreChoice,
 } from './abilities';
 import { maybeKillHorse } from './abilities/knight';
 import { moveToOtherRow } from './abilities/targets';
-import { resolveAttackStyle } from './attack-style';
+import { basicAttackKind } from './attack-style';
 import {
   dealDamage,
   formatLastLogDamage,
@@ -47,7 +47,7 @@ const DEFAULT_BATTLE_RULES: BattleRules = {
   startingLevel: 1,
 };
 
-export { listAttackTargets } from './abilities';
+export { meleeTargets } from './abilities';
 
 /**
  * Классовые пассивы при защите (пилоты 3.8).
@@ -173,7 +173,6 @@ function buildTeamUnits(
         dodge: hero.dodge,
         luck: hero.luck,
         accuracy: hero.accuracy,
-        attackStyle: resolveAttackStyle(hero.code),
         power: hero.power,
         mana: hero.mana,
         maxMana: hero.maxMana ?? hero.mana,
@@ -486,7 +485,7 @@ export function applyAction(
     return settleAbility(state, actor, outcome);
   }
 
-  const targets = listAttackTargets(state, actor);
+  const targets = attackTargets(state, actor, basicAttackKind(actor.heroClassCode));
   if (targets.length === 0) {
     return { ok: false, message: 'Нет доступных целей для атаки' };
   }
@@ -565,7 +564,7 @@ function applySkillAction(
       const damage = dealDamage(
         actor,
         enemy,
-        { damageMult: skill.damageMult, armorIgnore: 0.2 },
+        { kind: basicAttackKind(actor.heroClassCode), damageMult: skill.damageMult, armorIgnore: 0.2 },
         state
       );
       if (damage > 0) {
@@ -605,6 +604,7 @@ function applySkillAction(
     actor,
     target,
     {
+      kind: basicAttackKind(actor.heroClassCode),
       damageMult: skill.damageMult * classAttackMods(actor.heroClassCode).damageMult,
       armorIgnore: skill.kind === 'mark_strike' ? 0.3 : 0,
     },
@@ -628,10 +628,12 @@ function resolveAttackWithClassMods(
   target: BattleUnit
 ): void {
   const mods = classAttackMods(actor.heroClassCode);
+  const kind = basicAttackKind(actor.heroClassCode);
   const damage = dealDamage(
     actor,
     target,
     {
+      kind,
       damageMult: mods.damageMult,
       armorIgnore: mods.armorIgnore,
     },
@@ -655,6 +657,7 @@ function resolveAttackWithClassMods(
       actor,
       target,
       {
+        kind,
         damageMult: mods.damageMult * 0.7,
         armorIgnore: mods.armorIgnore,
       },
@@ -675,6 +678,7 @@ function resolveAttackWithClassMods(
         actor,
         behind,
         {
+          kind,
           damageMult: mods.damageMult * mods.splashMult,
           armorIgnore: 0,
         },
@@ -702,6 +706,7 @@ function resolveAttackWithClassMods(
         actor,
         enemy,
         {
+          kind,
           damageMult: mods.damageMult * mods.cleaveMult,
           armorIgnore: 0,
         },
@@ -865,8 +870,13 @@ export function toBattleSummary(state: BattleState) {
     active?.alive && pilot ? listPilotAbilities(state, active) : [];
   const targets =
     active?.alive && !pilot
-      ? listAttackTargets(state, active).map((unit) => unit.id)
+      ? attackTargets(state, active, basicAttackKind(active.heroClassCode)).map((unit) => unit.id)
       : abilities.find((ability) => ability.slot === 1)?.legalTargetIds ?? [];
+  const attackKind = active
+    ? pilot
+      ? abilities.find((ability) => ability.slot === 1)?.attackKind ?? null
+      : basicAttackKind(active.heroClassCode)
+    : null;
   const skill = active && !pilot ? classSkill(active.heroClassCode) : null;
   const skillTargets =
     active?.alive && skill && skill.kind !== 'none'
@@ -883,6 +893,7 @@ export function toBattleSummary(state: BattleState) {
     sfxEvents: (state.sfxEvents ?? []).slice(-20),
     turnOrder: buildTurnOrder(state),
     legalTargetIds: targets,
+    attackKind,
     skillLabel: skill && skill.kind !== 'none' ? skill.label : null,
     legalSkillTargetIds: skillTargets,
     abilities,
@@ -906,7 +917,6 @@ export function toBattleSummary(state: BattleState) {
       maxHp: unit.maxHp,
       alive: unit.alive,
       defending: unit.defending,
-      attackStyle: unit.attackStyle,
       effects: unit.effects.map((effect) => ({
         id: effect.id,
         rounds: effect.rounds,

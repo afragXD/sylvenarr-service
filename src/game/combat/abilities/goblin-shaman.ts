@@ -23,6 +23,7 @@ function abilityMeta(
         slot: 1,
         label: 'Степная буря (2 МР)',
         needsTarget: true,
+        attackKind: 'magic',
         disabledReason:
           actor.mana < 2
             ? 'Нужно 2 МР'
@@ -112,7 +113,7 @@ export const goblinShamanAbilities: AbilityHandler = {
         const damage = dealDamage(
           actor,
           enemy,
-          { damageMult: 1, armorIgnore: 0, source: 'AIR', forceStyle: 'magic' },
+          { kind: 'magic', damageMult: 1, armorIgnore: 0, source: 'AIR' },
           state
         );
         if (damage === 0) {

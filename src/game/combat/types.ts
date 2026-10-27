@@ -118,7 +118,6 @@ export type BattleUnit = {
   dodge: number;
   luck: number;
   accuracy: number;
-  attackStyle: 'melee' | 'ranged' | 'magic';
   power: number;
   mana: number;
   /** Константный потолок маны класса (не растёт в бою). */
@@ -290,4 +289,6 @@ export type AbilityInfo = {
   needsTarget: boolean;
   disabledReason: string | null;
   legalTargetIds: string[];
+  /** Тип урона слота (для превью на клиенте); null — слот без прямого урона. */
+  attackKind?: 'melee' | 'ranged' | 'magic' | null;
 };

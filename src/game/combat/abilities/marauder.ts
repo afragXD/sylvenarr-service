@@ -5,7 +5,14 @@ import { setWard } from '../resists';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import { applyCatalogStats } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { enemiesInColumn, enemiesOf, meleeOrAll, moveToOtherRow, unitsOnSameRow } from './targets';
+import {
+  enemiesInColumn,
+  enemiesOf,
+  meleeOrAll,
+  meleeTargets,
+  moveToOtherRow,
+  unitsOnSameRow,
+} from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function marauderMeta(
@@ -20,6 +27,7 @@ function marauderMeta(
         slot: 1,
         label: 'Композитный лук',
         needsTarget: true,
+        attackKind: 'ranged',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -82,13 +90,14 @@ function werewolfMeta(
         slot: 1,
         label: 'Разорвать плоть',
         needsTarget: true,
+        attackKind: 'melee',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
     case 2: {
       // ignoreGuard — порт Werewolf.secondAction(MeleePattern ignoreGuard=True).
-      const targets = meleeOrAll(state, actor, true, { ignoreGuard: true });
+      const targets = meleeTargets(state, actor, { ignoreGuard: true });
       return {
         slot: 2,
         label: 'Вечный голод',
@@ -150,7 +159,7 @@ function applyMarauder(
     const damage = dealDamage(
       actor,
       target,
-      { damageMult: mult, armorIgnore: 0.15, source: 'ARROWS' },
+      { kind: 'ranged', damageMult: mult, armorIgnore: 0.15, source: 'ARROWS' },
       state
     );
     if (damage === 0) {
@@ -176,7 +185,7 @@ function applyMarauder(
       const damage = dealDamage(
         actor,
         enemy,
-        { damageMult: 0.5, armorIgnore: 0.1, source: 'ARROWS' },
+        { kind: 'ranged', damageMult: 0.5, armorIgnore: 0.1, source: 'ARROWS' },
         state
       );
       if (damage > 0) {
@@ -203,7 +212,7 @@ function applyMarauder(
     const damage = dealDamage(
       actor,
       target,
-      { damageMult: 1.25, armorIgnore: 0.1, source: 'ARROWS' },
+      { kind: 'ranged', damageMult: 1.25, armorIgnore: 0.1, source: 'ARROWS' },
       state
     );
     actor.luck = savedLuck;
@@ -274,7 +283,12 @@ function applyWerewolf(
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }
-    const damage = dealDamage(actor, target, { damageMult: 1.1, armorIgnore: 0 }, state);
+    const damage = dealDamage(
+      actor,
+      target,
+      { kind: 'melee', damageMult: 1.1, armorIgnore: 0 },
+      state
+    );
     if (damage === 0) {
       state.log.push(`${actor.displayName}: промах.`);
     } else {
@@ -289,13 +303,18 @@ function applyWerewolf(
   }
 
   if (input.slot === 2) {
-    const target = enemiesOf(state, actor, { ignoreGuard: true }).find(
+    const target = meleeTargets(state, actor, { ignoreGuard: true }).find(
       (unit) => unit.id === input.targetId
     );
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }
-    const damage = dealDamage(actor, target, { damageMult: 1, armorIgnore: 0.35 }, state);
+    const damage = dealDamage(
+      actor,
+      target,
+      { kind: 'melee', damageMult: 1, armorIgnore: 0.35 },
+      state
+    );
     if (damage === 0) {
       state.log.push(`${actor.displayName}: голод — промах.`);
     } else {

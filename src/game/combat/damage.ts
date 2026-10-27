@@ -21,13 +21,20 @@ export const randInt = (min: number, max: number): number =>
 /** Защита от рекурсии CONTR ↔ CONTR. */
 let counterDepth = 0;
 
+/**
+ * Тип атаки (порт MeleePattern / ArcherPattern / MagicPattern):
+ * задаёт формулу урона; чары оружия, контрудар и огненный щит — только melee.
+ */
+export type AttackKind = 'melee' | 'ranged' | 'magic';
+
 export type DealDamageOpts = {
+  readonly kind: AttackKind;
   readonly damageMult?: number;
   readonly armorIgnore?: number;
-  /** Источник урона; по умолчанию из attackStyle атакующего. */
+  /** Источник урона; по умолчанию из типа атаки. */
   readonly source?: DamageSource;
-  /** Принудительный стиль расчёта (огнемёт Pyro бьёт от power). */
-  readonly forceStyle?: 'melee' | 'ranged' | 'magic';
+  /** Без контрудара цели (ignoreContr в боте). */
+  readonly noCounter?: boolean;
   /** Пропуск проверки попадания (тесты / гарантированный удар). */
   readonly forceHit?: boolean;
   /** Множитель вклада уклонения в шанс промаха (цепь молнии и т.п.). */
@@ -75,13 +82,12 @@ function computeRawDamage(
   attacker: BattleUnit,
   defender: BattleUnit,
   opts: {
-    readonly damageMult: number;
-    readonly armorIgnore: number;
-    readonly forceStyle?: 'melee' | 'ranged' | 'magic';
+    readonly kind: AttackKind;
+    readonly damageMult?: number;
+    readonly armorIgnore?: number;
     readonly forceHit?: boolean;
     readonly evadeCoef?: number;
-  },
-  forceMelee = false
+  }
 ): RawDamageResult {
   if (!opts.forceHit) {
     const evadeCoef = opts.evadeCoef ?? 1;
@@ -101,7 +107,7 @@ function computeRawDamage(
     armor = Math.round(armor * 1.5);
   }
   let raw: number;
-  const style = forceMelee ? 'melee' : (opts.forceStyle ?? attacker.attackStyle);
+  const style = opts.kind;
   if (style === 'magic') {
     raw = Math.max(1, Math.round(attacker.power * 0.8 + randInt(-3, 3) - armor * 0.15));
   } else if (style === 'ranged') {
@@ -139,7 +145,8 @@ export function dealDamage(
   opts: DealDamageOpts,
   state?: BattleState
 ): number {
-  const source = opts.source ?? sourceFromAttackStyle(attacker.attackStyle);
+  const source = opts.source ?? sourceFromAttackStyle(opts.kind);
+  const melee = opts.kind === 'melee';
   const result = computeRawDamage(attacker, defender, opts);
   if (result.raw <= 0) {
     if (state && result.naturalMiss) {
@@ -194,12 +201,13 @@ export function dealDamage(
   }
 
   defender.health -= amount;
-  const vampHealed = applyVampWeaponHeal(attacker, amount);
+  const vampHealed = melee ? applyVampWeaponHeal(attacker, amount) : 0;
   if (state && vampHealed > 0) {
     state.log.push(`${attacker.displayName} высасывает ${vampHealed} ОЗ.`);
   }
 
   if (
+    melee &&
     amount > 0 &&
     defender.alive &&
     defender.health > 0 &&
@@ -214,6 +222,7 @@ export function dealDamage(
 
   // Электрическое оружие: доп. урон воздухом (слабее огня) + шанс оглушения.
   if (
+    melee &&
     amount > 0 &&
     defender.alive &&
     defender.health > 0 &&
@@ -254,6 +263,8 @@ export function dealDamage(
   }
 
   if (
+    melee &&
+    !opts.noCounter &&
     counterDepth === 0 &&
     defender.alive &&
     defender.health > 0 &&
@@ -261,12 +272,12 @@ export function dealDamage(
     attacker.alive
   ) {
     counterDepth += 1;
-    const counterResult = computeRawDamage(
-      defender,
-      attacker,
-      { damageMult: 1, armorIgnore: 0, forceHit: opts.forceHit },
-      true
-    );
+    const counterResult = computeRawDamage(defender, attacker, {
+      kind: 'melee',
+      damageMult: 1,
+      armorIgnore: 0,
+      forceHit: opts.forceHit,
+    });
     if (counterResult.raw > 0) {
       const counterResist = applyResistMultiplier(attacker, 'WEAPON');
       if (counterResist.blocked) {
@@ -299,7 +310,13 @@ export function dealDamage(
   }
 
   // Огненный щит: обжигает атакующего (можно сработать и по трупу с щитом — как в боте).
-  if (counterDepth === 0 && amount > 0 && hasEffect(defender, 'FIRESHIELD') && attacker.alive) {
+  if (
+    melee &&
+    counterDepth === 0 &&
+    amount > 0 &&
+    hasEffect(defender, 'FIRESHIELD') &&
+    attacker.alive
+  ) {
     counterDepth += 1;
     const shield = defender.effects.find((effect) => effect.id === 'FIRESHIELD');
     if (shield) {
