@@ -277,7 +277,8 @@ export const archlichAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Нужно 3 МР' };
       }
       // Порт evade(other, 1) из бота.
-      if (randInt(1, 100) > Math.min(95, actor.accuracy - target.dodge / 2)) {
+      // Порт evade(): miss = dodge + 1 + 95 − accuracy.
+      if (randInt(1, 100) <= target.dodge + 1 + 95 - actor.accuracy) {
         state.log.push(`${target.displayName} сопротивляется ужасу.`);
         return { status: 'done' };
       }

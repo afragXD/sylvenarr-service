@@ -28,8 +28,10 @@ export function wingsPercent(actor: BattleUnit): number {
 }
 
 /**
- * Лечение с критом: шанс крита = удача (и банк критов), ×1.5;
- * по нежити и демонам крита нет. Натуральный бросок > 95 — провал, лечение ранит.
+ * Лечение с критом — как `luck()` в боте:
+ * удача ≥ 0 → шанс крита = удача (без капа 40%), иначе обычный хил; провала нет;
+ * удача < 0 → шанс |удача| критического провала (лечение ранит);
+ * банк критов; по нежити и демонам крита нет.
  * @returns вылеченные ОЗ (отрицательное значение — урон при провале).
  */
 export function healWithCrit(
@@ -39,15 +41,17 @@ export function healWithCrit(
   base: number
 ): number {
   const unholy = isUnholyClass(target.heroClassCode);
-  const roll = randInt(1, 100);
   let crit = false;
   if (!unholy && healer.critBank > 0) {
     healer.critBank -= 1;
     crit = true;
-  } else if (!unholy && healer.luck > 0 && roll <= Math.min(40, healer.luck)) {
-    crit = true;
-  } else if (roll > 95) {
+  } else if (!unholy && healer.luck >= 0) {
+    if (healer.luck > 0 && randInt(1, 100) <= healer.luck) {
+      crit = true;
+    }
+  } else if (randInt(1, 100) <= Math.abs(healer.luck)) {
     const dealt = harmWithSource(state, target, base, 'HOLY');
+    healer.morale -= 5;
     state.log.push(
       `${healer.displayName}: критический провал — свет обжигает ${target.displayName} ${formatLogDamage(dealt, 'HOLY')}.`
     );

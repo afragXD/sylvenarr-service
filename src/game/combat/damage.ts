@@ -37,9 +37,13 @@ export type DealDamageOpts = {
   readonly noCounter?: boolean;
   /** Пропуск проверки попадания (тесты / гарантированный удар). */
   readonly forceHit?: boolean;
-  /** Множитель вклада уклонения в шанс промаха (цепь молнии и т.п.). */
+  /**
+   * Модификатор промаха как в боте `evade(other, mod)`:
+   * шанс промаха = dodge + mod + 95 − accuracy (+ accuracyPenalty).
+   * По умолчанию 1.
+   */
   readonly evadeCoef?: number;
-  /** Снижение шанса попадания в пунктах (серии ударов). */
+  /** Добавка к шансу промаха в пунктах (серии ударов). */
   readonly accuracyPenalty?: number;
 };
 
@@ -71,41 +75,135 @@ export function formatLastLogDamage(amount: number): string {
   return formatLogDamage(amount, lastDeal.source);
 }
 
+type EvadeResult = { missed: boolean; fromDodgeBank: boolean };
+
+type LuckResult =
+  | { kind: 'normal' }
+  | { kind: 'crit'; fromBank: boolean; mult: number }
+  | { kind: 'fail' };
+
 type RawDamageResult = {
   raw: number;
   crit: boolean;
   /** Крит получен из банка — заряд списывается только если урон не заблокирован. */
   critFromBank: boolean;
-  /** Натуральный промах (ролл > 95) — критический провал. */
-  naturalMiss: boolean;
+  /**
+   * Критический провал удачи (порт `luck()` при crit < 0): удар по цели отменяется.
+   * Обычный промах по точности сюда не входит.
+   */
+  luckFail: boolean;
+  fromDodgeBank: boolean;
 };
 
-function computeRawDamage(
+/** Порт Chance(value): randint(1,100) <= value (отрицательный шанс = никогда). */
+export function rollChance(percent: number): boolean {
+  return randInt(1, 100) <= percent;
+}
+
+/**
+ * Порт evade(): dodge_bank, иначе Chance(dodge + mod + 95 − acc).
+ * Без искусственного капа 20–95 — при точности 100 и нулевом уклонении промаха нет.
+ */
+function tryEvade(
+  attacker: BattleUnit,
+  defender: BattleUnit,
+  opts: {
+    readonly forceHit?: boolean;
+    readonly evadeCoef?: number;
+    readonly accuracyPenalty?: number;
+  }
+): EvadeResult {
+  if (opts.forceHit) {
+    return { missed: false, fromDodgeBank: false };
+  }
+  if ((defender.dodgeBank ?? 0) > 0) {
+    defender.dodgeBank -= 1;
+    return { missed: true, fromDodgeBank: true };
+  }
+  const evadeMod = opts.evadeCoef ?? 1;
+  const missChance =
+    defender.dodge + evadeMod + 95 - attacker.accuracy + (opts.accuracyPenalty ?? 0);
+  return { missed: rollChance(missChance), fromDodgeBank: false };
+}
+
+/**
+ * Множитель крита как в боте:
+ * max(1, 2 + (acc/100 − 1)×1.4) — без crit_mf / crit_resist (их в юните пока нет).
+ */
+export function critMultiplier(attacker: BattleUnit): number {
+  return Math.max(1, 2 + (attacker.accuracy / 100 - 1) * 1.4);
+}
+
+/** Порт luck(): банк / положительная удача / отрицательная удача. */
+function rollLuck(attacker: BattleUnit): LuckResult {
+  if (attacker.luck >= 0) {
+    const mult = critMultiplier(attacker);
+    if ((attacker.critBank ?? 0) > 0) {
+      return { kind: 'crit', fromBank: true, mult };
+    }
+    if (attacker.luck > 0 && rollChance(attacker.luck)) {
+      attacker.morale += 5;
+      return { kind: 'crit', fromBank: false, mult };
+    }
+    return { kind: 'normal' };
+  }
+  if (rollChance(Math.abs(attacker.luck))) {
+    return { kind: 'fail' };
+  }
+  return { kind: 'normal' };
+}
+
+/** Урон наказания при крит-провале (phys_damage / magicDamage в боте). */
+function luckFailPunishmentDamage(attacker: BattleUnit, victim: BattleUnit): number {
+  if (attacker.power > attacker.damage) {
+    return Math.max(1, Math.round(attacker.power + randInt(-5, 5)));
+  }
+  return Math.max(1, Math.round(attacker.damage - victim.armor + randInt(0, 3)));
+}
+
+/**
+ * Порт наказаний luck() при crit < 0: −5 морали + rand(0..2):
+ * ничего / удар по себе / удар по случайному союзнику.
+ */
+function applyLuckFailPunishments(
+  state: BattleState | undefined,
+  attacker: BattleUnit
+): void {
+  attacker.morale -= 5;
+  if (!state) {
+    return;
+  }
+  let report = `${attacker.displayName}: критический провал! Потеряно 5 единиц боевого духа.`;
+  const punishment = randInt(0, 2);
+  if (punishment === 1) {
+    const dealt = luckFailPunishmentDamage(attacker, attacker);
+    attacker.health -= dealt;
+    report += ` Более того, удар приходится на себя (${dealt} ОЗ).`;
+    markDeadIfNeeded(state, attacker);
+  } else if (punishment === 2) {
+    const allies = state.units.filter(
+      (unit) => unit.alive && unit.team === attacker.team && unit.id !== attacker.id
+    );
+    const victim = allies[randInt(0, allies.length - 1)];
+    if (victim) {
+      const dealt = luckFailPunishmentDamage(attacker, victim);
+      victim.health -= dealt;
+      report += ` Более того, вместо противника удар достаётся ${victim.displayName} (${dealt} ОЗ).`;
+      markDeadIfNeeded(state, victim);
+    }
+  }
+  state.log.push(report);
+}
+
+function computeBaseRaw(
   attacker: BattleUnit,
   defender: BattleUnit,
   opts: {
     readonly kind: AttackKind;
     readonly damageMult?: number;
     readonly armorIgnore?: number;
-    readonly forceHit?: boolean;
-    readonly evadeCoef?: number;
-    readonly accuracyPenalty?: number;
   }
-): RawDamageResult {
-  if (!opts.forceHit) {
-    const evadeCoef = opts.evadeCoef ?? 1;
-    const hitChance = Math.min(
-      95,
-      Math.max(
-        20,
-        attacker.accuracy - (defender.dodge / 2) * evadeCoef - (opts.accuracyPenalty ?? 0)
-      )
-    );
-    const roll = randInt(1, 100);
-    if (roll > hitChance) {
-      return { raw: 0, crit: false, critFromBank: false, naturalMiss: roll > 95 };
-    }
-  }
+): number {
   const armorIgnore = opts.armorIgnore ?? 0;
   const damageMult = opts.damageMult ?? 1;
   // Защита — через +50 резистов (EFF.DEFEND), не через ×1.5 брони.
@@ -119,23 +217,50 @@ function computeRawDamage(
   } else {
     raw = Math.max(1, Math.round(attacker.damage - armor + randInt(0, 2)));
   }
-  raw = Math.max(1, Math.round(raw * damageMult));
-  let crit = false;
-  let critFromBank = false;
-  if ((attacker.critBank ?? 0) > 0) {
-    crit = true;
-    critFromBank = true;
-  } else if (attacker.luck >= 0 && randInt(1, 100) <= Math.min(40, attacker.luck)) {
-    crit = true;
-    attacker.morale += 5;
-  } else if (attacker.luck < 0 && randInt(1, 100) <= Math.min(40, Math.abs(attacker.luck))) {
-    // Антикрит (порт luck() при crit < 0): −5 морали.
-    attacker.morale -= 5;
+  return Math.max(1, Math.round(raw * damageMult));
+}
+
+function computeRawDamage(
+  attacker: BattleUnit,
+  defender: BattleUnit,
+  opts: {
+    readonly kind: AttackKind;
+    readonly damageMult?: number;
+    readonly armorIgnore?: number;
+    readonly forceHit?: boolean;
+    readonly evadeCoef?: number;
+    readonly accuracyPenalty?: number;
+  },
+  state?: BattleState
+): RawDamageResult {
+  const evade = tryEvade(attacker, defender, opts);
+  if (evade.missed) {
+    return {
+      raw: 0,
+      crit: false,
+      critFromBank: false,
+      luckFail: false,
+      fromDodgeBank: evade.fromDodgeBank,
+    };
   }
+  const luck = rollLuck(attacker);
+  if (luck.kind === 'fail') {
+    applyLuckFailPunishments(state, attacker);
+    return {
+      raw: 0,
+      crit: false,
+      critFromBank: false,
+      luckFail: true,
+      fromDodgeBank: false,
+    };
+  }
+  let raw = computeBaseRaw(attacker, defender, opts);
+  const crit = luck.kind === 'crit';
+  const critFromBank = luck.kind === 'crit' && luck.fromBank;
   if (crit) {
-    raw = Math.round(raw * 1.5);
+    raw = Math.round(raw * luck.mult);
   }
-  return { raw, crit, critFromBank, naturalMiss: false };
+  return { raw, crit, critFromBank, luckFail: false, fromDodgeBank: false };
 }
 
 /**
@@ -151,11 +276,14 @@ export function dealDamage(
 ): number {
   const source = opts.source ?? sourceFromAttackStyle(opts.kind);
   const melee = opts.kind === 'melee';
-  const result = computeRawDamage(attacker, defender, opts);
+  const result = computeRawDamage(attacker, defender, opts, state);
   if (result.raw <= 0) {
-    if (state) {
-      if (result.naturalMiss) {
-        state.log.push(`${attacker.displayName}: критический провал!`);
+    if (state && !result.luckFail) {
+      // luckFail уже пишет журнал в applyLuckFailPunishments.
+      if (result.fromDodgeBank) {
+        state.log.push(
+          `${defender.displayName} мастерски уклоняется от атаки ${attacker.displayName}!`
+        );
       } else {
         // Порт evade(): обычный промах тоже пишется в журнал (иначе AoE выглядит как «1 цель»).
         state.log.push(
@@ -168,7 +296,7 @@ export function dealDamage(
       missed: true,
       blocked: false,
       crit: false,
-      critFail: result.naturalMiss,
+      critFail: result.luckFail,
       source,
     };
     return 0;
@@ -283,12 +411,17 @@ export function dealDamage(
     attacker.alive
   ) {
     counterDepth += 1;
-    const counterResult = computeRawDamage(defender, attacker, {
-      kind: 'melee',
-      damageMult: 1,
-      armorIgnore: 0,
-      forceHit: opts.forceHit,
-    });
+    const counterResult = computeRawDamage(
+      defender,
+      attacker,
+      {
+        kind: 'melee',
+        damageMult: 1,
+        armorIgnore: 0,
+        forceHit: opts.forceHit,
+      },
+      state
+    );
     if (counterResult.raw > 0) {
       const counterResist = applyResistMultiplier(attacker, 'WEAPON');
       if (counterResist.blocked) {

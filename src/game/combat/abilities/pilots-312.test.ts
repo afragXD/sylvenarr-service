@@ -110,7 +110,7 @@ describe('phase 3.12 pilots', () => {
     const foe = state.units.find((unit) => unit.id === 'p2')!;
     beer.critBank = 1;
     beer.luck = 0;
-    // forceHit — исключаем флаки натурального промаха (кап попадания 95%).
+    // forceHit — исключаем флаки промаха.
     const withBank = dealDamage(beer, foe, { kind: 'magic', damageMult: 1, armorIgnore: 1, forceHit: true }, state);
     expect(beer.critBank).toBe(0);
     foe.health = 500;

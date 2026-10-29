@@ -203,7 +203,7 @@ export const demiurgeAbilities: AbilityHandler = {
         const dmg = dealDamage(
           actor,
           next,
-          { kind: 'magic', damageMult: mult, armorIgnore: 0.1, source: 'AIR', evadeCoef: 1.2 },
+          { kind: 'magic', damageMult: mult, armorIgnore: 0.1, source: 'AIR', evadeCoef: 1.25 },
           state
         );
         if (dmg > 0) {
