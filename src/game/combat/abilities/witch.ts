@@ -1,7 +1,15 @@
 import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
-import { grantEffect, healUnit, tryLevelDrain, trySpendMana } from '../effects';
+import {
+  delEffect,
+  grantEffect,
+  hasEffect,
+  healUnit,
+  tryLevelDrain,
+  trySpendMana,
+} from '../effects';
 import { levelUpUnit } from '../level';
 import { rollSrcChance } from '../resists';
+import { transformClassOnly } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -30,6 +38,7 @@ function abilityMeta(
         slot: 2,
         label: 'Молочные клыки',
         needsTarget: true,
+        attackKind: 'magic',
         disabledReason:
           actor.mana < 3
             ? 'Нужно 3 МР'
@@ -87,7 +96,7 @@ function abilityMeta(
 }
 
 /**
- * Witch: револьвер/каблук, вампиризм, метка, деградация, polymorph-lite.
+ * Witch: револьвер/каблук, вампиризм, метка, деградация, превращение в беса.
  */
 export const witchAbilities: AbilityHandler = {
   listAbilities(state, actor) {
@@ -216,7 +225,8 @@ export const witchAbilities: AbilityHandler = {
         if (!tryLevelDrain(state, target)) {
           return { status: 'done' };
         }
-        const n = Math.floor(actor.lvl / 5) + 1;
+        // Было ⌊L/5⌋+1; +1 к базе → ⌊L/5⌋+2.
+        const n = Math.floor(actor.lvl / 5) + 2;
         levelUpUnit(target, -n, state);
         state.log.push(
           `${actor.displayName}: деградация ${target.displayName} (−${n} уровня).`
@@ -227,7 +237,7 @@ export const witchAbilities: AbilityHandler = {
       return { status: 'done' };
     }
 
-    // slot 5 — 100% (EARTH+POLYMORPH) + КД 3
+    // slot 5 — порт fifthAction: transformToAnotherClass(Imp) + arm=0 + IMPISH 2
     const err = trySpendMana(actor, 4);
     if (err) {
       return { status: 'reject', message: err };
@@ -238,8 +248,28 @@ export const witchAbilities: AbilityHandler = {
     }
     actor.impPolymorphCd = 3;
     if (rollSrcChance(state, target, 100, 'EARTH', 'POLYMORPH')) {
-      grantEffect(target, 'IMPISH', 2, 5);
-      state.log.push(`${actor.displayName} превращает ${target.displayName} в беса.`);
+      if (hasEffect(target, 'IMPISH')) {
+        delEffect(target, 'IMPISH', state);
+      }
+      const victimName = target.displayName;
+      if (!target.transformParentCode) {
+        target.transformParentCode = target.heroClassCode;
+      }
+      target.polymorphSavedArmor = target.armor;
+      target.armor = 0;
+      if (!transformClassOnly(state, target, 'Imp')) {
+        target.armor = target.polymorphSavedArmor;
+        target.polymorphSavedArmor = -1;
+        if (target.transformParentCode === target.heroClassCode) {
+          target.transformParentCode = null;
+        }
+        state.log.push(`${actor.displayName}: в каталоге нет беса — превращение сорвалось.`);
+        return { status: 'done' };
+      }
+      grantEffect(target, 'IMPISH', 2, 0);
+      state.log.push(
+        `${actor.displayName} обращает ${victimName} в жалкого беса (без особых атак и брони).`
+      );
     } else {
       state.log.push(`${actor.displayName}: превращение заблокировано сопротивлением.`);
     }

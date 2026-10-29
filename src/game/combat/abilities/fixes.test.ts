@@ -48,6 +48,80 @@ const twoUnitState = (
 };
 
 describe('combat fixes', () => {
+  test('defend: +50 resists like bot Hero.protection', () => {
+    const state = twoUnitState('Knight', 'B', { armor: 0 }, { damage: 40, accuracy: 100, luck: 0 });
+    const knight = state.units.find((unit) => unit.id === 'p1')!;
+    const weaponBefore = knight.resists.WEAPON?.value ?? 0;
+    const fireBefore = knight.resists.FIRE?.value ?? 0;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const defended = applyAction(state, { playerId: 'h', unitId: 'p1', action: 'defend' });
+    expect(defended.ok).toBe(true);
+    expect(knight.defending).toBe(true);
+    expect(knight.effects.some((effect) => effect.id === 'DEFEND')).toBe(true);
+    expect(knight.resists.WEAPON?.value).toBe(weaponBefore + 50);
+    expect(knight.resists.FIRE?.value).toBe(fireBefore + 50);
+    expect(state.activeUnitId).toBe('p2');
+    state.turnPlayerId = 'g';
+    const hpBefore = knight.health;
+    const hit = applyAction(state, {
+      playerId: 'g',
+      unitId: 'p2',
+      action: 'attack',
+      targetId: 'p1',
+    });
+    expect(hit.ok).toBe(true);
+    const taken = hpBefore - knight.health;
+    // Без защиты урон ≈ 40; с +50 WEAPON — примерно половина.
+    expect(taken).toBeGreaterThan(0);
+    expect(taken).toBeLessThanOrEqual(25);
+  });
+
+  test('Witch slot 5 transforms foe into Imp with Imp abilities', () => {
+    const state = twoUnitState(
+      'Witch',
+      'Knight',
+      { mana: 10 },
+      { armor: 20, displayName: 'Рыцарь' },
+      [['Imp', hero('Imp', { displayName: 'Толстый бес', damage: 0, armor: 0 })]]
+    );
+    const foe = state.units.find((unit) => unit.id === 'p2')!;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const cast = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 5,
+      targetId: 'p2',
+    });
+    expect(cast.ok).toBe(true);
+    expect(foe.heroClassCode).toBe('Imp');
+    expect(foe.displayName).toBe('Толстый бес');
+    expect(foe.armor).toBe(0);
+    expect(foe.polymorphSavedArmor).toBe(20);
+    expect(foe.transformParentCode).toBe('Knight');
+    expect(foe.effects.some((effect) => effect.id === 'IMPISH')).toBe(true);
+    expect(state.activeUnitId).toBe('p2');
+    state.turnPlayerId = 'g';
+    const blocked = applyAction(state, {
+      playerId: 'g',
+      unitId: 'p2',
+      action: 'ability',
+      slot: 2,
+      targetId: 'p1',
+    });
+    expect(blocked.ok).toBe(false);
+    const revenge = applyAction(state, {
+      playerId: 'g',
+      unitId: 'p2',
+      action: 'ability',
+      slot: 1,
+      targetId: 'p1',
+    });
+    expect(revenge.ok).toBe(true);
+  });
+
   test('Mermaid enslave: жертва ходит под контролем, затем возвращается', () => {
     const state = twoUnitState('Mermaid', 'B', {}, { health: 300 });
     const mermaid = state.units.find((unit) => unit.id === 'p1')!;

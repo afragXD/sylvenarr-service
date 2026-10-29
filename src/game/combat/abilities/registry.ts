@@ -1,5 +1,7 @@
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { abbessAbilities } from './abbess';
+import { angelAbilities } from './angel';
+import { antipaladinAbilities } from './antipaladin';
 import { archlichAbilities } from './archlich';
 import { assassinAbilities } from './assassin';
 import { demiurgeAbilities } from './demiurge';
@@ -14,6 +16,8 @@ import { goblinShamanAbilities } from './goblin-shaman';
 import { goblinTrapperAbilities } from './goblin-trapper';
 import { goldGolemAbilities } from './gold-golem';
 import { herbalistAbilities } from './herbalist';
+import { impAbilities } from './imp';
+import { incubAbilities } from './incub';
 import { inquisitorAbilities } from './inquisitor';
 import { knightAbilities } from './knight';
 import { marauderAbilities } from './marauder';
@@ -25,6 +29,7 @@ import { patriarchAbilities } from './patriarch';
 import { pyroAbilities } from './pyro';
 import { skeletonChampionAbilities } from './skeleton-champion';
 import { specterAbilities } from './specter';
+import { titanAbilities } from './titan';
 import { witchAbilities } from './witch';
 import { zombieAbilities } from './zombie';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -59,6 +64,11 @@ const PILOT_HANDLERS: Record<string, AbilityHandler> = {
   GoblinShaman: goblinShamanAbilities,
   GoblinTrapper: goblinTrapperAbilities,
   Ectoplasm: ectoplasmAbilities,
+  Imp: impAbilities,
+  Antipaladin: antipaladinAbilities,
+  Angel: angelAbilities,
+  Titan: titanAbilities,
+  Incub: incubAbilities,
 };
 
 /**
@@ -174,6 +184,9 @@ export function initPilotFlags(unit: BattleUnit): void {
       unit.ultaCharges = 1;
       break;
     case 'Zombie':
+      unit.ultaCharges = 1;
+      break;
+    case 'Titan':
       unit.ultaCharges = 1;
       break;
     default:

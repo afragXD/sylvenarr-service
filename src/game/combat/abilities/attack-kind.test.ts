@@ -92,13 +92,15 @@ describe('melee reach is a property of the attack', () => {
     expect(slotTargets(state, byId(state, 'p1'), 1)).toContain('e2');
   });
 
-  test('Pyro flamethrower never hits the back row while the front is alive', () => {
+  test('Pyro flamethrower can hit the back row while the front is alive', () => {
     const state = meleeVsTwoRows('Pyro');
-    const back = byId(state, 'e2');
-    const before = back.health;
-    expect(applyAbility(state, byId(state, 'p1'), { slot: 1 }).status).toBe('done');
-    expect(back.health).toBe(before);
+    const pyro = byId(state, 'p1');
+    pyro.morale = 0;
+    pyro.lvl = 1;
+    // 2 цели: оба ряда врага.
+    expect(applyAbility(state, pyro, { slot: 1 }).status).toBe('done');
     expect(byId(state, 'e1').health).toBeLessThan(500);
+    expect(byId(state, 'e2').health).toBeLessThan(500);
   });
 });
 

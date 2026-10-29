@@ -5,8 +5,19 @@ import {
 } from '../damageSources';
 import { effectLogLabel } from '../effect-labels';
 import { applyResistMultiplier, changeResist, mindResistFactor } from '../resists';
-import { applyCatalogStats } from '../transform';
+import { applyCatalogStats, transformClassOnly } from '../transform';
 import type { BattleEffect, BattleState, BattleUnit, EffectId } from '../types';
+
+/** Источники +50/−50 при защитной стойке (порт Hero.protection / EFF.DEFEND). */
+const DEFEND_RESIST_SOURCES = [
+  'WEAPON',
+  'FIRE',
+  'WATER',
+  'AIR',
+  'EARTH',
+  'DEATH',
+  'MIND',
+] as const satisfies ReadonlyArray<DamageSource>;
 
 /** Локальный randInt — чтобы не тянуть damage.ts (цикл damage ↔ effects). */
 const randInt = (min: number, max: number): number =>
@@ -87,6 +98,46 @@ export const DEBUFF_EFFECT_IDS: readonly EffectId[] = [
   'MAGIC_SHACKLES',
   'ASHILLNESS',
 ];
+
+/** Положительные эффекты для рассеивания (Angel «Кровь за Веру»). */
+export const BUFF_EFFECT_IDS: readonly EffectId[] = [
+  'STRENGTH',
+  'BLESSED',
+  'HAPPY',
+  'VAMPWEAPON',
+  'REGENHP',
+  'HASTE',
+  'CHAMELEON',
+  'STONEFLESH',
+  'CONTR',
+  'FIRESHIELD',
+  'AIRSHIELD',
+  'LUCKY',
+  'FOCUSED',
+  'FIREDWEAPON',
+  'AIRWEAPON',
+  'INVISIBLE',
+  'ROW_FORTIFY',
+  'ABSOLUTEPOWER',
+  'BERSERK',
+  'IMAGINARY_HEALTH',
+  'IMMOLATION',
+  'DEATHWARD',
+];
+
+/**
+ * Снимает положительные эффекты; возвращает число снятых.
+ */
+export function clearBuffs(unit: BattleUnit, state?: BattleState): number {
+  let removed = 0;
+  for (const id of BUFF_EFFECT_IDS) {
+    if (hasEffect(unit, id)) {
+      delEffect(unit, id, state);
+      removed += 1;
+    }
+  }
+  return removed;
+}
 
 /**
  * Снимает только отрицательные эффекты.
@@ -324,6 +375,14 @@ export function tickEffectsOnTurnEnd(unit: BattleUnit, state?: BattleState): str
     }
     effect.rounds -= 1;
     if (effect.rounds <= 0) {
+      // Расплата за договор — только по истечении, не при рассеивании.
+      if (effect.id === 'IMMOLATION' && unit.alive) {
+        const burn = Math.max(1, Math.round(unit.maxHp * 0.75));
+        unit.health -= burn;
+        log.push(
+          `${unit.displayName} расплачивается по нечистому договору: ${formatLogDamage(burn, 'DEFAULT')} урона.`
+        );
+      }
       delEffect(unit, effect.id, state);
       log.push(
         `Эффект ${effectLogLabel(effect.id)} спадает с ${unit.displayName}.`
@@ -395,11 +454,13 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
       unit.power = Math.max(0, unit.power - Math.round(effect.power || 5));
       break;
     case 'IMPISH':
-      if (unit.polymorphSavedArmor < 0) {
-        unit.polymorphSavedArmor = unit.armor;
+      // Класс/имя и броня выставляет способность ведьмы; здесь только якорь эффекта.
+      break;
+    case 'DEFEND':
+      unit.defending = true;
+      for (const source of DEFEND_RESIST_SOURCES) {
+        changeResist(unit, source, 50);
       }
-      unit.armor = 0;
-      unit.damage = Math.max(1, unit.damage - Math.round(effect.power || 5));
       break;
     case 'LUCKY':
       unit.luck += Math.round(effect.power || 20);
@@ -431,6 +492,19 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
       unit.initiative = Math.max(1, unit.initiative - initLoss);
       break;
     }
+    case 'BERSERK':
+      // Вся броня уходит в атаку; снятое значение запоминаем для точного отката.
+      effect.extra = unit.armor;
+      unit.armor = 0;
+      unit.damage += Math.round(effect.power);
+      break;
+    case 'IMAGINARY_HEALTH':
+      unit.health += Math.round(effect.power);
+      break;
+    case 'DEATHWARD':
+      changeResist(unit, 'FINALSTRIKE', Math.round(effect.power || 100));
+      break;
+    case 'IMMOLATION':
     case 'ENSLAVED':
     case 'MAGIC_SHACKLES':
       break;
@@ -481,11 +555,26 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
     case 'INTERFERENCE':
       unit.power += Math.round(effect.power || 5);
       break;
-    case 'IMPISH':
-      unit.damage += Math.round(effect.power || 5);
+    case 'IMPISH': {
       if (unit.polymorphSavedArmor >= 0) {
-        unit.armor = unit.polymorphSavedArmor;
+        unit.armor = Math.max(unit.polymorphSavedArmor, unit.armor);
         unit.polymorphSavedArmor = -1;
+      }
+      const parent = unit.transformParentCode;
+      // Не сбрасываем transformParentCode, если ещё висит POLYMORPH (мимик).
+      const keepParent = unit.effects.some((item) => item.id === 'POLYMORPH');
+      if (!keepParent) {
+        unit.transformParentCode = null;
+      }
+      if (parent && state && unit.heroClassCode === 'Imp') {
+        transformClassOnly(state, unit, parent);
+      }
+      break;
+    }
+    case 'DEFEND':
+      unit.defending = false;
+      for (const source of DEFEND_RESIST_SOURCES) {
+        changeResist(unit, source, -50);
       }
       break;
     case 'POLYMORPH': {
@@ -542,6 +631,19 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
     case 'ASHILLNESS':
       // Снижение постоянное на время маркера; откат не восстанавливаем (доля от текущего).
       break;
+    case 'BERSERK':
+      unit.damage = Math.max(0, unit.damage - Math.round(effect.power));
+      unit.armor += effect.extra ?? 0;
+      break;
+    case 'IMAGINARY_HEALTH':
+      if (unit.alive) {
+        unit.health = Math.max(1, unit.health - Math.round(effect.power));
+      }
+      break;
+    case 'DEATHWARD':
+      changeResist(unit, 'FINALSTRIKE', -Math.round(effect.power || 100));
+      break;
+    case 'IMMOLATION':
     case 'MAGIC_SHACKLES':
       break;
     default:

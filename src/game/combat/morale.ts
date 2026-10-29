@@ -5,15 +5,26 @@ import { levelUpUnit } from './level';
 import { isArtificialClass, isUndeadClass } from './races';
 import type { BattleState, BattleUnit } from './types';
 
-/** Верхняя граница морали (порт normalize). */
+/** Верхняя граница морали (порт Hero.normalize). */
 export const MORALE_CAP = 65;
 
+/** Верхняя граница уклонения (порт Hero.normalize). */
+export const DODGE_CAP = 45;
+
+/** Верхняя граница удачи / крита (порт Hero.normalize crit). */
+export const LUCK_CAP = 60;
+
 /**
- * Cap морали и прочих боевых статов (фрагмент Hero.normalize).
+ * Порт Hero.normalize: полы урона/силы/уровня, потолки dodge/luck/morale.
+ * Броня в боте закомментирована — не трогаем.
  */
 export function normalizeUnit(unit: BattleUnit): void {
+  unit.damage = Math.max(0, unit.damage);
+  unit.power = Math.max(0, unit.power);
+  unit.lvl = Math.max(0, unit.lvl);
+  unit.dodge = Math.min(DODGE_CAP, unit.dodge);
+  unit.luck = Math.min(LUCK_CAP, unit.luck);
   unit.morale = Math.min(MORALE_CAP, unit.morale);
-  unit.luck = Math.min(60, unit.luck);
 }
 
 /**

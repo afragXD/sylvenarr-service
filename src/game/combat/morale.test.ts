@@ -66,11 +66,21 @@ describe('morale + battle summary', () => {
     expect(pyro.illness).toBe(false);
   });
 
-  test('normalizeUnit caps morale at 65', () => {
+  test('normalizeUnit mirrors bot Hero.normalize', () => {
     const state = twoUnitState('Knight', 'B');
     const unit = state.units.find((u) => u.id === 'p1')!;
+    unit.damage = -5;
+    unit.power = -3;
+    unit.lvl = -2;
+    unit.dodge = 80;
+    unit.luck = 99;
     unit.morale = 90;
     normalizeUnit(unit);
+    expect(unit.damage).toBe(0);
+    expect(unit.power).toBe(0);
+    expect(unit.lvl).toBe(0);
+    expect(unit.dodge).toBe(45);
+    expect(unit.luck).toBe(60);
     expect(unit.morale).toBe(65);
   });
 

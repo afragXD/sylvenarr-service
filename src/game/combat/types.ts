@@ -28,6 +28,7 @@ export type EffectId =
   | 'INTERFERENCE'
   | 'SILENCE'
   | 'IMPISH'
+  | 'DEFEND'
   | 'POLYMORPH'
   | 'FIRESHIELD'
   | 'AIRSHIELD'
@@ -48,13 +49,19 @@ export type EffectId =
   | 'ENSLAVED'
   | 'ROW_FORTIFY'
   | 'ASHILLNESS'
-  | 'ABSOLUTEPOWER';
+  | 'ABSOLUTEPOWER'
+  | 'BERSERK'
+  | 'IMAGINARY_HEALTH'
+  | 'IMMOLATION'
+  | 'DEATHWARD';
 
 export type BattleEffect = {
   id: EffectId;
   rounds: number;
   /** Числовой параметр эффекта (урон баффа, % и т.п.). */
   power: number;
+  /** Второе числовое значение (BERSERK: снятая броня). */
+  extra?: number;
   /**
    * Наложен в текущий ход носителя: end-тик пропускает (self-buffs не теряют ход).
    * Сбрасывается start-тиком в начале следующего хода носителя.
@@ -203,6 +210,12 @@ export type BattleUnit = {
   morale: number;
   /** Уже сработала mental illness в этом бою (порт Hero.illness). */
   illness: boolean;
+  /** Кулдауны слотов в раундах (Antipaladin / Angel / Incub); в старых снимках поля нет. */
+  abilityCds?: Partial<Record<AbilitySlot, number>>;
+  /** Antipaladin: накопленный нанесённый урон для «Шквала ударов». */
+  appliedDamage?: number;
+  /** Одноразовая пассивка уже сработала (Titan «Наставник»). */
+  passiveUsed?: boolean;
 };
 
 /** Активные правила боя из Match.rules (без ярмарки). */

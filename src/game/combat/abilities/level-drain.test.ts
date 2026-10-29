@@ -265,7 +265,7 @@ describe('petrify and level drain', () => {
       targetId: 'p2',
     });
     expect(result.ok).toBe(true);
-    const n = Math.floor(6 / 5) + 1;
-    expect(foe.lvl).toBe(5 - n);
+    const n = Math.floor(6 / 5) + 2;
+    expect(foe.lvl).toBe(Math.max(0, 5 - n));
   });
 });

@@ -58,7 +58,7 @@ function applyDefendPassives(actor: BattleUnit): void {
       grantEffect(actor, 'LUCKY', 2, 20);
       break;
     case 'Witch':
-      grantEffect(actor, 'FOCUSED', 2, 15);
+      grantEffect(actor, 'FOCUSED', 2, 25);
       addMana(actor, 3);
       break;
     case 'Inquisitor':
@@ -266,7 +266,7 @@ export function advanceToNextUnit(state: BattleState): void {
       state.delayedPhase = false;
       state.preChoiceDoneIds = [];
       for (const unit of state.units) {
-        unit.defending = false;
+        // defending снимается reverseEffect(DEFEND), не принудительно на стыке раундов.
         unit.wasEffected = false;
       }
       if (state.stage > state.rules.maxRounds) {
@@ -319,8 +319,7 @@ export function advanceToNextUnit(state: BattleState): void {
 
   if (stunned) {
     state.log.push(`${next.displayName} оглушён и пропускает ход.`);
-    const endLog = tickEffectsOnTurnEnd(next, state);
-    state.log.push(...endLog);
+    endTurnTick(state, next);
     state.doneIds.push(next.id);
     resolveOutcome(state);
     if (state.outcome === 'ongoing') {
@@ -371,40 +370,55 @@ export function applyAction(
     if (input.action !== 'ability' || !input.choice) {
       return { ok: false, message: 'Нужно завершить выбор способности' };
     }
+    const promptSlot = state.pendingPrompt.slot;
     const outcome = applyAbility(state, actor, {
-      slot: state.pendingPrompt.slot,
+      slot: promptSlot,
       targetId: input.targetId,
       choice: input.choice,
     });
+    // Звук слота сбрасывается на старте выбора — играем его, когда выбор завершён.
+    if (outcome.status === 'done' && !outcome.keepTurn && input.choice !== 'cancel') {
+      pushSfx(state, actor, 'ability', promptSlot);
+    }
     return settleAbility(state, actor, outcome);
   }
 
   if (input.action === 'wait') {
     state.delayedPhase = state.delayedPhase ?? false;
     if (state.delayedPhase) {
-      state.log.push(...tickEffectsOnTurnEnd(actor, state));
+      endTurnTick(state, actor);
       state.doneIds.push(actor.id);
       // preChoiceDoneIds не трогаем — DoT держит wasEffected, КД не тикает снова.
       state.log.push(`${actor.displayName} ждёт.`);
-      advanceToNextUnit(state);
+      resolveOutcome(state);
+      if (state.outcome === 'ongoing') {
+        advanceToNextUnit(state);
+      }
       return { ok: true };
     }
     if (!state.delayedIds.includes(actor.id)) {
       state.delayedIds.push(actor.id);
     }
-    state.log.push(...tickEffectsOnTurnEnd(actor, state));
+    endTurnTick(state, actor);
     state.log.push(`${actor.displayName} ждёт.`);
-    advanceToNextUnit(state);
+    resolveOutcome(state);
+    if (state.outcome === 'ongoing') {
+      advanceToNextUnit(state);
+    }
     return { ok: true };
   }
 
   if (input.action === 'defend') {
-    actor.defending = true;
+    // Порт Hero.protection: +50 к резистам на 1 раунд (EFF.DEFEND) + классовые пассивы.
+    grantEffect(actor, 'DEFEND', 1, 0);
     applyDefendPassives(actor);
-    state.log.push(...tickEffectsOnTurnEnd(actor, state));
+    endTurnTick(state, actor);
     state.doneIds.push(actor.id);
-    state.log.push(`${actor.displayName} встаёт в защиту.`);
-    advanceToNextUnit(state);
+    state.log.push(`${actor.displayName} встаёт в защитную стойку.`);
+    resolveOutcome(state);
+    if (state.outcome === 'ongoing') {
+      advanceToNextUnit(state);
+    }
     return { ok: true };
   }
 
@@ -724,7 +738,9 @@ function resolveAttackWithClassMods(
 
 function finishUnitTurn(state: BattleState, actor: BattleUnit): void {
   if (actor.alive) {
-    state.log.push(...tickEffectsOnTurnEnd(actor, state));
+    endTurnTick(state, actor);
+  }
+  if (actor.alive) {
     maybeRewardHighMorale(state, actor);
   }
   state.doneIds.push(actor.id);
@@ -733,6 +749,12 @@ function finishUnitTurn(state: BattleState, actor: BattleUnit): void {
   if (state.outcome === 'ongoing') {
     advanceToNextUnit(state);
   }
+}
+
+/** End-тик эффектов; расплата по истечении (IMMOLATION) может убить носителя. */
+function endTurnTick(state: BattleState, unit: BattleUnit): void {
+  state.log.push(...tickEffectsOnTurnEnd(unit, state));
+  markDeadIfNeeded(state, unit);
 }
 
 /**

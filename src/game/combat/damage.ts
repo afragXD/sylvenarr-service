@@ -39,6 +39,8 @@ export type DealDamageOpts = {
   readonly forceHit?: boolean;
   /** Множитель вклада уклонения в шанс промаха (цепь молнии и т.п.). */
   readonly evadeCoef?: number;
+  /** Снижение шанса попадания в пунктах (серии ударов). */
+  readonly accuracyPenalty?: number;
 };
 
 export type DealDamageResult = {
@@ -87,13 +89,17 @@ function computeRawDamage(
     readonly armorIgnore?: number;
     readonly forceHit?: boolean;
     readonly evadeCoef?: number;
+    readonly accuracyPenalty?: number;
   }
 ): RawDamageResult {
   if (!opts.forceHit) {
     const evadeCoef = opts.evadeCoef ?? 1;
     const hitChance = Math.min(
       95,
-      Math.max(20, attacker.accuracy - (defender.dodge / 2) * evadeCoef)
+      Math.max(
+        20,
+        attacker.accuracy - (defender.dodge / 2) * evadeCoef - (opts.accuracyPenalty ?? 0)
+      )
     );
     const roll = randInt(1, 100);
     if (roll > hitChance) {
@@ -102,10 +108,8 @@ function computeRawDamage(
   }
   const armorIgnore = opts.armorIgnore ?? 0;
   const damageMult = opts.damageMult ?? 1;
-  let armor = defender.armor * (1 - Math.min(1, Math.max(0, armorIgnore)));
-  if (defender.defending) {
-    armor = Math.round(armor * 1.5);
-  }
+  // Защита — через +50 резистов (EFF.DEFEND), не через ×1.5 брони.
+  const armor = defender.armor * (1 - Math.min(1, Math.max(0, armorIgnore)));
   let raw: number;
   const style = opts.kind;
   if (style === 'magic') {
@@ -370,6 +374,28 @@ export function dealDamage(
 }
 
 /**
+ * Прямой урон по источнику без броска попадания и брони (порт harmWithSRC).
+ * @returns фактически нанесённый урон (0 при варде / иммунитете).
+ */
+export function harmWithSource(
+  state: BattleState,
+  target: BattleUnit,
+  amount: number,
+  source: DamageSource
+): number {
+  const resist = applyResistMultiplier(target, source);
+  if (resist.blocked) {
+    if (resist.blockReason) {
+      state.log.push(resist.blockReason);
+    }
+    return 0;
+  }
+  const dealt = Math.max(0, Math.round(amount * resist.multiplier));
+  target.health -= dealt;
+  return dealt;
+}
+
+/**
  * Спасение на пороге смерти вардом/резистом FINALSTRIKE (порт death() из бота):
  * заряд варда → 1 ОЗ; иначе ролл value% → 1 ОЗ и value −25.
  */
@@ -390,7 +416,7 @@ function tryFinalStrikeSave(state: BattleState, unit: BattleUnit): boolean {
     return true;
   }
   if (entry.value > 0 && randInt(1, 100) <= entry.value) {
-    entry.value -= 25;
+    entry.value -= unit.heroClassCode === 'Antipaladin' ? 33 : 25;
     unit.health = 1;
     state.log.push(
       `${unit.displayName} на пороге смерти, но переживает удар (остаётся 1 ОЗ).`

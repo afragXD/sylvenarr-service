@@ -24,6 +24,7 @@ const LABELS: Record<EffectId, string> = {
   INTERFERENCE: 'Помехи',
   SILENCE: 'Немота',
   IMPISH: 'Бес',
+  DEFEND: 'Защитная стойка',
   POLYMORPH: 'Многоликий',
   FIRESHIELD: 'Огненный щит',
   AIRSHIELD: 'Воздушный щит',
@@ -45,6 +46,10 @@ const LABELS: Record<EffectId, string> = {
   ROW_FORTIFY: 'Укрепление ряда',
   ASHILLNESS: 'Пепельная язва',
   ABSOLUTEPOWER: 'Могущество',
+  BERSERK: 'Руна берсерка',
+  IMAGINARY_HEALTH: 'Мнимое здоровье',
+  IMMOLATION: 'Нечистый договор',
+  DEATHWARD: 'Оковы войны',
 };
 
 /**

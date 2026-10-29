@@ -28,7 +28,8 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
       addMana(unit, 5);
       // Item(475) — вне скоупа
     }
-    unit.armor += randInt(1, 2) * Math.floor(unit.lvl / 2) * ind;
+    // Было rand(1,2)×⌊lvl/2⌋; чуть слабее — ⌊lvl/3⌋.
+    unit.armor += randInt(1, 2) * Math.floor(unit.lvl / 3) * ind;
     unit.damage += (2 + Math.floor(unit.lvl / 4)) * ind;
     bumpLevel(unit, ind);
   },
@@ -242,6 +243,39 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   Dracolich(unit, ind, _state) {
     unit.damage += 2 * ind;
     unit.power += 2 * ind;
+    bumpLevel(unit, ind);
+  },
+
+  Antipaladin(unit, ind, _state) {
+    unit.damage += (randInt(1, 3) + Math.floor(unit.lvl / 3)) * ind;
+    changeResist(unit, 'FINALSTRIKE', 2 * ind);
+    changeResist(unit, 'WEAPON', ind);
+    changeResist(unit, 'DEATH', ind);
+    bumpLevel(unit, ind);
+  },
+
+  Angel(unit, ind, _state) {
+    unit.power += randInt(1, 2) * ind;
+    unit.initiative += randInt(1, 2) * ind;
+    unit.dodge += ind;
+    unit.luck += randInt(1, 2) * ind;
+    bumpLevel(unit, ind);
+  },
+
+  Titan(unit, ind, _state) {
+    unit.power += (Math.floor(unit.lvl / 4) + 2) * ind;
+    unit.maxHp += 10 * ind;
+    unit.damage += (Math.floor(unit.lvl / 3) + 1) * ind;
+    unit.luck += randInt(0, 1) * ind;
+    addMana(unit, ind);
+    bumpLevel(unit, ind);
+  },
+
+  Incub(unit, ind, _state) {
+    unit.power += (2 + Math.floor(unit.lvl / 5)) * ind;
+    unit.initiative += randInt(0, 1) * ind;
+    unit.armor += ind;
+    addMana(unit, randInt(2, 3) * ind);
     bumpLevel(unit, ind);
   },
 };

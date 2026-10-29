@@ -2,7 +2,7 @@ import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../d
 import { grantEffect, hasEffect } from '../effects';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { alliesOf, enemiesOf, meleeTargets, moveToOtherRow } from './targets';
+import { alliesOf, enemiesOf, moveToOtherRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function pickRandom<T>(items: T[], count: number): T[] {
@@ -31,7 +31,7 @@ function abilityMeta(
         label: 'Огнемёт',
         needsTarget: false,
         attackKind: 'magic',
-        disabledReason: meleeTargets(state, actor).length === 0 ? 'Нет целей' : null,
+        disabledReason: enemiesOf(state, actor).length === 0 ? 'Нет целей' : null,
         legalTargetIds: [],
       };
     case 2: {
@@ -101,7 +101,8 @@ export const pyroAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const targets = pickRandom(meleeTargets(state, actor), flamethrowerTargetCount(actor));
+      // Дальний: любой ряд (не melee-reach). Урон — магия огня.
+      const targets = pickRandom(enemiesOf(state, actor), flamethrowerTargetCount(actor));
       for (const enemy of targets) {
         const damage = dealDamage(
           actor,

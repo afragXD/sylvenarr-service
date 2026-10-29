@@ -124,6 +124,25 @@ export const DEFAULT_RESISTS: Record<string, ResistMap> = {
     ['WEAPON', { ward: 1 }],
     ['FIRE', { value: -20 }],
   ]),
+  Antipaladin: map([
+    ['WEAPON', { value: 10 }],
+    ['DEATH', { value: 10 }],
+    ['ARROWS', { value: 15 }],
+  ]),
+  Angel: map([
+    ['MIND', { value: 25, ward: 1 }],
+    ['HOLY', { immune: true }],
+    ['POLYMORPH', { ward: 1 }],
+  ]),
+  Titan: map([
+    ['STUN', { value: 25, ward: 1 }],
+    ['HOLY', { value: 25 }],
+    ['DEATH', { value: 25 }],
+  ]),
+  Incub: map([
+    ['MIND', { value: 30 }],
+    ['FIRE', { value: 25 }],
+  ]),
 };
 
 /**
