@@ -247,8 +247,8 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Antipaladin(unit, ind, _state) {
-    // Броня как у Паладина: rand(1,2)×⌊lvl/3⌋.
-    unit.armor += randInt(1, 2) * Math.floor(unit.lvl / 3) * ind;
+    // Броня: rand(1,2)×⌊lvl/4⌋.
+    unit.armor += randInt(1, 2) * Math.floor(unit.lvl / 4) * ind;
     unit.damage += (randInt(1, 3) + Math.floor(unit.lvl / 3)) * ind;
     changeResist(unit, 'FINALSTRIKE', 2 * ind);
     changeResist(unit, 'WEAPON', ind);
