@@ -50,6 +50,17 @@ export function unitsOnSameRow(state: BattleState, ref: BattleUnit): BattleUnit[
 }
 
 /**
+ * Живой индекс колонны в ряду: как в боте `list(getOwnRow()).index(self)`.
+ * Хранимый `unit.column` после смены ряда (Катавасия и т.п.) может врать.
+ */
+export function liveColumn(state: BattleState, unit: BattleUnit): number {
+  return state.units
+    .filter((item) => item.alive && item.team === unit.team && item.row === unit.row)
+    .sort((a, b) => a.column - b.column || a.id.localeCompare(b.id))
+    .findIndex((item) => item.id === unit.id);
+}
+
+/**
  * Враги в той же колонке, что и `ref` (с фильтром SANCTUM).
  */
 export function enemiesInColumn(
@@ -57,23 +68,31 @@ export function enemiesInColumn(
   actor: BattleUnit,
   ref: BattleUnit
 ): BattleUnit[] {
-  return enemiesOf(state, actor).filter((unit) => unit.column === ref.column);
+  const col = liveColumn(state, ref);
+  if (col < 0) {
+    return [];
+  }
+  return enemiesOf(state, actor).filter((unit) => liveColumn(state, unit) === col);
 }
 
 /**
- * Сосед по колонке позади цели.
+ * Сосед по колонке позади цели (тот же живой индекс в заднем ряду).
  */
 export function neighbourBehind(state: BattleState, target: BattleUnit): BattleUnit | null {
-  return (
-    state.units.find(
+  const col = liveColumn(state, target);
+  if (col < 0) {
+    return null;
+  }
+  const behindRow = state.units
+    .filter(
       (unit) =>
         unit.alive &&
         unit.team === target.team &&
-        unit.column === target.column &&
         unit.row === target.row + 1 &&
         !hasEffect(unit, 'SANCTUM')
-    ) ?? null
-  );
+    )
+    .sort((a, b) => a.column - b.column || a.id.localeCompare(b.id));
+  return behindRow[col] ?? null;
 }
 
 /**

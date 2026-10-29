@@ -132,6 +132,36 @@ describe('Antipaladin', () => {
     expect(actor.alive).toBe(true);
     expect(actor.resists.FINALSTRIKE?.value).toBe(67);
   });
+
+  test('Неумолимый таран бьёт визуального соседа сзади при рассинхроне column', () => {
+    const state = battle('Antipaladin', {
+      actor: { damage: 40, accuracy: 100 },
+      enemy: { health: 500, armor: 0 },
+      extra: [hero('Rear', { health: 500, armor: 0, initiative: 1 })],
+    });
+    state.units.push({
+      ...unit(state, 'p3'),
+      id: 'p4',
+      heroClassCode: 'Rear',
+      displayName: 'Rear',
+      row: 1,
+      // Устаревший номер после Катавасии: визуально второй в ряду, column ≠ цели.
+      column: 5,
+      resists: {},
+      effects: [],
+    });
+    unit(state, 'p3').column = 1;
+    const rearHp = unit(state, 'p4').health;
+    const frontHp = unit(state, 'p3').health;
+    fixRandom();
+    const outcome = antipaladinAbilities.apply(state, unit(state, 'p1'), {
+      slot: 5,
+      targetId: 'p3',
+    });
+    expect(outcome.status).toBe('done');
+    expect(unit(state, 'p3').health).toBeLessThan(frontHp);
+    expect(unit(state, 'p4').health).toBeLessThan(rearHp);
+  });
 });
 
 describe('Angel', () => {

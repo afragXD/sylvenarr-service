@@ -182,13 +182,23 @@ export const demonLordAbilities: AbilityHandler = {
     // slot 5
     actor.ultaCharges -= 1;
     const flat = 15 + actor.lvl;
-    for (const enemy of enemiesOf(state, actor)) {
+    const enemies = enemiesOf(state, actor);
+    for (const enemy of enemies) {
       enemy.health -= flat;
       state.log.push(`Катавасия сотрясает ${enemy.displayName} (−${flat} ОЗ).`);
       markDeadIfNeeded(state, enemy);
       if (enemy.alive) {
         enemy.row = randInt(0, 1) as 0 | 1;
       }
+    }
+    // Пересчитать колонны в каждом ряду — иначе «удар по колонне» смотрит на устаревшие номера.
+    for (const row of [0, 1] as const) {
+      const rowUnits = enemies
+        .filter((enemy) => enemy.alive && enemy.row === row)
+        .sort((a, b) => a.column - b.column || a.id.localeCompare(b.id));
+      rowUnits.forEach((enemy, column) => {
+        enemy.column = column;
+      });
     }
     state.log.push(`${actor.displayName} перемешивает ряды противника.`);
     return { status: 'done' };
