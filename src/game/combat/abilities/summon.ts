@@ -229,13 +229,19 @@ export function createPhantomCopy(
 }
 
 /**
- * Свободные ряды: команда не полна и на ряду есть слот по maxRowSize.
+ * Свободные ряды: команда не полна, есть слот по maxRowSize и лимит саммонов хозяина.
  */
 export function availableSummonRows(state: BattleState, summoner: BattleUnit): number[] {
   const teamAlive = state.units.filter(
     (unit) => unit.alive && unit.team === summoner.team
   ).length;
   if (teamAlive >= state.rules.maxTeamSize) {
+    return [];
+  }
+  const owned = state.units.filter(
+    (unit) => unit.alive && unit.isSummon && unit.summonerId === summoner.id
+  ).length;
+  if (owned >= summoner.maxSummons) {
     return [];
   }
   const open: number[] = [];

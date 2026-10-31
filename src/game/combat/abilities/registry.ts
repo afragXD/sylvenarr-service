@@ -1,3 +1,4 @@
+import { baseMaxSummonsForClass } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { abbessAbilities } from './abbess';
 import { angelAbilities } from './angel';
@@ -130,13 +131,10 @@ export function applyAbility(
  * Инициализация runtime-флагов пилота.
  */
 export function initPilotFlags(unit: BattleUnit): void {
+  unit.maxSummons = baseMaxSummonsForClass(unit.heroClassCode);
   switch (unit.heroClassCode) {
     case 'OrcKing':
-      unit.maxSummons = 1;
       unit.authority = 2 + Math.floor(Math.random() * 2);
-      break;
-    case 'Archlich':
-      unit.maxSummons = 1;
       break;
     case 'DemonLord':
       unit.ultaCharges = 2;
@@ -160,9 +158,6 @@ export function initPilotFlags(unit: BattleUnit): void {
       break;
     case 'Oracle':
       unit.ultaCharges = 1;
-      break;
-    case 'Demiurge':
-      unit.maxSummons = 2;
       break;
     case 'Detective':
       unit.gun = 1;

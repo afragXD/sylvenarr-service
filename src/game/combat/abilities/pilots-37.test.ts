@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { grantEffect } from '../effects';
+import { delEffect, grantEffect } from '../effects';
 import { applyAction, createBattleState, toBattleSummary } from '../engine';
 import type { HeroClassStats } from '../types';
 
@@ -201,6 +201,75 @@ describe('phase 3.7 pilots', () => {
       true
     );
     expect(state.log.some((line) => line.includes('Мимик Paladin принимает облик'))).toBe(false);
+  });
+
+  test('Assassin mimic Archlich can summon; summon stays after POLYMORPH ends', () => {
+    const heroes = new Map([
+      ['Assassin', hero('Assassin', { initiative: 99, mana: 10 })],
+      ['Archlich', hero('Archlich', { initiative: 1, mana: 10 })],
+      ['Zombie', hero('Zombie', { health: 50, damage: 10 })],
+      ['B', hero('B', { initiative: 1 })],
+    ]);
+    const state = createBattleState({
+      matchId: 'm-mimic-lich',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Assassin', row: 0, pickOrder: 1 },
+        { id: 'p2', playerId: 'g', heroClassCode: 'Archlich', row: 0, pickOrder: 1 },
+        { id: 'p3', playerId: 'g', heroClassCode: 'B', row: 1, pickOrder: 2 },
+      ],
+      heroes,
+    });
+    const assassin = state.units.find((unit) => unit.id === 'p1')!;
+    expect(assassin.maxSummons).toBe(0);
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+
+    const mimic = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 2,
+      targetId: 'p2',
+    });
+    expect(mimic.ok).toBe(true);
+    expect(assassin.heroClassCode).toBe('Archlich');
+    expect(assassin.maxSummons).toBe(1);
+
+    // Новый ход мимика-лича: слот 2 по себе — призыв зомби.
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    assassin.mana = 10;
+    const summonResult = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 2,
+      targetId: 'p1',
+    });
+    expect(summonResult.ok).toBe(true);
+    if (state.pendingPrompt?.kind === 'lich_zombie_row') {
+      const choice = applyAction(state, {
+        playerId: 'h',
+        unitId: 'p1',
+        action: 'ability',
+        slot: 2,
+        choice: state.pendingPrompt.options[0]?.id,
+      });
+      expect(choice.ok).toBe(true);
+    }
+    const zombie = state.units.find(
+      (unit) => unit.alive && unit.isSummon && unit.summonerId === 'p1'
+    );
+    expect(zombie).toBeTruthy();
+    expect(zombie!.heroClassCode).toBe('Zombie');
+
+    delEffect(assassin, 'POLYMORPH', state);
+    expect(assassin.heroClassCode).toBe('Assassin');
+    expect(assassin.maxSummons).toBe(0);
+    expect(zombie!.alive).toBe(true);
+    expect(state.units.some((unit) => unit.id === zombie!.id && unit.alive)).toBe(true);
   });
 
   test('Assassin dart applies poison', () => {

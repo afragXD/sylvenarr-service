@@ -2,6 +2,21 @@ import { resistsForClass } from './defaultResists';
 import type { BattleState, BattleUnit } from './types';
 
 /**
+ * Базовый лимит саммонов класса (без бонусов с левелапа вроде Орк-короля).
+ */
+export function baseMaxSummonsForClass(code: string): number {
+  switch (code) {
+    case 'OrcKing':
+    case 'Archlich':
+      return 1;
+    case 'Demiurge':
+      return 2;
+    default:
+      return 0;
+  }
+}
+
+/**
  * Только класс и имя из каталога (порт transformToAnotherClass): статы боя не трогаем.
  */
 export function transformClassOnly(
@@ -46,6 +61,8 @@ export function applyCatalogStats(
   unit.mana = Math.max(unit.mana, hero.mana);
   unit.maxMana = Math.max(unit.maxMana, hero.maxMana ?? hero.mana);
   unit.resists = resistsForClass(hero.code);
+  // Мимик / снятие облика: лимит призывов класса (иначе Ассасин остаётся с 0).
+  unit.maxSummons = baseMaxSummonsForClass(hero.code);
   return true;
 }
 
