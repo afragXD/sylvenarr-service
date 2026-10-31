@@ -51,6 +51,7 @@ type MatchRow = {
   hostId: string;
   guestId: string | null;
   winnerPlayerId: string | null;
+  fightingStartedAt: Date | null;
   finishedAt: Date | null;
   createdAt: Date;
   rules: unknown;
@@ -179,6 +180,8 @@ export abstract class MatchesService {
       createdAt: row.createdAt.toISOString(),
       finishedAt: row.finishedAt?.toISOString() ?? null,
       winnerPlayerId: row.winnerPlayerId,
+      durationSeconds: durationSeconds(row.fightingStartedAt, row.finishedAt),
+      myRating: null,
       rules,
       draft: {
         turnPlayerId,
@@ -197,7 +200,7 @@ export abstract class MatchesService {
   }
 
   /**
-   * DTO матча с подгрузкой battle state из store.
+   * DTO матча с подгрузкой battle state из store и рейтинга зрителя.
    */
   static async mapMatchWithBattle(
     row: MatchRow,
@@ -210,7 +213,37 @@ export abstract class MatchesService {
         battle = toBattleSummary(state);
       }
     }
-    return MatchesService.mapMatch(row, battle, viewerId);
+    const match = MatchesService.mapMatch(row, battle, viewerId);
+    if (row.status === 'finished' && viewerId) {
+      match.myRating = await MatchesService.loadMyRating(row.id, viewerId);
+    }
+    return match;
+  }
+
+  /**
+   * RatingEntry текущего игрока по матчу; null — матч без рейтинга.
+   */
+  private static async loadMyRating(
+    matchId: string,
+    playerId: string
+  ): Promise<MatchesModel.matchMyRating | null> {
+    const entry = await prisma.ratingEntry.findFirst({
+      where: { matchId, playerId },
+      select: { ptsBefore: true, ptsAfter: true, ptsDelta: true },
+    });
+    if (
+      !entry ||
+      entry.ptsBefore === null ||
+      entry.ptsAfter === null ||
+      entry.ptsDelta === null
+    ) {
+      return null;
+    }
+    return {
+      ptsBefore: entry.ptsBefore,
+      ptsAfter: entry.ptsAfter,
+      ptsDelta: entry.ptsDelta,
+    };
   }
 
   /**

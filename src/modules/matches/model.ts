@@ -215,6 +215,14 @@ export namespace MatchesModel {
   });
   export type battleState = typeof battleState.static;
 
+  /** ПТС зрителя по этому матчу; null — матч без рейтинга или запись отсутствует. */
+  export const matchMyRating = t.Object({
+    ptsBefore: t.Number(),
+    ptsAfter: t.Number(),
+    ptsDelta: t.Number(),
+  });
+  export type matchMyRating = typeof matchMyRating.static;
+
   export const match = t.Object({
     id: t.String(),
     status: matchStatus,
@@ -224,6 +232,10 @@ export namespace MatchesModel {
     createdAt: t.String(),
     finishedAt: t.Nullable(t.String()),
     winnerPlayerId: t.Nullable(t.String()),
+    /** Длительность боя в секундах (fighting → finished). */
+    durationSeconds: t.Nullable(t.Number()),
+    /** Рейтинг текущего игрока по матчу; null = «матч без рейтинга». */
+    myRating: t.Nullable(matchMyRating),
     rules: matchRules,
     draft: draftState,
     battle: t.Nullable(battleState),
