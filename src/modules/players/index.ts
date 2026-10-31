@@ -13,17 +13,27 @@ export const playersController = new Elysia({ prefix: '/players', tags: ['Player
     '/me',
     async ({ cookie }) => {
       const rawValue: unknown = cookie[PLAYER_COOKIE_NAME]?.value;
+      const jsonNull = () =>
+        new Response('null', {
+          status: 200,
+          headers: { 'content-type': 'application/json; charset=utf-8' },
+        });
       if (typeof rawValue !== 'string' || rawValue.length === 0) {
-        return null;
+        // Явный JSON null — пустое тело ломает response.json() на клиенте
+        return jsonNull();
       }
-      return PlayersService.findAuthenticatedById(rawValue);
+      const player = await PlayersService.findAuthenticatedById(rawValue);
+      if (!player) {
+        return jsonNull();
+      }
+      return player;
     },
     {
       response: {
         200: t.Nullable(PlayersModel.player),
       },
       detail: {
-        summary: 'Текущий игрок из cookie; null если гость',
+        summary: 'Текущий игрок из cookie; JSON null если гость',
       },
     }
   )
