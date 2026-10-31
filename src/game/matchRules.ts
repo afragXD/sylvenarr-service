@@ -30,6 +30,8 @@ export type MatchRules = {
   readonly goldBonus: number;
   /** Дубли классов в draft (не касается саммонов/эволюций). */
   readonly heroDupes: HeroDupesMode;
+  /** false = товарищеский матч без изменения ПТС. */
+  readonly rated: boolean;
 };
 
 export const DEFAULT_MATCH_RULES: MatchRules = {
@@ -44,6 +46,7 @@ export const DEFAULT_MATCH_RULES: MatchRules = {
   shopSize: 8,
   goldBonus: 1,
   heroDupes: 'allow',
+  rated: true,
 };
 
 export const MATCH_RULES_LIMITS = {
@@ -144,6 +147,8 @@ export function parseMatchRules(input: unknown): ParseMatchRulesResult {
     MATCH_RULES_LIMITS.goldBonus.step
   );
   const heroDupes = parseHeroDupes(raw.heroDupes);
+  const rated =
+    typeof raw.rated === 'boolean' ? raw.rated : DEFAULT_MATCH_RULES.rated;
 
   if (initialTeamSize > maxTeamSize) {
     return {
@@ -172,6 +177,7 @@ export function parseMatchRules(input: unknown): ParseMatchRulesResult {
       shopSize,
       goldBonus,
       heroDupes,
+      rated,
     },
   };
 }

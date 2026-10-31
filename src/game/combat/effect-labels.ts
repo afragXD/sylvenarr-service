@@ -26,6 +26,7 @@ const LABELS: Record<EffectId, string> = {
   IMPISH: 'Бес',
   DEFEND: 'Защитная стойка',
   POLYMORPH: 'Многоликий',
+  INFECTED: 'Инфицирован',
   FIRESHIELD: 'Огненный щит',
   AIRSHIELD: 'Воздушный щит',
   LUCKY: 'Удача',

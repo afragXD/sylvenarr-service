@@ -90,6 +90,7 @@ export const DEBUFF_EFFECT_IDS: readonly EffectId[] = [
   'INTERFERENCE',
   'SILENCE',
   'IMPISH',
+  'INFECTED',
   'STUNNED',
   'WEAKNESS',
   'UNLUCKY',
@@ -561,8 +562,10 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
         unit.polymorphSavedArmor = -1;
       }
       const parent = unit.transformParentCode;
-      // Не сбрасываем transformParentCode, если ещё висит POLYMORPH (мимик).
-      const keepParent = unit.effects.some((item) => item.id === 'POLYMORPH');
+      // Не сбрасываем transformParentCode, если ещё висит POLYMORPH / INFECTED.
+      const keepParent = unit.effects.some(
+        (item) => item.id === 'POLYMORPH' || item.id === 'INFECTED'
+      );
       if (!keepParent) {
         unit.transformParentCode = null;
       }
@@ -577,7 +580,8 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
         changeResist(unit, source, -50);
       }
       break;
-    case 'POLYMORPH': {
+    case 'POLYMORPH':
+    case 'INFECTED': {
       const parent = unit.transformParentCode;
       unit.transformParentCode = null;
       if (parent && state) {

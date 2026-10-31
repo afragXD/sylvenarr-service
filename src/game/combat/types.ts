@@ -30,6 +30,7 @@ export type EffectId =
   | 'IMPISH'
   | 'DEFEND'
   | 'POLYMORPH'
+  | 'INFECTED'
   | 'FIRESHIELD'
   | 'AIRSHIELD'
   | 'LUCKY'

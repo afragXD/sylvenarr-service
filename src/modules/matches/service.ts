@@ -1087,14 +1087,7 @@ export abstract class MatchesService {
     const guestId = match.guestId;
     const outcome =
       input.winnerPlayerId === null ? 'draw' : input.winnerPlayerId === hostId ? 'a_win' : 'b_win';
-    const change = computePtsChange({
-      ptsA: match.host.pts,
-      ptsB: match.guest.pts,
-      outcome,
-    });
-
-    const hostResult = outcome === 'draw' ? 'draw' : outcome === 'a_win' ? 'win' : 'loss';
-    const guestResult = outcome === 'draw' ? 'draw' : outcome === 'b_win' ? 'win' : 'loss';
+    const rated = rulesOf(match).rated;
 
     const picks = await prisma.matchPick.findMany({
       where: { matchId: input.matchId },
@@ -1120,7 +1113,7 @@ export abstract class MatchesService {
     );
 
     const finishedAt = new Date();
-    await prisma.$transaction([
+    const finishOps = [
       prisma.match.update({
         where: { id: input.matchId },
         data: {
@@ -1130,6 +1123,30 @@ export abstract class MatchesService {
           resultSnapshot: snapshot as unknown as Prisma.InputJsonValue,
         },
       }),
+      ...pickIncrements,
+      // Драфт больше не нужен — состав и лог уже в resultSnapshot.
+      prisma.matchPick.deleteMany({ where: { matchId: input.matchId } }),
+    ];
+
+    if (!rated) {
+      await prisma.$transaction(finishOps);
+      return {
+        durationSeconds: durationSeconds(match.fightingStartedAt, finishedAt),
+        ratings: [],
+      };
+    }
+
+    const change = computePtsChange({
+      ptsA: match.host.pts,
+      ptsB: match.guest.pts,
+      outcome,
+    });
+
+    const hostResult = outcome === 'draw' ? 'draw' : outcome === 'a_win' ? 'win' : 'loss';
+    const guestResult = outcome === 'draw' ? 'draw' : outcome === 'b_win' ? 'win' : 'loss';
+
+    await prisma.$transaction([
+      ...finishOps,
       prisma.player.update({
         where: { id: hostId },
         data: { pts: change.ptsAfterA },
@@ -1158,9 +1175,6 @@ export abstract class MatchesService {
           ptsAfter: change.ptsAfterB,
         },
       }),
-      ...pickIncrements,
-      // Драфт больше не нужен — состав и лог уже в resultSnapshot.
-      prisma.matchPick.deleteMany({ where: { matchId: input.matchId } }),
     ]);
     return {
       durationSeconds: durationSeconds(match.fightingStartedAt, finishedAt),

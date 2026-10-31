@@ -196,17 +196,40 @@ describe('Zombie starting charge', () => {
     expect(zombie?.ultaCharges).toBe(1);
   });
 
-  test('infected unit becomes a Zombie with 1 charge', () => {
+  test('infected summon becomes a Zombie with 1 charge for 2 rounds', () => {
+    const state = battle([
+      { id: 'p1', code: 'Zombie', team: 0, row: 0 },
+      { id: 'e1', code: 'OrcKing', team: 1, row: 1 },
+    ]);
+    state.catalog.GoblinShaman = hero('GoblinShaman');
+    const zombie = byId(state, 'p1');
+    zombie.lvl = 5;
+    const orc = byId(state, 'e1');
+    orc.maxSummons = 1;
+    const summon = createSummon(state, {
+      summoner: orc,
+      heroCode: 'GoblinShaman',
+      row: 0,
+    });
+    expect(summon).toBeTruthy();
+    expect(applyAbility(state, zombie, { slot: 3, targetId: summon!.id }).status).toBe('done');
+    expect(summon!.heroClassCode).toBe('Zombie');
+    expect(summon!.ultaCharges).toBe(1);
+    expect(summon!.transformParentCode).toBe('GoblinShaman');
+    expect(hasEffect(summon!, 'INFECTED')).toBe(true);
+    expect(summon!.effects.find((effect) => effect.id === 'INFECTED')?.rounds).toBe(2);
+  });
+
+  test('infection is melee and rejects heroes', () => {
     const state = battle([
       { id: 'p1', code: 'Zombie', team: 0, row: 0 },
       { id: 'e1', code: 'Foe', team: 1, row: 0 },
+      { id: 'e2', code: 'Back', team: 1, row: 1 },
     ]);
     const zombie = byId(state, 'p1');
     zombie.lvl = 5;
-    const foe = byId(state, 'e1');
-    expect(applyAbility(state, zombie, { slot: 3, targetId: 'e1' }).status).toBe('done');
-    expect(foe.heroClassCode).toBe('Zombie');
-    expect(foe.ultaCharges).toBe(1);
+    expect(slotTargets(state, zombie, 3)).toEqual([]);
+    expect(applyAbility(state, zombie, { slot: 3, targetId: 'e1' }).status).toBe('reject');
   });
 });
 

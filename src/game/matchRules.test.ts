@@ -92,4 +92,17 @@ describe('parseMatchRules', () => {
       expect(result.rules.heroDupes).toBe('allow');
     }
   });
+
+  test('defaults rated to true; accepts friendly', () => {
+    const def = parseMatchRules({});
+    expect(def.ok).toBe(true);
+    if (def.ok) {
+      expect(def.rules.rated).toBe(true);
+    }
+    const friendly = parseMatchRules({ rated: false });
+    expect(friendly.ok).toBe(true);
+    if (friendly.ok) {
+      expect(friendly.rules.rated).toBe(false);
+    }
+  });
 });

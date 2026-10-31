@@ -66,8 +66,9 @@ export function applyCatalogStats(
   return true;
 }
 
-/** Подпись цели в pendingPrompt: «Ассасин (П2)». */
+/** Подпись цели в pendingPrompt: «✦ Гоблин (П2)» для саммона. */
 export function unitChoiceLabel(unit: BattleUnit): string {
   const row = unit.row === 0 ? 'П' : 'З';
-  return `${unit.displayName} (${row}${unit.column + 1})`;
+  const mark = unit.isSummon ? '✦ ' : '';
+  return `${mark}${unit.displayName} (${row}${unit.column + 1})`;
 }

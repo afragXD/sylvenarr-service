@@ -66,6 +66,7 @@ export namespace MatchesModel {
       t.Literal('uniqueTeam'),
       t.Literal('uniqueMatch'),
     ]),
+    rated: t.Boolean(),
   });
   export type matchRules = typeof matchRules.static;
 

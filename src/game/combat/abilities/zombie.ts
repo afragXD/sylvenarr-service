@@ -1,37 +1,45 @@
 import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { formatLogDamage } from '../damageSources';
-import { resistsForClass } from '../defaultResists';
-import { grantEffect, hasEffect } from '../effects';
+import { delEffect, grantEffect, hasEffect } from '../effects';
 import { applyResistMultiplier, mindResistFactor, rollSrcChance } from '../resists';
 import { isArtificialClass, isUndeadClass } from '../races';
 import { ROW_FRONT } from '../settings';
+import { applyCatalogStats } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, meleeTargets, unitsOnSameRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-function transformToZombie(state: BattleState, target: BattleUnit): boolean {
-  const hero = state.catalog.Zombie;
-  target.ultaCharges = 1;
-  if (!hero) {
-    target.heroClassCode = 'Zombie';
-    target.displayName = 'Зомби';
+/** Вражеские саммоны в зоне ближнего боя (инфицирование). */
+function infectTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {
+  return meleeTargets(state, actor).filter(
+    (unit) =>
+      unit.isSummon &&
+      !isUndeadClass(unit.heroClassCode) &&
+      !isArtificialClass(unit.heroClassCode)
+  );
+}
+
+/**
+ * Временное превращение в зомби (2 р. INFECTED): сохраняет исходный класс для отката.
+ */
+function infectAsZombie(state: BattleState, target: BattleUnit): boolean {
+  if (hasEffect(target, 'INFECTED')) {
+    delEffect(target, 'INFECTED', state);
+  }
+  if (hasEffect(target, 'POLYMORPH')) {
+    delEffect(target, 'POLYMORPH', state);
+  }
+  if (!target.transformParentCode) {
+    target.transformParentCode = target.heroClassCode;
+  }
+  if (!applyCatalogStats(state, target, 'Zombie')) {
+    if (target.transformParentCode === target.heroClassCode) {
+      target.transformParentCode = null;
+    }
     return false;
   }
-  const ratio = target.maxHp > 0 ? target.health / target.maxHp : 1;
-  const maxHp = Math.max(1, Math.round(hero.health * state.rules.healthBonus));
-  target.heroClassCode = hero.code;
-  target.displayName = hero.displayName;
-  target.maxHp = maxHp;
-  target.health = Math.max(1, Math.min(maxHp, Math.round(maxHp * ratio)));
-  target.damage = hero.damage;
-  target.armor = hero.armor;
-  target.initiative = hero.initiative;
-  target.dodge = hero.dodge;
-  target.luck = hero.luck;
-  target.accuracy = hero.accuracy;
-  target.power = hero.power;
-  target.resists = resistsForClass(hero.code);
-  target.morale = hero.morale ?? target.morale;
+  target.ultaCharges = 1;
+  grantEffect(target, 'INFECTED', 2, 0);
   return true;
 }
 
@@ -100,19 +108,17 @@ function abilityMeta(
     }
     case 3: {
       const chance = infectChance(state, actor);
-      const targets = enemiesOf(state, actor).filter(
-        (unit) =>
-          !isUndeadClass(unit.heroClassCode) && !isArtificialClass(unit.heroClassCode)
-      );
+      const targets = infectTargets(state, actor);
       return {
         slot: 3,
         label: `Инфицирование (${chance}%)`,
         needsTarget: true,
+        attackKind: 'melee',
         disabledReason:
           actor.lvl < 5
             ? 'Нужен 5+ уровень'
             : targets.length === 0
-              ? 'Нет целей'
+              ? 'Нет саммонов вблизи'
               : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -214,18 +220,20 @@ export const zombieAbilities: AbilityHandler = {
     }
 
     if (input.slot === 3) {
-      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+      const target = infectTargets(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
-        return { status: 'reject', message: 'Цель не найдена' };
-      }
-      if (isUndeadClass(target.heroClassCode) || isArtificialClass(target.heroClassCode)) {
-        return { status: 'reject', message: 'Нельзя заразить нежить или механизм' };
+        return { status: 'reject', message: 'Нужен вражеский саммон в ближнем бою' };
       }
       const chance = infectChance(state, actor);
       if (rollSrcChance(state, target, chance, 'POLYMORPH')) {
         const oldName = target.displayName;
-        transformToZombie(state, target);
-        state.log.push(`МОЗГИ! ${actor.displayName} превратил ${oldName} в зомби!`);
+        if (!infectAsZombie(state, target)) {
+          state.log.push(`${actor.displayName}: заражение сорвалось — нет класса зомби.`);
+          return { status: 'done' };
+        }
+        state.log.push(
+          `МОЗГИ! ${actor.displayName} превратил ${oldName} в зомби на 2 раунда!`
+        );
       } else {
         state.log.push(`Заражение не прошло — ${target.displayName} устоял.`);
       }
