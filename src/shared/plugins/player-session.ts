@@ -3,7 +3,7 @@ import { PlayersService } from '../../modules/players/service';
 import { PLAYER_COOKIE_NAME } from '../constants/session';
 
 /**
- * Макросы requireAuth / requireAdmin: cookie → Player с OAuthAccount.
+ * Макросы requireAuth / requireAdmin: cookie → Player с аккаунтом входа.
  */
 export const playerSessionPlugin = new Elysia({ name: 'player-session' }).macro({
   requireAuth: {
@@ -11,7 +11,7 @@ export const playerSessionPlugin = new Elysia({ name: 'player-session' }).macro(
       const rawValue: unknown = cookie[PLAYER_COOKIE_NAME]?.value;
       if (typeof rawValue !== 'string' || rawValue.length === 0) {
         return status(401, {
-          message: 'Требуется авторизация через OAuth',
+          message: 'Требуется авторизация',
         });
       }
       const player = await PlayersService.findAuthenticatedById(rawValue);
@@ -26,7 +26,7 @@ export const playerSessionPlugin = new Elysia({ name: 'player-session' }).macro(
       const rawValue: unknown = cookie[PLAYER_COOKIE_NAME]?.value;
       if (typeof rawValue !== 'string' || rawValue.length === 0) {
         return status(401, {
-          message: 'Требуется авторизация через OAuth',
+          message: 'Требуется авторизация',
         });
       }
       const player = await PlayersService.findAuthenticatedById(rawValue);

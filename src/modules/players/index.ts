@@ -1,5 +1,6 @@
 import { Elysia, t } from 'elysia';
 
+import { PLAYER_COOKIE_NAME } from '../../shared/constants/session';
 import { saveStaticImage } from '../../shared/static-upload';
 import { playerSessionPlugin } from '../../shared/plugins/player-session';
 import { MatchesService } from '../matches/service';
@@ -10,17 +11,19 @@ export const playersController = new Elysia({ prefix: '/players', tags: ['Player
   .use(playerSessionPlugin)
   .get(
     '/me',
-    async ({ player }) => {
-      return player;
+    async ({ cookie }) => {
+      const rawValue: unknown = cookie[PLAYER_COOKIE_NAME]?.value;
+      if (typeof rawValue !== 'string' || rawValue.length === 0) {
+        return null;
+      }
+      return PlayersService.findAuthenticatedById(rawValue);
     },
     {
-      requireAuth: true,
       response: {
-        200: PlayersModel.player,
-        401: PlayersModel.errorResponse,
+        200: t.Nullable(PlayersModel.player),
       },
       detail: {
-        summary: 'Текущий авторизованный игрок из cookie',
+        summary: 'Текущий игрок из cookie; null если гость',
       },
     }
   )
