@@ -1,3 +1,4 @@
+export { isPilotClass, listPilotAbilities } from './abilities';
 export {
   applyAction,
   type BattleSummary,
@@ -7,7 +8,12 @@ export {
   meleeTargets,
   toBattleSummary,
 } from './engine';
-export { publishBattle, subscribeBattle } from './hub';
+export {
+  type BattleEndedMeta,
+  type BattleHubPayload,
+  publishBattle,
+  subscribeBattle,
+} from './hub';
 export {
   buildResultSnapshot,
   type MatchResultSnapshot,
@@ -27,4 +33,3 @@ export type {
   BattleState,
   HeroClassStats,
 } from './types';
-export { isPilotClass, listPilotAbilities } from './abilities';

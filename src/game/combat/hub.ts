@@ -1,6 +1,23 @@
 import type { BattleSummary } from './engine';
 
-type Listener = (payload: { type: 'battle:state' | 'battle:ended'; battle: BattleSummary }) => void;
+/** Мета итога в кадре battle:ended — чтобы клиент не ждал отдельный GET. */
+export type BattleEndedMeta = {
+  readonly durationSeconds: number | null;
+  readonly ratings: ReadonlyArray<{
+    readonly playerId: string;
+    readonly ptsBefore: number;
+    readonly ptsAfter: number;
+    readonly ptsDelta: number;
+  }>;
+};
+
+export type BattleHubPayload = {
+  readonly type: 'battle:state' | 'battle:ended';
+  readonly battle: BattleSummary;
+  readonly resultMeta?: BattleEndedMeta;
+};
+
+type Listener = (payload: BattleHubPayload) => void;
 
 const rooms = new Map<string, Set<Listener>>();
 
@@ -28,15 +45,17 @@ export function subscribeBattle(matchId: string, listener: Listener): () => void
 export function publishBattle(
   matchId: string,
   type: 'battle:state' | 'battle:ended',
-  battle: BattleSummary
+  battle: BattleSummary,
+  resultMeta?: BattleEndedMeta
 ): void {
   const set = rooms.get(matchId);
   if (!set) {
     return;
   }
+  const payload: BattleHubPayload = resultMeta ? { type, battle, resultMeta } : { type, battle };
   for (const listener of set) {
     try {
-      listener({ type, battle });
+      listener(payload);
     } catch {
       /* ignore broken sockets */
     }

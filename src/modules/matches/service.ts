@@ -1,5 +1,6 @@
 import {
   applyAction,
+  type BattleEndedMeta,
   type BattleState,
   type BattleSummary,
   buildResultSnapshot,
@@ -12,23 +13,19 @@ import {
   publishBattle,
   toBattleSummary,
 } from '../../game/combat';
-import type { Prisma } from '../../shared/generated/prisma/client';
 import {
+  type DraftLimits,
   isDraftComplete,
   pickRandomValid,
   resolveTurnPlayerId,
   teamSize,
   validateMovePick,
   validatePick,
-  type DraftLimits,
 } from '../../game/draft/rules';
 import type { DraftPick } from '../../game/draft/types';
-import {
-  type MatchRules,
-  parseMatchRules,
-  resolveMatchRules,
-} from '../../game/matchRules';
+import { type MatchRules, parseMatchRules, resolveMatchRules } from '../../game/matchRules';
 import { prisma } from '../../shared/db';
+import type { Prisma } from '../../shared/generated/prisma/client';
 import { createInviteCode } from '../../utils/create-invite-code';
 import { PresetsService } from '../presets/service';
 import { computePtsChange } from '../rating/pts';
@@ -90,10 +87,7 @@ const matchInclude = {
   },
 };
 
-function draftEntryOf(
-  picks: ReadonlyArray<DraftPick>,
-  playerId: string
-): MatchesModel.draftEntry {
+function draftEntryOf(picks: ReadonlyArray<DraftPick>, playerId: string): MatchesModel.draftEntry {
   const own = picks.filter((pick) => pick.playerId === playerId);
   if (own.length === 0) {
     return 'empty';
@@ -186,9 +180,7 @@ export abstract class MatchesService {
       draft: {
         turnPlayerId,
         hostPicks: visible.filter((pick) => pick.playerId === row.hostId),
-        guestPicks: guestId
-          ? visible.filter((pick) => pick.playerId === guestId)
-          : [],
+        guestPicks: guestId ? visible.filter((pick) => pick.playerId === guestId) : [],
         hostSize,
         guestSize,
         initialTeamSize: rules.initialTeamSize,
@@ -231,12 +223,7 @@ export abstract class MatchesService {
       where: { matchId, playerId },
       select: { ptsBefore: true, ptsAfter: true, ptsDelta: true },
     });
-    if (
-      !entry ||
-      entry.ptsBefore === null ||
-      entry.ptsAfter === null ||
-      entry.ptsDelta === null
-    ) {
+    if (!entry || entry.ptsBefore === null || entry.ptsAfter === null || entry.ptsDelta === null) {
       return null;
     }
     return {
@@ -252,9 +239,7 @@ export abstract class MatchesService {
   static async createMatch(
     hostId: string,
     rulesInput?: Partial<MatchRules> | null
-  ): Promise<
-    { ok: true; match: MatchesModel.match } | { ok: false; message: string }
-  > {
+  ): Promise<{ ok: true; match: MatchesModel.match } | { ok: false; message: string }> {
     const parsed = parseMatchRules(rulesInput ?? {});
     if (!parsed.ok) {
       return { ok: false, message: parsed.message };
@@ -371,12 +356,7 @@ export abstract class MatchesService {
       return { ok: false, message: 'Отряд уже зафиксирован пресетом', status: 400 };
     }
     const limits = draftLimitsOf(existing);
-    const turnPlayerId = resolveTurnPlayerId(
-      picks,
-      existing.hostId,
-      existing.guestId,
-      limits
-    );
+    const turnPlayerId = resolveTurnPlayerId(picks, existing.hostId, existing.guestId, limits);
     if (turnPlayerId !== input.playerId) {
       return { ok: false, message: 'Сейчас не ваш ход', status: 400 };
     }
@@ -425,12 +405,7 @@ export abstract class MatchesService {
         source: 'draft',
       },
     ];
-    const drafted = isDraftComplete(
-      afterPicks,
-      existing.hostId,
-      existing.guestId,
-      limits
-    );
+    const drafted = isDraftComplete(afterPicks, existing.hostId, existing.guestId, limits);
     if (drafted && existing.guestId) {
       await MatchesService.startBattle({
         matchId: existing.id,
@@ -563,12 +538,7 @@ export abstract class MatchesService {
       })),
     });
 
-    const drafted = isDraftComplete(
-      working,
-      existing.hostId,
-      existing.guestId,
-      limits
-    );
+    const drafted = isDraftComplete(working, existing.hostId, existing.guestId, limits);
     if (drafted && existing.guestId) {
       await MatchesService.startBattle({
         matchId: existing.id,
@@ -748,12 +718,7 @@ export abstract class MatchesService {
       return { ok: false, message: 'Отряд уже зафиксирован пресетом', status: 400 };
     }
     const limits = draftLimitsOf(existing);
-    const turnPlayerId = resolveTurnPlayerId(
-      picks,
-      existing.hostId,
-      existing.guestId,
-      limits
-    );
+    const turnPlayerId = resolveTurnPlayerId(picks, existing.hostId, existing.guestId, limits);
     if (turnPlayerId !== input.playerId) {
       return { ok: false, message: 'Сейчас не ваш ход', status: 400 };
     }
@@ -849,7 +814,7 @@ export abstract class MatchesService {
     }
 
     forceSurrender(state, input.playerId);
-    await MatchesService.finalizeBattle({
+    const resultMeta = await MatchesService.finalizeBattle({
       matchId: existing.id,
       winnerPlayerId: state.winnerPlayerId,
       state,
@@ -857,7 +822,7 @@ export abstract class MatchesService {
       guestDisplayName: existing.guest?.displayName ?? '—',
     });
     await store.set(state);
-    publishBattle(existing.id, 'battle:ended', toBattleSummary(state));
+    publishBattle(existing.id, 'battle:ended', toBattleSummary(state), resultMeta ?? undefined);
 
     const row = await prisma.match.findUniqueOrThrow({
       where: { id: existing.id },
@@ -882,10 +847,7 @@ export abstract class MatchesService {
     }
     const { existing, state, store } = loaded;
 
-    if (
-      state.drawOfferByPlayerId &&
-      state.drawOfferByPlayerId !== input.playerId
-    ) {
+    if (state.drawOfferByPlayerId && state.drawOfferByPlayerId !== input.playerId) {
       return MatchesService.acceptDraw(input);
     }
     if (state.drawOfferByPlayerId === input.playerId) {
@@ -933,7 +895,7 @@ export abstract class MatchesService {
     }
 
     forceDraw(state);
-    await MatchesService.finalizeBattle({
+    const resultMeta = await MatchesService.finalizeBattle({
       matchId: existing.id,
       winnerPlayerId: null,
       state,
@@ -941,7 +903,7 @@ export abstract class MatchesService {
       guestDisplayName: existing.guest?.displayName ?? '—',
     });
     await store.set(state);
-    publishBattle(existing.id, 'battle:ended', toBattleSummary(state));
+    publishBattle(existing.id, 'battle:ended', toBattleSummary(state), resultMeta ?? undefined);
 
     const row = await prisma.match.findUniqueOrThrow({
       where: { id: existing.id },
@@ -1073,7 +1035,7 @@ export abstract class MatchesService {
     }
 
     if (state.outcome !== 'ongoing') {
-      await MatchesService.finalizeBattle({
+      const resultMeta = await MatchesService.finalizeBattle({
         matchId: existing.id,
         winnerPlayerId: state.winnerPlayerId,
         state,
@@ -1082,7 +1044,7 @@ export abstract class MatchesService {
       });
       await store.set(state);
       const summary = toBattleSummary(state);
-      publishBattle(existing.id, 'battle:ended', summary);
+      publishBattle(existing.id, 'battle:ended', summary, resultMeta ?? undefined);
     } else {
       await store.set(state);
       publishBattle(existing.id, 'battle:state', toBattleSummary(state));
@@ -1104,7 +1066,7 @@ export abstract class MatchesService {
     readonly state: BattleState;
     readonly hostDisplayName: string;
     readonly guestDisplayName: string;
-  }): Promise<void> {
+  }): Promise<BattleEndedMeta | null> {
     const match = await prisma.match.findUnique({
       where: { id: input.matchId },
       include: {
@@ -1113,7 +1075,7 @@ export abstract class MatchesService {
       },
     });
     if (!match || !match.guestId || !match.guest) {
-      return;
+      return null;
     }
     const snapshot = buildResultSnapshot({
       state: input.state,
@@ -1124,21 +1086,15 @@ export abstract class MatchesService {
     const hostId = match.hostId;
     const guestId = match.guestId;
     const outcome =
-      input.winnerPlayerId === null
-        ? 'draw'
-        : input.winnerPlayerId === hostId
-          ? 'a_win'
-          : 'b_win';
+      input.winnerPlayerId === null ? 'draw' : input.winnerPlayerId === hostId ? 'a_win' : 'b_win';
     const change = computePtsChange({
       ptsA: match.host.pts,
       ptsB: match.guest.pts,
       outcome,
     });
 
-    const hostResult =
-      outcome === 'draw' ? 'draw' : outcome === 'a_win' ? 'win' : 'loss';
-    const guestResult =
-      outcome === 'draw' ? 'draw' : outcome === 'b_win' ? 'win' : 'loss';
+    const hostResult = outcome === 'draw' ? 'draw' : outcome === 'a_win' ? 'win' : 'loss';
+    const guestResult = outcome === 'draw' ? 'draw' : outcome === 'b_win' ? 'win' : 'loss';
 
     const picks = await prisma.matchPick.findMany({
       where: { matchId: input.matchId },
@@ -1163,13 +1119,14 @@ export abstract class MatchesService {
       })
     );
 
+    const finishedAt = new Date();
     await prisma.$transaction([
       prisma.match.update({
         where: { id: input.matchId },
         data: {
           status: 'finished',
           winnerPlayerId: input.winnerPlayerId,
-          finishedAt: new Date(),
+          finishedAt,
           resultSnapshot: snapshot as unknown as Prisma.InputJsonValue,
         },
       }),
@@ -1205,6 +1162,23 @@ export abstract class MatchesService {
       // Драфт больше не нужен — состав и лог уже в resultSnapshot.
       prisma.matchPick.deleteMany({ where: { matchId: input.matchId } }),
     ]);
+    return {
+      durationSeconds: durationSeconds(match.fightingStartedAt, finishedAt),
+      ratings: [
+        {
+          playerId: hostId,
+          ptsBefore: match.host.pts,
+          ptsAfter: change.ptsAfterA,
+          ptsDelta: change.deltaA,
+        },
+        {
+          playerId: guestId,
+          ptsBefore: match.guest.pts,
+          ptsAfter: change.ptsAfterB,
+          ptsDelta: change.deltaB,
+        },
+      ],
+    };
   }
 
   /**
@@ -1319,8 +1293,7 @@ export abstract class MatchesService {
         },
         guest: {
           playerId: row.guestId ?? '',
-          displayName:
-            snapshot?.guest.displayName ?? row.guest?.displayName ?? '—',
+          displayName: snapshot?.guest.displayName ?? row.guest?.displayName ?? '—',
           avatarUrl: row.guest?.avatarUrl ?? null,
           units: guestUnits,
         },
