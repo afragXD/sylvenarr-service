@@ -60,7 +60,7 @@ describe('petrify and level drain', () => {
     expect(foe?.alive).toBe(true);
     expect(hasEffect(foe!, 'PETRIFIED')).toBe(true);
     // STUNNED длительностью 1 снимается при пропуске хода в том же applyAction.
-    expect(state.log.some((line) => line.includes('оглушён и пропускает ход'))).toBe(true);
+    expect(state.log.some((line) => line.includes('оглушён и пропускает ход. (авто)'))).toBe(true);
     expect(state.log.some((line) => line.includes('обращается в камень'))).toBe(true);
   });
 

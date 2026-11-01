@@ -331,7 +331,7 @@ export function advanceToNextUnit(state: BattleState): void {
   }
 
   if (stunned) {
-    state.log.push(`${next.displayName} оглушён и пропускает ход.`);
+    state.log.push(`${next.displayName} оглушён и пропускает ход. (авто)`);
     endTurnTick(state, next);
     state.doneIds.push(next.id);
     resolveOutcome(state);

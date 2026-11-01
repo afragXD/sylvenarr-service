@@ -37,10 +37,10 @@ export function tickSlotCds(unit: BattleUnit): void {
   }
 }
 
-/** Подпись блокировки по кулдауну или null. */
+/** Подпись блокировки по кулдауну или null (AC-5: «перезарядка N»). */
 export function cdReason(unit: BattleUnit, slot: AbilitySlot): string | null {
   const left = slotCd(unit, slot);
-  return left > 0 ? `Кулдаун ${left} р.` : null;
+  return left > 0 ? `перезарядка ${left}` : null;
 }
 
 /** Сбрасывает все кулдауны юнита (Angel «Минута славы»). */
