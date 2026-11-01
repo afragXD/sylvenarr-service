@@ -37,6 +37,8 @@ function abilityMeta(
         label: ranged ? `Револьвер (${actor.gun})` : 'Каблучок',
         needsTarget: true,
         attackKind: ranged ? 'ranged' : 'melee',
+        previewSource: ranged ? 'ARROWS' : 'WEAPON',
+        previewArmorIgnore: ranged ? 0.2 : 0.5,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -48,6 +50,8 @@ function abilityMeta(
         label: 'Молочные клыки',
         needsTarget: true,
         attackKind: 'magic',
+        previewSource: 'DEATH',
+        previewArmorIgnore: 0.15,
         disabledReason:
           actor.mana < 3
             ? 'Нужно 3 МР'

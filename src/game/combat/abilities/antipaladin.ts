@@ -34,6 +34,7 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         label: 'Чёрная секира',
         needsTarget: true,
         attackKind: 'melee',
+        previewArmorIgnore: (25 + actor.lvl) / 100,
         disabledReason: noMelee,
         legalTargetIds: melee.map((unit) => unit.id),
       };
@@ -54,6 +55,7 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         label: 'Садист',
         needsTarget: true,
         attackKind: 'ranged',
+        previewSource: 'ARROWS',
         disabledReason: cdReason(actor, 3) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };

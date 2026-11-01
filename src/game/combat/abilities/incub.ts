@@ -27,6 +27,7 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         label: 'Психический шок (ряд)',
         needsTarget: true,
         attackKind: 'magic',
+        previewSource: 'MIND',
         disabledReason: manaReason(actor, 3) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -38,6 +39,7 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         label: 'Огненный хлыст',
         needsTarget: true,
         attackKind: 'magic',
+        previewSource: 'FIRE',
         disabledReason:
           cdReason(actor, 2) ??
           manaReason(actor, 3) ??

@@ -34,6 +34,7 @@ function abilityMeta(
         label: 'Копьё',
         needsTarget: true,
         attackKind: 'melee',
+        previewDamageMult: 1.05,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };

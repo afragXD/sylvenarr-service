@@ -23,6 +23,7 @@ function abilityMeta(
     label: 'Месть беса',
     needsTarget: true,
     attackKind: 'melee',
+    previewSource: 'WEAPON',
     disabledReason: targets.length === 0 ? 'Нет целей' : null,
     legalTargetIds: targets.map((unit) => unit.id),
   };

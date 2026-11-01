@@ -26,6 +26,8 @@ function abilityMeta(
         label: 'Цепная молния',
         needsTarget: true,
         attackKind: 'magic',
+        previewSource: 'AIR',
+        previewArmorIgnore: 0.1,
         disabledReason:
           actor.mana < 3
             ? 'Нужно 3 МР'

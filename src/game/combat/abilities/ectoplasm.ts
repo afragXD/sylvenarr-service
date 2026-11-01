@@ -30,6 +30,7 @@ function abilityMeta(
         label: 'Шлепок слизи',
         needsTarget: true,
         attackKind: 'magic',
+        previewSource: 'WATER',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };

@@ -31,6 +31,9 @@ function abilityMeta(
         label: 'Опутать корнями',
         needsTarget: true,
         attackKind: 'magic',
+        previewSource: 'EARTH',
+        previewDamageMult: 1.2,
+        previewArmorIgnore: 0.4,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };

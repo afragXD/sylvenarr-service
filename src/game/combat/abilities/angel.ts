@@ -113,6 +113,7 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         label: 'Кровь за Веру',
         needsTarget: true,
         attackKind: 'magic',
+        previewSource: 'HOLY',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };

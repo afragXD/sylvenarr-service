@@ -46,6 +46,9 @@ function abilityMeta(
         label: 'Дыхание смерти',
         needsTarget: false,
         attackKind: 'magic',
+        previewSource: 'DEATH',
+        previewDamageMult: lowHpDamageMult(actor),
+        previewArmorIgnore: 0.15,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: [],
       };
@@ -92,6 +95,7 @@ function abilityMeta(
           : 'Пожирание гада',
         needsTarget: true,
         attackKind: 'melee',
+        previewSource: 'WEAPON',
         disabledReason:
           cdReason(actor, 5) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),

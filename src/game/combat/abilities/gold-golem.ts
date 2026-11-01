@@ -18,6 +18,8 @@ function abilityMeta(
         label: 'Апперкот машины',
         needsTarget: true,
         attackKind: 'melee',
+        previewDamageMult: 0.9,
+        previewArmorIgnore: 0.2,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };

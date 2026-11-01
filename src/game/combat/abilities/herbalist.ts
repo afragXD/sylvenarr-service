@@ -49,11 +49,19 @@ function abilityMeta(
       };
     case 5: {
       const targets = enemiesOf(state, actor);
+      const graves =
+        state.graveyard.filter((entry) => entry.team === actor.team).length +
+        state.units.filter(
+          (unit) => !unit.alive && unit.team === actor.team && unit.isSummon
+        ).length;
       return {
         slot: 5,
         label: 'Праща',
         needsTarget: true,
         attackKind: 'ranged',
+        previewSource: 'ARROWS',
+        previewDamageMult: 1 + 0.15 * graves,
+        previewArmorIgnore: (50 + actor.lvl) / 100,
         disabledReason: cdReason(actor, 5) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };

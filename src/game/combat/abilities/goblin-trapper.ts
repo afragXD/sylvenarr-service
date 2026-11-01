@@ -26,6 +26,7 @@ function abilityMeta(
         label: `Хитиновый лук | Яд (${poisonChance}%)`,
         needsTarget: true,
         attackKind: 'ranged',
+        previewSource: 'ARROWS',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };

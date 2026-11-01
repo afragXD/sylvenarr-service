@@ -24,6 +24,7 @@ function abilityMeta(
         slot: 1,
         label: 'Боевой молот',
         attackKind: 'melee',
+        previewSource: 'WEAPON',
         needsTarget: true,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),

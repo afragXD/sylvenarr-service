@@ -17,6 +17,8 @@ function abilityMeta(
         slot: 1,
         label: 'Гнев богов',
         attackKind: 'magic',
+        previewSource: 'HOLY',
+        previewArmorIgnore: 0.1,
         needsTarget: true,
         disabledReason:
           actor.mana < 2

@@ -26,6 +26,8 @@ function abilityMeta(
         label: 'Парные клинки',
         needsTarget: true,
         attackKind: 'melee',
+        previewSource: 'WEAPON',
+        previewDamageMult: 1.05,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };

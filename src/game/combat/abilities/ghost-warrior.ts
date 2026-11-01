@@ -104,6 +104,7 @@ function abilityMeta(
         label: 'Призрачная катана',
         needsTarget: true,
         attackKind: 'melee',
+        previewSource: 'WEAPON',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -116,6 +117,8 @@ function abilityMeta(
         label: 'Чёрная жатва',
         needsTarget: true,
         attackKind: 'melee',
+        previewSource: 'WEAPON',
+        previewDamageMult: 0.75,
         disabledReason: cd ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -123,18 +126,18 @@ function abilityMeta(
     case 3: {
       const graves = graveTargets(state);
       const rows = availableSummonRows(state, actor);
-      const cd = cdReason(actor, 3);
       return {
         slot: 3,
-        label: 'Личный слуга',
+        label: `Личный слуга (${actor.ultaCharges})`,
         needsTarget: true,
         disabledReason:
-          cd ??
-          (graves.length === 0
-            ? 'Нет трупов'
-            : rows.length === 0
-              ? 'Нет места / лимит саммонов'
-              : null),
+          actor.ultaCharges <= 0
+            ? 'Нет зарядов'
+            : graves.length === 0
+              ? 'Нет трупов'
+              : rows.length === 0
+                ? 'Нет места / лимит саммонов'
+                : null,
         legalTargetIds: graves.map((item) => item.entryId),
       };
     }
@@ -250,11 +253,15 @@ export const ghostWarriorAbilities: AbilityHandler = {
       state.log.push(
         `${actor.displayName}: тауматургия (D=${dealtSum}, трупы=${corpses}) → банк ${bank} ОЗ [${healLog}].`
       );
-      setSlotCd(actor, 2, 2);
+      // Нерф владельца 2026-11-02: КД 3 (было 2).
+      setSlotCd(actor, 2, 3);
       return { status: 'done' };
     }
 
     if (input.slot === 3) {
+      if (actor.ultaCharges <= 0) {
+        return { status: 'reject', message: 'Нет зарядов' };
+      }
       const grave = graveTargets(state).find((item) => item.entryId === input.targetId);
       if (!grave) {
         return { status: 'reject', message: 'Труп не найден' };
@@ -264,6 +271,7 @@ export const ghostWarriorAbilities: AbilityHandler = {
       if (row === undefined) {
         return { status: 'reject', message: 'Нет места для слуги' };
       }
+      actor.ultaCharges -= 1;
       const desiredLvl = grave.unit.lvl + Math.floor(actor.lvl / 3);
       const summon = createSummon(state, {
         summoner: actor,
@@ -272,15 +280,15 @@ export const ghostWarriorAbilities: AbilityHandler = {
         level: desiredLvl,
       });
       if (!summon) {
+        actor.ultaCharges += 1;
         return { status: 'reject', message: 'Не удалось поднять слугу' };
       }
       // Труп израсходован.
       state.graveyard = state.graveyard.filter((entry) => entry.unitId !== grave.entryId);
       grave.unit.forbiddenResurrect = true;
       state.log.push(
-        `${actor.displayName} поднимает личного слугу (${summon.displayName}, ур. ${summon.lvl}) из ${grave.unit.displayName}.`
+        `${actor.displayName} поднимает личного слугу (${summon.displayName}, ур. ${summon.lvl}) из ${grave.unit.displayName} (зарядов ${actor.ultaCharges}).`
       );
-      setSlotCd(actor, 3, 3);
       return { status: 'done' };
     }
 

@@ -151,7 +151,14 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     bumpLevel(unit, ind);
   },
 
-  GhostWarrior(unit, ind, _state) {
+  GhostWarrior(unit, ind, state) {
+    // Ульта «Личный слуга»: +1 заряд каждые 5 раундов (как Мародёр/Пайро).
+    if (state.stage % 5 === 0 && ind > 0) {
+      unit.ultaCharges += 1;
+      state.log.push(
+        `${unit.displayName} получает заряд личного слуги (${unit.ultaCharges}).`
+      );
+    }
     healUnit(unit, 5 * ind);
     // CUT-2026-11-01c AC-7: к прежнему +3 добавить lvl//3.
     unit.damage += (3 + Math.floor(unit.lvl / 3)) * ind;

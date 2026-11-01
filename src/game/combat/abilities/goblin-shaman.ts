@@ -24,6 +24,7 @@ function abilityMeta(
         label: 'Степная буря (2 МР)',
         needsTarget: true,
         attackKind: 'magic',
+        previewSource: 'AIR',
         disabledReason:
           actor.mana < 2
             ? 'Нужно 2 МР'

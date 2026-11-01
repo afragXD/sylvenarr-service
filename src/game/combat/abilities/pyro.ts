@@ -31,6 +31,8 @@ function abilityMeta(
         label: 'Огнемёт',
         needsTarget: false,
         attackKind: 'magic',
+        previewSource: 'FIRE',
+        previewArmorIgnore: 0.1,
         disabledReason: enemiesOf(state, actor).length === 0 ? 'Нет целей' : null,
         legalTargetIds: [],
       };
@@ -40,6 +42,9 @@ function abilityMeta(
         slot: 2,
         label: 'Паровой арбалет',
         needsTarget: true,
+        attackKind: 'ranged',
+        previewSource: 'FIRE',
+        previewArmorIgnore: 0.2,
         disabledReason:
           actor.row !== ROW_BACK
             ? 'Нужен задний ряд'

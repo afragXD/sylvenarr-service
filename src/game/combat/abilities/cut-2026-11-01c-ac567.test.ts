@@ -426,7 +426,45 @@ describe('CUT-2026-11-01c AC-7 GhostWarrior', () => {
     );
     expect(servant).toBeTruthy();
     expect(servant!.lvl).toBe(5 + Math.floor(9 / 3)); // 8
-    expect(gw.abilityCds?.[3]).toBe(3);
+    // Ульта: старт 1 → после каста 0; слот-КД нет.
+    expect(gw.ultaCharges).toBe(0);
+    expect(gw.abilityCds?.[3] ?? 0).toBe(0);
+  });
+
+  test('fixture harvest CD 3; servant ulta +1 на stage%5', () => {
+    const state = createBattleState({
+      matchId: 'ac7-ulta-cd',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'GhostWarrior', row: 0, pickOrder: 1 },
+        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+        { id: 'e2', playerId: 'g', heroClassCode: 'C', row: 1, pickOrder: 1 },
+      ],
+      heroes: new Map([
+        ['GhostWarrior', hero('GhostWarrior', { damage: 40, accuracy: 100, luck: 0 })],
+        ['B', hero('B', { health: 200, armor: 0 })],
+        ['C', hero('C', { health: 200, armor: 0 })],
+      ]),
+    });
+    const gw = state.units.find((u) => u.id === 'p1')!;
+    expect(gw.ultaCharges).toBe(1);
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const harvest = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 2,
+      targetId: 'e1',
+    });
+    expect(harvest.ok).toBe(true);
+    expect(gw.abilityCds?.[2]).toBe(3);
+
+    const before = gw.ultaCharges;
+    state.stage = 5;
+    applyClassLevelUp(gw, 1, state);
+    expect(gw.ultaCharges).toBe(before + 1);
   });
 
   test('fixture life-thread ability CD 2', () => {

@@ -33,6 +33,7 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         label: 'Обрушение валуна',
         needsTarget: true,
         attackKind: 'ranged',
+        previewSource: 'ARROWS',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -44,6 +45,8 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         label: 'Метеоритный дождь (2×2)',
         needsTarget: true,
         attackKind: 'magic',
+        previewSource: 'EARTH',
+        previewDamageMult: 0.5,
         disabledReason: manaReason(actor, 3) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };

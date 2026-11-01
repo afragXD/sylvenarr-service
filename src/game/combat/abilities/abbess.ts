@@ -38,6 +38,8 @@ function abilityMeta(
         label: 'Копьё Солнца',
         needsTarget: true,
         attackKind: 'magic',
+        previewSource: 'HOLY',
+        previewArmorIgnore: 0.1,
         disabledReason:
           actor.mana < 2
             ? 'Нужно 2 МР'

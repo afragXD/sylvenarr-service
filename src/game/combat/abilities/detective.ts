@@ -26,6 +26,8 @@ function abilityMeta(
         label: 'Короткая рапира',
         needsTarget: true,
         attackKind: 'melee',
+        previewDamageMult: 1.1,
+        previewArmorIgnore: 0.25,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };

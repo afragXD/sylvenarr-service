@@ -17,6 +17,9 @@ function abilityMeta(
         label: 'Трёхглавый удар (по ряду)',
         needsTarget: true,
         attackKind: 'melee',
+        previewSource: 'WEAPON',
+        previewDamageMult: 1.15,
+        previewAccuracyPenalty: 5,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };

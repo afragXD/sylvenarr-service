@@ -21,6 +21,9 @@ function abilityMeta(
         label: 'Облако смерти',
         needsTarget: true,
         attackKind: 'magic',
+        previewSource: 'DEATH',
+        previewDamageMult: 1.1,
+        previewArmorIgnore: 0.15,
         disabledReason:
           actor.mana < 3 ? 'Нужно 3 МР' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
@@ -51,7 +54,7 @@ function abilityMeta(
       const targets = enemiesOf(state, actor);
       return {
         slot: 4,
-        label: 'Ужас',
+        label: 'Показ коллекции',
         needsTarget: true,
         disabledReason:
           actor.mana < 2 ? 'Нужно 2 МР' : targets.length === 0 ? 'Нет целей' : null,

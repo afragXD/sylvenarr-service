@@ -28,6 +28,9 @@ function abilityMeta(
         slot: 2,
         label: 'Пыточная молния',
         needsTarget: true,
+        attackKind: 'magic',
+        previewSource: 'AIR',
+        previewArmorIgnore: 0.1,
         disabledReason:
           actor.tortureLightningCd > 0
             ? `Кулдаун ${actor.tortureLightningCd} р.`
@@ -62,6 +65,8 @@ function abilityMeta(
         slot: 4,
         label: 'Мощный удар',
         needsTarget: true,
+        attackKind: 'melee',
+        previewDamageMult: 1.25,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -72,6 +77,10 @@ function abilityMeta(
         slot: 5,
         label: 'Любитель кристальных чар',
         needsTarget: true,
+        attackKind: 'magic',
+        previewSource: 'EARTH',
+        previewDamageMult: 0.9,
+        previewArmorIgnore: 0.15,
         disabledReason:
           actor.crystalCharmsCd > 0
             ? `Кулдаун ${actor.crystalCharmsCd} р.`
