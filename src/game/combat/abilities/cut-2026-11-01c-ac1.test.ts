@@ -10,7 +10,7 @@ import {
   applyMaxMoraleReward,
   applyPsycho,
   lowMoraleDebuffChance,
-  MAX_MORALE,
+  maxMorale,
   maybePunishLowMorale,
   psychoChance,
 } from '../morale';
@@ -57,19 +57,21 @@ const duel = (
 };
 
 describe('CUT-2026-11-01c AC-1', () => {
-  test('fixture max-morale-life: lives кап 1, мораль = MAX_MORALE//2', () => {
+  test('fixture max-morale-life: lives кап 1, мораль = maxMorale//2', () => {
     const state = duel('Knight');
     const unit = state.units.find((u) => u.id === 'p1')!;
+    const cap = maxMorale(unit);
+    expect(cap).toBe(100);
     unit.lives = 0;
-    unit.morale = MAX_MORALE;
+    unit.morale = cap;
     applyMaxMoraleReward(unit, state);
     expect(unit.lives).toBe(1);
-    expect(unit.morale).toBe(Math.floor(MAX_MORALE / 2));
+    expect(unit.morale).toBe(Math.floor(cap / 2));
 
-    unit.morale = MAX_MORALE + 10;
+    unit.morale = cap + 10;
     applyMaxMoraleReward(unit, state);
     expect(unit.lives).toBe(1);
-    expect(unit.morale).toBe(Math.floor(MAX_MORALE / 2));
+    expect(unit.morale).toBe(Math.floor(cap / 2));
   });
 
   test('fixture spend-life: maxHp 150→75, ОЗ=75, инициатива без штрафа', () => {

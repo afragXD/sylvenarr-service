@@ -74,7 +74,7 @@ describe('morale + battle summary', () => {
     unit.lvl = -2;
     unit.dodge = 80;
     unit.luck = 99;
-    unit.morale = 90;
+    unit.morale = 100;
     unit.lives = 0;
     normalizeUnit(unit, state);
     expect(unit.damage).toBe(0);
@@ -82,9 +82,9 @@ describe('morale + battle summary', () => {
     expect(unit.lvl).toBe(0);
     expect(unit.dodge).toBe(45);
     expect(unit.luck).toBe(60);
-    // AC-1: morale ≥ MAX → жизнь и сброс до MAX//2 (не кап 65).
+    // AC-1: morale ≥ maxMorale() → жизнь и сброс до maxMorale()//2 (= 50).
     expect(unit.lives).toBe(1);
-    expect(unit.morale).toBe(32);
+    expect(unit.morale).toBe(50);
   });
 
   test('psycho: undead skips', () => {

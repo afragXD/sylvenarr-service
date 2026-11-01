@@ -12,11 +12,16 @@ import { levelUpUnit } from './level';
 import { isArtificialClass, isUndeadClass } from './races';
 import type { BattleState, BattleUnit, MentalIllnessKind } from './types';
 
-/** Потолок морали (CUT-2026-11-01c: MAX_MORALE = 65). */
-export const MAX_MORALE = 65;
+/**
+ * Потолок морали юнита (CUT-2026-11-01c AC-1; владелец: 100, метод — не литерал 65 из бота).
+ * Порт Hero.max_morale / self.maxMorale().
+ */
+export function maxMorale(_unit: BattleUnit): number {
+  return 100;
+}
 
-/** @deprecated используйте MAX_MORALE */
-export const MORALE_CAP = MAX_MORALE;
+/** @deprecated используйте maxMorale(unit) */
+export const MORALE_CAP = 100;
 
 /** Верхняя граница уклонения (порт Hero.normalize). */
 export const DODGE_CAP = 45;
@@ -34,7 +39,7 @@ const ILLNESS_KINDS: MentalIllnessKind[] = [
 
 /**
  * Порт Hero.normalize: полы урона/силы/уровня, потолки dodge/luck;
- * при morale ≥ MAX_MORALE — доп. жизнь и сброс морали (AC-1).
+ * при morale ≥ maxMorale(unit) — доп. жизнь и сброс морали (AC-1).
  */
 export function normalizeUnit(unit: BattleUnit, state?: BattleState): void {
   unit.damage = Math.max(0, unit.damage);
@@ -45,14 +50,15 @@ export function normalizeUnit(unit: BattleUnit, state?: BattleState): void {
   applyMaxMoraleReward(unit, state);
 }
 
-/** Награда за максимальную мораль: lives ≤ 1, morale = MAX_MORALE // 2. */
+/** Награда за максимальную мораль: lives ≤ 1, morale = maxMorale(unit) // 2. */
 export function applyMaxMoraleReward(unit: BattleUnit, state?: BattleState): void {
-  if (unit.morale < MAX_MORALE) {
-    unit.morale = Math.min(MAX_MORALE, unit.morale);
+  const cap = maxMorale(unit);
+  if (unit.morale < cap) {
+    unit.morale = Math.min(cap, unit.morale);
     return;
   }
   unit.lives = Math.min(unit.lives + 1, 1);
-  unit.morale = Math.floor(MAX_MORALE / 2);
+  unit.morale = Math.floor(cap / 2);
   if (state) {
     state.log.push(
       `${unit.displayName}: максимальный боевой дух! Доп. жизнь (${unit.lives}), мораль → ${unit.morale}.`
