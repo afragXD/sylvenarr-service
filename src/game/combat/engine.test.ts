@@ -424,9 +424,10 @@ describe('combat engine', () => {
       ],
       heroes,
     });
-    forceSurrender(state, 'h');
+    forceSurrender(state, 'h', 'Биба');
     expect(state.outcome).toBe('guest_win');
     expect(state.winnerPlayerId).toBe('g');
+    expect(state.log.some((line) => line === 'Биба сдался.')).toBe(true);
   });
 
   test('forceDraw ends as draw and clears offer', () => {

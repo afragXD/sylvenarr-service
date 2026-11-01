@@ -805,15 +805,21 @@ export function resolveOutcome(state: BattleState): void {
 
 /**
  * Принудительная сдача: победа оппонента.
+ * AC-6: в лог — «{ник} сдался.»
  */
-export function forceSurrender(state: BattleState, surrenderingPlayerId: string): void {
+export function forceSurrender(
+  state: BattleState,
+  surrenderingPlayerId: string,
+  surrenderingDisplayName?: string,
+): void {
   if (state.outcome !== 'ongoing') {
     return;
   }
   const isHost = surrenderingPlayerId === state.hostPlayerId;
   state.outcome = isHost ? 'guest_win' : 'host_win';
   state.winnerPlayerId = isHost ? state.guestPlayerId : state.hostPlayerId;
-  state.log.push('Игрок сдался.');
+  const nick = surrenderingDisplayName?.trim() || 'Игрок';
+  state.log.push(`${nick} сдался.`);
   state.activeUnitId = null;
   state.turnPlayerId = null;
   state.pendingPrompt = null;

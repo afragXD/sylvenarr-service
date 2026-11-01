@@ -840,7 +840,11 @@ export abstract class MatchesService {
       return { ok: false, message: 'Бой уже завершён', status: 400 };
     }
 
-    forceSurrender(state, input.playerId);
+    const surrenderNick =
+      existing.hostId === input.playerId
+        ? existing.host.displayName
+        : (existing.guest?.displayName ?? 'Игрок');
+    forceSurrender(state, input.playerId, surrenderNick);
     const resultMeta = await MatchesService.finalizeBattle({
       matchId: existing.id,
       winnerPlayerId: state.winnerPlayerId,
