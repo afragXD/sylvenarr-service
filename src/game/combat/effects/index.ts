@@ -45,10 +45,17 @@ function dotTickAmount(unit: BattleUnit, effect: BattleEffect): number {
     case 'BLEEDING':
       return Math.max(1, Math.round((4 + effect.rounds * 3 + unit.lvl) * power));
     case 'GALL':
-      return Math.max(1, Math.round(20 * power));
+      // CUT AC-12: power хранит урон за тик (10 + L кастера).
+      return Math.max(1, Math.round(power));
     default:
       return 0;
   }
+}
+
+/** Снятие брони за тик Желчи: power = 10+L → −(2 + L//5), не ниже 0. */
+function gallArmorStrip(effect: BattleEffect): number {
+  const lvl = Math.max(0, Math.round(effect.power) - 10);
+  return Math.max(0, 2 + Math.floor(lvl / 5));
 }
 
 /**
@@ -98,6 +105,8 @@ export const DEBUFF_EFFECT_IDS: readonly EffectId[] = [
   'INTERDICT',
   'MAGIC_SHACKLES',
   'ASHILLNESS',
+  'LIFE_FETTERS',
+  'ERUPTION',
 ];
 
 /** Положительные эффекты для рассеивания (Angel «Кровь за Веру»). */
@@ -124,6 +133,8 @@ export const BUFF_EFFECT_IDS: readonly EffectId[] = [
   'IMAGINARY_HEALTH',
   'IMMOLATION',
   'DEATHWARD',
+  'PAIN_REFLECT',
+  'LIFE_THREAD',
 ];
 
 /**
@@ -338,8 +349,20 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
         const dot = Math.max(1, Math.round(raw * resist.multiplier));
         unit.health -= dot;
         log.push(
-          `${unit.displayName} получает ${formatLogDamage(dot, dotSource)} урона от ${effectLogLabel(effect.id)}.`
+          `${unit.displayName} получает ${formatLogDamage(dot, dotSource)} урона от ${effectLogLabel(effect.id, effect.power)}.`
         );
+      }
+      // CUT AC-12: Желчь каждый тик навсегда разъедает броню (даже если вард съел урон).
+      if (effect.id === 'GALL') {
+        const strip = gallArmorStrip(effect);
+        if (strip > 0) {
+          const before = unit.armor;
+          unit.armor = Math.max(0, unit.armor - strip);
+          const lost = before - unit.armor;
+          if (lost > 0) {
+            log.push(`${effectLogLabel('GALL')} разъедает броню ${unit.displayName}: −${lost}.`);
+          }
+        }
       }
     }
   }
@@ -386,7 +409,7 @@ export function tickEffectsOnTurnEnd(unit: BattleUnit, state?: BattleState): str
       }
       delEffect(unit, effect.id, state);
       log.push(
-        `Эффект ${effectLogLabel(effect.id)} спадает с ${unit.displayName}.`
+        `Эффект ${effectLogLabel(effect.id, effect.power)} спадает с ${unit.displayName}.`
       );
     }
   }
@@ -479,7 +502,7 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
       unit.luck = Math.max(0, unit.luck - Math.round(effect.power || 20));
       break;
     case 'GALL':
-      unit.armor = Math.max(0, unit.armor - Math.max(1, Math.round(effect.power || 2)));
+      // CUT AC-12: броня снимается только на тиках DoT, навсегда (без отката).
       break;
     case 'ROW_FORTIFY':
       unit.armor += Math.max(1, Math.round(effect.power || 1));
@@ -508,6 +531,13 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
     case 'IMMOLATION':
     case 'ENSLAVED':
     case 'MAGIC_SHACKLES':
+    case 'PAIN_REFLECT':
+    case 'LIFE_FETTERS':
+    case 'LIFE_THREAD':
+      break;
+    case 'ERUPTION':
+      // −5 пп Огню навсегда (стакается); откат при спадении не делаем.
+      changeResist(unit, 'FIRE', -5);
       break;
     default:
       break;
@@ -605,7 +635,7 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
       unit.luck += Math.round(effect.power || 20);
       break;
     case 'GALL':
-      unit.armor += Math.max(1, Math.round(effect.power || 2));
+      // CUT AC-12: снятая броня не возвращается.
       break;
     case 'ENSLAVED': {
       if (unit.enslavedOriginTeam !== null) {
@@ -649,6 +679,21 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
       break;
     case 'IMMOLATION':
     case 'MAGIC_SHACKLES':
+    case 'PAIN_REFLECT':
+    case 'LIFE_THREAD':
+      break;
+    case 'LIFE_FETTERS':
+      // Снимаем связь у Воина-призрака, который держал оковы на этой цели.
+      if (state) {
+        for (const other of state.units) {
+          if (other.fettersTargetId === unit.id) {
+            other.fettersTargetId = null;
+          }
+        }
+      }
+      break;
+    case 'ERUPTION':
+      // Сопротивление Огню не возвращаем.
       break;
     default:
       break;

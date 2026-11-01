@@ -4,15 +4,24 @@ import {
   grantEffect,
   hasEffect,
   healUnit,
-  tryLevelDrain,
   trySpendMana,
 } from '../effects';
 import { levelUpUnit } from '../level';
 import { rollSrcChance } from '../resists';
 import { transformClassOnly } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { enemiesOf, meleeOrAll } from './targets';
+import { degradationSquareTargets, enemiesOf, meleeOrAll } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
+
+/** Базовый шанс Массовой деградации (CUT AC-9). */
+export function massDegradationBaseChance(lvl: number): number {
+  return Math.min(95, 85 + lvl);
+}
+
+/** Потеря уровней: основная цель L//5+1, остальные L//6+1. */
+export function massDegradationLevelLoss(lvl: number, isPrimary: boolean): number {
+  return isPrimary ? Math.floor(lvl / 5) + 1 : Math.floor(lvl / 6) + 1;
+}
 
 function abilityMeta(
   state: BattleState,
@@ -62,13 +71,13 @@ function abilityMeta(
       const targets = enemiesOf(state, actor);
       return {
         slot: 4,
-        label: 'Деградация',
+        label: 'Массовая деградация',
         needsTarget: true,
         disabledReason:
           actor.degradationCd > 0
             ? `Кулдаун ${actor.degradationCd} р.`
-            : actor.mana < 4
-              ? 'Нужно 4 МР'
+            : actor.mana < 5
+              ? 'Нужно 5 МР'
               : targets.length === 0
                 ? 'Нет целей'
                 : null,
@@ -212,7 +221,7 @@ export const witchAbilities: AbilityHandler = {
     }
 
     if (input.slot === 4) {
-      const err = trySpendMana(actor, 4);
+      const err = trySpendMana(actor, 5);
       if (err) {
         return { status: 'reject', message: err };
       }
@@ -220,19 +229,28 @@ export const witchAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель недоступна' };
       }
-      actor.degradationCd = 2;
-      if (randInt(1, 100) <= 85 + actor.lvl * 2) {
-        if (!tryLevelDrain(state, target)) {
-          return { status: 'done' };
+      actor.degradationCd = 3;
+      const square = degradationSquareTargets(state, actor, target);
+      let chance = massDegradationBaseChance(actor.lvl);
+      state.log.push(
+        `${actor.displayName}: массовая деградация по квадрату (${square.length} цел., старт ${chance}%).`
+      );
+      for (const unit of square) {
+        const isPrimary = unit.id === target.id;
+        // Chance через MIND + LOWERINGLEVEL; успех −15 п.п. к следующей, провал — шанс не падает.
+        if (rollSrcChance(state, unit, chance, 'MIND', 'LOWERINGLEVEL')) {
+          const n = massDegradationLevelLoss(actor.lvl, isPrimary);
+          const before = unit.lvl;
+          levelUpUnit(unit, -n, state);
+          state.log.push(
+            `${actor.displayName}: деградация ${unit.displayName} (−${before - unit.lvl} ур., шанс был ${chance}%).`
+          );
+          chance = Math.max(0, chance - 15);
+        } else {
+          state.log.push(
+            `${actor.displayName}: деградация ${unit.displayName} не сработала (шанс ${chance}% сохранён).`
+          );
         }
-        // Было ⌊L/5⌋+1; +1 к базе → ⌊L/5⌋+2.
-        const n = Math.floor(actor.lvl / 5) + 2;
-        levelUpUnit(target, -n, state);
-        state.log.push(
-          `${actor.displayName}: деградация ${target.displayName} (−${n} уровня).`
-        );
-      } else {
-        state.log.push(`${actor.displayName}: деградация не сработала.`);
       }
       return { status: 'done' };
     }
@@ -266,7 +284,8 @@ export const witchAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: в каталоге нет беса — превращение сорвалось.`);
         return { status: 'done' };
       }
-      grantEffect(target, 'IMPISH', 2, 0);
+      // CUT-2026-11-01c AC-4: Форма беса 1 раунд (было 2), шанс 100%.
+      grantEffect(target, 'IMPISH', 1, 0);
       state.log.push(
         `${actor.displayName} обращает ${victimName} в жалкого беса (без особых атак и брони).`
       );

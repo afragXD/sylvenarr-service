@@ -24,8 +24,9 @@ const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassS
 describe('phase 3.7 pilots', () => {
   test('DemonLord slot 1 hits whole enemy row', () => {
     const heroes = new Map([
-      ['DemonLord', hero('DemonLord', { initiative: 99, accuracy: 100, luck: 0 })],
-      ['B', hero('B', { initiative: 1, health: 200 })],
+      // accuracy 105: Трёхглавый −5 пп → эффективная 100.
+      ['DemonLord', hero('DemonLord', { initiative: 99, accuracy: 105, luck: 0 })],
+      ['B', hero('B', { initiative: 1, health: 200, dodge: 0 })],
     ]);
     const state = createBattleState({
       matchId: 'm',
@@ -63,7 +64,7 @@ describe('phase 3.7 pilots', () => {
 
   test('DemonLord slot 1 hits all 3 Assassins on the back row', () => {
     const heroes = new Map([
-      ['DemonLord', hero('DemonLord', { initiative: 99, accuracy: 100, luck: 0, damage: 40 })],
+      ['DemonLord', hero('DemonLord', { initiative: 99, accuracy: 105, luck: 0, damage: 40 })],
       ['Assassin', hero('Assassin', { initiative: 1, health: 200, dodge: 0 })],
     ]);
     const state = createBattleState({

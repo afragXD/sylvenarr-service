@@ -2,7 +2,7 @@ import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../d
 import { grantEffect } from '../effects';
 import { changeResist } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { enemiesOf, meleeTargets } from './targets';
+import { alliesOf, enemiesOf, meleeTargets } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function findMaster(state: BattleState, actor: BattleUnit): BattleUnit | null {
@@ -50,13 +50,13 @@ function abilityMeta(
       };
     }
     case 4: {
-      const targets = enemiesOf(state, actor);
+      const allies = alliesOf(state, actor);
       return {
         slot: 4,
-        label: 'Контракт на убийство',
+        label: 'Тёмная молитва',
         needsTarget: true,
-        disabledReason: targets.length === 0 ? 'Нет целей' : null,
-        legalTargetIds: targets.map((unit) => unit.id),
+        disabledReason: allies.length === 0 ? 'Нет союзников' : null,
+        legalTargetIds: allies.map((unit) => unit.id),
       };
     }
     default:
@@ -71,7 +71,7 @@ function abilityMeta(
 }
 
 /**
- * SkeletonChampion: молот с разбитием брони, псалом, охрана, метка.
+ * SkeletonChampion: молот с разбитием брони, псалом, охрана, Тёмная молитва.
  */
 export const skeletonChampionAbilities: AbilityHandler = {
   listAbilities(state, actor) {
@@ -138,14 +138,13 @@ export const skeletonChampionAbilities: AbilityHandler = {
     }
 
     if (input.slot === 4) {
-      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
-      if (!target) {
-        return { status: 'reject', message: 'Цель не найдена' };
+      const ally = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
+      if (!ally) {
+        return { status: 'reject', message: 'Нужен союзник' };
       }
-      grantEffect(target, 'MARKED', 3);
-      grantEffect(target, 'FATMAN', 2, 20 + actor.lvl);
+      grantEffect(ally, 'PAIN_REFLECT', 2);
       state.log.push(
-        `${actor.displayName} открывает охоту на ${target.displayName} — метка и слабость в ногах.`
+        `${actor.displayName} читает тёмную молитву — ${ally.displayName} отражает боль (2 р.).`
       );
       return { status: 'done' };
     }

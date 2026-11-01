@@ -1,12 +1,22 @@
-import { primaryAttackKindOrNull } from './abilities/primary-attack';
-import { markDeadIfNeeded, randInt } from './damage';
+import { firstActionAttackKind } from './abilities/primary-attack';
+import { alliesOf } from './abilities/targets';
+import {
+  dealDamage,
+  formatLastLogDamage,
+  markDeadIfNeeded,
+  randInt,
+} from './damage';
+import { formatLogDamage } from './damageSources';
 import { grantEffect } from './effects';
 import { levelUpUnit } from './level';
 import { isArtificialClass, isUndeadClass } from './races';
-import type { BattleState, BattleUnit } from './types';
+import type { BattleState, BattleUnit, MentalIllnessKind } from './types';
 
-/** Верхняя граница морали (порт Hero.normalize). */
-export const MORALE_CAP = 65;
+/** Потолок морали (CUT-2026-11-01c: MAX_MORALE = 65). */
+export const MAX_MORALE = 65;
+
+/** @deprecated используйте MAX_MORALE */
+export const MORALE_CAP = MAX_MORALE;
 
 /** Верхняя граница уклонения (порт Hero.normalize). */
 export const DODGE_CAP = 45;
@@ -14,17 +24,40 @@ export const DODGE_CAP = 45;
 /** Верхняя граница удачи / крита (порт Hero.normalize crit). */
 export const LUCK_CAP = 60;
 
+const ILLNESS_KINDS: MentalIllnessKind[] = [
+  'paranoia',
+  'apathy',
+  'schizophrenia',
+  'degradation',
+  'masochism',
+];
+
 /**
- * Порт Hero.normalize: полы урона/силы/уровня, потолки dodge/luck/morale.
- * Броня в боте закомментирована — не трогаем.
+ * Порт Hero.normalize: полы урона/силы/уровня, потолки dodge/luck;
+ * при morale ≥ MAX_MORALE — доп. жизнь и сброс морали (AC-1).
  */
-export function normalizeUnit(unit: BattleUnit): void {
+export function normalizeUnit(unit: BattleUnit, state?: BattleState): void {
   unit.damage = Math.max(0, unit.damage);
   unit.power = Math.max(0, unit.power);
   unit.lvl = Math.max(0, unit.lvl);
   unit.dodge = Math.min(DODGE_CAP, unit.dodge);
   unit.luck = Math.min(LUCK_CAP, unit.luck);
-  unit.morale = Math.min(MORALE_CAP, unit.morale);
+  applyMaxMoraleReward(unit, state);
+}
+
+/** Награда за максимальную мораль: lives ≤ 1, morale = MAX_MORALE // 2. */
+export function applyMaxMoraleReward(unit: BattleUnit, state?: BattleState): void {
+  if (unit.morale < MAX_MORALE) {
+    unit.morale = Math.min(MAX_MORALE, unit.morale);
+    return;
+  }
+  unit.lives = Math.min(unit.lives + 1, 1);
+  unit.morale = Math.floor(MAX_MORALE / 2);
+  if (state) {
+    state.log.push(
+      `${unit.displayName}: максимальный боевой дух! Доп. жизнь (${unit.lives}), мораль → ${unit.morale}.`
+    );
+  }
 }
 
 /**
@@ -34,74 +67,97 @@ export function chancePercent(value: number): boolean {
   return randInt(1, 100) <= value;
 }
 
+/** Шанс психоза за ход при morale ≤ −70: 30 + 2×(−70 − morale), кап не нужен до −100. */
+export function psychoChance(morale: number): number {
+  return 30 + 2 * (-70 - morale);
+}
+
+/** Шанс дебаффа низкой морали: min(|morale|, 70). */
+export function lowMoraleDebuffChance(morale: number): number {
+  return Math.min(Math.abs(morale), 70);
+}
+
+function isMoraleImmune(unit: BattleUnit): boolean {
+  return isUndeadClass(unit.heroClassCode) || isArtificialClass(unit.heroClassCode);
+}
+
+function isMageUnit(state: BattleState, unit: BattleUnit): boolean {
+  const kind = firstActionAttackKind(state, unit);
+  // Маг = основная атака магическая; иначе воин (ближняя/дальняя).
+  return kind === 'magic';
+}
+
+function pickLowestHpAlly(allies: BattleUnit[]): BattleUnit {
+  let best = Number.POSITIVE_INFINITY;
+  const pool: BattleUnit[] = [];
+  for (const ally of allies) {
+    if (ally.health < best) {
+      best = ally.health;
+      pool.length = 0;
+      pool.push(ally);
+    } else if (ally.health === best) {
+      pool.push(ally);
+    }
+  }
+  return pool[randInt(0, pool.length - 1)]!;
+}
+
 /**
- * Mental illness при низкой морали (−70…−100). Порт addMentalIllness.
- * Без инвентаря/skills: исход 4 только золото+точность, исход 5 — levelUp −4.
+ * Mental illness (CUT-2026-11-01c AC-1): 5 болезней, без «Душевного подъёма».
  */
-export function addMentalIllness(state: BattleState, unit: BattleUnit, fate: number): void {
+export function addMentalIllness(
+  state: BattleState,
+  unit: BattleUnit,
+  fate: number
+): void {
   switch (fate) {
     case 1: {
-      const summon = state.units.find(
-        (other) => other.alive && other.isSummon && other.summonerId === unit.id
+      unit.illnessKind = 'paranoia';
+      state.log.push(
+        `${unit.displayName}: паранойя — в начале хода бьёт союзника с наименьшими ОЗ.`
       );
-      if (summon) {
-        state.log.push(
-          `${unit.displayName}: паранойя — убивает своего саммона ${summon.displayName}.`
-        );
-        summon.health = 0;
-        markDeadIfNeeded(state, summon);
-      } else {
-        const loss = Math.floor(unit.maxHp / 4);
-        unit.health -= loss;
-        state.log.push(
-          `${unit.displayName}: паранойя, но саммона нет — теряет ${loss} ОЗ от одиночества.`
-        );
-        markDeadIfNeeded(state, unit);
-      }
       break;
     }
     case 2: {
-      const armorHalf = Math.floor(unit.armor / 2);
-      unit.damage += armorHalf;
-      unit.armor = 0;
-      unit.mana = 0;
-      unit.accuracy = Math.max(0, unit.accuracy - 20);
+      unit.illnessKind = 'apathy';
+      if (unit.dodge > 0) {
+        unit.dodge = 0;
+      }
+      if (unit.luck > 0) {
+        unit.luck = 0;
+      }
+      unit.initiative = 5;
       state.log.push(
-        `${unit.displayName}: берсерк — броня и мана обнулены, урон +${armorHalf}, точность −20.`
+        `${unit.displayName}: апатия — уклонение 0, крит 0, инициатива 5.`
       );
       break;
     }
     case 3: {
-      unit.dodge = 0;
-      if (unit.luck > 0) {
-        unit.luck = 0;
-      }
+      unit.illnessKind = 'schizophrenia';
+      // TODO(items): Шизофрения — уничтожать 2 случайных предмета, когда появятся предметы
+      unit.accuracy = Math.max(0, Math.round(unit.accuracy * (1 - 0.33)));
       state.log.push(
-        `${unit.displayName}: апатия — уклонение и положительная удача обнулены.`
+        `${unit.displayName}: шизофрения — точность −33%, предметы недоступны; золото будет разбрасывать.`
       );
       break;
     }
     case 4: {
-      unit.gold = 0;
-      unit.accuracy = Math.max(0, unit.accuracy - 15);
+      unit.illnessKind = 'degradation';
+      // TODO(perks): Деградация — терять все перки
+      const loss = Math.floor(unit.lvl / 2);
+      if (loss > 0) {
+        levelUpUnit(unit, -loss, state);
+      }
+      unit.mana = 0;
       state.log.push(
-        `${unit.displayName}: шизофрения — золото потеряно, точность −15.`
+        `${unit.displayName}: деградация — −${loss} ур., мана 0.`
       );
       break;
     }
     case 5: {
-      levelUpUnit(unit, -4, state);
+      unit.illnessKind = 'masochism';
       state.log.push(
-        `${unit.displayName}: деградация — потеря 4 уровней.`
-      );
-      break;
-    }
-    case 6: {
-      unit.morale = 0;
-      unit.damage += 15;
-      unit.power += 15;
-      state.log.push(
-        `${unit.displayName}: душевный подъём! Мораль обнулена, урон и сила магии +15.`
+        `${unit.displayName}: мазохизм — в начале раунда ранит себя.`
       );
       break;
     }
@@ -112,11 +168,11 @@ export function addMentalIllness(state: BattleState, unit: BattleUnit, fate: num
 }
 
 /**
- * Психоз в начале хода (порт Hero.psycho).
- * Undead/artificial иммунны. < −100 — смерть; (−100…−70] — illness один раз.
+ * Психоз в начале хода (CUT-2026-11-01c AC-1).
+ * Undead/artificial иммунны. < −100 — смерть; ≤ −70 — шанс illness один раз за бой.
  */
 export function applyPsycho(state: BattleState, unit: BattleUnit): void {
-  if (isUndeadClass(unit.heroClassCode) || isArtificialClass(unit.heroClassCode)) {
+  if (isMoraleImmune(unit)) {
     return;
   }
   if (unit.morale > -70) {
@@ -133,9 +189,67 @@ export function applyPsycho(state: BattleState, unit: BattleUnit): void {
   if (unit.illness) {
     return;
   }
-  const fate = randInt(1, 6);
+  if (!chancePercent(psychoChance(unit.morale))) {
+    return;
+  }
+  const fate = randInt(1, 5);
   addMentalIllness(state, unit, fate);
   unit.illness = true;
+}
+
+/** Тики болезней в начале хода носителя (паранойя, шизофрения). */
+export function applyIllnessTurnStart(state: BattleState, unit: BattleUnit): void {
+  if (!unit.alive || !unit.illnessKind) {
+    return;
+  }
+  if (unit.illnessKind === 'paranoia') {
+    const allies = alliesOf(state, unit).filter((ally) => ally.id !== unit.id);
+    if (allies.length === 0) {
+      state.log.push(`${unit.displayName}: паранойя — нет союзников для удара.`);
+      return;
+    }
+    const target = pickLowestHpAlly(allies);
+    const dmg = dealDamage(
+      unit,
+      target,
+      {
+        kind: firstActionAttackKind(state, unit),
+        damageMult: 1,
+        armorIgnore: 0,
+      },
+      state
+    );
+    state.log.push(
+      `${unit.displayName} в паранойе бьёт ${target.displayName} ${formatLastLogDamage(dmg)}.`
+    );
+    markDeadIfNeeded(state, target);
+    return;
+  }
+  if (unit.illnessKind === 'schizophrenia') {
+    const loss = Math.min(300, unit.gold);
+    unit.gold = Math.max(0, unit.gold - 300);
+    state.log.push(
+      `${unit.displayName} разбрасывает и смеётся (−${loss} золота).`
+    );
+  }
+}
+
+/** Мазохизм: в начале раунда неблокируемый урон DEFAULT. */
+export function applyMasochismRoundStart(state: BattleState): void {
+  for (const unit of state.units) {
+    if (!unit.alive || unit.illnessKind !== 'masochism') {
+      continue;
+    }
+    const amount = Math.floor(Math.max(unit.damage, unit.power) / 3);
+    if (amount <= 0) {
+      continue;
+    }
+    unit.health -= amount;
+    state.log.push(
+      `${unit.displayName}: мазохизм наносит себе ${formatLogDamage(amount, 'DEFAULT')}.`
+    );
+    markDeadIfNeeded(state, unit);
+  }
 }
 
 /**
@@ -149,9 +263,7 @@ export function maybeRewardHighMorale(state: BattleState, unit: BattleUnit): voi
   if (!chancePercent(unit.morale)) {
     return;
   }
-  const kind = primaryAttackKindOrNull(state, unit);
-  const isMage = kind === null ? unit.power > unit.damage : kind === 'magic';
-  if (isMage) {
+  if (isMageUnit(state, unit)) {
     grantEffect(unit, 'ABSOLUTEPOWER', 2, 0.25);
     state.log.push(`${unit.displayName}: высокий боевой дух усиливает магию (+25% СМ на 2 р.).`);
     return;
@@ -161,4 +273,38 @@ export function maybeRewardHighMorale(state: BattleState, unit: BattleUnit): voi
   state.log.push(
     `${unit.displayName}: высокий боевой дух даёт силу (+${bonus} урона на 2 р.).`
   );
+}
+
+/**
+ * Дебафф низкой морали после хода (AC-1): при morale ≤ −20 шанс min(|m|, 70)%;
+ * маг −20% силы, воин −round(0.25×dmg), 2 раунда; нежить/искусственные иммунны.
+ */
+export function maybePunishLowMorale(state: BattleState, unit: BattleUnit): void {
+  if (!unit.alive || isMoraleImmune(unit)) {
+    return;
+  }
+  if (unit.morale > -20) {
+    return;
+  }
+  if (!chancePercent(lowMoraleDebuffChance(unit.morale))) {
+    return;
+  }
+  if (isMageUnit(state, unit)) {
+    const loss = Math.max(1, Math.round(unit.power * 0.2));
+    grantEffect(unit, 'ABSOLUTEPOWER', 2, -loss);
+    state.log.push(
+      `${unit.displayName}: упадок духа ослабляет магию (−${loss} СМ на 2 р.).`
+    );
+    return;
+  }
+  const loss = Math.max(1, Math.round(unit.damage * 0.25));
+  grantEffect(unit, 'STRENGTH', 2, -loss);
+  state.log.push(
+    `${unit.displayName}: упадок духа ослабляет атаку (−${loss} урона на 2 р.).`
+  );
+}
+
+/** Случайная болезнь 1..5 (для тестов с фиксированным fate используйте addMentalIllness). */
+export function rollIllnessFate(): number {
+  return randInt(1, ILLNESS_KINDS.length);
 }

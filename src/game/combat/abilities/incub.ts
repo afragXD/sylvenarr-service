@@ -1,8 +1,8 @@
-import { harmWithSource, markDeadIfNeeded, randInt } from '../damage';
+import { dealDamage, formatLastLogDamage, harmWithSource, markDeadIfNeeded, randInt } from '../damage';
 import { formatLogDamage } from '../damageSources';
-import { delEffect, grantEffect, healUnit, trySpendMana } from '../effects';
+import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
-import { rollMindChance } from '../resists';
+import { changeResist, rollMindChance } from '../resists';
 import { applyCatalogStats } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
@@ -31,14 +31,20 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
-    case 2:
+    case 2: {
+      const targets = enemiesOf(state, actor);
       return {
         slot: 2,
-        label: 'Чудесный доктор',
+        label: 'Огненный хлыст',
         needsTarget: true,
-        disabledReason: cdReason(actor, 2) ?? manaReason(actor, 3),
-        legalTargetIds: allies.map((unit) => unit.id),
+        attackKind: 'magic',
+        disabledReason:
+          cdReason(actor, 2) ??
+          manaReason(actor, 3) ??
+          (targets.length === 0 ? 'Нет целей' : null),
+        legalTargetIds: targets.map((unit) => unit.id),
       };
+    }
     case 3:
       return {
         slot: 3,
@@ -101,7 +107,7 @@ function birthOfEvil(state: BattleState, actor: BattleUnit): boolean {
 }
 
 /**
- * Incub: удар Разумом по ряду, мнимое здоровье, договор, наставник, перерождение в Демона-принца.
+ * Incub: шок, Огненный хлыст, договор, наставник (без +ур. саммону), Рождение Зла.
  */
 export const incubAbilities: AbilityHandler = {
   listAbilities(state, actor) {
@@ -146,26 +152,30 @@ export const incubAbilities: AbilityHandler = {
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }
-    const cost = input.slot === 4 ? 4 : 3;
 
     if (input.slot === 4 && target.isSummon) {
       const difference = actor.lvl - target.lvl;
       if (difference <= 0 && !state.doneIds.includes(target.id)) {
         return { status: 'reject', message: 'Дождитесь хода саммона' };
       }
-      const err = trySpendMana(actor, cost);
+      const err = trySpendMana(actor, 4);
       if (err) {
         return { status: 'reject', message: err };
       }
+      // CUT AC-10: повышение уровня саммону убрано.
       if (difference <= 0) {
         state.log.push(`${actor.displayName} придаёт дополнительные силы ${target.displayName}.`);
         return { status: 'done', extraTurnForUnitId: target.id };
       }
-      levelUpUnit(target, Math.floor(difference / 2) + 1, state);
-      state.log.push(`${target.displayName} впитывает знания своего наставника.`);
+      const luck = 15 + actor.lvl;
+      grantEffect(target, 'LUCKY', 2, luck);
+      state.log.push(
+        `${actor.displayName} наставляет саммона ${target.displayName}: +${luck} удачи (без повышения уровня).`
+      );
       return { status: 'done' };
     }
 
+    const cost = input.slot === 4 ? 4 : 3;
     const err = trySpendMana(actor, cost);
     if (err) {
       return { status: 'reject', message: err };
@@ -195,11 +205,32 @@ export const incubAbilities: AbilityHandler = {
 
     if (input.slot === 2) {
       setSlotCd(actor, 2, 2);
-      const bonus = 50 + actor.lvl * 5;
-      grantEffect(target, 'IMAGINARY_HEALTH', 2, bonus);
-      state.log.push(
-        `${actor.displayName}, чудесный доктор, дарует ${target.displayName} ${bonus} мнимого здоровья.`
+      const damage = dealDamage(
+        actor,
+        target,
+        { kind: 'magic', damageMult: 1, armorIgnore: 0, source: 'FIRE' },
+        state
       );
+      if (damage === 0) {
+        state.log.push(`${actor.displayName}: огненный хлыст — промах.`);
+      } else {
+        state.log.push(
+          `${actor.displayName} хлещет огнём ${target.displayName} ${formatLastLogDamage(damage)}.`
+        );
+        markDeadIfNeeded(state, target);
+      }
+      if (target.alive) {
+        const rounds = 2 + Math.floor(actor.lvl / 8);
+        const had = hasEffect(target, 'ERUPTION');
+        grantEffect(target, 'ERUPTION', rounds);
+        // Стакается: при продлении снова −5 FIRE (applyOnAdd только на первое наложение).
+        if (had) {
+          changeResist(target, 'FIRE', -5);
+        }
+        state.log.push(
+          `${target.displayName}: извержение на ${rounds} р., сопротивление огню −5 (навсегда).`
+        );
+      }
       return { status: 'done' };
     }
 

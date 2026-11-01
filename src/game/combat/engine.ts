@@ -19,7 +19,14 @@ import {
 } from './damage';
 import { resistsForClass } from './defaultResists';
 import { levelUpLivingUnits, levelUpUnit } from './level';
-import { applyPsycho, maybeRewardHighMorale, normalizeUnit } from './morale';
+import {
+  applyIllnessTurnStart,
+  applyMasochismRoundStart,
+  applyPsycho,
+  maybePunishLowMorale,
+  maybeRewardHighMorale,
+  normalizeUnit,
+} from './morale';
 import { summarizeResists } from './resists';
 import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnEnd, tickEffectsOnTurnStart, addMana } from './effects';
 import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, MAX_TEAM_SIZE, ROW_FRONT } from './settings';
@@ -218,7 +225,9 @@ function buildTeamUnits(
         enslavedOriginTeam: null,
         enslavedOriginPlayerId: null,
         morale: hero.morale ?? 0,
+        lives: 0,
         illness: false,
+        illnessKind: null,
       };
       initPilotFlags(unit);
       units.push(unit);
@@ -287,6 +296,7 @@ export function advanceToNextUnit(state: BattleState): void {
         state.log.push(`Отряд становится сильнее (ур. ${maxLvl}).`);
       }
       state.log.push(...levelUpLogs);
+      applyMasochismRoundStart(state);
       order = initiativeOrder(state);
     }
   }
@@ -306,7 +316,10 @@ export function advanceToNextUnit(state: BattleState): void {
     applyPsycho(state, next);
   }
   if (next.alive) {
-    normalizeUnit(next);
+    applyIllnessTurnStart(state, next);
+  }
+  if (next.alive) {
+    normalizeUnit(next, state);
   }
   if (!next.alive) {
     state.doneIds.push(next.id);
@@ -741,7 +754,9 @@ function finishUnitTurn(state: BattleState, actor: BattleUnit): void {
     endTurnTick(state, actor);
   }
   if (actor.alive) {
+    normalizeUnit(actor, state);
     maybeRewardHighMorale(state, actor);
+    maybePunishLowMorale(state, actor);
   }
   state.doneIds.push(actor.id);
   state.pendingPrompt = null;

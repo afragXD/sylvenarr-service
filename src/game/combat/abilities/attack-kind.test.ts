@@ -169,8 +169,15 @@ describe('weapon enchants and counters only on melee', () => {
   });
 
   test('DemonLord triple strike scales with attack, not spell power', () => {
+    // accuracy 105: штраф Трёхглавого −5 пп → эффективная 100 (при mock random=0 иначе промах).
     const state = battle([
-      { id: 'p1', code: 'DemonLord', team: 0, row: 0, over: { damage: 60, power: 1 } },
+      {
+        id: 'p1',
+        code: 'DemonLord',
+        team: 0,
+        row: 0,
+        over: { damage: 60, power: 1, accuracy: 105 },
+      },
       { id: 'e1', code: 'Foe', team: 1, row: 0 },
     ]);
     const foe = byId(state, 'e1');

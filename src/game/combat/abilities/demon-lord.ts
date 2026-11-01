@@ -87,10 +87,17 @@ export const demonLordAbilities: AbilityHandler = {
       );
       let killed = false;
       for (const enemy of rowTargets) {
+        // CUT-2026-11-01c AC-4: встроенный штраф точности −5 пп.
         const damage = dealDamage(
           actor,
           enemy,
-          { kind: 'melee', damageMult: 1.15, armorIgnore: 0, source: 'WEAPON' },
+          {
+            kind: 'melee',
+            damageMult: 1.15,
+            armorIgnore: 0,
+            source: 'WEAPON',
+            accuracyPenalty: 5,
+          },
           state
         );
         if (damage > 0) {

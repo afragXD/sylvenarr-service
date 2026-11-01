@@ -16,6 +16,8 @@ function abilityMeta(
         slot: 1,
         label: 'Восстановление ОЗ',
         needsTarget: true,
+        previewHealMin: 35 + actor.lvl,
+        previewHealMax: 50 + actor.lvl * 4,
         disabledReason:
           actor.mana < 2
             ? 'Нужно 2 МР'
@@ -62,19 +64,26 @@ function abilityMeta(
         disabledReason: actor.ultaCharges <= 0 ? 'Нет зарядов' : null,
         legalTargetIds: [],
       };
-    case 5:
+    case 5: {
+      const allies = alliesOf(state, actor);
       return {
         slot: 5,
-        label: 'Базовые действия',
-        needsTarget: false,
-        disabledReason: 'Используйте защиту / ожидание',
-        legalTargetIds: [],
+        label: 'Чудесный доктор',
+        needsTarget: true,
+        disabledReason:
+          actor.mana < 3
+            ? 'Нужно 3 МР'
+            : allies.length === 0
+              ? 'Нет союзников'
+              : null,
+        legalTargetIds: allies.map((unit) => unit.id),
       };
+    }
   }
 }
 
 /**
- * Oracle: heal+maxHp, extra turn, weapon omen, row mana.
+ * Oracle: heal+maxHp, extra turn, weapon omen, row mana, Чудесный доктор (AC-10).
  */
 export const oracleAbilities: AbilityHandler = {
   listAbilities(state, actor) {
@@ -156,6 +165,20 @@ export const oracleAbilities: AbilityHandler = {
       return { status: 'done' };
     }
 
-    return { status: 'reject', message: 'Используйте защиту / ожидание' };
+    // slot 5 — Чудесный доктор (перенесено с Инкуба, CUT AC-10).
+    const err = trySpendMana(actor, 3);
+    if (err) {
+      return { status: 'reject', message: err };
+    }
+    const target = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
+    if (!target) {
+      return { status: 'reject', message: 'Нужен союзник' };
+    }
+    const bonus = 50 + actor.lvl * 5;
+    grantEffect(target, 'IMAGINARY_HEALTH', 2, bonus);
+    state.log.push(
+      `${actor.displayName}, чудесный доктор, дарует ${target.displayName} ${bonus} мнимого здоровья.`
+    );
+    return { status: 'done' };
   },
 };

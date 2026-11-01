@@ -29,10 +29,13 @@ function abilityMeta(
     }
     case 2: {
       const allies = alliesOf(state, actor);
+      const heal = actor.lvl * 7 + Math.floor(actor.power / 3);
       return {
         slot: 2,
         label: 'Изобильный свет',
         needsTarget: true,
+        previewHealMin: heal,
+        previewHealMax: heal,
         disabledReason:
           actor.mana < 3
             ? 'Нужно 3 МР'

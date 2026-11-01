@@ -116,17 +116,29 @@ export function changeResist(unit: BattleUnit, source: DamageSource, delta: numb
   entry.value += delta;
 }
 
-export function setWard(unit: BattleUnit, source: DamageSource, charges = 1): void {
+/**
+ * Вард по источнику.
+ * @param cumulative — копить заряды (по умолчанию false: заменить числом `charges`).
+ * CUT AC-11: Зов лун вызывает с cumulative=true.
+ */
+export function setWard(
+  unit: BattleUnit,
+  source: DamageSource,
+  charges = 1,
+  cumulative = false
+): void {
   const entry = getOrCreateResist(unit, source);
   entry.immune = false;
-  entry.wardCharges = (entry.wardCharges ?? 0) + charges;
+  if (cumulative) {
+    entry.wardCharges = (entry.wardCharges ?? 0) + charges;
+  } else {
+    entry.wardCharges = charges;
+  }
 }
 
-/** Выставляет число зарядов варда без накопления. */
+/** Выставляет число зарядов варда без накопления (алиас setWard(_, _, n, false)). */
 export function setWardExact(unit: BattleUnit, source: DamageSource, charges = 1): void {
-  const entry = getOrCreateResist(unit, source);
-  entry.immune = false;
-  entry.wardCharges = charges;
+  setWard(unit, source, charges, false);
 }
 
 export function setImmunity(unit: BattleUnit, source: DamageSource): void {

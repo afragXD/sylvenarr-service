@@ -166,7 +166,7 @@ describe('phase 3.11 pilots', () => {
     expect(det.effects.some((effect) => effect.id === 'INVISIBLE')).toBe(true);
   });
 
-  test('GhostWarrior slot 1 hits harder with team graveyard', () => {
+  test('GhostWarrior slot 1: урон не зависит от кладбища (CUT AC-7)', () => {
     const heroes = new Map([
       ['GhostWarrior', hero('GhostWarrior', { initiative: 99, luck: 0, damage: 30, accuracy: 100 })],
       ['B', hero('B', { initiative: 1, armor: 0, health: 400 })],
@@ -210,7 +210,8 @@ describe('phase 3.11 pilots', () => {
       empty += mk(0);
       full += mk(2);
     }
-    expect(full).toBeGreaterThan(empty);
+    // Допуск на RNG критов/броска урона — средние должны быть близки.
+    expect(Math.abs(full - empty) / Math.max(1, empty)).toBeLessThan(0.25);
   });
 
   test('Specter slot 3 Сглаз: MARKED + FATMAN на уклонение, не мораль', () => {

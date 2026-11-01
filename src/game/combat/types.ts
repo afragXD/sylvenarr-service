@@ -4,6 +4,14 @@ export type BattleAction = 'attack' | 'defend' | 'wait' | 'skill' | 'ability' | 
 
 export type AbilitySlot = 1 | 2 | 3 | 4 | 5;
 
+/** Психоз до конца матча (CUT-2026-11-01c AC-1). */
+export type MentalIllnessKind =
+  | 'paranoia'
+  | 'apathy'
+  | 'schizophrenia'
+  | 'degradation'
+  | 'masochism';
+
 export type EffectId =
   | 'GUARDED'
   | 'STRENGTH'
@@ -54,7 +62,15 @@ export type EffectId =
   | 'BERSERK'
   | 'IMAGINARY_HEALTH'
   | 'IMMOLATION'
-  | 'DEATHWARD';
+  | 'DEATHWARD'
+  /** Скелет-чемпион: 50 % melee-урона атакующему. */
+  | 'PAIN_REFLECT'
+  /** Воин-призрак: Оковы взаимного терпения (на цели связи). */
+  | 'LIFE_FETTERS'
+  /** Воин-призрак: Жизнь на нитке (+урон за % потерянного ОЗ). */
+  | 'LIFE_THREAD'
+  /** Инкуб «Огненный хлыст»: при смерти жжёт союзников (FIRE). */
+  | 'ERUPTION';
 
 export type BattleEffect = {
   id: EffectId;
@@ -209,14 +225,28 @@ export type BattleUnit = {
   enslavedOriginPlayerId: string | null;
   /** Боевой дух (psycho, бонусы хода, классовые способности). */
   morale: number;
+  /** Доп. жизнь за макс. мораль (CUT-2026-11-01c AC-1); кап 1. */
+  lives: number;
   /** Уже сработала mental illness в этом бою (порт Hero.illness). */
   illness: boolean;
+  /** Какая болезнь активна до конца матча (AC-1); null если нет. */
+  illnessKind: MentalIllnessKind | null;
   /** Кулдауны слотов в раундах (Antipaladin / Angel / Incub); в старых снимках поля нет. */
   abilityCds?: Partial<Record<AbilitySlot, number>>;
   /** Antipaladin: накопленный нанесённый урон для «Шквала ударов». */
   appliedDamage?: number;
   /** Одноразовая пассивка уже сработала (Titan «Наставник»). */
   passiveUsed?: boolean;
+  /**
+   * Умер Самопожертвованием (CUT AC-5 Р-1):
+   * такого юнита нельзя воскресить другим Самопожертвованием.
+   */
+  sacrificedSelf?: boolean;
+  /**
+   * Воин-призрак: id цели Оков взаимного терпения
+   * (урон по носителю дублируется цели источником Жизнь).
+   */
+  fettersTargetId?: string | null;
 };
 
 /** Активные правила боя из Match.rules (без ярмарки). */
@@ -305,4 +335,11 @@ export type AbilityInfo = {
   legalTargetIds: string[];
   /** Тип урона слота (для превью на клиенте); null — слот без прямого урона. */
   attackKind?: 'melee' | 'ranged' | 'magic' | null;
+  /** CUT AC-13: параметры превью при наведении на цель. */
+  previewDamageMult?: number;
+  previewArmorIgnore?: number;
+  previewSource?: string;
+  previewAccuracyPenalty?: number;
+  previewHealMin?: number;
+  previewHealMax?: number;
 };

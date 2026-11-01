@@ -4,6 +4,7 @@ import { delEffect, grantEffect, hasEffect } from '../effects';
 import { levelUpUnit } from '../level';
 import { applyCatalogStats } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { enemiesOf, meleeOrAll } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
@@ -33,6 +34,8 @@ function abilityMeta(
         label: 'Стилет',
         needsTarget: true,
         attackKind: 'melee',
+        previewDamageMult: 1.15,
+        previewArmorIgnore: 0.35,
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
@@ -43,7 +46,8 @@ function abilityMeta(
         slot: 2,
         label: 'Звон смерти',
         needsTarget: true,
-        disabledReason: targets.length === 0 ? 'Нет целей для облика' : null,
+        disabledReason:
+          cdReason(actor, 2) ?? (targets.length === 0 ? 'Нет целей для облика' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -91,6 +95,7 @@ export const assassinAbilities: AbilityHandler = {
   },
 
   preChoice(_state, actor) {
+    tickSlotCds(actor);
     if (actor.deathNoteCd > 0) {
       actor.deathNoteCd -= 1;
     }
@@ -137,6 +142,8 @@ export const assassinAbilities: AbilityHandler = {
       if (hasEffect(actor, 'POLYMORPH')) {
         delEffect(actor, 'POLYMORPH', state);
       }
+      // CUT-2026-11-01c AC-2 п. 4: мана не восстанавливается при превращении.
+      const manaBefore = actor.mana;
       actor.transformParentCode = 'Assassin';
       if (!applyCatalogStats(state, actor, code)) {
         actor.transformParentCode = null;
@@ -149,6 +156,8 @@ export const assassinAbilities: AbilityHandler = {
       actor.morale += moraleGain;
       grantEffect(actor, 'POLYMORPH', 2, 0);
       levelUpUnit(actor, 1, state);
+      actor.mana = Math.min(manaBefore, actor.maxMana);
+      setSlotCd(actor, 2, 3);
       state.log.push(
         `Мимик принимает облик ${formName} (+1 ур., мораль +${moraleGain}).`
       );

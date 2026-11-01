@@ -76,6 +76,65 @@ export function enemiesInColumn(
 }
 
 /**
+ * Квадрат 2×2 (CUT AC-9): цель + сосед по ряду + двое напротив в другом ряду.
+ * Порядок обхода для цепочки шансов: primary → neighbor → opposite(primary) → opposite(neighbor).
+ */
+export function degradationSquareTargets(
+  state: BattleState,
+  actor: BattleUnit,
+  primary: BattleUnit
+): BattleUnit[] {
+  const legalIds = new Set(enemiesOf(state, actor).map((unit) => unit.id));
+  if (!legalIds.has(primary.id)) {
+    return [];
+  }
+  const col = liveColumn(state, primary);
+  if (col < 0) {
+    return [primary];
+  }
+  const sameRow = state.units
+    .filter(
+      (unit) =>
+        unit.alive &&
+        unit.team === primary.team &&
+        unit.row === primary.row &&
+        !hasEffect(unit, 'SANCTUM')
+    )
+    .sort((a, b) => a.column - b.column || a.id.localeCompare(b.id));
+  const neighbor =
+    sameRow[col + 1] && legalIds.has(sameRow[col + 1]!.id)
+      ? sameRow[col + 1]!
+      : sameRow[col - 1] && legalIds.has(sameRow[col - 1]!.id)
+        ? sameRow[col - 1]!
+        : null;
+  const otherRow = primary.row === 0 ? 1 : 0;
+  const oppositeRow = state.units
+    .filter(
+      (unit) =>
+        unit.alive &&
+        unit.team === primary.team &&
+        unit.row === otherRow &&
+        !hasEffect(unit, 'SANCTUM')
+    )
+    .sort((a, b) => a.column - b.column || a.id.localeCompare(b.id));
+  const oppositePrimary =
+    oppositeRow[col] && legalIds.has(oppositeRow[col]!.id) ? oppositeRow[col]! : null;
+  const neighborCol = neighbor ? liveColumn(state, neighbor) : -1;
+  const oppositeNeighbor =
+    neighborCol >= 0 && oppositeRow[neighborCol] && legalIds.has(oppositeRow[neighborCol]!.id)
+      ? oppositeRow[neighborCol]!
+      : null;
+
+  const ordered: BattleUnit[] = [primary];
+  for (const unit of [neighbor, oppositePrimary, oppositeNeighbor]) {
+    if (unit && !ordered.some((item) => item.id === unit.id)) {
+      ordered.push(unit);
+    }
+  }
+  return ordered;
+}
+
+/**
  * Сосед по колонке позади цели (тот же живой индекс в заднем ряду).
  */
 export function neighbourBehind(state: BattleState, target: BattleUnit): BattleUnit | null {

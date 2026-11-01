@@ -26,3 +26,16 @@ export function primaryAttackKindOrNull(
 export function primaryAttackKind(state: BattleState, unit: BattleUnit): AttackKind {
   return primaryAttackKindOrNull(state, unit) ?? 'melee';
 }
+
+/**
+ * Тип атаки слота [1] (порт firstAction для Помрачения рассудка).
+ * Если слот 1 не бьёт (Homie и т.п.) — ближний удар, а не «первый магический слот»
+ * (иначе Пивной элементаль бил бы FIRE из Сливняка).
+ */
+export function firstActionAttackKind(state: BattleState, unit: BattleUnit): AttackKind {
+  if (!isPilotClass(unit.heroClassCode)) {
+    return basicAttackKind(unit.heroClassCode);
+  }
+  const slot1 = listPilotAbilities(state, unit).find((ability) => ability.slot === 1);
+  return slot1?.attackKind ?? 'melee';
+}

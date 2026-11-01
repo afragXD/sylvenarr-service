@@ -47,6 +47,8 @@ export namespace MatchesModel {
     initialTeamSize: t.Number(),
     hostEntry: draftEntry,
     guestEntry: draftEntry,
+    hostPresetName: t.Optional(t.Nullable(t.String())),
+    guestPresetName: t.Optional(t.Nullable(t.String())),
   });
   export type draftState = typeof draftState.static;
 
@@ -157,6 +159,12 @@ export namespace MatchesModel {
     disabledReason: t.Nullable(t.String()),
     legalTargetIds: t.Array(t.String()),
     attackKind: t.Optional(t.Nullable(attackKind)),
+    previewDamageMult: t.Optional(t.Number()),
+    previewArmorIgnore: t.Optional(t.Number()),
+    previewSource: t.Optional(t.String()),
+    previewAccuracyPenalty: t.Optional(t.Number()),
+    previewHealMin: t.Optional(t.Number()),
+    previewHealMax: t.Optional(t.Number()),
   });
   export type abilityInfo = typeof abilityInfo.static;
 

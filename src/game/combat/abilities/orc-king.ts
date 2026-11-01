@@ -2,6 +2,7 @@ import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../d
 import { grantEffect } from '../effects';
 import { unitChoiceLabel } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { availableSummonRows, createSummon } from './summon';
 import { enemiesOf, meleeOrAll, moveToOtherRow, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -40,7 +41,8 @@ function abilityMeta(
         label: `Гоблины (${actor.authority})`,
         needsTarget: false,
         disabledReason:
-          actor.authority <= 0 ? 'Нет вызовов' : atSummonCap ? 'Лимит саммонов' : null,
+          cdReason(actor, 2) ??
+          (actor.authority <= 0 ? 'Нет вызовов' : atSummonCap ? 'Лимит саммонов' : null),
         legalTargetIds: [],
       };
     }
@@ -81,6 +83,10 @@ function abilityMeta(
 export const orcKingAbilities: AbilityHandler = {
   listAbilities(state, actor) {
     return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
+  },
+
+  preChoice(_state, actor) {
+    tickSlotCds(actor);
   },
 
   preChoice(state, actor) {
@@ -281,6 +287,7 @@ function resolvePrompt(
       state.log.push(`${actor.displayName}: не удалось призвать.`);
       return { status: 'done', keepTurn: true };
     }
+    setSlotCd(actor, 2, 2);
     state.log.push(`${actor.displayName} призывает ${summon.displayName}.`);
     return { status: 'done' };
   }

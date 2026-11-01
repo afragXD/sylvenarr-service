@@ -35,8 +35,10 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Inquisitor(unit, ind, state) {
-    if (state.stage % 5 === 0) {
-      unit.armor += 20;
+    // Порт inquisitor.py: stage % 5 == 0 and ind > 0 (CUT-2026-11-01c AC-2).
+    if (state.stage % 5 === 0 && ind > 0) {
+      // CUT-2026-11-01c AC-3: +16 брони (−20%), сила без изменений.
+      unit.armor += 16;
       unit.power += 10;
     }
     if (unit.health > 0) {
@@ -115,7 +117,8 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     if (state.stage % 5 === 0 && ind > 0) {
       unit.ultaCharges += 1;
     }
-    unit.damage += (randInt(1, 3) + Math.floor(unit.lvl / 2)) * ind;
+    // CUT-2026-11-01c AC-3: randInt(2,3) + L//2 (было 1..3).
+    unit.damage += (randInt(2, 3) + Math.floor(unit.lvl / 2)) * ind;
     unit.luck += (Math.floor(unit.lvl / 2) + 1) * ind;
     unit.initiative = Math.round(28 * werewolfRage(unit));
     unit.maxHp += (unit.lvl * 2 + randInt(1, 5)) * ind;
@@ -149,11 +152,9 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   GhostWarrior(unit, ind, _state) {
-    if (unit.hiddenLvl % 5 === 0) {
-      unit.ultaCharges += 1;
-    }
     healUnit(unit, 5 * ind);
-    unit.damage += 3 * ind;
+    // CUT-2026-11-01c AC-7: к прежнему +3 добавить lvl//3.
+    unit.damage += (3 + Math.floor(unit.lvl / 3)) * ind;
     unit.initiative += 2 * ind;
     bumpLevel(unit, ind);
   },
@@ -199,7 +200,8 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
       unit.initiative = Math.floor(unit.initiative / 2);
       unit.horseIsDead = true;
     }
-    unit.armor += 2 * ind;
+    // CUT-2026-11-01c AC-3: + lvl//4 к приросту брони.
+    unit.armor += (2 + Math.floor(unit.lvl / 4)) * ind;
     unit.accuracy += 3 * ind;
     unit.damage += (randInt(1, 2) + Math.floor(unit.lvl / 3)) * ind;
     bumpLevel(unit, ind);

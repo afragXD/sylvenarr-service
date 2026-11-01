@@ -169,7 +169,8 @@ export const evilTreeAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      grantEffect(target, 'INTERDICT', 2 + Math.floor(actor.lvl / 4), 1);
+      // CUT-2026-11-01c AC-4: Запретное слово — 2 раунда (было 2+L//4 / «3»).
+      grantEffect(target, 'INTERDICT', 2, 1);
       state.log.push(
         `${actor.displayName}: запретное слово — ${target.displayName} не получает лечения.`
       );
@@ -225,7 +226,8 @@ export const evilTreeAbilities: AbilityHandler = {
         addMana(actor, 4);
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const levels = 3;
+      // CUT-2026-11-01c AC-4: 1 + level // 5 (заменяет прежнее +3).
+      const levels = 1 + Math.floor(actor.lvl / 5);
       levelUpUnit(target, levels, state);
       state.log.push(
         `${actor.displayName}: взращивание — ${target.displayName} получает +${levels} уровней.`

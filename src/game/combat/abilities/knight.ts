@@ -1,8 +1,25 @@
 import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
-import { delEffect, grantEffect, hasEffect } from '../effects';
+import { delEffect, grantEffect, hasEffect, resurrectUnit } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, meleeOrAll, neighbourBehind, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
+
+function sacrificeHpNeed(actor: BattleUnit): number {
+  return Math.ceil(actor.maxHp * 0.6);
+}
+
+function sacrificeTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {
+  return state.graveyard
+    .filter((entry) => {
+      if (entry.team !== actor.team || entry.forbiddenResurrect) {
+        return false;
+      }
+      const unit = state.units.find((item) => item.id === entry.unitId);
+      return Boolean(unit && !unit.alive && !unit.sacrificedSelf);
+    })
+    .map((entry) => state.units.find((item) => item.id === entry.unitId)!)
+    .filter(Boolean);
+}
 
 function abilityMeta(
   state: BattleState,
@@ -37,12 +54,18 @@ function abilityMeta(
     }
     case 3: {
       const cost = 100 + actor.lvl * 2;
+      const allies = alliesOf(state, actor);
       return {
         slot: 3,
         label: 'Баллада',
-        needsTarget: false,
-        disabledReason: actor.gold < cost ? `Нужно ${cost} золота` : null,
-        legalTargetIds: [],
+        needsTarget: true,
+        disabledReason:
+          actor.gold < cost
+            ? `Нужно ${cost} золота`
+            : allies.length === 0
+              ? 'Нет целей'
+              : null,
+        legalTargetIds: allies.map((unit) => unit.id),
       };
     }
     case 4: {
@@ -55,14 +78,23 @@ function abilityMeta(
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
-    case 5:
+    case 5: {
+      const need = sacrificeHpNeed(actor);
+      const canHp = actor.health >= need;
+      const targets = sacrificeTargets(state, actor);
+      const tip = canHp ? `можно, нужно ${need} ОЗ` : `нельзя, нужно ${need} ОЗ`;
       return {
         slot: 5,
-        label: 'Подорожник',
-        needsTarget: false,
-        disabledReason: null,
-        legalTargetIds: [],
+        label: `Самопожертвование (${tip})`,
+        needsTarget: true,
+        disabledReason: !canHp
+          ? `нельзя, нужно ${need} ОЗ`
+          : targets.length === 0
+            ? 'Нет цели на кладбище'
+            : null,
+        legalTargetIds: targets.map((unit) => unit.id),
       };
+    }
   }
 }
 
@@ -98,12 +130,17 @@ export const knightAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, {
-        kind: 'melee',
-        damageMult: 1.05,
-        armorIgnore: 0,
-        noCounter: true,
-      });
+      const damage = dealDamage(
+        actor,
+        target,
+        {
+          kind: 'melee',
+          damageMult: 1.05,
+          armorIgnore: 0,
+          noCounter: true,
+        },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName} промахнулся копьём по ${target.displayName}.`);
       } else {
@@ -115,11 +152,16 @@ export const knightAbilities: AbilityHandler = {
         if (target.alive && randInt(1, 100) <= 50 + actor.lvl * 2) {
           const behind = neighbourBehind(state, target);
           if (behind) {
-            const splash = dealDamage(actor, behind, {
-              kind: 'melee',
-              damageMult: 0.6,
-              armorIgnore: 0,
-            });
+            const splash = dealDamage(
+              actor,
+              behind,
+              {
+                kind: 'melee',
+                damageMult: 0.6,
+                armorIgnore: 0,
+              },
+              state
+            );
             if (splash > 0) {
               state.log.push(`Копьё задевает ${behind.displayName} ${formatLastLogDamage(splash)}.`);
               markDeadIfNeeded(state, behind);
@@ -138,7 +180,12 @@ export const knightAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { kind: 'melee', damageMult: 0.75, armorIgnore: 0 });
+      const damage = dealDamage(
+        actor,
+        target,
+        { kind: 'melee', damageMult: 0.75, armorIgnore: 0 },
+        state
+      );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: удар пикой — промах.`);
       } else {
@@ -153,14 +200,20 @@ export const knightAbilities: AbilityHandler = {
 
     if (input.slot === 3) {
       const cost = 100 + actor.lvl * 2;
-      actor.gold -= cost;
-      const atk = 20 + actor.lvl * 2;
-      for (const ally of ownRowAllies(state, actor)) {
-        grantEffect(ally, 'STRENGTH', 1 + Math.floor(actor.lvl / 5), atk);
-        grantEffect(ally, 'BLESSED', 1 + Math.floor(actor.lvl / 6), 0.5);
+      const ally = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
+      if (!ally) {
+        return { status: 'reject', message: 'Цель не найдена' };
       }
+      actor.gold -= cost;
+      // TODO(fairs): Боевая баллада — вернуть прежний прирост после механики ярмарок
+      const atk = 15 + actor.lvl;
+      grantEffect(ally, 'STRENGTH', 1 + Math.floor(actor.lvl / 5), atk);
+      grantEffect(ally, 'BLESSED', 1 + Math.floor(actor.lvl / 6), 0.5);
+      delEffect(ally, 'POISON');
+      delEffect(ally, 'BURNING');
+      delEffect(ally, 'BLEEDING');
       state.log.push(
-        `${actor.displayName} исполняет боевую балладу (−${cost} золота, +атака ряду).`
+        `${actor.displayName} исполняет боевую балладу для ${ally.displayName} (−${cost} золота, +${atk} силы).`
       );
       return { status: 'done' };
     }
@@ -175,15 +228,20 @@ export const knightAbilities: AbilityHandler = {
       return { status: 'done' };
     }
 
-    // slot 5
-    delEffect(actor, 'BLEEDING');
-    delEffect(actor, 'POISON');
-    delEffect(actor, 'BURNING');
-    state.log.push(`${actor.displayName} снимает яд, ожог и кровоток.`);
-    if (randInt(1, 100) <= 5 * actor.lvl) {
-      state.log.push(`${actor.displayName} сохраняет ход!`);
-      return { status: 'done', keepTurn: true };
+    // slot 5 — Самопожертвование (CUT AC-5 Р-1)
+    const ally = sacrificeTargets(state, actor).find((unit) => unit.id === input.targetId);
+    if (!ally) {
+      return { status: 'reject', message: 'Цель не найдена' };
     }
+    const selfDamage = actor.maxHp;
+    actor.health = 0;
+    actor.sacrificedSelf = true;
+    state.log.push(
+      `${actor.displayName} жертвует собой (${selfDamage} урона себе) ради ${ally.displayName}.`
+    );
+    markDeadIfNeeded(state, actor, { ignoreSaves: true });
+    resurrectUnit(state, ally);
+    state.log.push(`${ally.displayName} возвращается к жизни.`);
     return { status: 'done' };
   },
 };

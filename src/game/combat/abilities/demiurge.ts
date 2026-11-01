@@ -9,7 +9,7 @@ import {
   preferPhantomRow,
   preferSummonRow,
 } from './summon';
-import { primaryAttackKind } from './primary-attack';
+import { firstActionAttackKind } from './primary-attack';
 import { alliesOf, enemiesOf } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
@@ -264,10 +264,15 @@ export const demiurgeAbilities: AbilityHandler = {
       const chance = 80 + actor.lvl;
       if (rollMindChance(state, victim, chance)) {
         const target = pickFragileAlly(allies);
+        // Порт firstAction: тип/источник слота [1], не «первой магической» абилки.
         const dmg = dealDamage(
           victim,
           target,
-          { kind: primaryAttackKind(state, victim), damageMult: 1, armorIgnore: 0 },
+          {
+            kind: firstActionAttackKind(state, victim),
+            damageMult: 1,
+            armorIgnore: 0,
+          },
           state
         );
         state.log.push(

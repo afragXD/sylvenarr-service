@@ -97,9 +97,7 @@ export const beerElementalAbilities: AbilityHandler = {
       }
       const gain = 7 + actor.lvl * 2;
       target.morale += gain;
-      state.log.push(
-        'Пиво течёт во мне, я един с пивом ... Пиво течёт во мне, я един с пивом! Пиво течёт во мне, я един с пивом!!!'
-      );
+      state.log.push('Пиво течёт во мне, я един с пивом');
       state.log.push(
         `${actor.displayName}: ${target.displayName} получает +${gain} боевого духа.`
       );

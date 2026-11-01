@@ -1,12 +1,36 @@
 import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
 import { grantEffect, hasEffect, healUnit, resurrectUnit } from '../effects';
+import { levelUpUnit } from '../level';
 import { isUndeadClass } from '../races';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { enemiesOf, meleeTargets } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
+const PROMPT_REZ_1 = 'dracolich_resurrect';
+const PROMPT_REZ_2 = 'dracolich_resurrect_2';
+
 function lowHpDamageMult(actor: BattleUnit): number {
   return 1 + (1 - actor.health / actor.maxHp) * 0.36;
+}
+
+function undeadGraveEntries(state: BattleState, actor: BattleUnit) {
+  return state.graveyard.filter(
+    (entry) =>
+      entry.team === actor.team &&
+      !entry.forbiddenResurrect &&
+      isUndeadClass(entry.heroClassCode)
+  );
+}
+
+function undeadAllies(state: BattleState, actor: BattleUnit): BattleUnit[] {
+  return state.units.filter(
+    (unit) => unit.alive && unit.team === actor.team && isUndeadClass(unit.heroClassCode)
+  );
+}
+
+function isBelowExecuteThreshold(unit: BattleUnit): boolean {
+  return unit.health < unit.maxHp * 0.2;
 }
 
 function abilityMeta(
@@ -37,27 +61,22 @@ function abilityMeta(
       };
     }
     case 3: {
-      const targets = enemiesOf(state, actor).filter(
-        (unit) => unit.health < unit.maxHp * 0.2
-      );
+      const undead = undeadAllies(state, actor);
+      const levels = 1 + Math.floor(actor.lvl / 6);
       return {
         slot: 3,
-        label: 'Пожирание',
-        needsTarget: true,
-        disabledReason: targets.length === 0 ? 'Нет ослабленных целей' : null,
-        legalTargetIds: targets.map((unit) => unit.id),
+        label: `Молитва нежити (+${levels} ур.)`,
+        needsTarget: false,
+        disabledReason:
+          cdReason(actor, 3) ?? (undead.length === 0 ? 'Нет нежити в отряде' : null),
+        legalTargetIds: [],
       };
     }
     case 4: {
-      const options = state.graveyard.filter(
-        (entry) =>
-          entry.team === actor.team &&
-          !entry.forbiddenResurrect &&
-          isUndeadClass(entry.heroClassCode)
-      );
+      const options = undeadGraveEntries(state, actor);
       return {
         slot: 4,
-        label: 'Высшая Некромантия',
+        label: 'Высшая Некромантия ×2',
         needsTarget: false,
         disabledReason: options.length === 0 ? 'Нет нежити на кладбище' : null,
         legalTargetIds: [],
@@ -65,15 +84,76 @@ function abilityMeta(
     }
     case 5: {
       const targets = meleeTargets(state, actor);
+      const anyLow = targets.some(isBelowExecuteThreshold);
       return {
         slot: 5,
-        label: 'Удар хвостом',
+        label: anyLow
+          ? 'Пожирание гада — ЦЕЛЬ НИЖЕ 20 % ОЗ — СОЖРЁТ'
+          : 'Пожирание гада',
         needsTarget: true,
-        disabledReason: targets.length === 0 ? 'Нет целей' : null,
+        attackKind: 'melee',
+        disabledReason:
+          cdReason(actor, 5) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
   }
+}
+
+function resurrectUndeadFromGrave(
+  state: BattleState,
+  actor: BattleUnit,
+  unitId: string
+): BattleUnit | null {
+  const entry = state.graveyard.find((item) => item.unitId === unitId);
+  if (!entry || entry.team !== actor.team) {
+    return null;
+  }
+  if (entry.forbiddenResurrect || !isUndeadClass(entry.heroClassCode)) {
+    return null;
+  }
+  const unit = state.units.find((item) => item.id === entry.unitId);
+  if (!unit) {
+    return null;
+  }
+  resurrectUnit(state, unit);
+  state.log.push(
+    `${actor.displayName} поднимает нежить: ${unit.displayName} (½ max ОЗ, ½ инициативы).`
+  );
+  return unit;
+}
+
+function openResurrectPrompt(
+  state: BattleState,
+  actor: BattleUnit,
+  kind: typeof PROMPT_REZ_1 | typeof PROMPT_REZ_2,
+  allowSkip: boolean
+): AbilityOutcome {
+  const options = undeadGraveEntries(state, actor).map((entry) => ({
+    id: entry.unitId,
+    label: entry.displayName,
+  }));
+  if (options.length === 0) {
+    return { status: 'done' };
+  }
+  if (allowSkip) {
+    options.push({ id: 'skip', label: 'Пропустить' });
+  } else {
+    options.push({ id: 'cancel', label: 'Отмена' });
+  }
+  state.pendingPrompt = {
+    unitId: actor.id,
+    kind,
+    slot: 4,
+    options,
+    context: {},
+  };
+  state.log.push(
+    kind === PROMPT_REZ_1
+      ? `${actor.displayName} взывает к нежити на кладбище.`
+      : `${actor.displayName}: выберите вторую цель некромантии (или пропустите).`
+  );
+  return { status: 'pending' };
 }
 
 function resolveUndeadResurrect(
@@ -90,26 +170,31 @@ function resolveUndeadResurrect(
     state.log.push(`${actor.displayName} отменяет некромантию.`);
     return { status: 'done' };
   }
+  if (choice === 'skip') {
+    state.pendingPrompt = null;
+    state.log.push(`${actor.displayName} пропускает вторую цель некромантии.`);
+    return { status: 'done' };
+  }
   if (!prompt.options.some((option) => option.id === choice)) {
     return { status: 'reject', message: 'Неверный выбор' };
   }
-  const entry = state.graveyard.find((item) => item.unitId === choice);
+
+  const isSecond = prompt.kind === PROMPT_REZ_2;
   state.pendingPrompt = null;
-  if (!entry || entry.team !== actor.team) {
-    return { status: 'reject', message: 'Нет на кладбище' };
-  }
-  if (entry.forbiddenResurrect || !isUndeadClass(entry.heroClassCode)) {
+  const raised = resurrectUndeadFromGrave(state, actor, choice);
+  if (!raised) {
     return { status: 'reject', message: 'Цель нельзя воскресить' };
   }
-  const unit = state.units.find((item) => item.id === entry.unitId);
-  if (!unit) {
-    return { status: 'reject', message: 'Юнит не найден' };
+
+  if (isSecond) {
+    return { status: 'done' };
   }
-  resurrectUnit(state, unit);
-  state.log.push(
-    `${actor.displayName} поднимает нежить: ${unit.displayName} (½ max ОЗ, ½ инициативы).`
-  );
-  return { status: 'done' };
+
+  // Первая цель поднята — если есть ещё трупы, второй выбор (можно skip).
+  if (undeadGraveEntries(state, actor).length === 0) {
+    return { status: 'done' };
+  }
+  return openResurrectPrompt(state, actor, PROMPT_REZ_2, true);
 }
 
 function shuffleEnemyColumns(state: BattleState, actor: BattleUnit): void {
@@ -134,7 +219,7 @@ function shuffleEnemyColumns(state: BattleState, actor: BattleUnit): void {
 }
 
 /**
- * Dracolich: breath AoE, shuffle+weak, execute, undead rez, marked tail; preChoice regen.
+ * Dracolich: дыхание, гниль, Молитва нежити, Некромантия ×2, Пожирание гада.
  */
 export const dracolichAbilities: AbilityHandler = {
   listAbilities(state, actor) {
@@ -142,6 +227,7 @@ export const dracolichAbilities: AbilityHandler = {
   },
 
   preChoice(state, actor) {
+    tickSlotCds(actor);
     const healed = healUnit(actor, Math.floor(actor.maxHp / 6));
     if (healed > 0) {
       state.log.push(`${actor.displayName} регенерирует ${healed} ОЗ.`);
@@ -210,43 +296,20 @@ export const dracolichAbilities: AbilityHandler = {
     }
 
     if (input.slot === 3) {
-      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
-      if (!target) {
-        return { status: 'reject', message: 'Цель не найдена' };
+      const levels = 1 + Math.floor(actor.lvl / 6);
+      const undead = undeadAllies(state, actor);
+      for (const unit of undead) {
+        levelUpUnit(unit, levels, state);
       }
-      if (target.health >= target.maxHp * 0.2) {
-        return { status: 'reject', message: 'Слишком много жизненных сил' };
-      }
-      target.health = 0;
-      markDeadIfNeeded(state, target);
+      setSlotCd(actor, 3, 2);
       state.log.push(
-        `${actor.displayName} пожирает ослабевшего ${target.displayName}.`
+        `${actor.displayName} читает молитву нежити: +${levels} ур. (${undead.length} цел.).`
       );
       return { status: 'done' };
     }
 
     if (input.slot === 4) {
-      const options = state.graveyard
-        .filter(
-          (entry) =>
-            entry.team === actor.team &&
-            !entry.forbiddenResurrect &&
-            isUndeadClass(entry.heroClassCode)
-        )
-        .map((entry) => ({
-          id: entry.unitId,
-          label: entry.displayName,
-        }));
-      options.push({ id: 'cancel', label: 'Отмена' });
-      state.pendingPrompt = {
-        unitId: actor.id,
-        kind: 'dracolich_resurrect',
-        slot: 4,
-        options,
-        context: {},
-      };
-      state.log.push(`${actor.displayName} взывает к нежити на кладбище.`);
-      return { status: 'pending' };
+      return openResurrectPrompt(state, actor, PROMPT_REZ_1, false);
     }
 
     if (input.slot === 5) {
@@ -254,6 +317,7 @@ export const dracolichAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
+      const execute = isBelowExecuteThreshold(target);
       const armorIgnore = hasEffect(target, 'MARKED') ? 0.75 : 0;
       const damage = dealDamage(
         actor,
@@ -262,13 +326,24 @@ export const dracolichAbilities: AbilityHandler = {
         state
       );
       if (damage === 0) {
-        state.log.push(`${actor.displayName}: хвост — промах.`);
+        state.log.push(`${actor.displayName}: пожирание гада — промах.`);
       } else {
         state.log.push(
-          `${actor.displayName} бьёт хвостом ${target.displayName} ${formatLastLogDamage(damage)}.`
+          `${actor.displayName} пожирает ${target.displayName} ${formatLastLogDamage(damage)}${
+            armorIgnore > 0 ? ' (метка: −75% брони)' : ''
+          }.`
         );
         markDeadIfNeeded(state, target);
       }
+      // Казнь по ОЗ до атаки; FINALSTRIKE / lives / DEATHWARD — через markDeadIfNeeded.
+      if (execute && target.alive) {
+        target.health = 0;
+        state.log.push(
+          `${actor.displayName} сжирает ослабевшего ${target.displayName} (было < 20 % ОЗ).`
+        );
+        markDeadIfNeeded(state, target);
+      }
+      setSlotCd(actor, 5, 3);
       return { status: 'done' };
     }
 

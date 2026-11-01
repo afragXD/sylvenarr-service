@@ -165,6 +165,7 @@ export function initPilotFlags(unit: BattleUnit): void {
       break;
     case 'GhostWarrior':
       unit.ultaCharges = 1;
+      unit.maxSummons = Math.max(unit.maxSummons, 1);
       break;
     case 'GoldGolem':
       unit.forbiddenResurrect = true;

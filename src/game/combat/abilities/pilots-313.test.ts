@@ -57,10 +57,10 @@ describe('phase 3.13 pilots', () => {
     expect(foe.health).toBeLessThan(before);
   });
 
-  test('Dracolich execute kills below 20% HP', () => {
+  test('Dracolich Пожирание гада (slot 5) kills below 20% HP', () => {
     const heroes = new Map([
-      ['Dracolich', hero('Dracolich', { initiative: 99 })],
-      ['B', hero('B', { initiative: 1, health: 200 })],
+      ['Dracolich', hero('Dracolich', { initiative: 99, damage: 1 })],
+      ['B', hero('B', { initiative: 1, health: 200, armor: 0 })],
     ]);
     const state = createBattleState({
       matchId: 'm',
@@ -80,7 +80,7 @@ describe('phase 3.13 pilots', () => {
       playerId: 'h',
       unitId: 'p1',
       action: 'ability',
-      slot: 3,
+      slot: 5,
       targetId: 'p2',
     });
     expect(result.ok).toBe(true);

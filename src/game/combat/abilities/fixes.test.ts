@@ -287,7 +287,7 @@ describe('combat fixes', () => {
     expect(lich.lvl).toBe(before + 4);
   });
 
-  test('EvilTree slot 5 «Взращивание»: 4 МР → +3 уровней цели', () => {
+  test('EvilTree slot 5 «Взращивание»: 4 МР → 1+L//5 уровней цели', () => {
     const heroes = new Map([
       ['EvilTree', hero('EvilTree', { initiative: 99, mana: 10 })],
       ['B', hero('B', { initiative: 50 })],
@@ -305,7 +305,7 @@ describe('combat fixes', () => {
       heroes,
     });
     const tree = state.units.find((unit) => unit.id === 'p1')!;
-    tree.lvl = 3;
+    tree.lvl = 10; // 1 + 10//5 = 3
     const ally = state.units.find((unit) => unit.id === 'p2')!;
     const cast = applyAction(state, {
       playerId: 'h',
@@ -372,12 +372,13 @@ describe('combat fixes', () => {
     expect(state.graveyard.some((entry) => entry.unitId === 'p2')).toBe(false);
   });
 
-  test('Witch slot 4: вард LOWERINGLEVEL инквизитора блокирует деградацию', () => {
+  test('Witch slot 4: вард LOWERINGLEVEL блокирует массовую деградацию', () => {
     const state = twoUnitState('Witch', 'Inquisitor', { mana: 10 }, {});
     const witch = state.units.find((unit) => unit.id === 'p1')!;
-    // 70 + 15 * 2 = 100% — дрейн точно дойдёт до проверки варда.
     witch.lvl = 15;
     const foe = state.units.find((unit) => unit.id === 'p2')!;
+    // Убираем вард MIND, чтобы дойти до LOWERINGLEVEL (оба источника в Chance).
+    foe.resists.MIND = { value: 0 };
     expect((foe.resists.LOWERINGLEVEL?.wardCharges ?? 0) > 0).toBe(true);
     const lvlBefore = foe.lvl;
     const cast = applyAction(state, {

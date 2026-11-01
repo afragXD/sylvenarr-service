@@ -164,6 +164,14 @@ export abstract class MatchesService {
       row.status === 'drafting' && row.guestId
         ? resolveTurnPlayerId(picks, row.hostId, row.guestId, limits)
         : null;
+    const rawRules =
+      typeof row.rules === 'object' && row.rules !== null
+        ? (row.rules as Record<string, unknown>)
+        : {};
+    const hostPresetName =
+      typeof rawRules.hostPresetName === 'string' ? rawRules.hostPresetName : null;
+    const guestPresetName =
+      typeof rawRules.guestPresetName === 'string' ? rawRules.guestPresetName : null;
 
     return {
       id: row.id,
@@ -186,6 +194,8 @@ export abstract class MatchesService {
         initialTeamSize: rules.initialTeamSize,
         hostEntry: draftEntryOf(picks, row.hostId),
         guestEntry: guestId ? draftEntryOf(picks, guestId) : 'empty',
+        hostPresetName,
+        guestPresetName,
       },
       battle,
     };
@@ -536,6 +546,23 @@ export abstract class MatchesService {
         pickOrder: item.pickOrder,
         source: 'preset' as const,
       })),
+    });
+
+    // CUT AC-13 п.20: имя пресета рядом с ником в начале боя (хранится в rules JSON).
+    const rawRules =
+      typeof existing.rules === 'object' && existing.rules !== null
+        ? (existing.rules as Record<string, unknown>)
+        : {};
+    const nextRules: Record<string, unknown> = {
+      ...rules,
+      hostPresetName:
+        input.playerId === existing.hostId ? preset.name : rawRules.hostPresetName ?? null,
+      guestPresetName:
+        input.playerId === existing.guestId ? preset.name : rawRules.guestPresetName ?? null,
+    };
+    await prisma.match.update({
+      where: { id: existing.id },
+      data: { rules: nextRules as object },
     });
 
     const drafted = isDraftComplete(working, existing.hostId, existing.guestId, limits);

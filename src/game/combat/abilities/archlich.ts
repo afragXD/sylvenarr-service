@@ -54,7 +54,7 @@ function abilityMeta(
         label: 'Ужас',
         needsTarget: true,
         disabledReason:
-          actor.mana < 3 ? 'Нужно 3 МР' : targets.length === 0 ? 'Нет целей' : null,
+          actor.mana < 2 ? 'Нужно 2 МР' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -273,8 +273,9 @@ export const archlichAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      if (!spendMana(actor, 3, state)) {
-        return { status: 'reject', message: 'Нужно 3 МР' };
+      // CUT-2026-11-01c AC-4: Показ коллекции — 2 МР.
+      if (!spendMana(actor, 2, state)) {
+        return { status: 'reject', message: 'Нужно 2 МР' };
       }
       // Порт evade(other, 1) из бота.
       // Порт evade(): miss = dodge + 1 + 95 − accuracy.

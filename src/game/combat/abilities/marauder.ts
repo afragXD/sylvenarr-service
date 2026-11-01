@@ -2,9 +2,10 @@ import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../d
 import { formatLogDamage } from '../damageSources';
 import { grantEffect, hasEffect, healUnit, trySpendMana, addMana } from '../effects';
 import { setWard } from '../resists';
-import { ROW_BACK, ROW_FRONT } from '../settings';
+import { ROW_FRONT } from '../settings';
 import { applyCatalogStats } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import {
   enemiesInColumn,
   enemiesOf,
@@ -14,6 +15,14 @@ import {
   unitsOnSameRow,
 } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
+
+/**
+ * Коэффициент вампиризма «Вечный голод» (CUT-2026-11-01c AC-2 п. 8).
+ * Растёт при понижении ОЗ; hpRatio — доля ОЗ до лечения.
+ */
+export function eternalHungerVampCoef(lvl: number, hpRatio: number): number {
+  return Math.min(1, 0.2 + 0.03 * lvl + 0.8 * (1 - hpRatio));
+}
 
 function marauderMeta(
   state: BattleState,
@@ -67,11 +76,8 @@ function marauderMeta(
         label: 'Тёмное пламя',
         needsTarget: true,
         disabledReason:
-          actor.mana < 3
-            ? 'Нужно 3 МР'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+          cdReason(actor, 5) ??
+          (actor.mana < 3 ? 'Нужно 3 МР' : targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -97,17 +103,13 @@ function werewolfMeta(
     }
     case 2: {
       // ignoreGuard — порт Werewolf.secondAction(MeleePattern ignoreGuard=True).
+      // CUT-2026-11-01c: задний ряд больше не требуется; КД 2.
       const targets = meleeTargets(state, actor, { ignoreGuard: true });
       return {
         slot: 2,
         label: 'Вечный голод',
         needsTarget: true,
-        disabledReason:
-          actor.row !== ROW_BACK
-            ? 'Нужен задний ряд'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+        disabledReason: cdReason(actor, 2) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -132,9 +134,9 @@ function werewolfMeta(
     case 5:
       return {
         slot: 5,
-        label: 'Базовые действия',
+        label: 'Зов лун',
         needsTarget: false,
-        disabledReason: 'Используйте защиту / ожидание',
+        disabledReason: cdReason(actor, 5),
         legalTargetIds: [],
       };
   }
@@ -264,6 +266,7 @@ function applyMarauder(
     target.mana = Math.max(0, target.mana - manaBurn);
     state.log.push(`${target.displayName} теряет ${manaBurn} МР.`);
   }
+  setSlotCd(actor, 5, 2);
   markDeadIfNeeded(state, target);
   return { status: 'done' };
 }
@@ -309,18 +312,20 @@ function applyWerewolf(
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }
+    const hpRatio = actor.maxHp > 0 ? actor.health / actor.maxHp : 0;
     const damage = dealDamage(
       actor,
       target,
-      { kind: 'melee', damageMult: 1, armorIgnore: 0.35 },
+      { kind: 'melee', damageMult: 1, armorIgnore: 0 },
       state
     );
+    setSlotCd(actor, 2, 2);
     if (damage === 0) {
       state.log.push(`${actor.displayName}: голод — промах.`);
     } else {
       const vamp = Math.max(
         1,
-        Math.round((actor.health / actor.maxHp + 0.2 + actor.lvl * 0.03) * damage)
+        Math.round(eternalHungerVampCoef(actor.lvl, hpRatio) * damage)
       );
       const healed = healUnit(actor, vamp);
       addMana(actor, Math.floor(vamp / 5));
@@ -352,16 +357,29 @@ function applyWerewolf(
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }
-    // Множитель дота как в боте (1 + lvl * 0.05).
-    const power = 1 + actor.lvl * 0.05;
+    // CUT AC-12: урон/тик = 10+L (в power), длительность 2+L//8; броня −(2+L//5) за тик в effects.
+    const power = 10 + actor.lvl;
     for (const enemy of enemiesInColumn(state, actor, target)) {
-      grantEffect(enemy, 'GALL', 2 + Math.floor(actor.lvl / 5), power);
+      grantEffect(enemy, 'GALL', 2 + Math.floor(actor.lvl / 8), power);
     }
     state.log.push(`${actor.displayName} обливает колонну желчью.`);
     return { status: 'done' };
   }
 
-  return { status: 'reject', message: 'Используйте защиту / ожидание' };
+  // slot 5 — Зов лун (CUT AC-11 Р-3): не тратит ход, КД 4, кумулятивный вард WEAPON ≤ 2.
+  setSlotCd(actor, 5, 4);
+  const wards = actor.resists.WEAPON?.wardCharges ?? 0;
+  if (wards < 2) {
+    setWard(actor, 'WEAPON', 1, true);
+    state.log.push(
+      `${actor.displayName} взывает к лунам: вард от оружия (${(actor.resists.WEAPON?.wardCharges ?? 0)}).`
+    );
+  } else {
+    state.log.push(
+      `${actor.displayName} взывает к лунам, но вардов уже ${wards} (кап 2).`
+    );
+  }
+  return { status: 'done', keepTurn: true };
 }
 
 /**
@@ -371,6 +389,10 @@ export const marauderAbilities: AbilityHandler = {
   listAbilities(state, actor) {
     const meta = actor.heroClassCode === 'Werewolf' ? werewolfMeta : marauderMeta;
     return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => meta(state, actor, slot));
+  },
+
+  preChoice(_state, actor) {
+    tickSlotCds(actor);
   },
 
   apply(state, actor, input): AbilityOutcome {

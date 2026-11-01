@@ -140,6 +140,14 @@ export const mermaidAbilities: AbilityHandler = {
         );
         return { status: 'done' };
       }
+      // CUT-2026-11-01c AC-4: на гигантов — только с 10+ уровня Русалки.
+      const targetSize = state.catalog[target.heroClassCode]?.size ?? 1;
+      if (targetSize >= 2 && actor.lvl < 10) {
+        state.log.push(
+          `${actor.displayName}: песнь не действует на гигантов до 10 уровня.`
+        );
+        return { status: 'done' };
+      }
       enslaveUnit(target, actor);
       state.log.push(
         `${actor.displayName} порабощает ${target.displayName} песнью сирены.`

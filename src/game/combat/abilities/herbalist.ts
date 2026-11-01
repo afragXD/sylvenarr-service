@@ -1,6 +1,7 @@
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded } from '../damage';
 import { clearDebuffs, grantEffect, healUnit, trySpendMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { alliesOf, enemiesOf, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
@@ -53,7 +54,7 @@ function abilityMeta(
         label: 'Праща',
         needsTarget: true,
         attackKind: 'ranged',
-        disabledReason: targets.length === 0 ? 'Нет целей' : null,
+        disabledReason: cdReason(actor, 5) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -68,6 +69,10 @@ export const herbalistAbilities: AbilityHandler = {
     return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
   },
 
+  preChoice(_state, actor) {
+    tickSlotCds(actor);
+  },
+
   apply(state, actor, input): AbilityOutcome {
     const meta = abilityMeta(state, actor, input.slot);
     if (meta.disabledReason) {
@@ -79,8 +84,10 @@ export const herbalistAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Нужен союзник' };
       }
-      const atk = Math.max(1, Math.round(target.damage * (0.5 + 0.05 * actor.lvl)));
-      grantEffect(target, 'STRENGTH', 1 + Math.floor(actor.lvl / 6), atk);
+      // CUT-2026-11-01c AC-4 / Р-5: +min(0.5+0.05L, 0.95) как round(damage×X), длительность 1+L//9.
+      const frac = Math.min(0.5 + 0.05 * actor.lvl, 0.95);
+      const atk = Math.round(target.damage * frac);
+      grantEffect(target, 'STRENGTH', 1 + Math.floor(actor.lvl / 9), atk);
       state.log.push(`${actor.displayName} усиливает ${target.displayName}.`);
       return { status: 'done' };
     }
@@ -140,6 +147,7 @@ export const herbalistAbilities: AbilityHandler = {
         { kind: 'ranged', damageMult, armorIgnore, source: 'ARROWS' },
         state
       );
+      setSlotCd(actor, 5, 2);
       if (damage === 0) {
         state.log.push(`${actor.displayName}: праща — промах.`);
         return { status: 'done' };

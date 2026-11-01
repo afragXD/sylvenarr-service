@@ -82,7 +82,9 @@ const unit = (overrides: Partial<BattleUnit> = {}): BattleUnit => ({
   enslavedOriginTeam: null,
   enslavedOriginPlayerId: null,
   morale: 0,
+  lives: 0,
   illness: false,
+  illnessKind: null,
   ...overrides,
 });
 

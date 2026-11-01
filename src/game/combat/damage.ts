@@ -45,6 +45,10 @@ export type DealDamageOpts = {
   readonly evadeCoef?: number;
   /** Добавка к шансу промаха в пунктах (серии ударов). */
   readonly accuracyPenalty?: number;
+  /** Не запускать Отражение боли (рефлексия / перенос Оков). */
+  readonly noPainReflect?: boolean;
+  /** Добавка к шансу крита в процентных пунктах (Азарт добивания). */
+  readonly critChanceBonus?: number;
 };
 
 export type DealDamageResult = {
@@ -135,13 +139,14 @@ export function critMultiplier(attacker: BattleUnit): number {
 }
 
 /** Порт luck(): банк / положительная удача / отрицательная удача. */
-function rollLuck(attacker: BattleUnit): LuckResult {
+function rollLuck(attacker: BattleUnit, critChanceBonus = 0): LuckResult {
   if (attacker.luck >= 0) {
     const mult = critMultiplier(attacker);
     if ((attacker.critBank ?? 0) > 0) {
       return { kind: 'crit', fromBank: true, mult };
     }
-    if (attacker.luck > 0 && rollChance(attacker.luck)) {
+    const chance = attacker.luck + critChanceBonus;
+    if (chance > 0 && rollChance(chance)) {
       attacker.morale += 5;
       return { kind: 'crit', fromBank: false, mult };
     }
@@ -195,6 +200,44 @@ function applyLuckFailPunishments(
   state.log.push(report);
 }
 
+/**
+ * Жизнь на нитке: +1 % урона за 1 % потерянного ОЗ, кап +75 % (CUT AC-7).
+ * Работает в melee / ranged / magic.
+ */
+export function lifeThreadDamageMult(attacker: BattleUnit): number {
+  if (!hasEffect(attacker, 'LIFE_THREAD') || attacker.maxHp <= 0) {
+    return 1;
+  }
+  const missing = Math.max(0, 1 - attacker.health / attacker.maxHp);
+  return 1 + Math.min(0.75, missing);
+}
+
+/**
+ * Перенос урона по Оковам взаимного терпения (источник Жизнь, без резистов,
+ * без Отражения боли и без рекурсивных цепочек) — CUT AC-7 Р-6.
+ */
+export function transferFettersDamage(
+  state: BattleState,
+  receiver: BattleUnit,
+  amount: number
+): void {
+  if (amount <= 0 || !receiver.fettersTargetId) {
+    return;
+  }
+  const linked = state.units.find(
+    (unit) => unit.id === receiver.fettersTargetId && unit.alive
+  );
+  if (!linked || !hasEffect(linked, 'LIFE_FETTERS')) {
+    receiver.fettersTargetId = null;
+    return;
+  }
+  linked.health -= amount;
+  state.log.push(
+    `Оковы: ${linked.displayName} получает ${formatLogDamage(amount, 'DEFAULT')} (связь с ${receiver.displayName}).`
+  );
+  markDeadIfNeeded(state, linked);
+}
+
 function computeBaseRaw(
   attacker: BattleUnit,
   defender: BattleUnit,
@@ -205,7 +248,7 @@ function computeBaseRaw(
   }
 ): number {
   const armorIgnore = opts.armorIgnore ?? 0;
-  const damageMult = opts.damageMult ?? 1;
+  const damageMult = (opts.damageMult ?? 1) * lifeThreadDamageMult(attacker);
   // Защита — через +50 резистов (EFF.DEFEND), не через ×1.5 брони.
   const armor = defender.armor * (1 - Math.min(1, Math.max(0, armorIgnore)));
   let raw: number;
@@ -220,6 +263,87 @@ function computeBaseRaw(
   return Math.max(1, Math.round(raw * damageMult));
 }
 
+export type DamageEstimate = {
+  hitChance: number;
+  minDamage: number;
+  maxDamage: number;
+  blocked: boolean;
+  blockReason: string | null;
+};
+
+/**
+ * CUT AC-13: оценка min–max урона и шанса попадания без RNG (для тултипа и тестов).
+ * Без крита; с бронёй, ignore, mult и резистами/вардом цели.
+ */
+export function estimateDamageRange(
+  attacker: BattleUnit,
+  defender: BattleUnit,
+  opts: {
+    readonly kind: AttackKind;
+    readonly damageMult?: number;
+    readonly armorIgnore?: number;
+    readonly source?: DamageSource;
+    readonly accuracyPenalty?: number;
+  }
+): DamageEstimate {
+  const evadeMod = 1;
+  const missChance =
+    (defender.dodgeBank ?? 0) > 0
+      ? 100
+      : defender.dodge + evadeMod + 95 - attacker.accuracy + (opts.accuracyPenalty ?? 0);
+  const hitChance = Math.max(0, Math.min(100, 100 - missChance));
+
+  const armorIgnore = opts.armorIgnore ?? 0;
+  const damageMult = (opts.damageMult ?? 1) * lifeThreadDamageMult(attacker);
+  const armor = defender.armor * (1 - Math.min(1, Math.max(0, armorIgnore)));
+  let minBase: number;
+  let maxBase: number;
+  if (opts.kind === 'magic') {
+    minBase = Math.max(1, Math.round(attacker.power * 0.8 - 3 - armor * 0.15));
+    maxBase = Math.max(1, Math.round(attacker.power * 0.8 + 3 - armor * 0.15));
+  } else if (opts.kind === 'ranged') {
+    minBase = Math.max(1, Math.round(attacker.damage - armor * 0.5));
+    maxBase = Math.max(1, Math.round(attacker.damage - armor * 0.5 + 2));
+  } else {
+    minBase = Math.max(1, Math.round(attacker.damage - armor));
+    maxBase = Math.max(1, Math.round(attacker.damage - armor + 2));
+  }
+  const minRaw = Math.max(1, Math.round(minBase * damageMult));
+  const maxRaw = Math.max(1, Math.round(maxBase * damageMult));
+
+  const source = opts.source ?? sourceFromAttackStyle(opts.kind);
+  // Peek без списания варда (в отличие от applyResistMultiplier).
+  const entry = defender.resists[source];
+  if (entry?.immune) {
+    return {
+      hitChance: Math.round(hitChance),
+      minDamage: 0,
+      maxDamage: 0,
+      blocked: true,
+      blockReason: 'иммунитет',
+    };
+  }
+  if ((entry?.wardCharges ?? 0) > 0) {
+    return {
+      hitChance: Math.round(hitChance),
+      minDamage: 0,
+      maxDamage: 0,
+      blocked: true,
+      blockReason: `вард ×${entry?.wardCharges}`,
+    };
+  }
+  const value = entry?.value ?? 0;
+  const multiplier =
+    value > 0 ? Math.max(0, 1 - value / 100) : 1 + Math.abs(value) / 100;
+  return {
+    hitChance: Math.round(hitChance),
+    minDamage: Math.max(0, Math.round(minRaw * multiplier)),
+    maxDamage: Math.max(0, Math.round(maxRaw * multiplier)),
+    blocked: false,
+    blockReason: null,
+  };
+}
+
 function computeRawDamage(
   attacker: BattleUnit,
   defender: BattleUnit,
@@ -230,6 +354,7 @@ function computeRawDamage(
     readonly forceHit?: boolean;
     readonly evadeCoef?: number;
     readonly accuracyPenalty?: number;
+    readonly critChanceBonus?: number;
   },
   state?: BattleState
 ): RawDamageResult {
@@ -243,7 +368,7 @@ function computeRawDamage(
       fromDodgeBank: evade.fromDodgeBank,
     };
   }
-  const luck = rollLuck(attacker);
+  const luck = rollLuck(attacker, opts.critChanceBonus ?? 0);
   if (luck.kind === 'fail') {
     applyLuckFailPunishments(state, attacker);
     return {
@@ -340,6 +465,28 @@ export function dealDamage(
   }
 
   defender.health -= amount;
+  if (state) {
+    transferFettersDamage(state, defender, amount);
+  }
+  // Отражение боли: только melee, 50 % фактически нанесённого; само не отражается (Р-6).
+  if (
+    state &&
+    melee &&
+    amount > 0 &&
+    !opts.noPainReflect &&
+    hasEffect(defender, 'PAIN_REFLECT') &&
+    attacker.alive
+  ) {
+    const reflected = Math.round(amount * 0.5);
+    if (reflected > 0) {
+      attacker.health -= reflected;
+      transferFettersDamage(state, attacker, reflected);
+      state.log.push(
+        `Отражение боли: ${attacker.displayName} получает ${formatLogDamage(reflected, 'DEFAULT')} обратно.`
+      );
+      markDeadIfNeeded(state, attacker);
+    }
+  }
   const vampHealed = melee ? applyVampWeaponHeal(attacker, amount) : 0;
   if (state && vampHealed > 0) {
     state.log.push(`${attacker.displayName} высасывает ${vampHealed} ОЗ.`);
@@ -525,6 +672,8 @@ export function harmWithSource(
   }
   const dealt = Math.max(0, Math.round(amount * resist.multiplier));
   target.health -= dealt;
+  // Отражение боли не для harmWithSource (не атака); Оковы — да.
+  transferFettersDamage(state, target, dealt);
   return dealt;
 }
 
@@ -559,18 +708,71 @@ function tryFinalStrikeSave(state: BattleState, unit: BattleUnit): boolean {
   return false;
 }
 
+export type MarkDeadOpts = {
+  /**
+   * Самопожертвование (Р-1): мимо FINALSTRIKE, DEATHWARD/вардов и `lives`.
+   */
+  readonly ignoreSaves?: boolean;
+};
+
+/**
+ * Смерть с Извержением (CUT AC-10): X = maxHp×0.25 Огнём своему ряду, X//2 — другому.
+ */
+function applyEruptionOnDeath(state: BattleState, dead: BattleUnit): void {
+  const x = Math.round(dead.maxHp * 0.25);
+  if (x <= 0) {
+    return;
+  }
+  state.log.push(
+    `Извержение ${dead.displayName}: ${formatLogDamage(x, 'FIRE')} по ряду, ${formatLogDamage(Math.floor(x / 2), 'FIRE')} по другому.`
+  );
+  const allies = state.units.filter(
+    (unit) => unit.alive && unit.team === dead.team && unit.id !== dead.id
+  );
+  for (const ally of allies) {
+    const amount = ally.row === dead.row ? x : Math.floor(x / 2);
+    if (amount <= 0) {
+      continue;
+    }
+    const dealt = harmWithSource(state, ally, amount, 'FIRE');
+    if (dealt > 0) {
+      state.log.push(
+        `${ally.displayName} получает ${formatLogDamage(dealt, 'FIRE')} от извержения.`
+      );
+      markDeadIfNeeded(state, ally);
+    }
+  }
+}
+
 /**
  * Помечает юнита мёртвым при HP ≤ 0 и кладёт на кладбище (не саммоны).
  * Перед смертью проверяет спасение вардом/резистом FINALSTRIKE.
  * При смерти хозяина уничтожает его саммонов (порт death() из бота).
  */
-export function markDeadIfNeeded(state: BattleState, unit: BattleUnit): void {
+export function markDeadIfNeeded(
+  state: BattleState,
+  unit: BattleUnit,
+  opts?: MarkDeadOpts
+): void {
   if (unit.health > 0) {
     return;
   }
   const wasAlive = unit.alive;
-  if (wasAlive && tryFinalStrikeSave(state, unit)) {
-    return;
+  if (!opts?.ignoreSaves) {
+    if (wasAlive && tryFinalStrikeSave(state, unit)) {
+      return;
+    }
+    // CUT-2026-11-01c AC-1: доп. жизнь после провала FINALSTRIKE, без штрафа к инициативе.
+    if (wasAlive && unit.lives >= 1) {
+      unit.lives -= 1;
+      unit.maxHp = Math.max(1, Math.floor(unit.maxHp / 2));
+      unit.health = unit.maxHp;
+      unit.alive = true;
+      state.log.push(
+        `${unit.displayName} тратит доп. жизнь и продолжает бой с ${unit.health} ОЗ (без штрафа к инициативе).`
+      );
+      return;
+    }
   }
   unit.alive = false;
   unit.health = 0;
@@ -579,6 +781,10 @@ export function markDeadIfNeeded(state: BattleState, unit: BattleUnit): void {
   }
   state.log.push(`${unit.displayName} погибает.`);
   pushSfx(state, unit, 'death');
+  // CUT AC-10: Извержение — огненный взрыв по союзникам при смерти носителя.
+  if (hasEffect(unit, 'ERUPTION')) {
+    applyEruptionOnDeath(state, unit);
+  }
   if (unit.isSummon && unit.summonerId) {
     const master = state.units.find(
       (other) =>

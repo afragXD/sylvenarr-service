@@ -1,12 +1,94 @@
-import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, healUnit, tryStun } from '../effects';
+import {
+  dealDamage,
+  formatLastLogDamage,
+  markDeadIfNeeded,
+  randInt,
+} from '../damage';
+import { delEffect, grantEffect, hasEffect, healUnit, tryStun } from '../effects';
+import { rollSrcChance } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { meleeOrAll, ownRowAllies } from './targets';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
+import { availableSummonRows, createSummon } from './summon';
+import { alliesOf, enemiesInColumn, enemiesOf, meleeOrAll } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-function hungerMult(state: BattleState, actor: BattleUnit): number {
-  const graves = state.graveyard.filter((entry) => entry.team === actor.team).length;
-  return Math.round((1 + 0.15 * graves) * 100) / 100;
+/** Трупы союзников (герои и саммоны) для Тауматургии. */
+export function allyCorpseCount(state: BattleState, actor: BattleUnit): number {
+  return state.units.filter((unit) => !unit.alive && unit.team === actor.team).length;
+}
+
+/**
+ * Банк Тауматургии: D × (0.75 + 0.15×трупы + 0.04×lvl). Без предела по трупам (Р-2).
+ */
+export function thamaturgyBank(dealtSum: number, corpses: number, lvl: number): number {
+  return Math.round(dealtSum * (0.75 + 0.15 * corpses + 0.04 * lvl));
+}
+
+/**
+ * Распределение банка пропорционально недостающему ОЗ;
+ * остаток от округления — самому раненому.
+ */
+export function distributeHealBank(
+  allies: BattleUnit[],
+  bank: number
+): Array<{ unitId: string; healed: number }> {
+  if (bank <= 0 || allies.length === 0) {
+    return [];
+  }
+  const rows = allies.map((unit) => ({
+    unit,
+    miss: Math.max(0, unit.maxHp - unit.health),
+  }));
+  const totalMiss = rows.reduce((sum, row) => sum + row.miss, 0);
+  if (totalMiss <= 0) {
+    return [];
+  }
+  let spent = 0;
+  const parts = rows.map((row) => {
+    const share = Math.floor((bank * row.miss) / totalMiss);
+    spent += share;
+    return { unit: row.unit, miss: row.miss, share };
+  });
+  let rem = bank - spent;
+  parts.sort((a, b) => b.miss - a.miss || a.unit.id.localeCompare(b.unit.id));
+  for (const part of parts) {
+    if (rem <= 0) {
+      break;
+    }
+    part.share += 1;
+    rem -= 1;
+  }
+  const result: Array<{ unitId: string; healed: number }> = [];
+  for (const part of parts) {
+    if (part.share <= 0) {
+      continue;
+    }
+    const healed = healUnit(part.unit, part.share);
+    if (healed > 0) {
+      result.push({ unitId: part.unit.id, healed });
+    }
+  }
+  return result;
+}
+
+function graveTargets(state: BattleState): Array<{
+  entryId: string;
+  label: string;
+  unit: BattleUnit;
+}> {
+  return state.graveyard
+    .map((entry) => {
+      const unit = state.units.find((item) => item.id === entry.unitId);
+      if (!unit || unit.alive) {
+        return null;
+      }
+      return {
+        entryId: entry.unitId,
+        label: `${entry.displayName} (${entry.team === 0 ? 'свои' : 'враги'})`,
+        unit,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
 }
 
 function abilityMeta(
@@ -17,57 +99,79 @@ function abilityMeta(
   switch (slot) {
     case 1: {
       const targets = meleeOrAll(state, actor, false);
-      const hunger = hungerMult(state, actor);
       return {
         slot: 1,
-        label: `Призрачная катана ×${hunger}`,
+        label: 'Призрачная катана',
         needsTarget: true,
         attackKind: 'melee',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
-    case 2:
+    case 2: {
+      const targets = enemiesOf(state, actor);
+      const cd = cdReason(actor, 2);
       return {
         slot: 2,
-        label: 'Сэппуку',
-        needsTarget: false,
-        disabledReason: null,
-        legalTargetIds: [],
+        label: 'Чёрная жатва',
+        needsTarget: true,
+        attackKind: 'melee',
+        disabledReason: cd ?? (targets.length === 0 ? 'Нет целей' : null),
+        legalTargetIds: targets.map((unit) => unit.id),
       };
-    case 3:
+    }
+    case 3: {
+      const graves = graveTargets(state);
+      const rows = availableSummonRows(state, actor);
+      const cd = cdReason(actor, 3);
       return {
         slot: 3,
-        label: 'Горн мертвецов',
-        needsTarget: false,
-        disabledReason: null,
-        legalTargetIds: [],
+        label: 'Личный слуга',
+        needsTarget: true,
+        disabledReason:
+          cd ??
+          (graves.length === 0
+            ? 'Нет трупов'
+            : rows.length === 0
+              ? 'Нет места / лимит саммонов'
+              : null),
+        legalTargetIds: graves.map((item) => item.entryId),
       };
-    case 4:
+    }
+    case 4: {
+      const targets = enemiesOf(state, actor);
+      const cd = cdReason(actor, 4);
       return {
         slot: 4,
-        label: `Примирение (${actor.ultaCharges})`,
-        needsTarget: false,
-        disabledReason: actor.ultaCharges <= 0 ? 'Нет зарядов' : null,
-        legalTargetIds: [],
+        label: 'Оковы взаимного терпения',
+        needsTarget: true,
+        disabledReason: cd ?? (targets.length === 0 ? 'Нет целей' : null),
+        legalTargetIds: targets.map((unit) => unit.id),
       };
-    case 5:
+    }
+    case 5: {
+      const cd = cdReason(actor, 5);
       return {
         slot: 5,
-        label: 'Базовые действия',
+        label: 'Жизнь на нитке',
         needsTarget: false,
-        disabledReason: 'Используйте защиту / ожидание',
+        disabledReason: cd,
         legalTargetIds: [],
       };
+    }
   }
 }
 
 /**
- * GhostWarrior: hunger katana, vamp, row strength, self heal.
+ * GhostWarrior: катана, Чёрная жатва, Личный слуга, Оковы, Жизнь на нитке.
  */
 export const ghostWarriorAbilities: AbilityHandler = {
   listAbilities(state, actor) {
     return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
+  },
+
+  preChoice(_state, actor) {
+    tickSlotCds(actor);
   },
 
   apply(state, actor, input): AbilityOutcome {
@@ -81,47 +185,138 @@ export const ghostWarriorAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const mult = hungerMult(state, actor);
       const damage = dealDamage(
         actor,
         target,
-        { kind: 'melee', damageMult: mult, armorIgnore: 0, source: 'WEAPON' },
+        { kind: 'melee', damageMult: 1, armorIgnore: 0, source: 'WEAPON' },
         state
       );
       if (damage === 0) {
         state.log.push(`${actor.displayName}: катана — промах.`);
-      } else {
-        state.log.push(
-          `${actor.displayName} рубит катаной ${target.displayName} ${formatLastLogDamage(damage)} (×${mult}).`
-        );
-        if (randInt(1, 100) <= 65 + actor.lvl && tryStun(state, target, 1)) {
+        return { status: 'done' };
+      }
+      state.log.push(
+        `${actor.displayName} рубит катаной ${target.displayName} ${formatLastLogDamage(damage)}.`
+      );
+      // Оглушение источником Смерть; базовый шанс = прежний (65+L) + 10.
+      const stunChance = 75 + actor.lvl;
+      let stunned = false;
+      if (rollSrcChance(state, target, stunChance, 'DEATH')) {
+        stunned = tryStun(state, target, 1);
+        if (stunned) {
           state.log.push(`${target.displayName} парализован.`);
         }
-        markDeadIfNeeded(state, target);
       }
+      if (!stunned) {
+        const loss = randInt(5, 8) + actor.lvl;
+        target.morale -= loss;
+        state.log.push(
+          `${target.displayName} теряет ${loss} боевого духа (оглушение не сработало).`
+        );
+      }
+      markDeadIfNeeded(state, target);
       return { status: 'done' };
     }
 
     if (input.slot === 2) {
-      grantEffect(actor, 'VAMPWEAPON', 2 + Math.floor(actor.lvl / 5), 0.5 + 0.08 * actor.lvl);
-      state.log.push(`${actor.displayName}: катана вампиризирует удары.`);
+      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+      if (!target) {
+        return { status: 'reject', message: 'Цель не найдена' };
+      }
+      let dealtSum = 0;
+      for (const enemy of enemiesInColumn(state, actor, target)) {
+        const damage = dealDamage(
+          actor,
+          enemy,
+          { kind: 'melee', damageMult: 0.75, armorIgnore: 0, source: 'WEAPON' },
+          state
+        );
+        if (damage > 0) {
+          dealtSum += damage;
+          state.log.push(
+            `${actor.displayName}: чёрная жатва бьёт ${enemy.displayName} ${formatLastLogDamage(damage)}.`
+          );
+          markDeadIfNeeded(state, enemy);
+        }
+      }
+      const corpses = allyCorpseCount(state, actor);
+      const bank = thamaturgyBank(dealtSum, corpses, actor.lvl);
+      const allies = alliesOf(state, actor);
+      const healed = distributeHealBank(allies, bank);
+      const healLog =
+        healed.length > 0
+          ? healed.map((item) => `+${item.healed}`).join('/')
+          : '0';
+      state.log.push(
+        `${actor.displayName}: тауматургия (D=${dealtSum}, трупы=${corpses}) → банк ${bank} ОЗ [${healLog}].`
+      );
+      setSlotCd(actor, 2, 2);
       return { status: 'done' };
     }
 
     if (input.slot === 3) {
-      const power = 3 + Math.floor(actor.lvl / 4);
-      for (const ally of ownRowAllies(state, actor)) {
-        grantEffect(ally, 'STRENGTH', 2, power);
+      const grave = graveTargets(state).find((item) => item.entryId === input.targetId);
+      if (!grave) {
+        return { status: 'reject', message: 'Труп не найден' };
       }
-      state.log.push(`${actor.displayName}: горн мертвецов усиливает ряд.`);
+      const rows = availableSummonRows(state, actor);
+      const row = rows[0];
+      if (row === undefined) {
+        return { status: 'reject', message: 'Нет места для слуги' };
+      }
+      const desiredLvl = grave.unit.lvl + Math.floor(actor.lvl / 3);
+      const summon = createSummon(state, {
+        summoner: actor,
+        heroCode: 'SkeletonChampion',
+        row,
+        level: desiredLvl,
+      });
+      if (!summon) {
+        return { status: 'reject', message: 'Не удалось поднять слугу' };
+      }
+      // Труп израсходован.
+      state.graveyard = state.graveyard.filter((entry) => entry.unitId !== grave.entryId);
+      grave.unit.forbiddenResurrect = true;
+      state.log.push(
+        `${actor.displayName} поднимает личного слугу (${summon.displayName}, ур. ${summon.lvl}) из ${grave.unit.displayName}.`
+      );
+      setSlotCd(actor, 3, 3);
       return { status: 'done' };
     }
 
     if (input.slot === 4) {
-      actor.ultaCharges -= 1;
-      actor.maxHp = Math.round(actor.maxHp * 1.25);
-      const healed = healUnit(actor, Math.floor(actor.maxHp / 4));
-      state.log.push(`${actor.displayName}: примирение (+${healed} ОЗ, +maxHp).`);
+      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+      if (!target) {
+        return { status: 'reject', message: 'Цель не найдена' };
+      }
+      if (!rollSrcChance(state, target, 100, 'DEATH')) {
+        state.log.push(`${actor.displayName}: оковы не взяли ${target.displayName}.`);
+        setSlotCd(actor, 4, 3);
+        return { status: 'done' };
+      }
+      // Снимаем прошлую связь.
+      if (actor.fettersTargetId) {
+        const prev = state.units.find((unit) => unit.id === actor.fettersTargetId);
+        if (prev && hasEffect(prev, 'LIFE_FETTERS')) {
+          delEffect(prev, 'LIFE_FETTERS', state);
+        }
+      }
+      actor.fettersTargetId = target.id;
+      grantEffect(target, 'LIFE_FETTERS', 3);
+      state.log.push(
+        `${actor.displayName} сковывает ${target.displayName} оковами взаимного терпения (3 р.).`
+      );
+      setSlotCd(actor, 4, 3);
+      return { status: 'done' };
+    }
+
+    if (input.slot === 5) {
+      const rounds = 2 + Math.floor(actor.lvl / 7);
+      grantEffect(actor, 'LIFE_THREAD', rounds);
+      state.log.push(
+        `${actor.displayName}: жизнь на нитке (${rounds} р.) — урон растёт с потерей ОЗ.`
+      );
+      setSlotCd(actor, 5, 2);
       return { status: 'done' };
     }
 

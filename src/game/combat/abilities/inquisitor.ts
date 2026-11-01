@@ -15,7 +15,7 @@ function abilityMeta(
       const targets = meleeOrAll(state, actor, false);
       return {
         slot: 1,
-        label: 'Булава Порядка',
+        label: 'Азарт добивания',
         needsTarget: true,
         attackKind: 'melee',
         disabledReason: targets.length === 0 ? 'Нет целей' : null,
@@ -117,10 +117,19 @@ export const inquisitorAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
+      // CUT AC-11: при ОЗ цели < 33 % max — +(14 + L) пп шанса крита.
+      const finishing =
+        target.maxHp > 0 && target.health < target.maxHp * 0.33;
+      const critBonus = finishing ? 14 + actor.lvl : 0;
+      if (critBonus > 0) {
+        state.log.push(
+          `${actor.displayName}: азарт добивания (+${critBonus} пп крита, цель < 33 % ОЗ).`
+        );
+      }
       const damage = dealDamage(
         actor,
         target,
-        { kind: 'melee', damageMult: 1, armorIgnore: 0 },
+        { kind: 'melee', damageMult: 1, armorIgnore: 0, critChanceBonus: critBonus },
         state
       );
       if (damage === 0) {

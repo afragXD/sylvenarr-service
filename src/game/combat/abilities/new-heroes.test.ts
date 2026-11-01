@@ -8,6 +8,7 @@ import { angelAbilities } from './angel';
 import { antipaladinAbilities, APAL } from './antipaladin';
 import { resetCooldowns, slotCd } from './cooldowns';
 import { incubAbilities } from './incub';
+import { oracleAbilities } from './oracle';
 import { titanAbilities } from './titan';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
@@ -251,12 +252,12 @@ describe('Titan', () => {
   });
 });
 
-describe('Incub', () => {
-  test('Чудесный доктор: ОЗ сверх максимума и точный откат', () => {
-    const state = battle('Incub');
+describe('Oracle', () => {
+  test('Чудесный доктор (slot 5): ОЗ сверх максимума и точный откат', () => {
+    const state = battle('Oracle', { actor: { mana: 15 } });
     const ally = unit(state, 'p2');
     ally.health = ally.maxHp;
-    incubAbilities.apply(state, unit(state, 'p1'), { slot: 2, targetId: 'p2' });
+    oracleAbilities.apply(state, unit(state, 'p1'), { slot: 5, targetId: 'p2' });
     const bonus = 50 + 5 * unit(state, 'p1').lvl;
     expect(ally.health).toBe(ally.maxHp + bonus);
     const effect = ally.effects.find((item) => item.id === 'IMAGINARY_HEALTH')!;
@@ -265,7 +266,9 @@ describe('Incub', () => {
     tickEffectsOnTurnEnd(ally, state);
     expect(ally.health).toBe(ally.maxHp);
   });
+});
 
+describe('Incub', () => {
   test('Нечистый договор: расплата 75% макс. ОЗ по истечении', () => {
     const state = battle('Incub');
     const ally = unit(state, 'p2');

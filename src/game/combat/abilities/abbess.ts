@@ -12,6 +12,19 @@ import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types
 import { alliesOf, enemiesOf, unitsOnSameRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
+/** Python 3 round: halfway cases round to even. */
+export function pyRound(value: number): number {
+  const floor = Math.floor(value);
+  const frac = value - floor;
+  if (frac < 0.5) {
+    return floor;
+  }
+  if (frac > 0.5) {
+    return floor + 1;
+  }
+  return floor % 2 === 0 ? floor : floor + 1;
+}
+
 function abilityMeta(
   state: BattleState,
   actor: BattleUnit,
@@ -150,7 +163,11 @@ export const abbessAbilities: AbilityHandler = {
         if (ally.team !== actor.team || !ally.alive) {
           continue;
         }
-        const amount = actor.power + actor.lvl + randInt(1, 15);
+        // CUT-2026-11-01c AC-4: randint(round(p*0.5), round(p*0.75));
+        // round — как в Python 3 (half to even): round(20.5)=20.
+        const lo = pyRound(actor.power * 0.5);
+        const hi = pyRound(actor.power * 0.75);
+        const amount = randInt(Math.min(lo, hi), Math.max(lo, hi));
         const healed = healUnit(ally, amount);
         state.log.push(`${ally.displayName} восстанавливает ${healed} ОЗ.`);
       }

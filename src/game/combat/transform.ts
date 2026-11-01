@@ -8,6 +8,7 @@ export function baseMaxSummonsForClass(code: string): number {
   switch (code) {
     case 'OrcKing':
     case 'Archlich':
+    case 'GhostWarrior':
       return 1;
     case 'Demiurge':
       return 2;

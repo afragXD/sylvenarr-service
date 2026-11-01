@@ -66,7 +66,7 @@ describe('morale + battle summary', () => {
     expect(pyro.illness).toBe(false);
   });
 
-  test('normalizeUnit mirrors bot Hero.normalize', () => {
+  test('normalizeUnit mirrors bot Hero.normalize (+ max-morale life)', () => {
     const state = twoUnitState('Knight', 'B');
     const unit = state.units.find((u) => u.id === 'p1')!;
     unit.damage = -5;
@@ -75,13 +75,16 @@ describe('morale + battle summary', () => {
     unit.dodge = 80;
     unit.luck = 99;
     unit.morale = 90;
-    normalizeUnit(unit);
+    unit.lives = 0;
+    normalizeUnit(unit, state);
     expect(unit.damage).toBe(0);
     expect(unit.power).toBe(0);
     expect(unit.lvl).toBe(0);
     expect(unit.dodge).toBe(45);
     expect(unit.luck).toBe(60);
-    expect(unit.morale).toBe(65);
+    // AC-1: morale ≥ MAX → жизнь и сброс до MAX//2 (не кап 65).
+    expect(unit.lives).toBe(1);
+    expect(unit.morale).toBe(32);
   });
 
   test('psycho: undead skips', () => {
@@ -110,24 +113,26 @@ describe('morale + battle summary', () => {
   test('psycho: illness fires once in -70..-100 band', () => {
     const state = twoUnitState('Knight', 'B', { morale: -80, gold: 50 });
     const knight = state.units.find((u) => u.id === 'p1')!;
-    addMentalIllness(state, knight, 4);
+    addMentalIllness(state, knight, 3); // шизофрения
     knight.illness = true;
-    expect(knight.gold).toBe(0);
+    expect(knight.illnessKind).toBe('schizophrenia');
     expect(knight.illness).toBe(true);
-    const goldAfter = knight.gold;
+    const kind = knight.illnessKind;
     applyPsycho(state, knight);
-    expect(knight.gold).toBe(goldAfter);
+    expect(knight.illnessKind).toBe(kind);
   });
 
-  test('mental illness case 6: soul uplift', () => {
+  test('mental illness: no soul uplift (case 6 removed)', () => {
     const state = twoUnitState('Knight', 'B', { morale: -80 });
     const knight = state.units.find((u) => u.id === 'p1')!;
     const dmg = knight.damage;
     const power = knight.power;
+    const morale = knight.morale;
     addMentalIllness(state, knight, 6);
-    expect(knight.morale).toBe(0);
-    expect(knight.damage).toBe(dmg + 15);
-    expect(knight.power).toBe(power + 15);
+    expect(knight.morale).toBe(morale);
+    expect(knight.damage).toBe(dmg);
+    expect(knight.power).toBe(power);
+    expect(state.log.some((line) => /душевный подъём/i.test(line))).toBe(false);
   });
 
   test('HAPPY buffs morale not luck', () => {

@@ -16,6 +16,8 @@ export function createSummon(
     readonly column?: number;
     readonly isLichSummon?: boolean;
     readonly replaceUnitId?: string;
+    /** Целевой уровень саммона; по умолчанию = уровень призывателя. */
+    readonly level?: number;
   }
 ): BattleUnit | null {
   const hero = state.catalog[input.heroCode];
@@ -121,12 +123,15 @@ export function createSummon(
     enslavedOriginTeam: null,
     enslavedOriginPlayerId: null,
     morale: hero.morale ?? 0,
+    lives: 0,
     illness: false,
+    illnessKind: null,
   };
   initPilotFlags(unit);
   state.units.push(unit);
-  // Уровень и статы = уровень призывателя в момент призыва (базовый каталог + прокачка).
-  const catchUp = Math.max(0, input.summoner.lvl - 1);
+  // Уровень и статы: level override или уровень призывателя (базовый каталог + прокачка).
+  const targetLvl = Math.max(1, input.level ?? input.summoner.lvl);
+  const catchUp = Math.max(0, targetLvl - 1);
   if (catchUp > 0) {
     levelUpUnit(unit, catchUp, state);
   }
@@ -222,7 +227,9 @@ export function createPhantomCopy(
     enslavedOriginTeam: null,
     enslavedOriginPlayerId: null,
     morale: template.morale,
+    lives: 0,
     illness: false,
+    illnessKind: null,
   };
   state.units.push(unit);
   return unit;

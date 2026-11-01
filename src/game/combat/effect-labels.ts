@@ -30,7 +30,7 @@ const LABELS: Record<EffectId, string> = {
   FIRESHIELD: 'Огненный щит',
   AIRSHIELD: 'Воздушный щит',
   LUCKY: 'Удача',
-  FOCUSED: 'Сосредоточение',
+  FOCUSED: 'Изменение точности',
   STUNNED: 'Оглушение',
   STUN_IMMUNE: 'Сопротивление оглушению',
   WEAKNESS: 'Слабость',
@@ -51,11 +51,27 @@ const LABELS: Record<EffectId, string> = {
   IMAGINARY_HEALTH: 'Мнимое здоровье',
   IMMOLATION: 'Нечистый договор',
   DEATHWARD: 'Оковы войны',
+  PAIN_REFLECT: 'Отражение боли',
+  LIFE_FETTERS: 'Оковы взаимного терпения',
+  LIFE_THREAD: 'Жизнь на нитке',
+  ERUPTION: 'Извержение',
 };
 
 /**
  * Русское имя эффекта для боевого лога.
+ * FOCUSED: нейтральное / + / − по знаку силы (CUT AC-12).
  */
-export function effectLogLabel(id: EffectId | string): string {
+export function effectLogLabel(id: EffectId | string, power?: number): string {
+  if (id === 'FOCUSED') {
+    if (typeof power === 'number') {
+      if (power > 0) {
+        return 'Повышение точности';
+      }
+      if (power < 0) {
+        return 'Снижение точности';
+      }
+    }
+    return 'Изменение точности';
+  }
   return LABELS[id as EffectId] ?? id;
 }
