@@ -1,4 +1,4 @@
-import { spendTeamGold, teamGold } from '../../economy';
+import { economyOn, spendTeamGold, teamGold } from '../../economy';
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { delEffect, grantEffect, hasEffect, resurrectUnit } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -205,8 +205,8 @@ export const knightAbilities: AbilityHandler = {
       if (!spendTeamGold(state, actor.team, cost)) {
         return { status: 'reject', message: `Нужно ${cost} золота` };
       }
-      // TODO(fairs): Боевая баллада — вернуть прежний прирост после механики ярмарок
-      const atk = 15 + actor.lvl;
+      // economyOn — прежний прирост бота (20+2L); иначе текущий 11-01c (15+L).
+      const atk = economyOn(state) ? 20 + actor.lvl * 2 : 15 + actor.lvl;
       grantEffect(ally, 'STRENGTH', 1 + Math.floor(actor.lvl / 5), atk);
       grantEffect(ally, 'BLESSED', 1 + Math.floor(actor.lvl / 6), 0.5);
       delEffect(ally, 'POISON');

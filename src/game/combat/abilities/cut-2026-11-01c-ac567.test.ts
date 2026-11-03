@@ -27,53 +27,67 @@ const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassS
 });
 
 describe('CUT-2026-11-01c AC-5 Knight', () => {
-  test('fixture ballad-single: STRENGTH +(15+L), одна цель, снятие DoT, TODO(fairs)', () => {
-    const state = createBattleState({
-      matchId: 'ac5-ballad',
-      hostPlayerId: 'h',
-      guestPlayerId: 'g',
-      picks: [
-        { id: 'p1', playerId: 'h', heroClassCode: 'Knight', row: 0, pickOrder: 1 },
-        { id: 'p2', playerId: 'h', heroClassCode: 'Ally', row: 0, pickOrder: 2 },
-        { id: 'p3', playerId: 'h', heroClassCode: 'Ally2', row: 0, pickOrder: 3 },
-        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
-      ],
-      heroes: new Map([
-        ['Knight', hero('Knight')],
-        ['Ally', hero('Ally')],
-        ['Ally2', hero('Ally2')],
-        ['B', hero('B')],
-      ]),
-    });
-    const knight = state.units.find((u) => u.id === 'p1')!;
-    const ally = state.units.find((u) => u.id === 'p2')!;
-    const other = state.units.find((u) => u.id === 'p3')!;
-    knight.lvl = 10;
-    state.teams![0].gold = 500;
-    const dmgBefore = ally.damage;
-    grantEffect(ally, 'POISON', 3, 1);
-    grantEffect(ally, 'BURNING', 2, 1);
-    grantEffect(ally, 'BLEEDING', 2, 1);
-    state.activeUnitId = 'p1';
-    state.turnPlayerId = 'h';
-    const result = applyAction(state, {
-      playerId: 'h',
-      unitId: 'p1',
-      action: 'ability',
-      slot: 3,
-      targetId: 'p2',
-    });
-    expect(result.ok).toBe(true);
-    expect(ally.damage - dmgBefore).toBe(15 + 10); // +25
-    expect(hasEffect(ally, 'STRENGTH')).toBe(true);
-    expect(hasEffect(ally, 'BLESSED')).toBe(true);
-    expect(hasEffect(ally, 'POISON')).toBe(false);
-    expect(hasEffect(ally, 'BURNING')).toBe(false);
-    expect(hasEffect(ally, 'BLEEDING')).toBe(false);
-    expect(hasEffect(other, 'STRENGTH')).toBe(false);
-    // L1 / L20 sanity via formula
-    expect(15 + 1).toBe(16);
-    expect(15 + 20).toBe(35);
+  test('fixture ballad-single: economyOff STRENGTH +(15+L); economyOn +(20+2L)', () => {
+    const run = (fairEnabled: boolean) => {
+      const state = createBattleState({
+        matchId: 'ac5-ballad',
+        hostPlayerId: 'h',
+        guestPlayerId: 'g',
+        picks: [
+          { id: 'p1', playerId: 'h', heroClassCode: 'Knight', row: 0, pickOrder: 1 },
+          { id: 'p2', playerId: 'h', heroClassCode: 'Ally', row: 0, pickOrder: 2 },
+          { id: 'p3', playerId: 'h', heroClassCode: 'Ally2', row: 0, pickOrder: 3 },
+          { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+        ],
+        heroes: new Map([
+          ['Knight', hero('Knight')],
+          ['Ally', hero('Ally')],
+          ['Ally2', hero('Ally2')],
+          ['B', hero('B')],
+        ]),
+        rules: {
+          maxTeamSize: 8,
+          maxRowSize: 4,
+          maxRounds: 20,
+          healthBonus: 1,
+          startingLevel: 1,
+          fairEnabled,
+          goldBonus: 1,
+        },
+      });
+      const knight = state.units.find((u) => u.id === 'p1')!;
+      const ally = state.units.find((u) => u.id === 'p2')!;
+      const other = state.units.find((u) => u.id === 'p3')!;
+      knight.lvl = 10;
+      state.teams![0]!.gold = 500;
+      const dmgBefore = ally.damage;
+      grantEffect(ally, 'POISON', 3, 1);
+      grantEffect(ally, 'BURNING', 2, 1);
+      grantEffect(ally, 'BLEEDING', 2, 1);
+      state.activeUnitId = 'p1';
+      state.turnPlayerId = 'h';
+      state.phase = 'combat';
+      state.perkOffers = null;
+      const result = applyAction(state, {
+        playerId: 'h',
+        unitId: 'p1',
+        action: 'ability',
+        slot: 3,
+        targetId: 'p2',
+      });
+      expect(result.ok).toBe(true);
+      const expected = fairEnabled ? 20 + 10 * 2 : 15 + 10;
+      expect(ally.damage - dmgBefore).toBe(expected);
+      expect(hasEffect(ally, 'STRENGTH')).toBe(true);
+      expect(hasEffect(ally, 'BLESSED')).toBe(true);
+      expect(hasEffect(ally, 'POISON')).toBe(false);
+      expect(hasEffect(ally, 'BURNING')).toBe(false);
+      expect(hasEffect(ally, 'BLEEDING')).toBe(false);
+      expect(hasEffect(other, 'STRENGTH')).toBe(false);
+      return expected;
+    };
+    expect(run(false)).toBe(25);
+    expect(run(true)).toBe(40);
   });
 
   test('fixture sacrifice: 60% ok / 59% no; ignore saves; no loop', () => {

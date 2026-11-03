@@ -1,4 +1,6 @@
 import { addTeamGold, economyOn, teamGold } from '../economy';
+import { getItem } from '../items/catalog';
+import { removeItem, teamInventory } from '../items/inventory';
 import { firstActionAttackKind } from './abilities/primary-attack';
 import { alliesOf } from './abilities/targets';
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from './damage';
@@ -134,11 +136,36 @@ export function addMentalIllness(state: BattleState, unit: BattleUnit, fate: num
     }
     case 3: {
       unit.illnessKind = 'schizophrenia';
-      // TODO(items): Шизофрения — уничтожать 2 случайных предмета, когда появятся предметы
       unit.accuracy = Math.max(0, Math.round(unit.accuracy * (1 - 0.33)));
-      state.log.push(
-        `${unit.displayName}: шизофрения — точность −33%, предметы недоступны; золото будет разбрасывать.`
-      );
+      if (economyOn(state)) {
+        const inv = [...teamInventory(state, unit.team)];
+        if (inv.length === 0) {
+          const lost = Math.min(300, teamGold(state, unit.team));
+          addTeamGold(state, unit.team, -300);
+          state.log.push(
+            `${unit.displayName}: шизофрения — точность −33%; нет предметов, −${lost} золота.`
+          );
+        } else {
+          const destroyed: string[] = [];
+          for (let n = 0; n < 2; n++) {
+            const current = teamInventory(state, unit.team);
+            if (current.length === 0) {
+              break;
+            }
+            const idx = randInt(0, current.length - 1);
+            const code = current[idx]!;
+            removeItem(state, unit.team, code, 1);
+            destroyed.push(getItem(code)?.name ?? String(code));
+          }
+          state.log.push(
+            `${unit.displayName}: шизофрения — точность −33%, уничтожено: ${destroyed.join(', ')}.`
+          );
+        }
+      } else {
+        state.log.push(
+          `${unit.displayName}: шизофрения — точность −33%, предметы недоступны; золото будет разбрасывать.`
+        );
+      }
       break;
     }
     case 4: {

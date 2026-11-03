@@ -261,11 +261,83 @@ describe('CUT-2026-11-01c AC-1', () => {
     expect(unit.alive).toBe(false);
   });
 
-  test('TODO(items) present in morale.ts source; TODO(perks) снят (T11)', async () => {
-    const file = await Bun.file(new URL('../morale.ts', import.meta.url)).text();
-    expect(file).toContain(
-      'TODO(items): Шизофрения — уничтожать 2 случайных предмета, когда появятся предметы'
-    );
-    expect(file).not.toContain('TODO(perks): Деградация — терять все перки');
+  test('TODO(items)/TODO(perks)/TODO(fairs) сняты (T11/T13)', async () => {
+    const morale = await Bun.file(new URL('../morale.ts', import.meta.url)).text();
+    const knight = await Bun.file(new URL('./knight.ts', import.meta.url)).text();
+    expect(morale).not.toContain('TODO(items)');
+    expect(morale).not.toContain('TODO(perks)');
+    expect(knight).not.toContain('TODO(fairs)');
+  });
+
+  test('шизофрения economyOn: уничтожает 2 предмета; пусто — −300 золота', () => {
+    const withItems = createBattleState({
+      matchId: 'schizo-items',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'A', row: 0, pickOrder: 1 },
+        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes: new Map([
+        ['A', hero('A')],
+        ['B', hero('B')],
+      ]),
+      rules: {
+        maxTeamSize: 8,
+        maxRowSize: 4,
+        maxRounds: 20,
+        healthBonus: 1,
+        startingLevel: 1,
+        fairEnabled: true,
+        goldBonus: 1,
+      },
+    });
+    const unit = withItems.units.find((u) => u.id === 'p1')!;
+    withItems.teams![0]!.inventory = [237, 147, 307];
+    withItems.teams![0]!.gold = 500;
+    unit.accuracy = 100;
+    addMentalIllness(withItems, unit, 3);
+    expect(unit.illnessKind).toBe('schizophrenia');
+    expect(unit.accuracy).toBe(67);
+    expect(withItems.teams![0]!.inventory.length).toBe(1);
+    expect(withItems.teams![0]!.gold).toBe(500);
+
+    const empty = createBattleState({
+      matchId: 'schizo-empty',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'A', row: 0, pickOrder: 1 },
+        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes: new Map([
+        ['A', hero('A')],
+        ['B', hero('B')],
+      ]),
+      rules: {
+        maxTeamSize: 8,
+        maxRowSize: 4,
+        maxRounds: 20,
+        healthBonus: 1,
+        startingLevel: 1,
+        fairEnabled: true,
+        goldBonus: 1,
+      },
+    });
+    const u2 = empty.units.find((u) => u.id === 'p1')!;
+    empty.teams![0]!.inventory = [];
+    empty.teams![0]!.gold = 400;
+    addMentalIllness(empty, u2, 3);
+    expect(empty.teams![0]!.gold).toBe(100);
+  });
+
+  test('шизофрения economyOff: инвентарь не трогает', () => {
+    const state = duel('A');
+    const unit = state.units.find((u) => u.team === 0)!;
+    state.teams![0]!.inventory = [237, 147];
+    state.teams![0]!.gold = 400;
+    addMentalIllness(state, unit, 3);
+    expect(state.teams![0]!.inventory).toEqual([237, 147]);
+    expect(state.teams![0]!.gold).toBe(400);
   });
 });

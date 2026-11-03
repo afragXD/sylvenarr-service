@@ -1,3 +1,6 @@
+import { economyOn } from '../../economy';
+import { getItem } from '../../items/catalog';
+import { addItem, randomItemCodesByTier } from '../../items/inventory';
 import {
   dealDamage,
   formatLastLogDamage,
@@ -313,7 +316,21 @@ export const demiurgeAbilities: AbilityHandler = {
     if (err) {
       return { status: 'reject', message: err };
     }
-    state.log.push(`${actor.displayName} творит философский камень (предмет — позже).`);
+    if (economyOn(state)) {
+      const minTier = 1 + Math.floor(actor.lvl / 5);
+      const maxTier = 2 + Math.floor(actor.lvl / 3);
+      const codes = randomItemCodesByTier(minTier, maxTier, 1);
+      const code = codes[0];
+      if (code != null) {
+        addItem(state, actor.team, code, 1);
+        const item = getItem(code);
+        state.log.push(`${actor.displayName} создаёт ${item?.name ?? `предмет ${code}`}!`);
+      } else {
+        state.log.push(`${actor.displayName} творит философский камень — пустой тир.`);
+      }
+    } else {
+      state.log.push(`${actor.displayName} творит философский камень (предмет — позже).`);
+    }
     if (randInt(1, 100) <= 8 * actor.lvl) {
       state.log.push(`${actor.displayName} сохраняет ход.`);
       return { status: 'done', keepTurn: true };

@@ -1,9 +1,15 @@
-import { dealDamage, formatLastLogDamage, markDeadIfNeeded } from '../damage';
+import { economyOn } from '../../economy';
+import { getItem } from '../../items/catalog';
+import { addItem } from '../../items/inventory';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { clearDebuffs, grantEffect, healUnit, trySpendMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { alliesOf, enemiesOf, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
+
+/** Пул «Изготовить зелье» (0 — неудача). */
+const POTION_CRAFT_POOL = [237, 147, 307, 367, 207, 0, 0, 117] as const;
 
 function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
@@ -38,7 +44,7 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
     case 4:
       return {
         slot: 4,
-        label: 'Зелье поддержки',
+        label: economyOn(state) ? 'Изготовить зелье' : 'Зелье поддержки',
         needsTarget: false,
         disabledReason: null,
         legalTargetIds: [],
@@ -65,7 +71,7 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
 }
 
 /**
- * Herbalist: баффы, cleanse, заглушка крафта.
+ * Herbalist: баффы, cleanse, крафт расходника (при economyOn).
  */
 export const herbalistAbilities: AbilityHandler = {
   listAbilities(state, actor) {
@@ -125,10 +131,27 @@ export const herbalistAbilities: AbilityHandler = {
     }
 
     if (input.slot === 4) {
-      const healed = healUnit(actor, 5 + actor.lvl);
-      state.log.push(
-        `${actor.displayName} варит зелье поддержки (+${healed} ОЗ; инвентарь — позже).`
-      );
+      if (!economyOn(state)) {
+        const healed = healUnit(actor, 5 + actor.lvl);
+        state.log.push(
+          `${actor.displayName} варит зелье поддержки (+${healed} ОЗ; инвентарь — позже).`
+        );
+        return { status: 'done' };
+      }
+      const code = POTION_CRAFT_POOL[randInt(0, POTION_CRAFT_POOL.length - 1)]!;
+      if (code === 0) {
+        state.log.push(
+          `${actor.displayName} не смогла изготовить что-то путное — одно мутное варево.`
+        );
+        return { status: 'done' };
+      }
+      addItem(state, actor.team, code, 1);
+      const item = getItem(code);
+      state.log.push(`${actor.displayName} изготавливает ${item?.name ?? `предмет ${code}`}!`);
+      if (randInt(1, 100) <= 10 * actor.lvl) {
+        state.log.push(`${actor.displayName} может сделать дополнительный ход!`);
+        return { status: 'done', keepTurn: true };
+      }
       return { status: 'done' };
     }
 
