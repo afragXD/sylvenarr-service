@@ -24,6 +24,16 @@ export function thamaturgyBank(dealtSum: number, corpses: number, lvl: number): 
   return Math.round(dealtSum * (0.75 + 0.15 * corpses + 0.04 * lvl));
 }
 
+/** База vamp_cf Чёрной жатвы; +0.15 за труп (саммоны в счёт, без капа). */
+export const THAMATURGY_VAMP_BASE = 0;
+
+/**
+ * Коэффициент вампиризма Тауматургии: база + 0.15 × трупы.
+ */
+export function thamaturgyVampCf(corpses: number, base = THAMATURGY_VAMP_BASE): number {
+  return base + 0.15 * corpses;
+}
+
 /**
  * Распределение банка пропорционально недостающему ОЗ;
  * остаток от округления — самому раненому.
@@ -244,6 +254,16 @@ export const ghostWarriorAbilities: AbilityHandler = {
       }
       const corpses = allyCorpseCount(state, actor);
       const bank = thamaturgyBank(dealtSum, corpses, actor.lvl);
+      const vampCf = thamaturgyVampCf(corpses);
+      const selfVamp = Math.round(dealtSum * vampCf);
+      if (selfVamp > 0) {
+        const sucked = healUnit(actor, selfVamp);
+        if (sucked > 0) {
+          state.log.push(
+            `${actor.displayName}: вампиризм жатвы (cf=${vampCf.toFixed(2)}) +${sucked} ОЗ.`
+          );
+        }
+      }
       const allies = alliesOf(state, actor);
       const healed = distributeHealBank(allies, bank);
       const healLog =

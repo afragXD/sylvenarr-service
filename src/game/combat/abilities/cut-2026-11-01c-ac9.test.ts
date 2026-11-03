@@ -121,7 +121,7 @@ describe('CUT-2026-11-01c AC-9 Witch mass degradation', () => {
     });
     expect(result.ok).toBe(true);
     expect(witch.mana).toBe(15);
-    expect(witch.degradationCd).toBe(3);
+    expect(witch.abilityCds?.[4]).toBe(3);
     expect(state.units.find((u) => u.id === 'f0')!.lvl).toBe(7); // −3
     expect(state.units.find((u) => u.id === 'f1')!.lvl).toBe(8); // −2
     expect(state.units.find((u) => u.id === 'b0')!.lvl).toBe(8);

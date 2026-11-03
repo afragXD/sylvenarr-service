@@ -76,6 +76,30 @@ export function enemiesInColumn(
 }
 
 /**
+ * Сосед по ряду в сторону центра (по живым позициям без SANCTUM).
+ * При равном удалении от центра — сначала больший индекс, затем меньший.
+ */
+export function neighborTowardCenter(
+  sameRow: BattleUnit[],
+  col: number,
+  legalIds: Set<string>
+): BattleUnit | null {
+  if (col < 0 || sameRow.length <= 1) {
+    return null;
+  }
+  const mid = (sameRow.length - 1) / 2;
+  const toward = col < mid ? col + 1 : col > mid ? col - 1 : col + 1;
+  const away = col < mid ? col - 1 : col > mid ? col + 1 : col - 1;
+  for (const idx of [toward, away]) {
+    const unit = sameRow[idx];
+    if (unit && legalIds.has(unit.id)) {
+      return unit;
+    }
+  }
+  return null;
+}
+
+/**
  * Квадрат 2×2 (CUT AC-9): цель + сосед по ряду + двое напротив в другом ряду.
  * Порядок обхода для цепочки шансов: primary → neighbor → opposite(primary) → opposite(neighbor).
  */
@@ -101,12 +125,9 @@ export function degradationSquareTargets(
         !hasEffect(unit, 'SANCTUM')
     )
     .sort((a, b) => a.column - b.column || a.id.localeCompare(b.id));
-  const neighbor =
-    sameRow[col + 1] && legalIds.has(sameRow[col + 1]!.id)
-      ? sameRow[col + 1]!
-      : sameRow[col - 1] && legalIds.has(sameRow[col - 1]!.id)
-        ? sameRow[col - 1]!
-        : null;
+  // Индекс в sameRow (не raw liveColumn): сосед — в сторону центра ряда.
+  const rowCol = sameRow.findIndex((unit) => unit.id === primary.id);
+  const neighbor = neighborTowardCenter(sameRow, rowCol, legalIds);
   const otherRow = primary.row === 0 ? 1 : 0;
   const oppositeRow = state.units
     .filter(

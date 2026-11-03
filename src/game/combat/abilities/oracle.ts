@@ -1,6 +1,7 @@
 import { randInt } from '../damage';
 import { grantEffect, healUnit, trySpendMana, addMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { alliesOf, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
@@ -71,11 +72,8 @@ function abilityMeta(
         label: 'Чудесный доктор',
         needsTarget: true,
         disabledReason:
-          actor.mana < 3
-            ? 'Нужно 3 МР'
-            : allies.length === 0
-              ? 'Нет союзников'
-              : null,
+          cdReason(actor, 5, 2) ??
+          (actor.mana < 3 ? 'Нужно 3 МР' : allies.length === 0 ? 'Нет союзников' : null),
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -91,6 +89,7 @@ export const oracleAbilities: AbilityHandler = {
   },
 
   preChoice(_state, actor) {
+    tickSlotCds(actor);
     if (actor.momentPowerCd > 0) {
       actor.momentPowerCd -= 1;
     }
@@ -176,6 +175,7 @@ export const oracleAbilities: AbilityHandler = {
     }
     const bonus = 50 + actor.lvl * 5;
     grantEffect(target, 'IMAGINARY_HEALTH', 2, bonus);
+    setSlotCd(actor, 5, 2);
     state.log.push(
       `${actor.displayName}, чудесный доктор, дарует ${target.displayName} ${bonus} мнимого здоровья.`
     );

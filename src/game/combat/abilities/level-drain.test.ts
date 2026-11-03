@@ -230,7 +230,7 @@ describe('petrify and level drain', () => {
     expect(blocked.ok).toBe(false);
     expect(
       paladinAbilities.listAbilities(state, paladin).find((item) => item.slot === 3)?.disabledReason
-    ).toContain('Кулдаун');
+    ).toMatch(/перезарядка|Кулдаун/);
   });
 
   test('Witch slot 4 lowers target level', () => {

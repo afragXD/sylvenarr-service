@@ -112,7 +112,7 @@ function werewolfMeta(
         slot: 2,
         label: 'Вечный голод',
         needsTarget: true,
-        disabledReason: cdReason(actor, 2) ?? (targets.length === 0 ? 'Нет целей' : null),
+        disabledReason: cdReason(actor, 2, 2) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }

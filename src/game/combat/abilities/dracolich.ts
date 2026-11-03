@@ -330,6 +330,7 @@ export const dracolichAbilities: AbilityHandler = {
         state
       );
       if (damage === 0) {
+        // Промах (уворот/блок): казнь <20% HP не срабатывает.
         state.log.push(`${actor.displayName}: пожирание гада — промах.`);
       } else {
         state.log.push(
@@ -338,14 +339,14 @@ export const dracolichAbilities: AbilityHandler = {
           }.`
         );
         markDeadIfNeeded(state, target);
-      }
-      // Казнь по ОЗ до атаки; FINALSTRIKE / lives / DEATHWARD — через markDeadIfNeeded.
-      if (execute && target.alive) {
-        target.health = 0;
-        state.log.push(
-          `${actor.displayName} сжирает ослабевшего ${target.displayName} (было < 20 % ОЗ).`
-        );
-        markDeadIfNeeded(state, target);
+        // Казнь по ОЗ до атаки; только если удар попал.
+        if (execute && target.alive) {
+          target.health = 0;
+          state.log.push(
+            `${actor.displayName} сжирает ослабевшего ${target.displayName} (было < 20 % ОЗ).`
+          );
+          markDeadIfNeeded(state, target);
+        }
       }
       setSlotCd(actor, 5, 3);
       return { status: 'done' };

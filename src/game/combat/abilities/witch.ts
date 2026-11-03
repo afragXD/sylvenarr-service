@@ -10,6 +10,7 @@ import { levelUpUnit } from '../level';
 import { rollSrcChance } from '../resists';
 import { transformClassOnly } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { degradationSquareTargets, enemiesOf, meleeOrAll } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
@@ -78,13 +79,8 @@ function abilityMeta(
         label: 'Массовая деградация',
         needsTarget: true,
         disabledReason:
-          actor.degradationCd > 0
-            ? `Кулдаун ${actor.degradationCd} р.`
-            : actor.mana < 5
-              ? 'Нужно 5 МР'
-              : targets.length === 0
-                ? 'Нет целей'
-                : null,
+          cdReason(actor, 4, 3) ??
+          (actor.mana < 5 ? 'Нужно 5 МР' : targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -95,13 +91,8 @@ function abilityMeta(
         label: 'Превращение',
         needsTarget: true,
         disabledReason:
-          actor.impPolymorphCd > 0
-            ? `Кулдаун ${actor.impPolymorphCd} р.`
-            : actor.mana < 4
-              ? 'Нужно 4 МР'
-              : targets.length === 0
-                ? 'Нет целей'
-                : null,
+          cdReason(actor, 5, 3) ??
+          (actor.mana < 4 ? 'Нужно 4 МР' : targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -117,12 +108,7 @@ export const witchAbilities: AbilityHandler = {
   },
 
   preChoice(_state, actor) {
-    if (actor.impPolymorphCd > 0) {
-      actor.impPolymorphCd -= 1;
-    }
-    if (actor.degradationCd > 0) {
-      actor.degradationCd -= 1;
-    }
+    tickSlotCds(actor);
   },
 
   apply(state, actor, input): AbilityOutcome {
@@ -233,7 +219,7 @@ export const witchAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель недоступна' };
       }
-      actor.degradationCd = 3;
+      setSlotCd(actor, 4, 3);
       const square = degradationSquareTargets(state, actor, target);
       let chance = massDegradationBaseChance(actor.lvl);
       state.log.push(
@@ -268,7 +254,7 @@ export const witchAbilities: AbilityHandler = {
     if (!target) {
       return { status: 'reject', message: 'Цель недоступна' };
     }
-    actor.impPolymorphCd = 3;
+    setSlotCd(actor, 5, 3);
     if (rollSrcChance(state, target, 100, 'EARTH', 'POLYMORPH')) {
       if (hasEffect(target, 'IMPISH')) {
         delEffect(target, 'IMPISH', state);

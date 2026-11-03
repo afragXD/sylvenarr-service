@@ -192,7 +192,7 @@ describe('CUT-2026-11-01c AC-2', () => {
     expect(foe.armor).toBe(armorBefore);
 
     const after = listPilotAbilities(state, wolf).find((ability) => ability.slot === 2)!;
-    expect(after.disabledReason).toMatch(/Кулдаун 2/);
+    expect(after.disabledReason).toMatch(/перезарядка 2|Кулдаун 2/);
   });
 
   test('fixture inquisitor-ind0: при ind=0 нет +брони/+силы на stage%5', () => {

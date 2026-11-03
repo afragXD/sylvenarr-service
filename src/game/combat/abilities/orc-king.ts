@@ -88,11 +88,9 @@ export const orcKingAbilities: AbilityHandler = {
     return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
   },
 
-  preChoice(_state, actor) {
-    tickSlotCds(actor);
-  },
-
   preChoice(state, actor) {
+    // Сначала тик КД (призыв гоблинов КД 2), затем аура удачи.
+    tickSlotCds(actor);
     const enemies = enemiesOf(state, actor);
     if (enemies.length === 0) {
       return;

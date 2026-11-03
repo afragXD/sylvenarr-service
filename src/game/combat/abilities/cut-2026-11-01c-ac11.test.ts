@@ -92,7 +92,7 @@ describe('CUT-2026-11-01c AC-11 Werewolf / Inquisitor', () => {
 
     // КД блокирует сразу.
     const blocked = listPilotAbilities(state, wolf).find((a) => a.slot === 5)!;
-    expect(blocked.disabledReason).toContain('Кулдаун');
+    expect(blocked.disabledReason).toMatch(/перезарядка|Кулдаун/);
 
     // Симулируем 4 тика КД и второй/третий зов.
     wolf.abilityCds = {};

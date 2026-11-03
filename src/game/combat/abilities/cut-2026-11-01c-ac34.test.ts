@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, spyOn, test } from 'bun:test';
 
 import { heroSeeds } from '../../../../prisma/seed-data/heroes';
 import { applyAction, createBattleState } from '../engine';
@@ -36,11 +36,11 @@ const seed = (code: string) => {
 
 describe('CUT-2026-11-01c AC-3', () => {
   test('fixture heroes-stats: Abbess/Mermaid/Titan/DemonLord числа', () => {
-    expect(seed('Abbess').health).toBe(185); // 205×0.9 → round
-    expect(seed('Abbess').mana).toBe(10);
-    expect(seed('Abbess').maxMana).toBe(10);
-    expect(seed('Mermaid').health).toBe(162); // 180×0.9
-    expect(seed('Titan').damage).toBe(36); // 26+10
+    // QA 2026-11-03: боевая база 205/12, 180, 26; Демон-принц точность 95.
+    expect(seed('Abbess').health).toBe(205);
+    expect(seed('Abbess').mana).toBe(12);
+    expect(seed('Mermaid').health).toBe(180);
+    expect(seed('Titan').damage).toBe(26);
     expect(seed('DemonLord').accuracy).toBe(95);
   });
 
@@ -360,33 +360,39 @@ describe('CUT-2026-11-01c AC-4', () => {
   });
 
   test('fixture demon-triple: accuracyPenalty 5 при базовой 95', () => {
-    const state = createBattleState({
-      matchId: 'ac4-triple',
-      hostPlayerId: 'h',
-      guestPlayerId: 'g',
-      picks: [
-        { id: 'p1', playerId: 'h', heroClassCode: 'DemonLord', row: 0, pickOrder: 1 },
-        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
-      ],
-      heroes: new Map([
-        ['DemonLord', hero('DemonLord', { initiative: 99, accuracy: 95, damage: 40 })],
-        ['B', hero('B', { dodge: 0 })],
-      ]),
-    });
-    const demon = state.units.find((u) => u.id === 'p1')!;
-    demon.accuracy = 95;
-    state.activeUnitId = 'p1';
-    state.turnPlayerId = 'h';
-    const meta = listPilotAbilities(state, demon).find((a) => a.slot === 1);
-    expect(meta?.attackKind).toBe('melee');
-    // Проверяем через исход: при accuracy 95 и penalty 5 эффективный промах = dodge+5+95-95 = dodge+5.
-    applyAction(state, {
-      playerId: 'h',
-      unitId: 'p1',
-      action: 'ability',
-      slot: 1,
-      targetId: 'e1',
-    });
-    expect(state.log.some((line) => line.includes('трёхглавый'))).toBe(true);
+    // randInt(1,100) высокий → промах по missChance 5% не срабатывает.
+    const randomSpy = spyOn(Math, 'random').mockReturnValue(0.99);
+    try {
+      const state = createBattleState({
+        matchId: 'ac4-triple',
+        hostPlayerId: 'h',
+        guestPlayerId: 'g',
+        picks: [
+          { id: 'p1', playerId: 'h', heroClassCode: 'DemonLord', row: 0, pickOrder: 1 },
+          { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+        ],
+        heroes: new Map([
+          ['DemonLord', hero('DemonLord', { initiative: 99, accuracy: 95, damage: 40 })],
+          ['B', hero('B', { dodge: 0 })],
+        ]),
+      });
+      const demon = state.units.find((u) => u.id === 'p1')!;
+      demon.accuracy = 95;
+      state.activeUnitId = 'p1';
+      state.turnPlayerId = 'h';
+      const meta = listPilotAbilities(state, demon).find((a) => a.slot === 1);
+      expect(meta?.attackKind).toBe('melee');
+      // Фиксированный seed RNG — не падает от случайного промаха.
+      applyAction(state, {
+        playerId: 'h',
+        unitId: 'p1',
+        action: 'ability',
+        slot: 1,
+        targetId: 'e1',
+      });
+      expect(state.log.some((line) => line.includes('трёхглавый'))).toBe(true);
+    } finally {
+      randomSpy.mockRestore();
+    }
   });
 });
