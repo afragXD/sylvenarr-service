@@ -243,6 +243,11 @@ export type BattleUnit = {
   illness: boolean;
   /** Какая болезнь активна до конца матча (AC-1); null если нет. */
   illnessKind: MentalIllnessKind | null;
+  /**
+   * Радиус оружия по колонкам (ближний бой).
+   * По умолчанию 1; Knight / DemonLord — 2. В старых снимках поля нет — брать по классу.
+   */
+  weaponReach?: number;
   /** Кулдауны слотов в раундах (Antipaladin / Angel / Incub); в старых снимках поля нет. */
   abilityCds?: Partial<Record<AbilitySlot, number>>;
   /** Antipaladin: накопленный нанесённый урон для «Шквала ударов». */

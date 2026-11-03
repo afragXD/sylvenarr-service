@@ -6,4 +6,10 @@ export {
   runPreChoice,
 } from './registry';
 export { createSummon } from './summon';
-export { attackTargets, meleeTargets, neighbourBehind } from './targets';
+export {
+  attackTargets,
+  defaultWeaponReach,
+  meleeTargets,
+  neighbourBehind,
+  weaponReachOf,
+} from './targets';

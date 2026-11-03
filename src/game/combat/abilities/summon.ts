@@ -3,6 +3,7 @@ import { levelUpUnit } from '../level';
 import { cloneResists } from '../resists';
 import type { BattleState, BattleUnit } from '../types';
 import { initPilotFlags } from './registry';
+import { defaultWeaponReach, weaponReachOf } from './targets';
 
 /**
  * Создаёт саммона на поле с учётом лимитов команды и владельца.
@@ -127,6 +128,7 @@ export function createSummon(
     lives: 0,
     illness: false,
     illnessKind: null,
+    weaponReach: defaultWeaponReach(hero.code),
   };
   initPilotFlags(unit);
   state.units.push(unit);
@@ -229,6 +231,7 @@ export function createPhantomCopy(
     lives: 0,
     illness: false,
     illnessKind: null,
+    weaponReach: weaponReachOf(template),
   };
   state.units.push(unit);
   return unit;

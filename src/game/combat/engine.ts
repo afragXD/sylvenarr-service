@@ -1,6 +1,7 @@
 import {
   applyAbility,
   attackTargets,
+  defaultWeaponReach,
   initPilotFlags,
   isPilotClass,
   listPilotAbilities,
@@ -237,6 +238,7 @@ function buildTeamUnits(
         lives: 0,
         illness: false,
         illnessKind: null,
+        weaponReach: defaultWeaponReach(hero.code),
       };
       initPilotFlags(unit);
       units.push(unit);

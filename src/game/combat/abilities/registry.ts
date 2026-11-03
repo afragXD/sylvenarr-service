@@ -169,6 +169,10 @@ export function initPilotFlags(unit: BattleUnit): void {
       break;
     case 'GoldGolem':
       unit.forbiddenResurrect = true;
+      // CUT-2026-11-03b T2: Отражение на 6 раундов при создании (драфт и саммон).
+      if (!unit.effects.some((effect) => effect.id === 'REFLECTION')) {
+        unit.effects.push({ id: 'REFLECTION', rounds: 6, power: 0, fresh: true });
+      }
       break;
     case 'BeerElemental':
       unit.ultaCharges = 3;

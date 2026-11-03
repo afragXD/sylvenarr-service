@@ -58,6 +58,49 @@ export function liveColumn(state: BattleState, unit: BattleUnit): number {
     .findIndex((item) => item.id === unit.id);
 }
 
+/** Базовый радиус оружия по классу (старые снимки без поля). */
+export function defaultWeaponReach(heroClassCode: string): number {
+  return heroClassCode === 'Knight' || heroClassCode === 'DemonLord' ? 2 : 1;
+}
+
+/** Фактический радиус оружия юнита. */
+export function weaponReachOf(unit: BattleUnit): number {
+  if (typeof unit.weaponReach === 'number' && unit.weaponReach >= 1) {
+    return unit.weaponReach;
+  }
+  return defaultWeaponReach(unit.heroClassCode);
+}
+
+/**
+ * Достижима ли цель по колонкам (порт isReachableForMelee / lengthOfWeapon).
+ * Блокеры — живые на переднем ряду команды цели, колонка в отрезке без колонки цели.
+ */
+export function isMeleeColumnReachable(
+  state: BattleState,
+  attacker: BattleUnit,
+  target: BattleUnit
+): boolean {
+  const attCol = liveColumn(state, attacker);
+  const tgtCol = liveColumn(state, target);
+  if (attCol < 0 || tgtCol < 0) {
+    return false;
+  }
+  const reach = weaponReachOf(attacker);
+  if (Math.abs(attCol - tgtCol) <= reach) {
+    return true;
+  }
+  const lo = Math.min(attCol, tgtCol);
+  const hi = Math.max(attCol, tgtCol);
+  const blocked = state.units.some((unit) => {
+    if (!unit.alive || unit.team !== target.team || unit.row !== ROW_FRONT) {
+      return false;
+    }
+    const col = liveColumn(state, unit);
+    return col >= lo && col <= hi && col !== tgtCol;
+  });
+  return !blocked;
+}
+
 /**
  * Враги в той же колонке, что и `ref` (с фильтром SANCTUM).
  */
@@ -185,6 +228,7 @@ export function livingEnemyFront(state: BattleState, actor: BattleUnit): BattleU
 /**
  * Цели атаки ближнего боя (порт isReachableForMelee) — правило атаки, не юнита.
  * Передний ряд с живыми (в т.ч. под SANCTUM) блокирует задний; SANCTUM/GUARDED из целей исключаются.
+ * Поверх рядов — правило колонок (weaponReach).
  */
 export function meleeTargets(
   state: BattleState,
@@ -199,10 +243,8 @@ export function meleeTargets(
     return [];
   }
   const frontAlive = livingEnemyFront(state, attacker);
-  if (frontAlive.length > 0) {
-    return enemies.filter((unit) => unit.row === ROW_FRONT);
-  }
-  return enemies;
+  const byRow = frontAlive.length > 0 ? enemies.filter((unit) => unit.row === ROW_FRONT) : enemies;
+  return byRow.filter((target) => isMeleeColumnReachable(state, attacker, target));
 }
 
 /**
