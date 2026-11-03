@@ -15,6 +15,10 @@ const BATTLE_ACTIONS = new Set([
   'item',
   'perk_pick',
   'perk_skip',
+  'fair_buy',
+  'fair_sell',
+  'fair_sell_all',
+  'fair_stop',
 ]);
 const ABILITY_SLOTS = new Set([1, 2, 3, 4, 5]);
 
@@ -136,7 +140,11 @@ async function handleBattleMessage(
         | 'move'
         | 'item'
         | 'perk_pick'
-        | 'perk_skip',
+        | 'perk_skip'
+        | 'fair_buy'
+        | 'fair_sell'
+        | 'fair_sell_all'
+        | 'fair_stop',
       targetId: typeof message.targetId === 'string' ? message.targetId : undefined,
       slot: typeof slot === 'number' ? (slot as 1 | 2 | 3 | 4 | 5) : undefined,
       choice: typeof message.choice === 'string' ? message.choice : undefined,

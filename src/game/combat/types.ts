@@ -9,10 +9,28 @@ export type BattleAction =
   | 'move'
   | 'item'
   | 'perk_pick'
-  | 'perk_skip';
+  | 'perk_skip'
+  | 'fair_buy'
+  | 'fair_sell'
+  | 'fair_sell_all'
+  | 'fair_stop';
 
 /** Фаза боя (ярмарка / перки / бой). Старые снимки — нет поля → combat. */
 export type BattlePhase = 'combat' | 'perks' | 'fair';
+
+/** Состояние активной ярмарки (CUT-2026-11-03b T12). */
+export type FairState = {
+  /** Порядковый номер ярмарки в матче (1, 2, …). */
+  index: number;
+  /** Коды предметов на прилавке. */
+  shop: number[];
+  /** Чья очередь у прилавка. */
+  turnTeam: 0 | 1;
+  /** Отряд закончил торги. */
+  stopped: [boolean, boolean];
+  /** id торговцев [host, guest]. */
+  traderIds: [string, string];
+};
 
 export type PerkOfferOption = {
   id: string;
@@ -378,6 +396,8 @@ export type BattleState = {
   phase?: BattlePhase;
   /** Активные предложения перков (фаза perks). */
   perkOffers?: PerkOffer[] | null;
+  /** Активная ярмарка (фаза fair). */
+  fair?: FairState | null;
 };
 
 export type BattleSfxEvent = {

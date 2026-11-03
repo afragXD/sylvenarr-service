@@ -1,8 +1,14 @@
 import {
   applyClassEconomySetup,
+  applyFairBuy,
+  applyFairSell,
+  applyFairSellAll,
+  applyFairStop,
+  beginFairPhase,
   computeStartingTeamGold,
   economyOn,
   emptyTeamEconomy,
+  summarizeFair,
 } from '../economy';
 import { summarizeInventory } from '../items/inventory';
 import { applyItemAction } from '../items/use';
@@ -161,6 +167,7 @@ export function createBattleState(input: {
     graveyard: [],
     phase: 'combat',
     perkOffers: null,
+    fair: null,
   };
 
   applyClassEconomySetup(state);
@@ -175,7 +182,7 @@ export function createBattleState(input: {
   }
 
   setEffectState(state);
-  // Уровни → (ярмарка T12) → перки → раунд.
+  // Старт: перки (ярмарка только на стыке раундов) → раунд.
   if (!beginPerkPhase(state)) {
     advanceToNextUnit(state);
   }
@@ -337,7 +344,10 @@ export function advanceToNextUnit(state: BattleState): void {
       }
       state.log.push(...levelUpLogs);
       applyMasochismRoundStart(state);
-      // Уровни → (ярмарка T12) → перки → раунд.
+      // Уровни → ярмарка → перки → раунд.
+      if (beginFairPhase(state)) {
+        return;
+      }
       if (beginPerkPhase(state)) {
         return;
       }
@@ -450,8 +460,72 @@ export function applyAction(
     return { ok: false, message: 'Сейчас выбор перков' };
   }
 
+  if (state.phase === 'fair') {
+    if (input.action === 'fair_buy') {
+      if (input.itemCode == null) {
+        return { ok: false, message: 'Нужен itemCode' };
+      }
+      const bought = applyFairBuy(state, {
+        playerId: input.playerId,
+        unitId: input.unitId,
+        itemCode: input.itemCode,
+      });
+      if (!bought.ok) {
+        return bought;
+      }
+      return { ok: true };
+    }
+    if (input.action === 'fair_sell') {
+      if (input.itemCode == null) {
+        return { ok: false, message: 'Нужен itemCode' };
+      }
+      const sold = applyFairSell(state, {
+        playerId: input.playerId,
+        unitId: input.unitId,
+        itemCode: input.itemCode,
+      });
+      if (!sold.ok) {
+        return sold;
+      }
+      return { ok: true };
+    }
+    if (input.action === 'fair_sell_all') {
+      const soldAll = applyFairSellAll(state, {
+        playerId: input.playerId,
+        unitId: input.unitId,
+      });
+      if (!soldAll.ok) {
+        return soldAll;
+      }
+      return { ok: true };
+    }
+    if (input.action === 'fair_stop') {
+      const stopped = applyFairStop(state, {
+        playerId: input.playerId,
+        unitId: input.unitId,
+      });
+      if (!stopped.ok) {
+        return stopped;
+      }
+      if (stopped.done) {
+        finishFairPhase(state);
+      }
+      return { ok: true };
+    }
+    return { ok: false, message: 'Сейчас ярмарка' };
+  }
+
   if (input.action === 'perk_pick' || input.action === 'perk_skip') {
     return { ok: false, message: 'Сейчас не фаза выбора перков' };
+  }
+
+  if (
+    input.action === 'fair_buy' ||
+    input.action === 'fair_sell' ||
+    input.action === 'fair_sell_all' ||
+    input.action === 'fair_stop'
+  ) {
+    return { ok: false, message: 'Сейчас не ярмарка' };
   }
 
   if (state.activeUnitId !== input.unitId || state.turnPlayerId !== input.playerId) {
@@ -902,6 +976,16 @@ function finishPerkPhase(state: BattleState): void {
   advanceToNextUnit(state);
 }
 
+function finishFairPhase(state: BattleState): void {
+  state.phase = 'combat';
+  state.fair = null;
+  state.log.push('Ярмарка завершена');
+  if (beginPerkPhase(state)) {
+    return;
+  }
+  advanceToNextUnit(state);
+}
+
 function finishUnitTurn(state: BattleState, actor: BattleUnit): void {
   if (actor.alive) {
     endTurnTick(state, actor);
@@ -1110,6 +1194,7 @@ export function toBattleSummary(state: BattleState) {
     economyEnabled: economyOn(state),
     phase: state.phase ?? 'combat',
     perkOffers: state.perkOffers ?? null,
+    fair: summarizeFair(state),
     units: state.units.map((unit) => ({
       id: unit.id,
       playerId: unit.playerId,

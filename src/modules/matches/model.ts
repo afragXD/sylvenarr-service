@@ -249,6 +249,41 @@ export namespace MatchesModel {
         })
       )
     ),
+    fair: t.Nullable(
+      t.Object({
+        index: t.Number(),
+        turnTeam: t.Union([t.Literal(0), t.Literal(1)]),
+        stopped: t.Tuple([t.Boolean(), t.Boolean()]),
+        traderIds: t.Tuple([t.String(), t.String()]),
+        shop: t.Array(
+          t.Object({
+            code: t.Number(),
+            name: t.String(),
+            description: t.String(),
+            category: t.Number(),
+            tier: t.Number(),
+            cost: t.Number(),
+            buyPrice: t.Number(),
+          })
+        ),
+        sellByTeam: t.Tuple([
+          t.Array(
+            t.Object({
+              code: t.Number(),
+              name: t.String(),
+              sellPrice: t.Number(),
+            })
+          ),
+          t.Array(
+            t.Object({
+              code: t.Number(),
+              name: t.String(),
+              sellPrice: t.Number(),
+            })
+          ),
+        ]),
+      })
+    ),
     units: t.Array(battleUnit),
     teams: t.Optional(t.Tuple([battleTeamEconomy, battleTeamEconomy])),
   });
@@ -330,6 +365,10 @@ export namespace MatchesModel {
       t.Literal('item'),
       t.Literal('perk_pick'),
       t.Literal('perk_skip'),
+      t.Literal('fair_buy'),
+      t.Literal('fair_sell'),
+      t.Literal('fair_sell_all'),
+      t.Literal('fair_stop'),
     ]),
     targetId: t.Optional(t.String()),
     slot: t.Optional(

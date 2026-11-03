@@ -1038,7 +1038,11 @@ export abstract class MatchesService {
       | 'move'
       | 'item'
       | 'perk_pick'
-      | 'perk_skip';
+      | 'perk_skip'
+      | 'fair_buy'
+      | 'fair_sell'
+      | 'fair_sell_all'
+      | 'fair_stop';
     readonly targetId?: string;
     readonly slot?: 1 | 2 | 3 | 4 | 5;
     readonly choice?: string;
