@@ -1,4 +1,6 @@
-import { computeStartingTeamGold, emptyTeamEconomy } from '../economy';
+import { computeStartingTeamGold, economyOn, emptyTeamEconomy } from '../economy';
+import { summarizeInventory } from '../items/inventory';
+import { applyItemAction } from '../items/use';
 import {
   applyAbility,
   attackTargets,
@@ -386,6 +388,7 @@ export function applyAction(
     readonly targetId?: string;
     readonly slot?: AbilitySlot;
     readonly choice?: string;
+    readonly itemCode?: number;
   }
 ): { ok: true } | { ok: false; message: string } {
   setEffectState(state);
@@ -404,10 +407,33 @@ export function applyAction(
     if (state.pendingPrompt.unitId !== actor.id) {
       return { ok: false, message: 'Ожидается другой выбор' };
     }
+    const promptSource = state.pendingPrompt.source ?? 'ability';
+    if (promptSource === 'item') {
+      if (input.action !== 'item' || !input.choice) {
+        return { ok: false, message: 'Нужно завершить выбор предмета' };
+      }
+      const itemCode = state.pendingPrompt.itemCode;
+      if (itemCode == null) {
+        return { ok: false, message: 'Нужно завершить выбор предмета' };
+      }
+      return settleItem(
+        state,
+        actor,
+        applyItemAction(state, actor, {
+          itemCode,
+          targetId: input.targetId,
+          choice: input.choice,
+          continuingPrompt: true,
+        })
+      );
+    }
     if (input.action !== 'ability' || !input.choice) {
       return { ok: false, message: 'Нужно завершить выбор способности' };
     }
     const promptSlot = state.pendingPrompt.slot;
+    if (!promptSlot) {
+      return { ok: false, message: 'Нужно завершить выбор способности' };
+    }
     const outcome = applyAbility(state, actor, {
       slot: promptSlot,
       targetId: input.targetId,
@@ -516,6 +542,22 @@ export function applyAction(
     return applySkillAction(state, actor, input.targetId);
   }
 
+  if (input.action === 'item') {
+    const itemCode = input.itemCode;
+    if (itemCode == null) {
+      return { ok: false, message: 'Нужен код предмета' };
+    }
+    return settleItem(
+      state,
+      actor,
+      applyItemAction(state, actor, {
+        itemCode,
+        targetId: input.targetId,
+        choice: input.choice,
+      })
+    );
+  }
+
   // attack — для пилотов = слот 1
   if (isPilotClass(actor.heroClassCode)) {
     const label =
@@ -578,6 +620,27 @@ function settleAbility(
     );
   }
   if (outcome.keepTurn) {
+    resolveOutcome(state);
+    return { ok: true };
+  }
+  finishUnitTurn(state, actor);
+  return { ok: true };
+}
+
+function settleItem(
+  state: BattleState,
+  actor: BattleUnit,
+  result: ReturnType<typeof applyItemAction>
+): { ok: true } | { ok: false; message: string } {
+  if (!result.ok) {
+    return { ok: false, message: result.message };
+  }
+  if (result.pending) {
+    return { ok: true };
+  }
+  markDeadIfNeeded(state, actor);
+  if (result.keepTurn) {
+    state.pendingPrompt = null;
     resolveOutcome(state);
     return { ok: true };
   }
@@ -958,10 +1021,13 @@ export function toBattleSummary(state: BattleState) {
       ? {
           unitId: state.pendingPrompt.unitId,
           kind: state.pendingPrompt.kind,
-          slot: state.pendingPrompt.slot,
+          slot: state.pendingPrompt.slot ?? null,
           options: state.pendingPrompt.options,
+          source: state.pendingPrompt.source ?? 'ability',
+          itemCode: state.pendingPrompt.itemCode ?? null,
         }
       : null,
+    economyEnabled: economyOn(state),
     units: state.units.map((unit) => ({
       id: unit.id,
       playerId: unit.playerId,
@@ -995,10 +1061,21 @@ export function toBattleSummary(state: BattleState) {
       lvl: unit.lvl,
       morale: unit.morale,
       resists: summarizeResists(unit),
+      perks: unit.perks ?? [],
+      merchant: unit.merchant ?? 0,
     })),
-    teams: [{ gold: state.teams?.[0]?.gold ?? 0 }, { gold: state.teams?.[1]?.gold ?? 0 }] as [
-      { gold: number },
-      { gold: number },
+    teams: [
+      {
+        gold: state.teams?.[0]?.gold ?? 0,
+        inventory: summarizeInventory(state, 0),
+      },
+      {
+        gold: state.teams?.[1]?.gold ?? 0,
+        inventory: summarizeInventory(state, 1),
+      },
+    ] as [
+      { gold: number; inventory: ReturnType<typeof summarizeInventory> },
+      { gold: number; inventory: ReturnType<typeof summarizeInventory> },
     ],
   };
 }

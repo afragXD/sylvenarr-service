@@ -118,8 +118,9 @@ export function applyAbility(
     return { status: 'reject', message: 'Ожидается выбор другого юнита' };
   }
   if (state.pendingPrompt && state.pendingPrompt.unitId === actor.id) {
+    const slot = state.pendingPrompt.slot ?? input.slot;
     return handler.apply(state, actor, {
-      slot: state.pendingPrompt.slot,
+      slot,
       targetId: input.targetId,
       choice: input.choice,
     });

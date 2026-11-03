@@ -114,11 +114,32 @@ export namespace MatchesModel {
     lvl: t.Number(),
     morale: t.Number(),
     resists: t.Array(resistBrief),
+    perks: t.Array(t.String()),
+    merchant: t.Number(),
   });
   export type battleUnit = typeof battleUnit.static;
 
+  export const inventoryStack = t.Object({
+    code: t.Number(),
+    name: t.String(),
+    description: t.String(),
+    quantity: t.Number(),
+    category: t.Number(),
+    tier: t.Number(),
+    target: t.Union([
+      t.Literal('self'),
+      t.Literal('ally'),
+      t.Literal('allySummon'),
+      t.Literal('enemy'),
+      t.Literal('enemySummon'),
+      t.Literal('sellOnly'),
+    ]),
+  });
+  export type inventoryStack = typeof inventoryStack.static;
+
   export const battleTeamEconomy = t.Object({
     gold: t.Number(),
+    inventory: t.Array(inventoryStack),
   });
   export type battleTeamEconomy = typeof battleTeamEconomy.static;
 
@@ -161,7 +182,9 @@ export namespace MatchesModel {
   export const pendingPrompt = t.Object({
     unitId: t.String(),
     kind: t.String(),
-    slot: t.Union([t.Literal(1), t.Literal(2), t.Literal(3), t.Literal(4), t.Literal(5)]),
+    slot: t.Nullable(
+      t.Union([t.Literal(1), t.Literal(2), t.Literal(3), t.Literal(4), t.Literal(5)])
+    ),
     options: t.Array(
       t.Object({
         id: t.String(),
@@ -169,6 +192,8 @@ export namespace MatchesModel {
         description: t.Optional(t.String()),
       })
     ),
+    source: t.Union([t.Literal('ability'), t.Literal('item')]),
+    itemCode: t.Nullable(t.Number()),
   });
   export type pendingPrompt = typeof pendingPrompt.static;
 
@@ -204,6 +229,7 @@ export namespace MatchesModel {
     legalSkillTargetIds: t.Array(t.String()),
     abilities: t.Array(abilityInfo),
     pendingPrompt: t.Nullable(pendingPrompt),
+    economyEnabled: t.Boolean(),
     units: t.Array(battleUnit),
     teams: t.Optional(t.Tuple([battleTeamEconomy, battleTeamEconomy])),
   });
@@ -282,12 +308,14 @@ export namespace MatchesModel {
       t.Literal('skill'),
       t.Literal('ability'),
       t.Literal('move'),
+      t.Literal('item'),
     ]),
     targetId: t.Optional(t.String()),
     slot: t.Optional(
       t.Union([t.Literal(1), t.Literal(2), t.Literal(3), t.Literal(4), t.Literal(5)])
     ),
     choice: t.Optional(t.String()),
+    itemCode: t.Optional(t.Number()),
   });
   export type battleActionBody = typeof battleActionBody.static;
 

@@ -1,6 +1,6 @@
 import type { DamageSource } from './damageSources';
 
-export type BattleAction = 'attack' | 'defend' | 'wait' | 'skill' | 'ability' | 'move';
+export type BattleAction = 'attack' | 'defend' | 'wait' | 'skill' | 'ability' | 'move' | 'item';
 
 export type AbilitySlot = 1 | 2 | 3 | 4 | 5;
 
@@ -117,10 +117,15 @@ export type PromptOption = {
 export type PendingPrompt = {
   unitId: string;
   kind: string;
-  slot: AbilitySlot;
+  /** Слот способности; для предметов может отсутствовать. */
+  slot?: AbilitySlot;
   options: PromptOption[];
   /** Сохранённый контекст (targetId, summonCode…). */
   context: Record<string, string>;
+  /** Источник промпта; старые снимки без поля = ability. */
+  source?: 'ability' | 'item';
+  /** Код предмета при source: 'item'. */
+  itemCode?: number;
 };
 
 export type ResistEntry = {
@@ -247,6 +252,10 @@ export type BattleUnit = {
    * По умолчанию 1; Knight / DemonLord — 2. В старых снимках поля нет — брать по классу.
    */
   weaponReach?: number;
+  /** Изученные перки (id из PERK_CATALOG); старые снимки — нет поля. */
+  perks?: string[];
+  /** Навык торговли (множитель цен); старые снимки — нет поля. */
+  merchant?: number;
   /** Кулдауны слотов в раундах (Antipaladin / Angel / Incub); в старых снимках поля нет. */
   abilityCds?: Partial<Record<AbilitySlot, number>>;
   /** Antipaladin: накопленный нанесённый урон для «Шквала ударов». */
