@@ -1,8 +1,12 @@
 import { registerArtifactItemUsages } from './artifacts';
+import { registerMilitaryItemUsages } from './military';
 import { registerMiscItemUsages } from './misc';
 import { registerOrbItemUsages } from './orbs';
 import { registerRelicItemUsages } from './relics';
 import { registerScrollItemUsages } from './scrolls';
+import { registerStaffItemUsages } from './staffs';
+import { registerTalismanItemUsages } from './talismans';
+import { registerTechItemUsages } from './tech';
 import type { ItemUsageHandler, ItemUsageOutcome } from './types';
 
 export type { ItemUsageContext, ItemUsageHandler, ItemUsageOutcome } from './types';
@@ -34,6 +38,10 @@ function registerBuiltinItemUsages(): void {
   registerArtifactItemUsages(registerItemUsage);
   registerOrbItemUsages(registerItemUsage);
   registerScrollItemUsages(registerItemUsage);
+  registerTalismanItemUsages(registerItemUsage);
+  registerTechItemUsages(registerItemUsage);
+  registerStaffItemUsages(registerItemUsage);
+  registerMilitaryItemUsages(registerItemUsage);
 }
 
 /** Сброс реестра и повторная установка встроенных обработчиков (тесты). */
