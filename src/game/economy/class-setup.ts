@@ -5,6 +5,7 @@ import {
   randomItemCodesByCategoryAndTier,
   randomItemCodesByTier,
 } from '../items/inventory';
+import { economyOn } from './on';
 
 type ClassSetup = {
   readonly perks: readonly string[];
@@ -50,7 +51,7 @@ function setupForClass(code: string): ClassSetup {
 
 /** Классовые перки, merchant, develop и стартовый инвентарь (только при fairEnabled). */
 export function applyClassEconomySetup(state: BattleState): void {
-  if (state.rules.fairEnabled !== true) {
+  if (!economyOn(state)) {
     return;
   }
   for (const unit of state.units) {

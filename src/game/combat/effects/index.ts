@@ -1,3 +1,4 @@
+import { economyOn } from '../../economy/on';
 import { DAMAGE_SOURCE_LABELS, type DamageSource, formatLogDamage } from '../damageSources';
 import { effectLogLabel } from '../effect-labels';
 import {
@@ -278,6 +279,16 @@ export function tryStun(state: BattleState, target: BattleUnit, rounds: number):
     state.log.push(
       `${target.displayName}: вард «${DAMAGE_SOURCE_LABELS.STUN}» поглощает оглушение.`
     );
+    return false;
+  }
+  // Значение резиста STUN (перк SIGMALIKE, предметы) — только при включённой экономике.
+  if (
+    economyOn(state) &&
+    stunResist &&
+    stunResist.value > 0 &&
+    randInt(1, 100) <= stunResist.value
+  ) {
+    state.log.push(`${target.displayName} сопротивляется оглушению.`);
     return false;
   }
   grantEffect(target, 'STUNNED', rounds, 0);
@@ -775,6 +786,9 @@ export function grantEffect(unit: BattleUnit, id: EffectId, rounds: number, powe
       if (enemies.length > 0) {
         const target = enemies[randInt(0, enemies.length - 1)];
         if (target) {
+          state.log.push(
+            `Отражение: «${effectLogLabel(id)}» с ${unit.displayName} переходит на ${target.displayName}.`
+          );
           grantEffect(target, id, rounds, power);
           return;
         }

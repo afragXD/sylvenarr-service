@@ -2,7 +2,7 @@ import { chancePercent } from '../combat/morale';
 import { isDemonClass, isUndeadClass } from '../combat/races';
 import type { BattleState, BattleUnit } from '../combat/types';
 import { economyOn } from '../economy';
-import { getPerk, ITEM_PERK_BY_CATEGORY } from '../perks/catalog';
+import { ITEM_PERK_BY_CATEGORY } from '../perks/catalog';
 import { getItem, type ItemTarget } from './catalog';
 import { itemCount, removeItem } from './inventory';
 import { CASE_ITEM_CODES, getItemUsage, type ItemUsageOutcome } from './usages';
@@ -109,7 +109,7 @@ export function applyItemAction(
     }
     const needed = ITEM_PERK_BY_CATEGORY.get(item.category);
     if (!needed || !unitHasPerk(invoker, needed.id)) {
-      const name = needed?.name ?? getPerk(`cat-${item.category}`)?.name ?? 'неизвестный';
+      const name = needed?.name ?? 'неизвестный';
       return { ok: false, message: `Нужен навык: ${name}` };
     }
   }

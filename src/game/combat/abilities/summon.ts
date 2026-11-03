@@ -132,6 +132,9 @@ export function createSummon(
     weaponReach: defaultWeaponReach(hero.code),
   };
   initPilotFlags(unit);
+  if (economyOn(state)) {
+    unit.perks = ['MISC'];
+  }
   state.units.push(unit);
   // Уровень и статы: level override или уровень призывателя (базовый каталог + прокачка).
   const targetLvl = Math.max(1, input.level ?? input.summoner.lvl);

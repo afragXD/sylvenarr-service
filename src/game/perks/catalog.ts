@@ -153,7 +153,7 @@ export const PERK_CATALOG: readonly PerkCatalogEntry[] = [
   {
     id: 'ARMORPENETRATOR',
     name: 'Пенетратор латников',
-    description: '+35% к игнорированию брони',
+    description: '+30% к игнорированию брони',
     kind: 'other',
   },
   {

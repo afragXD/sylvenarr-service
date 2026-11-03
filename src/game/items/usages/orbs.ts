@@ -1,5 +1,5 @@
 import { harmWithSource, markDeadIfNeeded, randInt } from '../../combat/damage';
-import { clearAllEffects, clearBuffs, tryStun } from '../../combat/effects';
+import { clearAllEffects, clearBuffs, grantEffect } from '../../combat/effects';
 import { levelUpUnit } from '../../combat/level';
 import { rollSrcChance } from '../../combat/resists';
 import { applyCatalogStats, transformClassOnly } from '../../combat/transform';
@@ -12,7 +12,7 @@ const HANDLERS: Record<number, (ctx: ItemUsageContext) => ItemUsageOutcome> = {
   343: (ctx) => {
     if (rollSrcChance(ctx.state, ctx.target, 100, 'MIND')) {
       log(ctx, 'Вы разбиваете сферу, из которой слышны крики баньши. Они идут за тобой...');
-      tryStun(ctx.state, ctx.target, 1);
+      grantEffect(ctx.target, 'STUNNED', 1, 0);
     } else {
       log(ctx, 'Оппонент не поддается влиянию сферы.');
     }
@@ -87,13 +87,14 @@ const HANDLERS: Record<number, (ctx: ItemUsageContext) => ItemUsageOutcome> = {
     return done();
   },
   523: (ctx) => {
-    log(
-      ctx,
-      `Хищно улыбаясь, вы подходите к несчастному ${ctx.target.displayName}. Он дрожит от страха, но не в состоянии изменить свою участь. Вы разбиваете сферу об его голову.Газ, содержащийся в ней, медленно расправляется с ${ctx.target.displayName}, пока он орёт от боли. Отныне он Призрак, но он никогда вам этого не забудет.`
-    );
+    const victimName = ctx.target.displayName;
     if (!transformClassOnly(ctx.state, ctx.target, 'Specter')) {
       return reject('Превращение не удалось.');
     }
+    log(
+      ctx,
+      `Хищно улыбаясь, вы подходите к несчастному ${victimName}. Он дрожит от страха, но не в состоянии изменить свою участь. Вы разбиваете сферу об его голову.Газ, содержащийся в ней, медленно расправляется с ${victimName}, пока он орёт от боли. Отныне он Призрак, но он никогда вам этого не забудет.`
+    );
     applyCatalogStats(ctx.state, ctx.target, 'Specter');
     ctx.target.isSummon = false;
     clearAllEffects(ctx.target, ctx.state);

@@ -15,7 +15,7 @@ import {
   maybePunishLowMorale,
   psychoChance,
 } from '../morale';
-import type { HeroClassStats } from '../types';
+import type { BattleState, HeroClassStats } from '../types';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
   code,
@@ -261,12 +261,19 @@ describe('CUT-2026-11-01c AC-1', () => {
     expect(unit.alive).toBe(false);
   });
 
-  test('TODO(items)/TODO(perks)/TODO(fairs) сняты (T11/T13)', async () => {
-    const morale = await Bun.file(new URL('../morale.ts', import.meta.url)).text();
-    const knight = await Bun.file(new URL('./knight.ts', import.meta.url)).text();
-    expect(morale).not.toContain('TODO(items)');
-    expect(morale).not.toContain('TODO(perks)');
-    expect(knight).not.toContain('TODO(fairs)');
+  test('деградация: при включённой экономике стирает перки, при выключенной — нет', () => {
+    const on = duel('A');
+    (on as { rules: BattleState['rules'] }).rules = { ...on.rules, fairEnabled: true };
+    const onUnit = on.units.find((u) => u.id === 'p1')!;
+    onUnit.perks = ['MISC', 'LUCKYBASTARD'];
+    addMentalIllness(on, onUnit, 4);
+    expect(onUnit.perks).toEqual([]);
+
+    const off = duel('A');
+    const offUnit = off.units.find((u) => u.id === 'p1')!;
+    offUnit.perks = ['MISC'];
+    addMentalIllness(off, offUnit, 4);
+    expect(offUnit.perks).toEqual(['MISC']);
   });
 
   test('шизофрения economyOn: уничтожает 2 предмета; пусто — −300 золота', () => {

@@ -1,3 +1,4 @@
+import { economyOn } from '../economy/on';
 import type { DamageSource } from './damageSources';
 import { DAMAGE_SOURCE_LABELS, formatLogDamage, sourceFromAttackStyle } from './damageSources';
 import {
@@ -269,10 +270,9 @@ function computeBaseRaw(
   },
   state?: BattleState
 ): number {
-  const armorIgnore = Math.min(
-    1,
-    Math.max(0, (opts.armorIgnore ?? 0) + (attacker.armorPenetration ?? 0))
-  );
+  // Пробитие юнита (перк ARMORPENETRATOR, прирост DemonLord) — только при включённой экономике.
+  const unitPenetration = state && economyOn(state) ? (attacker.armorPenetration ?? 0) : 0;
+  const armorIgnore = Math.min(1, Math.max(0, (opts.armorIgnore ?? 0) + unitPenetration));
   let damageMult = (opts.damageMult ?? 1) * lifeThreadDamageMult(attacker);
   if (state) {
     damageMult *= perkDamageMult(state, attacker, defender, opts.kind);

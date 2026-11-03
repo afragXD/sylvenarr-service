@@ -159,7 +159,7 @@ describe('CUT-2026-11-03b T13 ability↔items', () => {
       }).ok
     ).toBe(true);
     expect(off.teams![0]!.inventory.length).toBe(0);
-    expect(off.log.some((l) => l.includes('предмет — позже'))).toBe(true);
+    expect(off.log.some((l) => l.includes('творит философский камень.'))).toBe(true);
 
     const on = battle('Demiurge', 'Assassin', true);
     const d = on.units.find((u) => u.heroClassCode === 'Demiurge')!;

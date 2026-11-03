@@ -31,13 +31,13 @@ const HANDLERS: Record<number, (ctx: ItemUsageContext) => ItemUsageOutcome> = {
     const bonus = 18 + invokerLvl(ctx);
     ctx.target.accuracy += bonus;
     log(ctx, `Инструкторский посох добавил вам ${bonus}% точности.`);
-    return keepStaffCharge(ctx, ctx.target.power + ctx.target.lvl);
+    return keepStaffCharge(ctx, ctx.target.power + invokerLvl(ctx));
   },
   458: (ctx) => {
-    const amount = Math.max(ctx.target.damage, ctx.target.power) * 0.6;
+    const amount = Math.round(Math.max(ctx.target.damage, ctx.target.power) * 0.6);
     const healed = healUnit(ctx.target, amount);
     log(ctx, `${healed} ОЗ восстановил Церковный посох.`);
-    return keepStaffCharge(ctx, ctx.target.power + 8 + ctx.target.lvl);
+    return keepStaffCharge(ctx, ctx.target.power + 8 + invokerLvl(ctx));
   },
   448: (ctx) => {
     const enemyGold = teamGold(ctx.state, ctx.target.team);

@@ -116,7 +116,7 @@ export function createBattleState(input: {
   readonly heroes: ReadonlyMap<string, HeroClassStats>;
   readonly rules?: BattleRules;
 }): BattleState {
-  const rules = input.rules ?? DEFAULT_BATTLE_RULES;
+  const rules = { ...(input.rules ?? DEFAULT_BATTLE_RULES) };
   const hostPicks = input.picks
     .filter((pick) => pick.playerId === input.hostPlayerId)
     .sort((a, b) => a.pickOrder - b.pickOrder);
@@ -170,6 +170,7 @@ export function createBattleState(input: {
     fair: null,
   };
 
+  setEffectState(state);
   applyClassEconomySetup(state);
 
   const startLvls = Math.max(1, Math.min(30, Math.round(rules.startingLevel))) - 1;
@@ -181,7 +182,6 @@ export function createBattleState(input: {
     state.log.push(`Стартовый уровень: ${startLvls + 1}.`);
   }
 
-  setEffectState(state);
   // Старт: перки (ярмарка только на стыке раундов) → раунд.
   if (!beginPerkPhase(state)) {
     advanceToNextUnit(state);
@@ -324,6 +324,7 @@ export function advanceToNextUnit(state: BattleState): void {
       for (const unit of state.units) {
         // defending снимается reverseEffect(DEFEND), не принудительно на стыке раундов.
         unit.wasEffected = false;
+        unit.lowHpExtraTurn = false;
       }
       if (state.stage > state.rules.maxRounds) {
         state.outcome = 'draw';
@@ -580,6 +581,7 @@ export function applyAction(
   }
 
   if (input.action === 'wait') {
+    actor.lowHpExtraTurn = false;
     state.delayedPhase = state.delayedPhase ?? false;
     if (state.delayedPhase) {
       endTurnTick(state, actor);
@@ -1044,6 +1046,7 @@ export function resolveOutcome(state: BattleState): void {
   state.drawOfferByPlayerId = null;
   state.phase = 'combat';
   state.perkOffers = null;
+  state.fair = null;
 }
 
 /**
@@ -1069,6 +1072,7 @@ export function forceSurrender(
   state.drawOfferByPlayerId = null;
   state.phase = 'combat';
   state.perkOffers = null;
+  state.fair = null;
 }
 
 /**
@@ -1084,6 +1088,7 @@ export function forceDraw(state: BattleState): void {
   state.activeUnitId = null;
   state.phase = 'combat';
   state.perkOffers = null;
+  state.fair = null;
   state.turnPlayerId = null;
   state.pendingPrompt = null;
   state.drawOfferByPlayerId = null;

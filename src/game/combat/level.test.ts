@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import { createSummon } from './abilities/summon';
+import { markDeadIfNeeded } from './damage';
 import { applyAction, createBattleState, toBattleSummary } from './engine';
 import { levelUpLivingUnits, levelUpUnit } from './level';
 import { buildResultSnapshot } from './result-snapshot';
@@ -42,6 +43,21 @@ function makeDuel(hostCode: string, hostOverrides: Partial<HeroClassStats> = {})
       hero('B', { initiative: 10 })
     ),
   });
+}
+
+/** Чемпион со скрытым уровнем 1, затем `steps` повышений по одному. */
+function championOf(steps: number) {
+  const state = makeDuel('OrcKing');
+  state.catalog.SkeletonChampion = hero('SkeletonChampion', { displayName: 'Чемпион' });
+  const master = state.units.find((unit) => unit.id === 'p1')!;
+  master.maxSummons = 1;
+  const champ = createSummon(state, {
+    summoner: master,
+    heroCode: 'SkeletonChampion',
+    row: 1,
+  })!;
+  levelUpUnit(champ, steps, state);
+  return { state, master, champ };
 }
 
 describe('levels 4.0', () => {
@@ -278,5 +294,51 @@ describe('class level-up growth', () => {
     const unit = state.units.find((u) => u.id === 'p1')!;
     levelUpUnit(unit, 1, state);
     expect(unit.mana).toBe(3);
+  });
+
+  test('SkeletonChampion: скрытый уровень 9 ещё не наёмник и гибнет с хозяином', () => {
+    const { state, master, champ } = championOf(8);
+    expect(champ.hiddenLvl).toBe(9);
+    expect(champ.isMercenary).toBeFalsy();
+
+    master.health = 0;
+    master.lives = 0;
+    markDeadIfNeeded(state, master, { ignoreSaves: true });
+    expect(champ.alive).toBe(false);
+    expect(state.graveyard.some((entry) => entry.unitId === master.id)).toBe(true);
+  });
+
+  test('SkeletonChampion: следующее повышение делает наёмника, он остаётся жив', () => {
+    const { state, master, champ } = championOf(9);
+    expect(champ.hiddenLvl).toBe(10);
+    expect(champ.isMercenary).toBe(true);
+
+    master.health = 0;
+    master.lives = 0;
+    markDeadIfNeeded(state, master, { ignoreSaves: true });
+    expect(champ.alive).toBe(true);
+    expect(champ.health).toBeGreaterThan(0);
+    expect(
+      state.log.some((line) => line.includes(champ.displayName) && line.includes('исчезает'))
+    ).toBe(false);
+    expect(state.graveyard.some((entry) => entry.unitId === master.id)).toBe(true);
+  });
+
+  test('SkeletonChampion: понижение при скрытом уровне 9 тоже ставит наёмника', () => {
+    const { state, champ } = championOf(8);
+    expect(champ.hiddenLvl).toBe(9);
+    expect(champ.isMercenary).toBeFalsy();
+    levelUpUnit(champ, -1, state);
+    expect(champ.isMercenary).toBe(true);
+    expect(champ.hiddenLvl).toBe(9);
+  });
+
+  test('SkeletonChampion: понижение уровня не снимает наёмника', () => {
+    const { state, champ } = championOf(9);
+    expect(champ.isMercenary).toBe(true);
+    const hidden = champ.hiddenLvl;
+    levelUpUnit(champ, -1, state);
+    expect(champ.isMercenary).toBe(true);
+    expect(champ.hiddenLvl).toBe(hidden);
   });
 });

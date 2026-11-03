@@ -41,6 +41,11 @@ function openCase(ctx: ItemUsageContext, codes: number[], message: string): Item
 function handleMimic(ctx: ItemUsageContext): ItemUsageOutcome {
   const { state, invoker, choice } = ctx;
   if (choice != null) {
+    if (choice === 'cancel') {
+      state.pendingPrompt = null;
+      log(ctx, 'Мимик возвращается в сумку.');
+      return done({ consume: false, keepTurn: true });
+    }
     const code = Number(choice);
     if (!Number.isFinite(code) || code === 347 || itemCount(state, invoker.team, code) < 1) {
       return reject('Нечего копировать.');
@@ -59,10 +64,13 @@ function handleMimic(ctx: ItemUsageContext): ItemUsageOutcome {
   state.pendingPrompt = {
     unitId: invoker.id,
     kind: 'mimic-copy',
-    options: unique.map((code) => {
-      const item = getItem(code);
-      return { id: String(code), label: item?.name ?? String(code) };
-    }),
+    options: [
+      ...unique.map((code) => {
+        const item = getItem(code);
+        return { id: String(code), label: item?.name ?? String(code) };
+      }),
+      { id: 'cancel', label: 'Отмена' },
+    ],
     context: {},
     source: 'item',
     itemCode: 347,

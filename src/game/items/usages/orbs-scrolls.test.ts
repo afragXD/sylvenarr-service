@@ -105,8 +105,8 @@ describe('orbs + scrolls (T8)', () => {
     try {
       expect(runItem(a.state, a.actor, 343, a.foe.id).ok).toBe(true);
       expect(a.state.log.some((l) => l.includes('баньши'))).toBe(true);
-      // После хода invoker оглушённый враг пропускает ход и STUNNED спадает; иммунитет остаётся.
-      expect(hasEffect(a.foe, 'STUN_IMMUNE')).toBe(true);
+      // Сфера накладывает STUNNED напрямую, без иммунитета к повторному оглушению.
+      expect(hasEffect(a.foe, 'STUN_IMMUNE')).toBe(false);
     } finally {
       Math.random = original;
     }

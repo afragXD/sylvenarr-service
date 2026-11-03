@@ -43,7 +43,11 @@ export const summonLevelUps: Record<string, ClassLevelUpFn> = {
     healUnit(unit, 7 * ind);
     unit.damage += randInt(2, 5) * ind;
     unit.luck += 2 * ind;
-    // isMercenary при hiddenLvl > 8 — вне скоупа (предметы)
+    // Бот (undeads.py): проверка до super().levelup. Скрытый уровень > 8 —
+    // чемпион становится наёмником и не гибнет вместе с хозяином. Во всех матчах.
+    if (unit.hiddenLvl > 8 && !unit.isMercenary) {
+      unit.isMercenary = true;
+    }
     bumpLevel(unit, ind);
   },
 };

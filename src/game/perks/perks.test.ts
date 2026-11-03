@@ -215,6 +215,8 @@ describe('perks phase (T11)', () => {
     const atk = state.units.find((u) => u.team === 0)!;
     const def = state.units.find((u) => u.team === 1)!;
     atk.perks = [];
+    atk.damage = 100;
+    def.armor = 0;
     def.health = def.maxHp;
     const base = dealDamage(atk, def, { kind: 'melee', forceHit: true }, state);
     def.health = def.maxHp;

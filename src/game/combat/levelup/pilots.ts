@@ -61,7 +61,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   Detective(unit, ind, state) {
     if (state.stage % 5 === 0 && ind > 0) {
       unit.luck += 5;
-      // steals += 1 — вне скоупа (инвентарь)
+      // steals += 1 из бота не переносим: поле в боте нигде не читается.
     }
     unit.dodge += randInt(1, 2) * ind;
     unit.damage += (Math.floor(unit.lvl / 2) + randInt(1, 3)) * ind;

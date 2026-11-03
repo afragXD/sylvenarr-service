@@ -68,7 +68,7 @@ describe('combat engine', () => {
   test('attack can finish the battle', () => {
     const heroes = catalogHeroes(
       hero('A', { damage: 200, initiative: 99, accuracy: 100, luck: 0 }),
-      hero('B', { health: 10, initiative: 1 })
+      hero('B', { health: 10, initiative: 1, dodge: 0, luck: 0 })
     );
     const state = createBattleState({
       matchId: 'm1',

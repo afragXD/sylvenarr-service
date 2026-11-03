@@ -13,7 +13,8 @@ function handlePontiffRing(ctx: ItemUsageContext): ItemUsageOutcome {
   if (choice != null) {
     if (choice === 'cancel' || choice === '0') {
       state.pendingPrompt = null;
-      return done();
+      log(ctx, 'Вы убрали перстень.');
+      return done({ consume: false, keepTurn: true });
     }
     const entry = state.graveyard.find(
       (g) => g.unitId === choice && g.team === invoker.team && !g.forbiddenResurrect
@@ -39,6 +40,9 @@ function handlePontiffRing(ctx: ItemUsageContext): ItemUsageOutcome {
         label: `${g.displayName}, уровень ${lvl}`,
       };
     });
+  if (options.length === 0) {
+    return reject('На вашем кладбище некого поднять.');
+  }
   options.unshift({ id: 'cancel', label: 'Выйти из меню' });
   state.pendingPrompt = {
     unitId: invoker.id,

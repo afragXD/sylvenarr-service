@@ -29,7 +29,33 @@ import type { Prisma } from '../../shared/generated/prisma/client';
 import { createInviteCode } from '../../utils/create-invite-code';
 import { PresetsService } from '../presets/service';
 import { computePtsChange } from '../rating/pts';
+import { withBattleLock } from './battle-lock';
 import type { MatchesModel } from './model';
+
+type BattleActionInput = {
+  readonly matchId: string;
+  readonly playerId: string;
+  readonly unitId: string;
+  readonly action:
+    | 'attack'
+    | 'defend'
+    | 'wait'
+    | 'skill'
+    | 'ability'
+    | 'move'
+    | 'item'
+    | 'perk_pick'
+    | 'perk_skip'
+    | 'fair_buy'
+    | 'fair_sell'
+    | 'fair_sell_all'
+    | 'fair_stop';
+  readonly targetId?: string;
+  readonly slot?: 1 | 2 | 3 | 4 | 5;
+  readonly choice?: string;
+  readonly itemCode?: number;
+  readonly perkId?: string;
+};
 
 type PickRow = {
   id: string;
@@ -814,7 +840,17 @@ export abstract class MatchesService {
   /**
    * Сдача в бою: поражение сдающегося, победа оппонента.
    */
-  static async surrenderMatch(input: {
+  static surrenderMatch(input: {
+    readonly matchId: string;
+    readonly playerId: string;
+  }): Promise<
+    | { ok: true; match: MatchesModel.match }
+    | { ok: false; message: string; status: 400 | 403 | 404 }
+  > {
+    return withBattleLock(input.matchId, () => MatchesService.surrenderMatchUnlocked(input));
+  }
+
+  private static async surrenderMatchUnlocked(input: {
     readonly matchId: string;
     readonly playerId: string;
   }): Promise<
@@ -869,7 +905,17 @@ export abstract class MatchesService {
   /**
    * Предложить ничью. Повторный offer при чужом оффере = accept.
    */
-  static async offerDraw(input: {
+  static offerDraw(input: {
+    readonly matchId: string;
+    readonly playerId: string;
+  }): Promise<
+    | { ok: true; match: MatchesModel.match }
+    | { ok: false; message: string; status: 400 | 403 | 404 }
+  > {
+    return withBattleLock(input.matchId, () => MatchesService.offerDrawUnlocked(input));
+  }
+
+  private static async offerDrawUnlocked(input: {
     readonly matchId: string;
     readonly playerId: string;
   }): Promise<
@@ -883,7 +929,7 @@ export abstract class MatchesService {
     const { existing, state, store } = loaded;
 
     if (state.drawOfferByPlayerId && state.drawOfferByPlayerId !== input.playerId) {
-      return MatchesService.acceptDraw(input);
+      return MatchesService.acceptDrawUnlocked(input);
     }
     if (state.drawOfferByPlayerId === input.playerId) {
       publishBattle(existing.id, 'battle:state', toBattleSummary(state));
@@ -909,7 +955,17 @@ export abstract class MatchesService {
   /**
    * Принять предложение ничьей.
    */
-  static async acceptDraw(input: {
+  static acceptDraw(input: {
+    readonly matchId: string;
+    readonly playerId: string;
+  }): Promise<
+    | { ok: true; match: MatchesModel.match }
+    | { ok: false; message: string; status: 400 | 403 | 404 }
+  > {
+    return withBattleLock(input.matchId, () => MatchesService.acceptDrawUnlocked(input));
+  }
+
+  private static async acceptDrawUnlocked(input: {
     readonly matchId: string;
     readonly playerId: string;
   }): Promise<
@@ -950,7 +1006,17 @@ export abstract class MatchesService {
   /**
    * Отклонить предложение ничьей.
    */
-  static async declineDraw(input: {
+  static declineDraw(input: {
+    readonly matchId: string;
+    readonly playerId: string;
+  }): Promise<
+    | { ok: true; match: MatchesModel.match }
+    | { ok: false; message: string; status: 400 | 403 | 404 }
+  > {
+    return withBattleLock(input.matchId, () => MatchesService.declineDrawUnlocked(input));
+  }
+
+  private static async declineDrawUnlocked(input: {
     readonly matchId: string;
     readonly playerId: string;
   }): Promise<
@@ -1025,30 +1091,18 @@ export abstract class MatchesService {
   /**
    * Ход в бою.
    */
-  static async battleAction(input: {
-    readonly matchId: string;
-    readonly playerId: string;
-    readonly unitId: string;
-    readonly action:
-      | 'attack'
-      | 'defend'
-      | 'wait'
-      | 'skill'
-      | 'ability'
-      | 'move'
-      | 'item'
-      | 'perk_pick'
-      | 'perk_skip'
-      | 'fair_buy'
-      | 'fair_sell'
-      | 'fair_sell_all'
-      | 'fair_stop';
-    readonly targetId?: string;
-    readonly slot?: 1 | 2 | 3 | 4 | 5;
-    readonly choice?: string;
-    readonly itemCode?: number;
-    readonly perkId?: string;
-  }): Promise<
+  static battleAction(
+    input: BattleActionInput
+  ): Promise<
+    | { ok: true; match: MatchesModel.match }
+    | { ok: false; message: string; status: 400 | 403 | 404 }
+  > {
+    return withBattleLock(input.matchId, () => MatchesService.battleActionUnlocked(input));
+  }
+
+  private static async battleActionUnlocked(
+    input: BattleActionInput
+  ): Promise<
     | { ok: true; match: MatchesModel.match }
     | { ok: false; message: string; status: 400 | 403 | 404 }
   > {

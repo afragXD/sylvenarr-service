@@ -329,7 +329,7 @@ export const demiurgeAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName} творит философский камень — пустой тир.`);
       }
     } else {
-      state.log.push(`${actor.displayName} творит философский камень (предмет — позже).`);
+      state.log.push(`${actor.displayName} творит философский камень.`);
     }
     if (randInt(1, 100) <= 8 * actor.lvl) {
       state.log.push(`${actor.displayName} сохраняет ход.`);
