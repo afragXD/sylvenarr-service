@@ -6,6 +6,7 @@ import { config } from './config';
 import { appController } from './modules/app';
 import { authController } from './modules/auth';
 import { heroesController } from './modules/heroes';
+import { itemsController } from './modules/items';
 import { matchesController } from './modules/matches';
 import { matchesWsController } from './modules/matches/ws';
 import { newsController } from './modules/news';
@@ -49,6 +50,7 @@ export const app = new Elysia({
   .use(appController)
   .use(authController)
   .use(heroesController)
+  .use(itemsController)
   .use(playersController)
   .use(matchesController)
   .use(matchesWsController)
