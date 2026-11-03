@@ -146,6 +146,7 @@ describe('effects', () => {
       luck: 0,
       damage: 10,
       armor: 0,
+      dodge: 80,
     });
     const defender = unit({
       id: 'd',
@@ -153,9 +154,10 @@ describe('effects', () => {
       health: 100,
       armor: 0,
       dodge: 0,
-      accuracy: 100,
+      accuracy: 50,
       luck: 0,
       damage: 30,
+      lvl: 4,
     });
     grantEffect(defender, 'CONTR', 2, 0);
     dealDamage(attacker, defender, {
@@ -164,7 +166,9 @@ describe('effects', () => {
       armorIgnore: 0,
       forceHit: true,
     });
-    expect(attacker.health).toBeLessThan(100);
+    // round(30×0.75)+4 = 27; без уклонения даже при dodge атакующего.
+    expect(attacker.health).toBe(100 - 27);
+    expect(defender.effects.find((e) => e.id === 'CONTR')?.rounds).toBe(1);
   });
 
   test('SILENCE blocks mana spend', () => {

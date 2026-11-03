@@ -1,4 +1,10 @@
-import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
+import {
+  dealDamage,
+  formatLastLogDamage,
+  lastDealDamageResult,
+  markDeadIfNeeded,
+  randInt,
+} from '../damage';
 import { delEffect, grantEffect, hasEffect, healUnit, tryStun } from '../effects';
 import { rollSrcChance } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -196,7 +202,10 @@ export const ghostWarriorAbilities: AbilityHandler = {
         state
       );
       if (damage === 0) {
-        state.log.push(`${actor.displayName}: катана — промах.`);
+        // Вард/иммун уже пишут причину в dealDamage; «промах» — только miss/luckFail.
+        if (!lastDealDamageResult().blocked) {
+          state.log.push(`${actor.displayName}: катана — промах.`);
+        }
         return { status: 'done' };
       }
       state.log.push(

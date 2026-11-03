@@ -599,6 +599,7 @@ export function dealDamage(
     counterDepth -= 1;
   }
 
+  // Порт contr_attack: flat урон без уклонения/удачи/брони; оглушённый не отвечает.
   if (
     melee &&
     !opts.noCounter &&
@@ -606,47 +607,27 @@ export function dealDamage(
     defender.alive &&
     defender.health > 0 &&
     hasEffect(defender, 'CONTR') &&
+    !hasEffect(defender, 'STUNNED') &&
     attacker.alive
   ) {
     counterDepth += 1;
-    const counterResult = computeRawDamage(
-      defender,
-      attacker,
-      {
-        kind: 'melee',
-        damageMult: 1,
-        armorIgnore: 0,
-        forceHit: opts.forceHit,
-      },
-      state
-    );
-    if (counterResult.raw > 0) {
-      const counterResist = applyResistMultiplier(attacker, 'WEAPON');
-      if (counterResist.blocked) {
-        if (state && counterResist.blockReason) {
-          state.log.push(counterResist.blockReason);
-        }
-      } else {
-        if (counterResult.critFromBank) {
-          defender.critBank -= 1;
-        }
-        const counter = Math.max(0, Math.round(counterResult.raw * counterResist.multiplier));
-        if (counter > 0) {
-          attacker.health -= counter;
-          applyVampWeaponHeal(defender, counter);
-          if (state) {
-            state.log.push(
-              `${defender.displayName} отвечает контрударом по ${attacker.displayName} ${formatLogDamage(counter, 'WEAPON')}.`
-            );
-          }
-          if (state) {
-            markDeadIfNeeded(state, attacker);
-          } else if (attacker.health <= 0) {
-            attacker.health = 0;
-            attacker.alive = false;
-          }
-        }
+    const contr = defender.effects.find((effect) => effect.id === 'CONTR');
+    if (contr) {
+      contr.rounds -= 1;
+      if (contr.rounds <= 0) {
+        delEffect(defender, 'CONTR', state);
       }
+    }
+    const counter = Math.max(1, Math.round(defender.damage * 0.75) + defender.lvl);
+    attacker.health -= counter;
+    if (state) {
+      state.log.push(
+        `${defender.displayName} отвечает контрударом по ${attacker.displayName} ${formatLogDamage(counter, 'WEAPON')}.`
+      );
+      markDeadIfNeeded(state, attacker);
+    } else if (attacker.health <= 0) {
+      attacker.health = 0;
+      attacker.alive = false;
     }
     counterDepth -= 1;
   }

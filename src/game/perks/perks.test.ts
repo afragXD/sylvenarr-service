@@ -6,7 +6,7 @@ import { hasEffect } from '../combat/effects';
 import { applyAction, createBattleState, forceSurrender, toBattleSummary } from '../combat/engine';
 import type { HeroClassStats } from '../combat/types';
 import { applyPerkInstant, unitHasPerk } from './apply';
-import { isEligibleForPerkOffer } from './offers';
+import { beginPerkPhase, isEligibleForPerkOffer, shouldBeginPerks } from './offers';
 
 const hero = (code: string, extra: Partial<HeroClassStats> = {}): HeroClassStats => ({
   code,
@@ -26,7 +26,12 @@ const hero = (code: string, extra: Partial<HeroClassStats> = {}): HeroClassStats
   ...extra,
 });
 
-function fairBattle(opts?: { startingLevel?: number; host?: string; guest?: string }) {
+function fairBattle(opts?: {
+  startingLevel?: number;
+  host?: string;
+  guest?: string;
+  fairFrequency?: number;
+}) {
   const host = opts?.host ?? 'Knight';
   const guest = opts?.guest ?? 'Assassin';
   const state = createBattleState({
@@ -48,36 +53,54 @@ function fairBattle(opts?: { startingLevel?: number; host?: string; guest?: stri
       maxRowSize: 4,
       maxRounds: 20,
       healthBonus: 1,
-      startingLevel: opts?.startingLevel ?? 6,
+      startingLevel: opts?.startingLevel ?? 1,
       fairEnabled: true,
+      fairFrequency: opts?.fairFrequency ?? 5,
       goldBonus: 1,
     },
   });
   return state;
 }
 
-describe('perks phase (T11)', () => {
-  test('eligible: develop 6 и 5, lastPerkHiddenLvl', () => {
-    const state = fairBattle({ startingLevel: 1 });
-    const knight = state.units.find((u) => u.heroClassCode === 'Knight')!;
-    knight.develop = 6;
-    knight.hiddenLvl = 6;
-    knight.lastPerkHiddenLvl = undefined;
-    expect(isEligibleForPerkOffer(knight)).toBe(true);
-    knight.lastPerkHiddenLvl = 6;
-    expect(isEligibleForPerkOffer(knight)).toBe(false);
+/** Стык после раунда 4 при N=5 → день перков (stage=5, s=4). */
+function forcePerkDay(state: ReturnType<typeof fairBattle>): boolean {
+  state.stage = 5;
+  state.phase = 'combat';
+  state.perkOffers = null;
+  state.fair = null;
+  return beginPerkPhase(state);
+}
 
-    const det = fairBattle({ host: 'Detective', startingLevel: 1 }).units.find(
-      (u) => u.heroClassCode === 'Detective'
-    )!;
-    expect(det.develop).toBe(5);
-    det.hiddenLvl = 5;
-    det.lastPerkHiddenLvl = undefined;
-    expect(isEligibleForPerkOffer(det)).toBe(true);
+describe('perks phase (T11)', () => {
+  test('eligible: живой герой; саммон и труп — нет', () => {
+    const state = fairBattle();
+    const knight = state.units.find((u) => u.heroClassCode === 'Knight')!;
+    expect(isEligibleForPerkOffer(knight)).toBe(true);
+    knight.alive = false;
+    expect(isEligibleForPerkOffer(knight)).toBe(false);
+    knight.alive = true;
+    knight.isSummon = true;
+    expect(isEligibleForPerkOffer(knight)).toBe(false);
   });
 
-  test('старт с уровнем 6 → фаза perks; skip = +1 lvl; pick изучает', () => {
+  test('shouldBeginPerks: за раунд до ярмарки (N=5 → s=4,9)', () => {
+    const state = fairBattle({ fairFrequency: 5 });
+    state.stage = 1;
+    expect(shouldBeginPerks(state)).toBe(false);
+    state.stage = 5; // s=4
+    expect(shouldBeginPerks(state)).toBe(true);
+    state.stage = 6; // s=5 — день ярмарки, не перков
+    expect(shouldBeginPerks(state)).toBe(false);
+    state.stage = 10; // s=9
+    expect(shouldBeginPerks(state)).toBe(true);
+  });
+
+  test('старт боя без фазы перков; день перков → skip/pick', () => {
     const state = fairBattle({ startingLevel: 6 });
+    expect(state.phase).toBe('combat');
+    expect(state.perkOffers).toBeNull();
+
+    expect(forcePerkDay(state)).toBe(true);
     expect(state.phase).toBe('perks');
     expect(state.activeUnitId).toBeNull();
     expect((state.perkOffers ?? []).length).toBeGreaterThan(0);
@@ -96,9 +119,7 @@ describe('perks phase (T11)', () => {
       }).ok
     ).toBe(true);
     expect(unit.lvl).toBe(lvlBefore + 1);
-    expect(unit.lastPerkHiddenLvl).toBe(unit.hiddenLvl);
 
-    // второй оффер — pick
     const offer2 = state.perkOffers!.find((o) => !o.done);
     if (offer2) {
       const u2 = state.units.find((u) => u.id === offer2.unitId)!;
@@ -116,37 +137,25 @@ describe('perks phase (T11)', () => {
   });
 
   test('изученный перк нельзя взять', () => {
-    const state = fairBattle({ startingLevel: 6 });
-    const offer = state.perkOffers!.find((o) => o.options.some((opt) => opt.learned));
-    if (!offer) {
-      // у Knight только MISC — почти всегда learned в опциях
-      const any = state.perkOffers![0]!;
-      const unit = state.units.find((u) => u.id === any.unitId)!;
-      unit.perks = [...(unit.perks ?? []), any.options[0]!.id];
-      any.options[0]!.learned = true;
-      expect(
-        applyAction(state, {
-          playerId: any.playerId,
-          unitId: any.unitId,
-          action: 'perk_pick',
-          perkId: any.options[0]!.id,
-        }).ok
-      ).toBe(false);
-      return;
-    }
-    const learned = offer.options.find((o) => o.learned)!;
+    const state = fairBattle();
+    expect(forcePerkDay(state)).toBe(true);
+    const any = state.perkOffers![0]!;
+    const unit = state.units.find((u) => u.id === any.unitId)!;
+    unit.perks = [...(unit.perks ?? []), any.options[0]!.id];
+    any.options[0]!.learned = true;
     expect(
       applyAction(state, {
-        playerId: offer.playerId,
-        unitId: offer.unitId,
+        playerId: any.playerId,
+        unitId: any.unitId,
         action: 'perk_pick',
-        perkId: learned.id,
+        perkId: any.options[0]!.id,
       }).ok
     ).toBe(false);
   });
 
   test('параллельный выбор: оба игрока могут ходить в фазе perks', () => {
-    const state = fairBattle({ startingLevel: 6 });
+    const state = fairBattle();
+    expect(forcePerkDay(state)).toBe(true);
     const offers = state.perkOffers ?? [];
     expect(offers.length).toBe(2);
     for (const offer of offers) {
@@ -163,7 +172,8 @@ describe('perks phase (T11)', () => {
   });
 
   test('сдача во время фазы perks', () => {
-    const state = fairBattle({ startingLevel: 6 });
+    const state = fairBattle();
+    expect(forcePerkDay(state)).toBe(true);
     expect(state.phase).toBe('perks');
     forceSurrender(state, 'h', 'Host');
     expect(state.outcome).toBe('guest_win');
@@ -172,7 +182,7 @@ describe('perks phase (T11)', () => {
   });
 
   test('мгновенные эффекты apply', () => {
-    const state = fairBattle({ startingLevel: 1 });
+    const state = fairBattle();
     const unit = state.units[0]!;
     unit.merchant = 0;
     applyPerkInstant(state, unit, 'GRAND_MERCHANT');
@@ -197,7 +207,7 @@ describe('perks phase (T11)', () => {
   });
 
   test('SUMMON_LEVEL_UP хук', () => {
-    const state = fairBattle({ startingLevel: 1 });
+    const state = fairBattle();
     const actor = state.units.find((u) => u.team === 0)!;
     actor.perks = ['SUMMON_LEVEL_UP'];
     actor.maxSummons = 2;
@@ -211,7 +221,7 @@ describe('perks phase (T11)', () => {
   });
 
   test('CORPSE_BONUS увеличивает урон', () => {
-    const state = fairBattle({ startingLevel: 1 });
+    const state = fairBattle();
     const atk = state.units.find((u) => u.team === 0)!;
     const def = state.units.find((u) => u.team === 1)!;
     atk.perks = [];
@@ -220,18 +230,12 @@ describe('perks phase (T11)', () => {
     def.health = def.maxHp;
     const base = dealDamage(atk, def, { kind: 'melee', forceHit: true }, state);
     def.health = def.maxHp;
-    // имитация трупа на поле
-    const ally = state.units.find((u) => u.id === atk.id)!;
-    const corpseHp = ally.health;
-    ally.alive = false;
-    ally.health = 0;
+    const corpseHp = atk.health;
+    atk.alive = false;
+    atk.health = 0;
     atk.perks = ['CORPSE_BONUS'];
-    // atk is same ref as ally — оживим для атаки
     atk.alive = true;
     atk.health = corpseHp;
-    // отдельный «труп»: второй мёртвый слот
-    const foeDead = state.units.find((u) => u.team === 1)!;
-    // создаём труп копированием через createSummon+kill проще: просто флаг на временном объекте в units
     state.units.push({
       ...structuredClone(def),
       id: 'corpse-1',
@@ -240,7 +244,6 @@ describe('perks phase (T11)', () => {
     });
     const buffed = dealDamage(atk, def, { kind: 'melee', forceHit: true }, state);
     expect(buffed).toBeGreaterThan(base);
-    void foeDead;
   });
 
   test('fairEnabled false — нет фазы перков', () => {
@@ -263,11 +266,14 @@ describe('perks phase (T11)', () => {
         healthBonus: 1,
         startingLevel: 6,
         fairEnabled: false,
+        fairFrequency: 5,
         goldBonus: 1,
       },
     });
     expect(state.phase ?? 'combat').toBe('combat');
     expect(state.perkOffers ?? null).toBeNull();
     expect(state.activeUnitId).toBeTruthy();
+    state.stage = 5;
+    expect(beginPerkPhase(state)).toBe(false);
   });
 });

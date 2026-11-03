@@ -182,10 +182,8 @@ export function createBattleState(input: {
     state.log.push(`Стартовый уровень: ${startLvls + 1}.`);
   }
 
-  // Старт: перки (ярмарка только на стыке раундов) → раунд.
-  if (!beginPerkPhase(state)) {
-    advanceToNextUnit(state);
-  }
+  // Старт сразу в бой; перки/ярмарка — только на стыке раундов.
+  advanceToNextUnit(state);
   return state;
 }
 
@@ -345,11 +343,11 @@ export function advanceToNextUnit(state: BattleState): void {
       }
       state.log.push(...levelUpLogs);
       applyMasochismRoundStart(state);
-      // Уровни → ярмарка → перки → раунд.
-      if (beginFairPhase(state)) {
+      // Уровни → перки (за раунд до ярмарки) → ярмарка → раунд.
+      if (beginPerkPhase(state)) {
         return;
       }
-      if (beginPerkPhase(state)) {
+      if (beginFairPhase(state)) {
         return;
       }
       order = initiativeOrder(state);
@@ -975,6 +973,10 @@ function finishPerkPhase(state: BattleState): void {
   state.phase = 'combat';
   state.perkOffers = null;
   state.log.push('Выбор перков завершён.');
+  // Край fairFrequency=1: день перков и ярмарки совпадают — после перков сразу прилавок.
+  if (beginFairPhase(state)) {
+    return;
+  }
   advanceToNextUnit(state);
 }
 
@@ -982,9 +984,6 @@ function finishFairPhase(state: BattleState): void {
   state.phase = 'combat';
   state.fair = null;
   state.log.push('Ярмарка завершена');
-  if (beginPerkPhase(state)) {
-    return;
-  }
   advanceToNextUnit(state);
 }
 

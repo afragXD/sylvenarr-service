@@ -6,20 +6,33 @@ function unitPerks(unit: BattleUnit): readonly string[] {
   return unit.perks ?? [];
 }
 
-function developOf(unit: BattleUnit): number {
-  return unit.develop ?? 6;
+function fairFrequencyOf(state: BattleState): number {
+  return state.rules.fairFrequency ?? 5;
 }
 
-/** Юнит имеет право на предложение перка в этом стыке. */
+/** Живой герой (не саммон) — кандидат на предложение в день перков. */
 export function isEligibleForPerkOffer(unit: BattleUnit): boolean {
-  if (!unit.alive || unit.isSummon) {
+  return unit.alive && !unit.isSummon;
+}
+
+/**
+ * День перков: за раунд до ярмарки.
+ * После завершённого раунда `s = stage − 1`: `s % fairFrequency === fairFrequency − 1`
+ * (при N=5 → раунды 4, 9, 14…).
+ */
+export function shouldBeginPerks(state: BattleState): boolean {
+  if (!economyOn(state)) {
     return false;
   }
-  const develop = developOf(unit);
-  if (develop <= 0 || unit.hiddenLvl % develop !== 0) {
+  const freq = fairFrequencyOf(state);
+  if (freq <= 0) {
     return false;
   }
-  return unit.hiddenLvl !== (unit.lastPerkHiddenLvl ?? 0);
+  const s = state.stage - 1;
+  if (s <= 0) {
+    return false;
+  }
+  return s % freq === freq - 1;
 }
 
 function sampleDistinct(
@@ -81,11 +94,11 @@ export function buildPerkOfferForUnit(unit: BattleUnit): PerkOffer {
 }
 
 /**
- * Начать фазу перков, если есть eligible юниты.
+ * Начать фазу перков в «день перков», если есть eligible юниты.
  * @returns true — фаза perks активна (active/turn сброшены).
  */
 export function beginPerkPhase(state: BattleState): boolean {
-  if (!economyOn(state)) {
+  if (!shouldBeginPerks(state)) {
     return false;
   }
   const offers = state.units.filter(isEligibleForPerkOffer).map(buildPerkOfferForUnit);

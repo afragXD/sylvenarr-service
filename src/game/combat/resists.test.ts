@@ -145,6 +145,8 @@ describe('ResistManager', () => {
   });
 
   test('changeResist and defaults', () => {
+    const specter = unit({ resists: resistsForClass('Specter') });
+    expect(specter.resists.DEATH?.value).toBe(60);
     const ghost = unit({ resists: resistsForClass('GhostWarrior') });
     expect(ghost.resists.DEATH?.value).toBe(85);
     changeResist(ghost, 'WEAPON', 10);

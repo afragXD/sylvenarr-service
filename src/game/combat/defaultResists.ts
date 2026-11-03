@@ -88,6 +88,7 @@ export const DEFAULT_RESISTS: Record<string, ResistMap> = {
     ['FIRE', { value: -15 }],
     ['ARROWS', { value: 20 }],
     ['WEAPON', { value: 15 }],
+    ['DEATH', { value: 60 }],
   ]),
   Demiurge: map([
     ['IMITATION', { immune: true }],
