@@ -24,7 +24,6 @@ const unit = (overrides: Partial<BattleUnit> = {}): BattleUnit => ({
   power: 10,
   mana: 5,
   maxMana: 10,
-  gold: 0,
   wasEffected: false,
   lvl: 3,
   hiddenLvl: 3,

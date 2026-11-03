@@ -1,6 +1,7 @@
 import Redis from 'ioredis';
 
 import { config } from '../../config';
+import { migrateLegacyTeamGold } from '../economy';
 import type { BattleState } from './types';
 
 export interface BattleStore {
@@ -13,6 +14,7 @@ const memory = new Map<string, string>();
 
 function normalizeBattleState(state: BattleState): BattleState {
   state.delayedPhase = state.delayedPhase ?? false;
+  migrateLegacyTeamGold(state);
   return state;
 }
 

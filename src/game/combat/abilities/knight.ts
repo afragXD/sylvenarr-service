@@ -1,3 +1,4 @@
+import { spendTeamGold, teamGold } from '../../economy';
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { delEffect, grantEffect, hasEffect, resurrectUnit } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -57,7 +58,11 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         label: 'Баллада',
         needsTarget: true,
         disabledReason:
-          actor.gold < cost ? `Нужно ${cost} золота` : allies.length === 0 ? 'Нет целей' : null,
+          teamGold(state, actor.team) < cost
+            ? `Нужно ${cost} золота`
+            : allies.length === 0
+              ? 'Нет целей'
+              : null,
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -197,7 +202,9 @@ export const knightAbilities: AbilityHandler = {
       if (!ally) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      actor.gold -= cost;
+      if (!spendTeamGold(state, actor.team, cost)) {
+        return { status: 'reject', message: `Нужно ${cost} золота` };
+      }
       // TODO(fairs): Боевая баллада — вернуть прежний прирост после механики ярмарок
       const atk = 15 + actor.lvl;
       grantEffect(ally, 'STRENGTH', 1 + Math.floor(actor.lvl / 5), atk);

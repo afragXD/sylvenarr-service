@@ -1,3 +1,4 @@
+import { addTeamGold } from '../../economy';
 import { randInt } from '../damage';
 import { addMana, healUnit } from '../effects';
 import { changeResist, setWard } from '../resists';
@@ -104,7 +105,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
       unit.ultaCharges += 1;
     }
     unit.damage += (randInt(2, 5) + Math.floor(unit.lvl / 2)) * ind;
-    unit.gold += randInt(30, 50) * ind;
+    addTeamGold(state, unit.team, randInt(30, 50) * ind);
     addMana(unit, ind);
     unit.power += (Math.floor(unit.lvl / 2) + 1) * ind;
     bumpLevel(unit, ind);

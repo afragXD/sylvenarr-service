@@ -158,7 +158,6 @@ export type BattleUnit = {
   mana: number;
   /** Константный потолок маны класса (не растёт в бою). */
   maxMana: number;
-  gold: number;
   /**
    * DoT уже тикнули в этом логическом ходе (legacy was_effected).
    * Сбрасывается в начале раунда; wait / доп. ход не сбрасывают.
@@ -266,6 +265,13 @@ export type BattleUnit = {
   fettersTargetId?: string | null;
 };
 
+/** Кошелёк и инвентарь отряда (CUT-2026-11-03b T3). */
+export type BattleTeamEconomy = {
+  gold: number;
+  /** Коды предметов; T3 — пустой массив. */
+  inventory: number[];
+};
+
 /** Активные правила боя из Match.rules. */
 export type BattleRules = {
   readonly maxTeamSize: number;
@@ -292,6 +298,11 @@ export type BattleState = {
   catalog: Record<string, HeroClassStats>;
   /** Лимиты матча (снимок при старте боя). */
   readonly rules: BattleRules;
+  /**
+   * Кошельки отрядов [host=0, guest=1].
+   * В старых снимках поля нет — migrateLegacyTeamGold при загрузке.
+   */
+  teams?: [BattleTeamEconomy, BattleTeamEconomy];
   stage: number;
   units: BattleUnit[];
   doneIds: string[];

@@ -1,3 +1,4 @@
+import { computeStartingTeamGold, emptyTeamEconomy } from '../economy';
 import {
   applyAbility,
   attackTargets,
@@ -117,12 +118,23 @@ export function createBattleState(input: {
     ...buildTeamUnits(guestPicks, input.guestPlayerId, 1, input.heroes, rules.healthBonus),
   ];
 
+  const goldBonus = rules.goldBonus ?? 1;
+  const hostGold = computeStartingTeamGold(
+    hostPicks.map((pick) => input.heroes.get(pick.heroClassCode)?.gold ?? 0),
+    goldBonus
+  );
+  const guestGold = computeStartingTeamGold(
+    guestPicks.map((pick) => input.heroes.get(pick.heroClassCode)?.gold ?? 0),
+    goldBonus
+  );
+
   const state: BattleState = {
     matchId: input.matchId,
     hostPlayerId: input.hostPlayerId,
     guestPlayerId: input.guestPlayerId,
     catalog,
     rules,
+    teams: [emptyTeamEconomy(hostGold), emptyTeamEconomy(guestGold)],
     stage: 1,
     units,
     doneIds: [],
@@ -193,7 +205,6 @@ function buildTeamUnits(
         power: hero.power,
         mana: hero.mana,
         maxMana: hero.maxMana ?? hero.mana,
-        gold: hero.gold,
         wasEffected: false,
         lvl: 1,
         hiddenLvl: 1,
@@ -979,13 +990,16 @@ export function toBattleSummary(state: BattleState) {
       luck: unit.luck,
       accuracy: unit.accuracy,
       power: unit.power,
-      gold: unit.gold,
       critBank: unit.critBank,
       ultaCharges: unit.ultaCharges,
       lvl: unit.lvl,
       morale: unit.morale,
       resists: summarizeResists(unit),
     })),
+    teams: [{ gold: state.teams?.[0]?.gold ?? 0 }, { gold: state.teams?.[1]?.gold ?? 0 }] as [
+      { gold: number },
+      { gold: number },
+    ],
   };
 }
 

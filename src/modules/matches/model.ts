@@ -109,7 +109,6 @@ export namespace MatchesModel {
     luck: t.Number(),
     accuracy: t.Number(),
     power: t.Number(),
-    gold: t.Number(),
     critBank: t.Number(),
     ultaCharges: t.Number(),
     lvl: t.Number(),
@@ -117,6 +116,11 @@ export namespace MatchesModel {
     resists: t.Array(resistBrief),
   });
   export type battleUnit = typeof battleUnit.static;
+
+  export const battleTeamEconomy = t.Object({
+    gold: t.Number(),
+  });
+  export type battleTeamEconomy = typeof battleTeamEconomy.static;
 
   export const turnOrderEntry = t.Object({
     unitId: t.String(),
@@ -201,6 +205,7 @@ export namespace MatchesModel {
     abilities: t.Array(abilityInfo),
     pendingPrompt: t.Nullable(pendingPrompt),
     units: t.Array(battleUnit),
+    teams: t.Optional(t.Tuple([battleTeamEconomy, battleTeamEconomy])),
   });
   export type battleState = typeof battleState.static;
 

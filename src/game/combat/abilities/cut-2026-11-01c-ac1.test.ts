@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
+import { teamGold } from '../../economy';
 import { markDeadIfNeeded } from '../damage';
 import { hasEffect } from '../effects';
 import { createBattleState } from '../engine';
@@ -204,16 +205,15 @@ describe('CUT-2026-11-01c AC-1', () => {
   test('fixture schizophrenia: −33% точности и −300 золота за ход', () => {
     const state = duel('Knight', 'B', { gold: 500, accuracy: 100 });
     const unit = state.units.find((u) => u.id === 'p1')!;
-    unit.gold = 500;
     unit.accuracy = 100;
     addMentalIllness(state, unit, 3);
     expect(unit.accuracy).toBe(67);
     unit.illness = true;
     applyIllnessTurnStart(state, unit);
-    expect(unit.gold).toBe(200);
+    expect(teamGold(state, 0)).toBe(200);
     expect(state.log.some((line) => line.includes('разбрасывает и смеётся'))).toBe(true);
     applyIllnessTurnStart(state, unit);
-    expect(unit.gold).toBe(0);
+    expect(teamGold(state, 0)).toBe(0);
   });
 
   test('fixture degradation: lvl 9 → 5, mana 0', () => {

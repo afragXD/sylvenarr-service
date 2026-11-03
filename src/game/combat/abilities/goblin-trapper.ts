@@ -1,3 +1,4 @@
+import { addTeamGold, teamGold } from '../../economy';
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect } from '../effects';
 import { levelUpUnit } from '../level';
@@ -116,12 +117,13 @@ export const goblinTrapperAbilities: AbilityHandler = {
       if (randInt(1, 100) <= 65 + actor.lvl * 2) {
         const master = findMaster(state, actor);
         const masterLvl = master?.lvl ?? actor.lvl;
-        const stolen = Math.min(randInt(60, 100 + masterLvl * 15), target.gold);
+        const enemyGold = teamGold(state, target.team);
+        const stolen = Math.min(randInt(60, 100 + masterLvl * 15), enemyGold);
         if (stolen <= 0) {
           return { status: 'reject', message: 'У цели нет золота' };
         }
-        target.gold -= stolen;
-        actor.gold += stolen;
+        addTeamGold(state, target.team, -stolen);
+        addTeamGold(state, actor.team, stolen);
         state.log.push(`${actor.displayName} крадёт ${stolen} монет у ${target.displayName}.`);
       } else {
         actor.health = randInt(-3, 0);
@@ -139,7 +141,7 @@ export const goblinTrapperAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       state.log.push(
-        `Шпионаж: у ${target.displayName} ${target.gold} золота, ${target.health}/${target.maxHp} ОЗ, ур. ${target.lvl}.`
+        `Шпионаж: у ${target.displayName} ${teamGold(state, target.team)} золота отряда, ${target.health}/${target.maxHp} ОЗ, ур. ${target.lvl}.`
       );
       levelUpUnit(actor, 1, state);
       state.log.push(`${actor.displayName} чувствует себя опытнее (+1 уровень).`);

@@ -1,3 +1,4 @@
+import { addTeamGold } from '../../economy';
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -73,7 +74,7 @@ export const beerElementalAbilities: AbilityHandler = {
 
   preChoice(state, actor) {
     const loss = randInt(10, 80);
-    actor.gold = Math.max(0, actor.gold - loss);
+    addTeamGold(state, actor.team, -loss);
     state.log.push(`${actor.displayName} просадил ${loss} золота в азартные игры!`);
   },
 

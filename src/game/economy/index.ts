@@ -1,5 +1,14 @@
 import type { BattleState } from '../combat/types';
 
+export {
+  addTeamGold,
+  computeStartingTeamGold,
+  emptyTeamEconomy,
+  migrateLegacyTeamGold,
+  spendTeamGold,
+  teamGold,
+} from './wallet';
+
 /**
  * Включена ли экономика матча (ярмарка, перки, предметы).
  * Старые снимки без `fairEnabled` — выключено.

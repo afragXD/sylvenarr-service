@@ -1,3 +1,4 @@
+import { addTeamGold, teamGold } from '../economy';
 import { firstActionAttackKind } from './abilities/primary-attack';
 import { alliesOf } from './abilities/targets';
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from './damage';
@@ -215,8 +216,8 @@ export function applyIllnessTurnStart(state: BattleState, unit: BattleUnit): voi
     return;
   }
   if (unit.illnessKind === 'schizophrenia') {
-    const loss = Math.min(300, unit.gold);
-    unit.gold = Math.max(0, unit.gold - 300);
+    const loss = Math.min(300, teamGold(state, unit.team));
+    addTeamGold(state, unit.team, -300);
     state.log.push(`${unit.displayName} разбрасывает и смеётся (−${loss} золота).`);
   }
 }

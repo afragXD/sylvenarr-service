@@ -4,7 +4,7 @@ import { applyAbility } from './abilities';
 import { createSummon } from './abilities/summon';
 import { dealDamage, markDeadIfNeeded } from './damage';
 import { delEffect, grantEffect, hasEffect } from './effects';
-import { applyAction, createBattleState, toBattleSummary } from './engine';
+import { createBattleState, toBattleSummary } from './engine';
 import { addMentalIllness, applyPsycho, maybeRewardHighMorale, normalizeUnit } from './morale';
 import type { HeroClassStats } from './types';
 

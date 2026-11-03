@@ -49,7 +49,7 @@ describe('CUT-2026-11-01c AC-5 Knight', () => {
     const ally = state.units.find((u) => u.id === 'p2')!;
     const other = state.units.find((u) => u.id === 'p3')!;
     knight.lvl = 10;
-    knight.gold = 500;
+    state.teams![0].gold = 500;
     const dmgBefore = ally.damage;
     grantEffect(ally, 'POISON', 3, 1);
     grantEffect(ally, 'BURNING', 2, 1);
