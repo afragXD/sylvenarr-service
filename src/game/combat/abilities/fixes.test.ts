@@ -408,6 +408,34 @@ describe('combat fixes', () => {
     );
   });
 
+  test('Marauder slot 3: слабость после урона, не до выстрела', () => {
+    const state = twoUnitState(
+      'Marauder',
+      'B',
+      { damage: 40, accuracy: 100, luck: 0 },
+      { armor: 0, dodge: 0 }
+    );
+    const marauder = state.units.find((unit) => unit.id === 'p1')!;
+    const foe = state.units.find((unit) => unit.id === 'p2')!;
+    const dmgBefore = marauder.damage;
+    const hpBefore = foe.health;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    const cast = applyAction(state, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 3,
+      targetId: 'p2',
+    });
+    expect(cast.ok).toBe(true);
+    const dealt = hpBefore - foe.health;
+    // ×1.25 от полного урона (40), не от 70% после слабости.
+    expect(dealt).toBeGreaterThanOrEqual(Math.round(40 * 1.25) - 2);
+    expect(marauder.effects.some((effect) => effect.id === 'WEAKNESS')).toBe(true);
+    expect(marauder.damage).toBe(dmgBefore - Math.max(1, Math.round(dmgBefore * 0.3)));
+  });
+
   test('GoldGolem slot 4 ABSOLUTEPOWER always 1 round', () => {
     const heroes = new Map([
       ['GoldGolem', hero('GoldGolem', { initiative: 99 })],

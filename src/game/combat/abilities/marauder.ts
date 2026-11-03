@@ -204,8 +204,8 @@ function applyMarauder(
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }
+    // Урон считается до слабости («после использования», не до выстрела).
     const lose = Math.max(1, Math.round(actor.damage * 0.3));
-    grantEffect(actor, 'WEAKNESS', 2, lose);
     const savedLuck = actor.luck;
     actor.luck = Math.min(80, actor.luck * 2);
     const damage = dealDamage(
@@ -215,6 +215,7 @@ function applyMarauder(
       state
     );
     actor.luck = savedLuck;
+    grantEffect(actor, 'WEAKNESS', 2, lose);
     if (damage === 0) {
       state.log.push(`${actor.displayName}: мощный выстрел — промах.`);
     } else {
