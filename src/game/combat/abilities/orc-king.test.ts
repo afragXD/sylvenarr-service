@@ -2,9 +2,9 @@ import { describe, expect, test } from 'bun:test';
 
 import { applyAction, createBattleState } from '../engine';
 import type { HeroClassStats } from '../types';
-import { createSummon } from './summon';
 import { orcKingAbilities } from './orc-king';
 import { runPreChoice } from './registry';
+import { createSummon } from './summon';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
   code,

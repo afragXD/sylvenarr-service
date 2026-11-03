@@ -1,16 +1,13 @@
+import type { DamageSource } from './damageSources';
+import { DAMAGE_SOURCE_LABELS, formatLogDamage, sourceFromAttackStyle } from './damageSources';
 import {
   applyVampWeaponHeal,
   delEffect,
+  destroyArmor,
   grantEffect,
   hasEffect,
   tryStun,
 } from './effects';
-import type { DamageSource } from './damageSources';
-import {
-  DAMAGE_SOURCE_LABELS,
-  formatLogDamage,
-  sourceFromAttackStyle,
-} from './damageSources';
 import { applyResistMultiplier } from './resists';
 import { pushSfx } from './sfx';
 import type { BattleState, BattleUnit } from './types';
@@ -170,10 +167,7 @@ function luckFailPunishmentDamage(attacker: BattleUnit, victim: BattleUnit): num
  * Порт наказаний luck() при crit < 0: −5 морали + rand(0..2):
  * ничего / удар по себе / удар по случайному союзнику.
  */
-function applyLuckFailPunishments(
-  state: BattleState | undefined,
-  attacker: BattleUnit
-): void {
+function applyLuckFailPunishments(state: BattleState | undefined, attacker: BattleUnit): void {
   attacker.morale -= 5;
   if (!state) {
     return;
@@ -224,9 +218,7 @@ export function transferFettersDamage(
   if (amount <= 0 || !receiver.fettersTargetId) {
     return;
   }
-  const linked = state.units.find(
-    (unit) => unit.id === receiver.fettersTargetId && unit.alive
-  );
+  const linked = state.units.find((unit) => unit.id === receiver.fettersTargetId && unit.alive);
   if (!linked || !hasEffect(linked, 'LIFE_FETTERS')) {
     receiver.fettersTargetId = null;
     return;
@@ -333,8 +325,7 @@ export function estimateDamageRange(
     };
   }
   const value = entry?.value ?? 0;
-  const multiplier =
-    value > 0 ? Math.max(0, 1 - value / 100) : 1 + Math.abs(value) / 100;
+  const multiplier = value > 0 ? Math.max(0, 1 - value / 100) : 1 + Math.abs(value) / 100;
   return {
     hitChance: Math.round(hitChance),
     minDamage: Math.max(0, Math.round(minRaw * multiplier)),
@@ -411,9 +402,7 @@ export function dealDamage(
         );
       } else {
         // Порт evade(): обычный промах тоже пишется в журнал (иначе AoE выглядит как «1 цель»).
-        state.log.push(
-          `${attacker.displayName} промахивается по ${defender.displayName}.`
-        );
+        state.log.push(`${attacker.displayName} промахивается по ${defender.displayName}.`);
       }
     }
     lastDeal = {
@@ -503,6 +492,32 @@ export function dealDamage(
     grantEffect(defender, 'BURNING', 2, 1 + attacker.lvl * 0.04);
     if (state) {
       state.log.push(`${defender.displayName} загорается от огненного оружия.`);
+    }
+  }
+
+  if (
+    melee &&
+    amount > 0 &&
+    defender.alive &&
+    defender.health > 0 &&
+    hasEffect(attacker, 'POISONEDWEAPON')
+  ) {
+    grantEffect(defender, 'POISON', randInt(1, 2), 1.2);
+    if (state) {
+      state.log.push(`Яд просачивается в кровь ${defender.displayName}!`);
+    }
+  }
+
+  if (
+    melee &&
+    amount > 0 &&
+    defender.alive &&
+    defender.health > 0 &&
+    hasEffect(attacker, 'BREAKWEAPON')
+  ) {
+    const stripped = destroyArmor(defender, 10 + attacker.lvl);
+    if (state && stripped > 0) {
+      state.log.push(`Руны уничтожают доспех на ${stripped} пунктов.`);
     }
   }
 
@@ -700,9 +715,7 @@ function tryFinalStrikeSave(state: BattleState, unit: BattleUnit): boolean {
   if (entry.value > 0 && randInt(1, 100) <= entry.value) {
     entry.value -= unit.heroClassCode === 'Antipaladin' ? 33 : 25;
     unit.health = 1;
-    state.log.push(
-      `${unit.displayName} на пороге смерти, но переживает удар (остаётся 1 ОЗ).`
-    );
+    state.log.push(`${unit.displayName} на пороге смерти, но переживает удар (остаётся 1 ОЗ).`);
     return true;
   }
   return false;
@@ -749,11 +762,7 @@ function applyEruptionOnDeath(state: BattleState, dead: BattleUnit): void {
  * Перед смертью проверяет спасение вардом/резистом FINALSTRIKE.
  * При смерти хозяина уничтожает его саммонов (порт death() из бота).
  */
-export function markDeadIfNeeded(
-  state: BattleState,
-  unit: BattleUnit,
-  opts?: MarkDeadOpts
-): void {
+export function markDeadIfNeeded(state: BattleState, unit: BattleUnit, opts?: MarkDeadOpts): void {
   if (unit.health > 0) {
     return;
   }
@@ -787,10 +796,7 @@ export function markDeadIfNeeded(
   }
   if (unit.isSummon && unit.summonerId) {
     const master = state.units.find(
-      (other) =>
-        other.id === unit.summonerId &&
-        other.alive &&
-        other.heroClassCode === 'OrcKing'
+      (other) => other.id === unit.summonerId && other.alive && other.heroClassCode === 'OrcKing'
     );
     if (master) {
       if (unit.heroClassCode === 'GoblinTrapper') {
@@ -800,9 +806,7 @@ export function markDeadIfNeeded(
         );
       } else if (unit.heroClassCode === 'GoblinShaman') {
         master.cumRage += 0.03;
-        state.log.push(
-          `${unit.displayName} погиб, и ярость его Хана немного растёт.`
-        );
+        state.log.push(`${unit.displayName} погиб, и ярость его Хана немного растёт.`);
       }
     }
   }
@@ -821,9 +825,7 @@ export function markDeadIfNeeded(
     );
     for (const summon of summons) {
       summon.health = 0;
-      state.log.push(
-        `${summon.displayName} исчезает вместе с хозяином ${unit.displayName}.`
-      );
+      state.log.push(`${summon.displayName} исчезает вместе с хозяином ${unit.displayName}.`);
       markDeadIfNeeded(state, summon);
     }
   }

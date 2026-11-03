@@ -5,12 +5,7 @@ import { createSummon } from './abilities/summon';
 import { dealDamage, markDeadIfNeeded } from './damage';
 import { delEffect, grantEffect, hasEffect } from './effects';
 import { applyAction, createBattleState, toBattleSummary } from './engine';
-import {
-  addMentalIllness,
-  applyPsycho,
-  maybeRewardHighMorale,
-  normalizeUnit,
-} from './morale';
+import { addMentalIllness, applyPsycho, maybeRewardHighMorale, normalizeUnit } from './morale';
 import type { HeroClassStats } from './types';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({

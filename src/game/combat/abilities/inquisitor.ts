@@ -1,15 +1,11 @@
-import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, trySpendMana, tryStun } from '../effects';
 import { isArtificialClass, isUndeadClass } from '../races';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { enemiesOf, meleeOrAll, moveToOtherRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = meleeOrAll(state, actor, false);
@@ -127,8 +123,7 @@ export const inquisitorAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       // CUT AC-11: при ОЗ цели < 33 % max — +(14 + L) пп шанса крита.
-      const finishing =
-        target.maxHp > 0 && target.health < target.maxHp * 0.33;
+      const finishing = target.maxHp > 0 && target.health < target.maxHp * 0.33;
       const critBonus = finishing ? 14 + actor.lvl : 0;
       if (critBonus > 0) {
         state.log.push(
@@ -176,15 +171,10 @@ export const inquisitorAbilities: AbilityHandler = {
         state.log.push(
           `${actor.displayName} пыточной молнией бьёт ${target.displayName} ${formatLastLogDamage(damage)}.`
         );
-        if (
-          !isUndeadClass(target.heroClassCode) &&
-          !isArtificialClass(target.heroClassCode)
-        ) {
+        if (!isUndeadClass(target.heroClassCode) && !isArtificialClass(target.heroClassCode)) {
           const moraleDamage = randInt(3, 6) + actor.lvl;
           target.morale -= moraleDamage;
-          state.log.push(
-            `${target.displayName} от пыток теряет ${moraleDamage} боевого духа.`
-          );
+          state.log.push(`${target.displayName} от пыток теряет ${moraleDamage} боевого духа.`);
         }
         markDeadIfNeeded(state, target);
       }

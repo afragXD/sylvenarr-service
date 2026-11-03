@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-
+import { grantEffect } from './effects';
 import {
   advanceToNextUnit,
   applyAction,
@@ -10,7 +10,6 @@ import {
   resolveOutcome,
   toBattleSummary,
 } from './engine';
-import { grantEffect } from './effects';
 import type { HeroClassStats } from './types';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
@@ -126,10 +125,7 @@ describe('combat engine', () => {
   });
 
   test('Knight slot 2 rejected when horse is dead', () => {
-    const heroes = catalogHeroes(
-      hero('Knight', { initiative: 99 }),
-      hero('B', { initiative: 1 })
-    );
+    const heroes = catalogHeroes(hero('Knight', { initiative: 99 }), hero('B', { initiative: 1 }));
     const state = createBattleState({
       matchId: 'm1',
       hostPlayerId: 'h',
@@ -159,10 +155,7 @@ describe('combat engine', () => {
   });
 
   test('OrcKing summon prompt flow', () => {
-    const heroes = catalogHeroes(
-      hero('OrcKing', { initiative: 99 }),
-      hero('B', { initiative: 1 })
-    );
+    const heroes = catalogHeroes(hero('OrcKing', { initiative: 99 }), hero('B', { initiative: 1 }));
     const state = createBattleState({
       matchId: 'm1',
       hostPlayerId: 'h',
@@ -452,7 +445,7 @@ describe('combat engine', () => {
   test('wait does not re-tick ability CD or DoT in the same round', () => {
     const heroes = catalogHeroes(
       hero('Paladin', { initiative: 99, mana: 10 }),
-      hero('B', { initiative: 1, health: 300 }),
+      hero('B', { initiative: 1, health: 300 })
     );
     const state = createBattleState({
       matchId: 'm-wait-cd',

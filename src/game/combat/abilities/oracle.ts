@@ -1,15 +1,11 @@
 import { randInt } from '../damage';
-import { grantEffect, healUnit, trySpendMana, addMana } from '../effects';
+import { addMana, grantEffect, healUnit, trySpendMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { alliesOf, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const allies = alliesOf(state, actor);
@@ -20,18 +16,12 @@ function abilityMeta(
         previewHealMin: 35 + actor.lvl,
         previewHealMax: 50 + actor.lvl * 4,
         disabledReason:
-          actor.mana < 2
-            ? 'Нужно 2 МР'
-            : allies.length === 0
-              ? 'Нет союзников'
-              : null,
+          actor.mana < 2 ? 'Нужно 2 МР' : allies.length === 0 ? 'Нет союзников' : null,
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
     case 2: {
-      const allies = alliesOf(state, actor).filter((unit) =>
-        state.doneIds.includes(unit.id)
-      );
+      const allies = alliesOf(state, actor).filter((unit) => state.doneIds.includes(unit.id));
       return {
         slot: 2,
         label: 'Миг могущества',

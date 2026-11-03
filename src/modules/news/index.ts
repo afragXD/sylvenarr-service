@@ -189,5 +189,5 @@ export const newsController = new Elysia({ tags: ['News'] })
     }
   );
 
-export { NewsService } from './service';
 export { NewsModel } from './model';
+export { NewsService } from './service';

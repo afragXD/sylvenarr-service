@@ -140,7 +140,9 @@ export const angelAbilities: AbilityHandler = {
     }
     const luck = 15 + actor.lvl;
     grantEffect(champion, 'LUCKY', 1, luck);
-    state.log.push(`${actor.displayName} избирает чемпиона: ${champion.displayName} (+${luck} удачи).`);
+    state.log.push(
+      `${actor.displayName} избирает чемпиона: ${champion.displayName} (+${luck} удачи).`
+    );
   },
 
   apply(state, actor, input): AbilityOutcome {
@@ -178,7 +180,9 @@ export const angelAbilities: AbilityHandler = {
     if (input.slot === 2) {
       setSlotCd(actor, 2, 3);
       grantEffect(target, 'DEATHWARD', 2, 100);
-      state.log.push(`${actor.displayName} сковывает смерть оковами войны: ${target.displayName} не падёт от смертельного удара.`);
+      state.log.push(
+        `${actor.displayName} сковывает смерть оковами войны: ${target.displayName} не падёт от смертельного удара.`
+      );
       return { status: 'done' };
     }
 
@@ -227,7 +231,11 @@ export const angelAbilities: AbilityHandler = {
       );
       markDeadIfNeeded(state, target);
     }
-    if (target.alive && !lastDealDamageResult().missed && rollSrcChance(state, target, 70 + actor.lvl * 2, 'AIR')) {
+    if (
+      target.alive &&
+      !lastDealDamageResult().missed &&
+      rollSrcChance(state, target, 70 + actor.lvl * 2, 'AIR')
+    ) {
       const removed = clearBuffs(target, state);
       if (removed > 0) {
         state.log.push(`С ${target.displayName} рассеяно положительных эффектов: ${removed}.`);

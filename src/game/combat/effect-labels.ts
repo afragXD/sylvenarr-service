@@ -55,6 +55,12 @@ const LABELS: Record<EffectId, string> = {
   LIFE_FETTERS: 'Оковы взаимного терпения',
   LIFE_THREAD: 'Жизнь на нитке',
   ERUPTION: 'Извержение',
+  REFLECTION: 'Отражение',
+  REGENMANA: 'Источник маны',
+  KILLMANA: 'Высасывание',
+  DRUNK: 'Опьянение',
+  POISONEDWEAPON: 'Отравленный клинок',
+  BREAKWEAPON: 'Рунический клинок',
 };
 
 /**

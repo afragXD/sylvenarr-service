@@ -1,13 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
 import { effectLogLabel } from '../effect-labels';
+import { delEffect, grantEffect, tickEffectsOnTurnEnd, tickEffectsOnTurnStart } from '../effects';
 import { applyAction, createBattleState } from '../engine';
-import {
-  delEffect,
-  grantEffect,
-  tickEffectsOnTurnEnd,
-  tickEffectsOnTurnStart,
-} from '../effects';
 import { applyCatalogStats } from '../transform';
 import type { HeroClassStats } from '../types';
 
@@ -109,9 +104,7 @@ describe('CUT-2026-11-01c AC-12 Gall / accuracy / Death Sentence', () => {
       expect(lost).toBe(20);
       expect(foe.armor).toBe(beforeArmor - 4);
       expect(startLog.some((line) => line.includes('⟦WATER⟧'))).toBe(true);
-      expect(startLog.some((line) => line.includes('Желчь') && line.includes('броню'))).toBe(
-        true
-      );
+      expect(startLog.some((line) => line.includes('Желчь') && line.includes('броню'))).toBe(true);
       tickEffectsOnTurnEnd(foe, state);
     }
 
@@ -186,9 +179,7 @@ describe('CUT-2026-11-01c AC-12 Gall / accuracy / Death Sentence', () => {
     expect(ds).toBeTruthy();
     const power = ds!.power;
     expect(foe.armor).toBe(30 - power);
-    expect(state.log.some((line) => line.toLowerCase().includes('смертный приговор'))).toBe(
-      true
-    );
+    expect(state.log.some((line) => line.toLowerCase().includes('смертный приговор'))).toBe(true);
 
     delEffect(foe, 'DEATHSENTENCE', state);
     expect(foe.armor).toBe(30);

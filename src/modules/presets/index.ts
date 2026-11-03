@@ -10,8 +10,7 @@ export const presetsController = new Elysia({ prefix: '/presets', tags: ['Preset
     '',
     async ({ query, player }) => {
       const teamSizeRaw = query.teamSize ? Number(query.teamSize) : null;
-      const teamSize =
-        teamSizeRaw !== null && Number.isFinite(teamSizeRaw) ? teamSizeRaw : null;
+      const teamSize = teamSizeRaw !== null && Number.isFinite(teamSizeRaw) ? teamSizeRaw : null;
       return await PresetsService.list({
         playerId: player.id,
         teamSize,
@@ -137,5 +136,5 @@ export const presetsController = new Elysia({ prefix: '/presets', tags: ['Preset
     }
   );
 
-export { PresetsService } from './service';
 export { PresetsModel } from './model';
+export { PresetsService } from './service';

@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
 import { dealDamage } from '../damage';
-import { applyAction, createBattleState } from '../engine';
 import { healUnit } from '../effects';
+import { applyAction, createBattleState } from '../engine';
 import type { HeroClassStats } from '../types';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
@@ -93,7 +93,10 @@ describe('phase 3.12 pilots', () => {
 
   test('BeerElemental critBank forces crit', () => {
     const heroes = new Map([
-      ['BeerElemental', hero('BeerElemental', { initiative: 99, luck: 0, damage: 30, accuracy: 100 })],
+      [
+        'BeerElemental',
+        hero('BeerElemental', { initiative: 99, luck: 0, damage: 30, accuracy: 100 }),
+      ],
       ['B', hero('B', { initiative: 1, armor: 0, health: 500, dodge: 0 })],
     ]);
     const state = createBattleState({
@@ -111,10 +114,20 @@ describe('phase 3.12 pilots', () => {
     beer.critBank = 1;
     beer.luck = 0;
     // forceHit — исключаем флаки промаха.
-    const withBank = dealDamage(beer, foe, { kind: 'magic', damageMult: 1, armorIgnore: 1, forceHit: true }, state);
+    const withBank = dealDamage(
+      beer,
+      foe,
+      { kind: 'magic', damageMult: 1, armorIgnore: 1, forceHit: true },
+      state
+    );
     expect(beer.critBank).toBe(0);
     foe.health = 500;
-    const without = dealDamage(beer, foe, { kind: 'magic', damageMult: 1, armorIgnore: 1, forceHit: true }, state);
+    const without = dealDamage(
+      beer,
+      foe,
+      { kind: 'magic', damageMult: 1, armorIgnore: 1, forceHit: true },
+      state
+    );
     expect(withBank).toBeGreaterThan(without);
   });
 

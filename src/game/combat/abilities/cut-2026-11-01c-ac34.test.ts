@@ -1,8 +1,8 @@
 import { describe, expect, spyOn, test } from 'bun:test';
 
 import { heroSeeds } from '../../../../prisma/seed-data/heroes';
-import { applyAction, createBattleState } from '../engine';
 import { hasEffect } from '../effects';
+import { applyAction, createBattleState } from '../engine';
 import { levelUpUnit } from '../level';
 import { applyClassLevelUp } from '../levelup';
 import type { HeroClassStats } from '../types';

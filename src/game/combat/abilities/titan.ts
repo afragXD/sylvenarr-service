@@ -105,7 +105,9 @@ export const titanAbilities: AbilityHandler = {
     }
     const bonus = 2 + actor.lvl;
     pupil.damage += bonus;
-    state.log.push(`${actor.displayName} наставляет ${pupil.displayName}: +${bonus} атаки навсегда.`);
+    state.log.push(
+      `${actor.displayName} наставляет ${pupil.displayName}: +${bonus} атаки навсегда.`
+    );
   },
 
   apply(state, actor, input): AbilityOutcome {
@@ -150,7 +152,10 @@ export const titanAbilities: AbilityHandler = {
           state
         );
         const armorLoss = enemy.alive
-          ? Math.min(Math.max(0, enemy.armor), Math.round(strip * consumeSrcFactor(enemy, 'DESTROYARMOR')))
+          ? Math.min(
+              Math.max(0, enemy.armor),
+              Math.round(strip * consumeSrcFactor(enemy, 'DESTROYARMOR'))
+            )
           : 0;
         enemy.armor -= armorLoss;
         state.log.push(

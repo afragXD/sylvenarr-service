@@ -1,11 +1,6 @@
-import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { DAMAGE_SOURCE_LABELS, type DamageSource } from '../damageSources';
-import {
-  clearAllEffects,
-  grantEffect,
-  healUnit,
-  trySpendMana,
-} from '../effects';
+import { clearAllEffects, grantEffect, healUnit, trySpendMana } from '../effects';
 import { setWard } from '../resists';
 import { ROW_BACK } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -25,11 +20,7 @@ export function pyRound(value: number): number {
   return floor % 2 === 0 ? floor : floor + 1;
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = enemiesOf(state, actor);
@@ -40,12 +31,7 @@ function abilityMeta(
         attackKind: 'magic',
         previewSource: 'HOLY',
         previewArmorIgnore: 0.1,
-        disabledReason:
-          actor.mana < 2
-            ? 'Нужно 2 МР'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+        disabledReason: actor.mana < 2 ? 'Нужно 2 МР' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -73,11 +59,7 @@ function abilityMeta(
         label: 'Святая броня',
         needsTarget: true,
         disabledReason:
-          actor.mana < 3
-            ? 'Нужно 3 МР'
-            : allies.length === 0
-              ? 'Нет союзников'
-              : null,
+          actor.mana < 3 ? 'Нужно 3 МР' : allies.length === 0 ? 'Нет союзников' : null,
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }

@@ -69,10 +69,7 @@ export function isUnholyClass(code: string): boolean {
  * Множитель урона святого оружия по нежити/демонам (+25%).
  * Учитывает lich-саммонов даже если код временно другой.
  */
-export function unholyDamageMult(unit: {
-  heroClassCode: string;
-  isLichSummon?: boolean;
-}): number {
+export function unholyDamageMult(unit: { heroClassCode: string; isLichSummon?: boolean }): number {
   if (unit.isLichSummon || isUnholyClass(unit.heroClassCode)) {
     return 1.25;
   }

@@ -142,8 +142,7 @@ export abstract class PlayersService {
     playerId: string,
     avatarUrl: string
   ): Promise<
-    | { ok: true; player: PlayersModel.player }
-    | { ok: false; status: 404; message: string }
+    { ok: true; player: PlayersModel.player } | { ok: false; status: 404; message: string }
   > {
     try {
       await prisma.player.update({

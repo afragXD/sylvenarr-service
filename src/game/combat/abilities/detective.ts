@@ -13,11 +13,7 @@ function rapierTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {
   return meleeOrAll(state, actor, hasEffect(actor, 'INVISIBLE'), IGNORE_GUARD);
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = rapierTargets(state, actor);
@@ -39,11 +35,7 @@ function abilityMeta(
         label: `Диверсия — яд (${actor.ultaCharges})`,
         needsTarget: true,
         disabledReason:
-          actor.ultaCharges <= 0
-            ? 'Нет яда'
-            : targets.length === 0
-              ? 'Нет врагов'
-              : null,
+          actor.ultaCharges <= 0 ? 'Нет яда' : targets.length === 0 ? 'Нет врагов' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -62,11 +54,7 @@ function abilityMeta(
         label: 'Выпад дуэлянта',
         needsTarget: true,
         disabledReason:
-          actor.row !== ROW_BACK
-            ? 'Нужен задний ряд'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+          actor.row !== ROW_BACK ? 'Нужен задний ряд' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -130,7 +118,9 @@ export const detectiveAbilities: AbilityHandler = {
       if (damage === 0) {
         state.log.push(`${actor.displayName}: рапира — промах.`);
       } else {
-        state.log.push(`${actor.displayName} бьёт рапирой ${target.displayName} ${formatLastLogDamage(damage)}.`);
+        state.log.push(
+          `${actor.displayName} бьёт рапирой ${target.displayName} ${formatLastLogDamage(damage)}.`
+        );
         markDeadIfNeeded(state, target);
       }
       return { status: 'done' };
@@ -205,9 +195,7 @@ export const detectiveAbilities: AbilityHandler = {
       return { status: 'done' };
     }
 
-    const target = enemiesOf(state, actor, IGNORE_GUARD).find(
-      (unit) => unit.id === input.targetId
-    );
+    const target = enemiesOf(state, actor, IGNORE_GUARD).find((unit) => unit.id === input.targetId);
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }

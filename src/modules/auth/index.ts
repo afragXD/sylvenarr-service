@@ -43,7 +43,7 @@ export const authController = new Elysia({ prefix: '/auth', tags: ['Auth'] })
       if (!player) {
         return status(401, { message: 'Неверный логин или пароль' });
       }
-      cookie[PLAYER_COOKIE_NAME].set({
+      cookie[PLAYER_COOKIE_NAME]!.set({
         value: player.id,
         ...sessionCookieOptions,
       });
@@ -70,7 +70,7 @@ export const authController = new Elysia({ prefix: '/auth', tags: ['Auth'] })
       if (!player) {
         return status(404, { message: 'Игрок не найден' });
       }
-      cookie[PLAYER_COOKIE_NAME].set({
+      cookie[PLAYER_COOKIE_NAME]!.set({
         value: player.id,
         ...sessionCookieOptions,
       });
@@ -91,7 +91,7 @@ export const authController = new Elysia({ prefix: '/auth', tags: ['Auth'] })
         return status(404, { message: 'Провайдер не найден или отключён' });
       }
       const state = crypto.randomUUID();
-      cookie[OAUTH_STATE_COOKIE_NAME].set({
+      cookie[OAUTH_STATE_COOKIE_NAME]!.set({
         value: state,
         ...stateCookieOptions,
       });
@@ -121,14 +121,14 @@ export const authController = new Elysia({ prefix: '/auth', tags: ['Auth'] })
         return redirect(AuthService.errorRedirectUrl('missing_code'));
       }
       const expectedState: unknown = cookie[OAUTH_STATE_COOKIE_NAME]?.value;
-      cookie[OAUTH_STATE_COOKIE_NAME].remove();
+      cookie[OAUTH_STATE_COOKIE_NAME]!.remove();
       if (typeof expectedState !== 'string' || expectedState !== query.state) {
         return redirect(AuthService.errorRedirectUrl('invalid_state'));
       }
       try {
         const profile = await adapter.exchangeCode(query.code);
         const player = await AuthService.upsertOAuthPlayer(adapter.id, profile);
-        cookie[PLAYER_COOKIE_NAME].set({
+        cookie[PLAYER_COOKIE_NAME]!.set({
           value: player.id,
           ...sessionCookieOptions,
         });
@@ -149,8 +149,8 @@ export const authController = new Elysia({ prefix: '/auth', tags: ['Auth'] })
   .post(
     '/logout',
     ({ cookie }) => {
-      cookie[PLAYER_COOKIE_NAME].remove();
-      cookie[OAUTH_STATE_COOKIE_NAME].remove();
+      cookie[PLAYER_COOKIE_NAME]!.remove();
+      cookie[OAUTH_STATE_COOKIE_NAME]!.remove();
       return { ok: true };
     },
     {

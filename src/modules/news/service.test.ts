@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
+import { prisma } from '../../shared/db';
 import { NewsService } from './service';
 
 describe('NewsService', () => {
@@ -13,8 +14,21 @@ describe('NewsService', () => {
   });
 
   test('getPublishedBySlug hides drafts', async () => {
-    const draft = await NewsService.getPublishedBySlug('new-look-of-the-arena');
-    expect(draft).toBeNull();
+    const slug = `draft-hide-test-${crypto.randomUUID()}`;
+    const row = await prisma.news.create({
+      data: {
+        slug,
+        title: 'Черновик для теста',
+        summary: 'Служебный черновик: не должен отдаваться публично.',
+        body: 'Тело черновика для проверки getPublishedBySlug.',
+        publishedAt: null,
+      },
+    });
+    try {
+      expect(await NewsService.getPublishedBySlug(slug)).toBeNull();
+    } finally {
+      await prisma.news.delete({ where: { id: row.id } });
+    }
   });
 
   test('create rejects duplicate slug', async () => {

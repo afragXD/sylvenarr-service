@@ -181,9 +181,7 @@ describe('weapon enchants and counters only on melee', () => {
       { id: 'e1', code: 'Foe', team: 1, row: 0 },
     ]);
     const foe = byId(state, 'e1');
-    expect(applyAbility(state, byId(state, 'p1'), { slot: 1, targetId: 'e1' }).status).toBe(
-      'done'
-    );
+    expect(applyAbility(state, byId(state, 'p1'), { slot: 1, targetId: 'e1' }).status).toBe('done');
     expect(foe.maxHp - foe.health).toBeGreaterThanOrEqual(40);
   });
 });

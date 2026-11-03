@@ -1,11 +1,6 @@
 import { firstActionAttackKind } from './abilities/primary-attack';
 import { alliesOf } from './abilities/targets';
-import {
-  dealDamage,
-  formatLastLogDamage,
-  markDeadIfNeeded,
-  randInt,
-} from './damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from './damage';
 import { formatLogDamage } from './damageSources';
 import { grantEffect } from './effects';
 import { levelUpUnit } from './level';
@@ -111,11 +106,7 @@ function pickLowestHpAlly(allies: BattleUnit[]): BattleUnit {
 /**
  * Mental illness (CUT-2026-11-01c AC-1): 5 болезней, без «Душевного подъёма».
  */
-export function addMentalIllness(
-  state: BattleState,
-  unit: BattleUnit,
-  fate: number
-): void {
+export function addMentalIllness(state: BattleState, unit: BattleUnit, fate: number): void {
   switch (fate) {
     case 1: {
       unit.illnessKind = 'paranoia';
@@ -133,9 +124,7 @@ export function addMentalIllness(
         unit.luck = 0;
       }
       unit.initiative = 5;
-      state.log.push(
-        `${unit.displayName}: апатия — уклонение 0, крит 0, инициатива 5.`
-      );
+      state.log.push(`${unit.displayName}: апатия — уклонение 0, крит 0, инициатива 5.`);
       break;
     }
     case 3: {
@@ -155,16 +144,12 @@ export function addMentalIllness(
         levelUpUnit(unit, -loss, state);
       }
       unit.mana = 0;
-      state.log.push(
-        `${unit.displayName}: деградация — −${loss} ур., мана 0.`
-      );
+      state.log.push(`${unit.displayName}: деградация — −${loss} ур., мана 0.`);
       break;
     }
     case 5: {
       unit.illnessKind = 'masochism';
-      state.log.push(
-        `${unit.displayName}: мазохизм — в начале раунда ранит себя.`
-      );
+      state.log.push(`${unit.displayName}: мазохизм — в начале раунда ранит себя.`);
       break;
     }
     default:
@@ -185,9 +170,7 @@ export function applyPsycho(state: BattleState, unit: BattleUnit): void {
     return;
   }
   if (unit.morale < -100) {
-    state.log.push(
-      `${unit.displayName} не выдерживает психологической атаки — сердечный приступ.`
-    );
+    state.log.push(`${unit.displayName} не выдерживает психологической атаки — сердечный приступ.`);
     unit.health = 0;
     markDeadIfNeeded(state, unit);
     return;
@@ -234,9 +217,7 @@ export function applyIllnessTurnStart(state: BattleState, unit: BattleUnit): voi
   if (unit.illnessKind === 'schizophrenia') {
     const loss = Math.min(300, unit.gold);
     unit.gold = Math.max(0, unit.gold - 300);
-    state.log.push(
-      `${unit.displayName} разбрасывает и смеётся (−${loss} золота).`
-    );
+    state.log.push(`${unit.displayName} разбрасывает и смеётся (−${loss} золота).`);
   }
 }
 
@@ -276,9 +257,7 @@ export function maybeRewardHighMorale(state: BattleState, unit: BattleUnit): voi
   }
   const bonus = Math.max(1, Math.round(unit.damage * 0.33));
   grantEffect(unit, 'STRENGTH', 2, bonus);
-  state.log.push(
-    `${unit.displayName}: высокий боевой дух даёт силу (+${bonus} урона на 2 р.).`
-  );
+  state.log.push(`${unit.displayName}: высокий боевой дух даёт силу (+${bonus} урона на 2 р.).`);
 }
 
 /**
@@ -298,16 +277,12 @@ export function maybePunishLowMorale(state: BattleState, unit: BattleUnit): void
   if (isMageUnit(state, unit)) {
     const loss = Math.max(1, Math.round(unit.power * 0.2));
     grantEffect(unit, 'ABSOLUTEPOWER', 2, -loss);
-    state.log.push(
-      `${unit.displayName}: упадок духа ослабляет магию (−${loss} СМ на 2 р.).`
-    );
+    state.log.push(`${unit.displayName}: упадок духа ослабляет магию (−${loss} СМ на 2 р.).`);
     return;
   }
   const loss = Math.max(1, Math.round(unit.damage * 0.25));
   grantEffect(unit, 'STRENGTH', 2, -loss);
-  state.log.push(
-    `${unit.displayName}: упадок духа ослабляет атаку (−${loss} урона на 2 р.).`
-  );
+  state.log.push(`${unit.displayName}: упадок духа ослабляет атаку (−${loss} урона на 2 р.).`);
 }
 
 /** Случайная болезнь 1..5 (для тестов с фиксированным fate используйте addMentalIllness). */

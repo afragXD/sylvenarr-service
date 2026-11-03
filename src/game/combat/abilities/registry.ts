@@ -5,10 +5,10 @@ import { angelAbilities } from './angel';
 import { antipaladinAbilities } from './antipaladin';
 import { archlichAbilities } from './archlich';
 import { assassinAbilities } from './assassin';
+import { beerElementalAbilities } from './beer-elemental';
 import { demiurgeAbilities } from './demiurge';
 import { demonLordAbilities } from './demon-lord';
 import { detectiveAbilities } from './detective';
-import { beerElementalAbilities } from './beer-elemental';
 import { dracolichAbilities } from './dracolich';
 import { ectoplasmAbilities } from './ectoplasm';
 import { evilTreeAbilities } from './evil-tree';
@@ -31,9 +31,9 @@ import { pyroAbilities } from './pyro';
 import { skeletonChampionAbilities } from './skeleton-champion';
 import { specterAbilities } from './specter';
 import { titanAbilities } from './titan';
+import type { AbilityHandler, AbilityOutcome } from './types';
 import { witchAbilities } from './witch';
 import { zombieAbilities } from './zombie';
-import type { AbilityHandler, AbilityOutcome } from './types';
 
 const PILOT_HANDLERS: Record<string, AbilityHandler> = {
   Knight: knightAbilities,

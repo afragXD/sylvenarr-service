@@ -31,11 +31,7 @@ export namespace MatchesModel {
   });
   export type draftPick = typeof draftPick.static;
 
-  export const draftEntry = t.Union([
-    t.Literal('empty'),
-    t.Literal('draft'),
-    t.Literal('preset'),
-  ]);
+  export const draftEntry = t.Union([t.Literal('empty'), t.Literal('draft'), t.Literal('preset')]);
   export type draftEntry = typeof draftEntry.static;
 
   export const draftState = t.Object({
@@ -63,11 +59,7 @@ export namespace MatchesModel {
     fairFrequency: t.Number(),
     shopSize: t.Number(),
     goldBonus: t.Number(),
-    heroDupes: t.Union([
-      t.Literal('allow'),
-      t.Literal('uniqueTeam'),
-      t.Literal('uniqueMatch'),
-    ]),
+    heroDupes: t.Union([t.Literal('allow'), t.Literal('uniqueTeam'), t.Literal('uniqueMatch')]),
     rated: t.Boolean(),
   });
   export type matchRules = typeof matchRules.static;
@@ -147,13 +139,7 @@ export namespace MatchesModel {
   export const attackKind = t.Union([t.Literal('melee'), t.Literal('ranged'), t.Literal('magic')]);
 
   export const abilityInfo = t.Object({
-    slot: t.Union([
-      t.Literal(1),
-      t.Literal(2),
-      t.Literal(3),
-      t.Literal(4),
-      t.Literal(5),
-    ]),
+    slot: t.Union([t.Literal(1), t.Literal(2), t.Literal(3), t.Literal(4), t.Literal(5)]),
     label: t.String(),
     needsTarget: t.Boolean(),
     disabledReason: t.Nullable(t.String()),
@@ -171,13 +157,7 @@ export namespace MatchesModel {
   export const pendingPrompt = t.Object({
     unitId: t.String(),
     kind: t.String(),
-    slot: t.Union([
-      t.Literal(1),
-      t.Literal(2),
-      t.Literal(3),
-      t.Literal(4),
-      t.Literal(5),
-    ]),
+    slot: t.Union([t.Literal(1), t.Literal(2), t.Literal(3), t.Literal(4), t.Literal(5)]),
     options: t.Array(
       t.Object({
         id: t.String(),

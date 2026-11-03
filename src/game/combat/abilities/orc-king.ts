@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect } from '../effects';
 import { unitChoiceLabel } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -12,16 +12,11 @@ function getRage(actor: BattleUnit): number {
 }
 
 function countOwnedSummons(state: BattleState, actor: BattleUnit): number {
-  return state.units.filter(
-    (unit) => unit.alive && unit.isSummon && unit.summonerId === actor.id
-  ).length;
+  return state.units.filter((unit) => unit.alive && unit.isSummon && unit.summonerId === actor.id)
+    .length;
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = meleeOrAll(state, actor, false);
@@ -163,7 +158,11 @@ export const orcKingAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(actor, target, { kind: 'melee', damageMult: 0.75, armorIgnore: 0.5 });
+      const damage = dealDamage(actor, target, {
+        kind: 'melee',
+        damageMult: 0.75,
+        armorIgnore: 0.5,
+      });
       if (damage === 0) {
         state.log.push(`${actor.displayName}: кастет — промах.`);
         return { status: 'done' };

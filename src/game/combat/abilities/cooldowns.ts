@@ -41,11 +41,7 @@ export function tickSlotCds(unit: BattleUnit): void {
  * Подпись блокировки по кулдауну или null.
  * С maxRounds — «перезарядка N/M» (QA Ведьма и общий формат).
  */
-export function cdReason(
-  unit: BattleUnit,
-  slot: AbilitySlot,
-  maxRounds?: number
-): string | null {
+export function cdReason(unit: BattleUnit, slot: AbilitySlot, maxRounds?: number): string | null {
   const left = slotCd(unit, slot);
   if (left <= 0) {
     return null;

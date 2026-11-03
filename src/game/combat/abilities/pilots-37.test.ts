@@ -81,9 +81,7 @@ describe('phase 3.7 pilots', () => {
     });
     state.activeUnitId = 'p1';
     state.turnPlayerId = 'h';
-    const assassins = ['a1', 'a2', 'a3'].map(
-      (id) => state.units.find((unit) => unit.id === id)!
-    );
+    const assassins = ['a1', 'a2', 'a3'].map((id) => state.units.find((unit) => unit.id === id)!);
     const before = assassins.map((unit) => unit.health);
     const result = applyAction(state, {
       playerId: 'h',
@@ -198,9 +196,7 @@ describe('phase 3.7 pilots', () => {
     expect(assassin.effects.some((effect) => effect.id === 'POLYMORPH')).toBe(true);
     expect(assassin.lvl).toBe(beforeLvl + 1);
     expect(assassin.ultaCharges).toBe(1);
-    expect(state.log.some((line) => line.startsWith('Мимик принимает облик Paladin'))).toBe(
-      true
-    );
+    expect(state.log.some((line) => line.startsWith('Мимик принимает облик Paladin'))).toBe(true);
     expect(state.log.some((line) => line.includes('Мимик Paladin принимает облик'))).toBe(false);
   });
 

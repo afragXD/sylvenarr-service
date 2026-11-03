@@ -47,9 +47,7 @@ export namespace PresetsModel {
 
   export const listQuery = t.Object({
     teamSize: t.Optional(t.String()),
-    scope: t.Optional(
-      t.Union([t.Literal('mine'), t.Literal('global'), t.Literal('all')])
-    ),
+    scope: t.Optional(t.Union([t.Literal('mine'), t.Literal('global'), t.Literal('all')])),
   });
   export type listQuery = typeof listQuery.static;
 

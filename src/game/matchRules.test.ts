@@ -1,10 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import {
-  DEFAULT_MATCH_RULES,
-  parseMatchRules,
-  resolveMatchRules,
-} from './matchRules';
+import { DEFAULT_MATCH_RULES, parseMatchRules, resolveMatchRules } from './matchRules';
 
 describe('parseMatchRules', () => {
   test('empty input → defaults', () => {

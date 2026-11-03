@@ -1,12 +1,14 @@
-import {
-  DAMAGE_SOURCE_LABELS,
-  formatLogDamage,
-  type DamageSource,
-} from '../damageSources';
+import { DAMAGE_SOURCE_LABELS, type DamageSource, formatLogDamage } from '../damageSources';
 import { effectLogLabel } from '../effect-labels';
-import { applyResistMultiplier, changeResist, mindResistFactor } from '../resists';
+import {
+  applyResistMultiplier,
+  changeResist,
+  consumeSrcFactor,
+  mindResistFactor,
+} from '../resists';
 import { applyCatalogStats, transformClassOnly } from '../transform';
 import type { BattleEffect, BattleState, BattleUnit, EffectId } from '../types';
+import { currentEffectState } from './context';
 
 /** Источники +50/−50 при защитной стойке (порт Hero.protection / EFF.DEFEND). */
 const DEFEND_RESIST_SOURCES = [
@@ -107,6 +109,8 @@ export const DEBUFF_EFFECT_IDS: readonly EffectId[] = [
   'ASHILLNESS',
   'LIFE_FETTERS',
   'ERUPTION',
+  'KILLMANA',
+  'DRUNK',
 ];
 
 /** Положительные эффекты для рассеивания (Angel «Кровь за Веру»). */
@@ -135,6 +139,10 @@ export const BUFF_EFFECT_IDS: readonly EffectId[] = [
   'DEATHWARD',
   'PAIN_REFLECT',
   'LIFE_THREAD',
+  'REFLECTION',
+  'REGENMANA',
+  'POISONEDWEAPON',
+  'BREAKWEAPON',
 ];
 
 /**
@@ -326,14 +334,29 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
         log.push(`${unit.displayName} восстанавливает ${healed} ОЗ (регенерация).`);
       }
     }
+    if (effect.id === 'REGENMANA' && unit.alive) {
+      const gained = addMana(unit, Math.round(effect.power));
+      if (gained > 0) {
+        log.push(`${unit.displayName} восполняет ${gained} маны.`);
+      }
+    }
+    if (effect.id === 'KILLMANA' && unit.alive) {
+      const loss = Math.max(0, Math.round(effect.power));
+      if (loss > 0 && unit.mana > 0) {
+        const before = unit.mana;
+        unit.mana = Math.max(0, unit.mana - loss);
+        const lost = before - unit.mana;
+        if (lost > 0) {
+          log.push(`${unit.displayName} теряет ${lost} маны.`);
+        }
+      }
+    }
     // FEAR — VOT бота: каждый тик −мораль, без мгновенного −урона.
     if (effect.id === 'FEAR' && unit.alive && !unit.wasEffected) {
       const loss = Math.round((5 + (effect.power || 3)) * mindResistFactor(unit));
       if (loss > 0) {
         unit.morale -= loss;
-        log.push(
-          `От магического страха ${unit.displayName} теряет ${loss} единиц боевого духа.`
-        );
+        log.push(`От магического страха ${unit.displayName} теряет ${loss} единиц боевого духа.`);
       }
       fearTicked = true;
     }
@@ -366,10 +389,7 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
       }
     }
   }
-  if (
-    fearTicked ||
-    [...unit.effects].some((effect) => DOT_SOURCES[effect.id])
-  ) {
+  if (fearTicked || [...unit.effects].some((effect) => DOT_SOURCES[effect.id])) {
     unit.wasEffected = true;
   }
   return log;
@@ -408,9 +428,7 @@ export function tickEffectsOnTurnEnd(unit: BattleUnit, state?: BattleState): str
         );
       }
       delEffect(unit, effect.id, state);
-      log.push(
-        `Эффект ${effectLogLabel(effect.id, effect.power)} спадает с ${unit.displayName}.`
-      );
+      log.push(`Эффект ${effectLogLabel(effect.id, effect.power)} спадает с ${unit.displayName}.`);
     }
   }
   return log;
@@ -463,10 +481,7 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
       unit.armor += Math.round(effect.power || 15);
       break;
     case 'SLOW':
-      unit.initiative = Math.max(
-        1,
-        unit.initiative - Math.round(effect.power || 15)
-      );
+      unit.initiative = Math.max(1, unit.initiative - Math.round(effect.power || 15));
       break;
     case 'STONEFLESH':
       unit.armor += Math.max(1, Math.round(effect.power || 20));
@@ -491,6 +506,9 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
       break;
     case 'FOCUSED':
       unit.accuracy += Math.round(effect.power || 15);
+      break;
+    case 'DRUNK':
+      unit.accuracy -= Math.round(effect.power);
       break;
     case 'INVISIBLE':
       unit.dodge += Math.round(effect.power || 25);
@@ -534,6 +552,11 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
     case 'PAIN_REFLECT':
     case 'LIFE_FETTERS':
     case 'LIFE_THREAD':
+    case 'REFLECTION':
+    case 'REGENMANA':
+    case 'KILLMANA':
+    case 'POISONEDWEAPON':
+    case 'BREAKWEAPON':
       break;
     case 'ERUPTION':
       // −5 пп Огню навсегда (стакается); откат при спадении не делаем.
@@ -625,6 +648,9 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
     case 'FOCUSED':
       unit.accuracy = Math.max(0, unit.accuracy - Math.round(effect.power || 15));
       break;
+    case 'DRUNK':
+      unit.accuracy += Math.round(effect.power);
+      break;
     case 'INVISIBLE':
       unit.dodge = Math.max(0, unit.dodge - Math.round(effect.power || 25));
       break;
@@ -657,10 +683,7 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
       break;
     }
     case 'ROW_FORTIFY':
-      unit.armor = Math.max(
-        0,
-        unit.armor - Math.max(1, Math.round(effect.power || 1))
-      );
+      unit.armor = Math.max(0, unit.armor - Math.max(1, Math.round(effect.power || 1)));
       break;
     case 'ASHILLNESS':
       // Снижение постоянное на время маркера; откат не восстанавливаем (доля от текущего).
@@ -681,6 +704,11 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
     case 'MAGIC_SHACKLES':
     case 'PAIN_REFLECT':
     case 'LIFE_THREAD':
+    case 'REFLECTION':
+    case 'REGENMANA':
+    case 'KILLMANA':
+    case 'POISONEDWEAPON':
+    case 'BREAKWEAPON':
       break;
     case 'LIFE_FETTERS':
       // Снимаем связь у Воина-призрака, который держал оковы на этой цели.
@@ -708,15 +736,43 @@ export function hasEffect(unit: BattleUnit, id: EffectId): boolean {
 }
 
 /**
+ * Снимает броню с учётом DESTROYARMOR; не ниже 0. Возвращает фактически снятое.
+ */
+export function destroyArmor(unit: BattleUnit, amount: number): number {
+  if (amount <= 0 || unit.armor <= 0) {
+    return 0;
+  }
+  const factor = consumeSrcFactor(unit, 'DESTROYARMOR');
+  const loss = Math.max(0, Math.round(Math.min(amount, unit.armor) * factor));
+  unit.armor = Math.max(0, unit.armor - loss);
+  return loss;
+}
+
+function isDebuffId(id: EffectId): boolean {
+  return (DEBUFF_EFFECT_IDS as readonly EffectId[]).includes(id);
+}
+
+/**
  * Добавляет эффект с applyOnAdd (продлевает, если уже есть).
  * Новый эффект помечается fresh — первый end-тик носителя его пропустит.
+ * Дебафф на носителе с REFLECTION уходит случайному живому врагу без REFLECTION.
  */
-export function grantEffect(
-  unit: BattleUnit,
-  id: EffectId,
-  rounds: number,
-  power = 0
-): void {
+export function grantEffect(unit: BattleUnit, id: EffectId, rounds: number, power = 0): void {
+  if (isDebuffId(id) && hasEffect(unit, 'REFLECTION')) {
+    const state = currentEffectState();
+    if (state) {
+      const enemies = state.units.filter(
+        (other) => other.alive && other.team !== unit.team && !hasEffect(other, 'REFLECTION')
+      );
+      if (enemies.length > 0) {
+        const target = enemies[randInt(0, enemies.length - 1)];
+        if (target) {
+          grantEffect(target, id, rounds, power);
+          return;
+        }
+      }
+    }
+  }
   const existing = unit.effects.find((effect) => effect.id === id);
   if (existing) {
     existing.rounds += rounds;

@@ -47,10 +47,7 @@ export type SaveStaticImageOptions = {
 export async function saveStaticImage(
   file: File,
   options: SaveStaticImageOptions
-): Promise<
-  | { ok: true; url: string; fileName: string }
-  | { ok: false; message: string }
-> {
+): Promise<{ ok: true; url: string; fileName: string } | { ok: false; message: string }> {
   if (file.size <= 0) {
     return { ok: false, message: 'Пустой файл' };
   }

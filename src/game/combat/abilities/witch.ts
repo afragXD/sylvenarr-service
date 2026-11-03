@@ -1,11 +1,5 @@
-import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
-import {
-  delEffect,
-  grantEffect,
-  hasEffect,
-  healUnit,
-  trySpendMana,
-} from '../effects';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
+import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
 import { rollSrcChance } from '../resists';
 import { transformClassOnly } from '../transform';
@@ -24,11 +18,7 @@ export function massDegradationLevelLoss(lvl: number, isPrimary: boolean): numbe
   return isPrimary ? Math.floor(lvl / 5) + 1 : Math.floor(lvl / 6) + 1;
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const ranged = actor.gun > 0;
@@ -53,12 +43,7 @@ function abilityMeta(
         attackKind: 'magic',
         previewSource: 'DEATH',
         previewArmorIgnore: 0.15,
-        disabledReason:
-          actor.mana < 3
-            ? 'Нужно 3 МР'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+        disabledReason: actor.mana < 3 ? 'Нужно 3 МР' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -187,10 +172,7 @@ export const witchAbilities: AbilityHandler = {
       if (damage === 0) {
         state.log.push(`${actor.displayName}: клыки — промах.`);
       } else {
-        const healed = healUnit(
-          actor,
-          Math.max(1, Math.round(damage / 3 + target.health * 0.12))
-        );
+        const healed = healUnit(actor, Math.max(1, Math.round(damage / 3 + target.health * 0.12)));
         state.log.push(
           `${actor.displayName} кусает ${target.displayName} ${formatLastLogDamage(damage)}, +${healed} ОЗ.`
         );

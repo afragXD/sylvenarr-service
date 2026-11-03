@@ -1,18 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 
-import {
-  dealDamage,
-  lifeThreadDamageMult,
-  transferFettersDamage,
-} from '../damage';
-import { applyAction, createBattleState } from '../engine';
+import { dealDamage, lifeThreadDamageMult, transferFettersDamage } from '../damage';
 import { grantEffect, hasEffect, tickEffectsOnTurnEnd } from '../effects';
+import { applyAction, createBattleState } from '../engine';
 import { applyClassLevelUp } from '../levelup';
 import type { HeroClassStats } from '../types';
-import {
-  distributeHealBank,
-  thamaturgyBank,
-} from './ghost-warrior';
+import { distributeHealBank, thamaturgyBank } from './ghost-warrior';
 import { listPilotAbilities } from './registry';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({

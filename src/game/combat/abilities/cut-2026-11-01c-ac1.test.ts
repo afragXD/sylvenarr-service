@@ -262,9 +262,7 @@ describe('CUT-2026-11-01c AC-1', () => {
   });
 
   test('TODO(items) and TODO(perks) present in morale.ts source', async () => {
-    const file = await Bun.file(
-      new URL('../morale.ts', import.meta.url)
-    ).text();
+    const file = await Bun.file(new URL('../morale.ts', import.meta.url)).text();
     expect(file).toContain(
       'TODO(items): Шизофрения — уничтожать 2 случайных предмета, когда появятся предметы'
     );

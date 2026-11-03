@@ -1,13 +1,9 @@
-import { dealDamage, markDeadIfNeeded, formatLastLogDamage } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded } from '../damage';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { meleeOrAll } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   if (slot !== 1) {
     return {
       slot,
@@ -45,9 +41,7 @@ export const impAbilities: AbilityHandler = {
     if (meta.disabledReason) {
       return { status: 'reject', message: meta.disabledReason };
     }
-    const target = meleeOrAll(state, actor, false).find(
-      (unit) => unit.id === input.targetId
-    );
+    const target = meleeOrAll(state, actor, false).find((unit) => unit.id === input.targetId);
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }

@@ -150,10 +150,7 @@ export function setImmunity(unit: BattleUnit, source: DamageSource): void {
 /**
  * Множитель урона по источнику. Ward/Immunity → 0; ward тратит заряд.
  */
-export function applyResistMultiplier(
-  unit: BattleUnit,
-  source: DamageSource
-): ResistApplyResult {
+export function applyResistMultiplier(unit: BattleUnit, source: DamageSource): ResistApplyResult {
   const entry = unit.resists[source];
   if (!entry) {
     return { multiplier: 1, blocked: false, blockReason: null };
@@ -178,8 +175,7 @@ export function applyResistMultiplier(
     };
   }
   const value = entry.value;
-  const multiplier =
-    value > 0 ? Math.max(0, 1 - value / 100) : 1 + Math.abs(value) / 100;
+  const multiplier = value > 0 ? Math.max(0, 1 - value / 100) : 1 + Math.abs(value) / 100;
   return { multiplier, blocked: false, blockReason: null };
 }
 

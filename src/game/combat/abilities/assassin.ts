@@ -21,11 +21,7 @@ function mimicTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {
   });
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = meleeOrAll(state, actor, false);
@@ -158,9 +154,7 @@ export const assassinAbilities: AbilityHandler = {
       levelUpUnit(actor, 1, state);
       actor.mana = Math.min(manaBefore, actor.maxMana);
       setSlotCd(actor, 2, 3);
-      state.log.push(
-        `Мимик принимает облик ${formName} (+1 ур., мораль +${moraleGain}).`
-      );
+      state.log.push(`Мимик принимает облик ${formName} (+1 ур., мораль +${moraleGain}).`);
       return { status: 'done' };
     }
 
@@ -174,16 +168,12 @@ export const assassinAbilities: AbilityHandler = {
         target.health = 1;
         actor.morale += 15;
         actor.deathNote = Math.max(0, actor.deathNote - 10);
-        state.log.push(
-          `${actor.displayName} вписывает имя ${target.displayName} — остаётся 1 ОЗ.`
-        );
+        state.log.push(`${actor.displayName} вписывает имя ${target.displayName} — остаётся 1 ОЗ.`);
       } else {
         actor.morale -= 14;
         actor.deathNote += 7;
         grantEffect(actor, 'FATMAN', 3, 10);
-        state.log.push(
-          `${actor.displayName} проваливает приговор и временно ослаблен.`
-        );
+        state.log.push(`${actor.displayName} проваливает приговор и временно ослаблен.`);
       }
       return { status: 'done' };
     }

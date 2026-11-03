@@ -29,8 +29,7 @@ export function msUntilNextMoscowMidnight(now: Date = new Date()): number {
   const hours = Number(parts.hour);
   const minutes = Number(parts.minute);
   const seconds = Number(parts.second);
-  const msSinceMidnight =
-    ((hours * 60 + minutes) * 60 + seconds) * 1000 + now.getMilliseconds();
+  const msSinceMidnight = ((hours * 60 + minutes) * 60 + seconds) * 1000 + now.getMilliseconds();
   const remaining = DAY_MS - msSinceMidnight;
   return remaining <= 0 ? DAY_MS : remaining;
 }
@@ -38,9 +37,7 @@ export function msUntilNextMoscowMidnight(now: Date = new Date()): number {
 async function runCleanupJob(): Promise<void> {
   try {
     const result = await cleanupUnusedMatches();
-    console.log(
-      `[matches-cleanup] deleted ${result.deletedCount} abandoned match(es)`
-    );
+    console.log(`[matches-cleanup] deleted ${result.deletedCount} abandoned match(es)`);
   } catch (error) {
     console.error('[matches-cleanup] failed', error);
   }
@@ -56,9 +53,7 @@ export function startAbandonedMatchesCleanupSchedule(): void {
   }
 
   const delay = msUntilNextMoscowMidnight();
-  console.log(
-    `[matches-cleanup] next run in ${Math.round(delay / 1000)}s (00:00 ${MSK})`
-  );
+  console.log(`[matches-cleanup] next run in ${Math.round(delay / 1000)}s (00:00 ${MSK})`);
 
   scheduledTimer = setTimeout(() => {
     scheduledTimer = null;

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { START_PTS, computePtsChange } from './pts';
+import { computePtsChange, START_PTS } from './pts';
 
 describe('computePtsChange', () => {
   test('equal ratings: winner +16, loser -16', () => {

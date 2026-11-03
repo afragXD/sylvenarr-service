@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-
-import { applyAction, createBattleState } from '../engine';
 import { DEFAULT_RESISTS } from '../defaultResists';
+import { applyAction, createBattleState } from '../engine';
 import { levelUpUnit } from '../level';
 import type { HeroClassStats } from '../types';
 import { runPreChoice } from './registry';

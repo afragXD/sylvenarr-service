@@ -5,11 +5,7 @@ import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { alliesOf, enemiesOf, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const allies = alliesOf(state, actor);
@@ -51,9 +47,8 @@ function abilityMeta(
       const targets = enemiesOf(state, actor);
       const graves =
         state.graveyard.filter((entry) => entry.team === actor.team).length +
-        state.units.filter(
-          (unit) => !unit.alive && unit.team === actor.team && unit.isSummon
-        ).length;
+        state.units.filter((unit) => !unit.alive && unit.team === actor.team && unit.isSummon)
+          .length;
       return {
         slot: 5,
         label: 'Праща',
@@ -144,9 +139,8 @@ export const herbalistAbilities: AbilityHandler = {
       }
       const graves =
         state.graveyard.filter((entry) => entry.team === actor.team).length +
-        state.units.filter(
-          (unit) => !unit.alive && unit.team === actor.team && unit.isSummon
-        ).length;
+        state.units.filter((unit) => !unit.alive && unit.team === actor.team && unit.isSummon)
+          .length;
       const damageMult = 1 + 0.15 * graves;
       const armorIgnore = (50 + actor.lvl) / 100;
       const damage = dealDamage(

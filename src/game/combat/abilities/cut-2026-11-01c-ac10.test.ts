@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 
 import { markDeadIfNeeded } from '../damage';
-import { applyAction, createBattleState } from '../engine';
 import { delEffect, grantEffect, hasEffect } from '../effects';
-import { createSummon } from './summon';
-import { listPilotAbilities } from './registry';
+import { applyAction, createBattleState } from '../engine';
 import type { HeroClassStats } from '../types';
+import { listPilotAbilities } from './registry';
+import { createSummon } from './summon';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
   code,

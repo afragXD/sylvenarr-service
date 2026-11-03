@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect } from '../effects';
 import { levelUpUnit } from '../level';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -12,11 +12,7 @@ function findMaster(state: BattleState, actor: BattleUnit): BattleUnit | null {
   return state.units.find((unit) => unit.id === actor.summonerId && unit.alive) ?? null;
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = enemiesOf(state, actor);
@@ -101,7 +97,9 @@ export const goblinTrapperAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: лук — промах.`);
         return { status: 'done' };
       }
-      state.log.push(`${actor.displayName} стреляет в ${target.displayName} ${formatLastLogDamage(damage)}.`);
+      state.log.push(
+        `${actor.displayName} стреляет в ${target.displayName} ${formatLastLogDamage(damage)}.`
+      );
       if (randInt(1, 100) <= 75 + actor.lvl * 2) {
         grantEffect(target, 'POISON', 1 + Math.floor(actor.lvl / 5), 0.9);
         state.log.push(`${target.displayName} отравлен ядом гоблина.`);

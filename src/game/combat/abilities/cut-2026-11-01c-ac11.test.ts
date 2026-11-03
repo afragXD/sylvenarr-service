@@ -72,7 +72,6 @@ describe('CUT-2026-11-01c AC-11 Werewolf / Inquisitor', () => {
     const wolf = state.units.find((u) => u.id === 'p1')!;
     wolf.transformParentCode = 'Marauder';
     applyCatalogStats(state, wolf, 'Werewolf');
-    wolf.resists.WEAPON = undefined;
     wolf.abilityCds = {};
 
     state.activeUnitId = 'p1';
@@ -137,9 +136,7 @@ describe('CUT-2026-11-01c AC-11 Werewolf / Inquisitor', () => {
       slot: 1,
       targetId: 'e1',
     });
-    expect(state.log.some((line) => line.includes('азарт добивания (+19 пп крита'))).toBe(
-      true
-    );
+    expect(state.log.some((line) => line.includes('азарт добивания (+19 пп крита'))).toBe(true);
 
     const state2 = createBattleState({
       matchId: 'ac11-azart33',

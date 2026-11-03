@@ -1,23 +1,20 @@
-import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import {
+  dealDamage,
+  formatLastLogDamage,
+  lastDealDamageResult,
+  markDeadIfNeeded,
+  randInt,
+} from '../damage';
 import { grantEffect, hasEffect, trySpendMana, tryStun } from '../effects';
 import { rollMindChance } from '../resists';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import {
-  createPhantomCopy,
-  createSummon,
-  preferPhantomRow,
-  preferSummonRow,
-} from './summon';
 import { firstActionAttackKind } from './primary-attack';
+import { createPhantomCopy, createSummon, preferPhantomRow, preferSummonRow } from './summon';
 import { alliesOf, enemiesOf } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = enemiesOf(state, actor);
@@ -28,12 +25,7 @@ function abilityMeta(
         attackKind: 'magic',
         previewSource: 'AIR',
         previewArmorIgnore: 0.1,
-        disabledReason:
-          actor.mana < 3
-            ? 'Нужно 3 МР'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+        disabledReason: actor.mana < 3 ? 'Нужно 3 МР' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -164,9 +156,7 @@ export const demiurgeAbilities: AbilityHandler = {
     }
     const ally = others[randInt(0, others.length - 1)]!;
     grantEffect(ally, 'AIRSHIELD', 2, 33);
-    state.log.push(
-      `${actor.displayName}: воздушный щит → ${ally.displayName}.`
-    );
+    state.log.push(`${actor.displayName}: воздушный щит → ${ally.displayName}.`);
   },
 
   apply(state, actor, input): AbilityOutcome {
@@ -192,7 +182,9 @@ export const demiurgeAbilities: AbilityHandler = {
         state
       );
       if (d1 > 0) {
-        state.log.push(`${actor.displayName}: молния → ${primary.displayName} ${formatLastLogDamage(d1)}.`);
+        state.log.push(
+          `${actor.displayName}: молния → ${primary.displayName} ${formatLastLogDamage(d1)}.`
+        );
         markDeadIfNeeded(state, primary);
       }
       maybeFrontRowStun(state, actor, primary, fromFront);
@@ -321,9 +313,7 @@ export const demiurgeAbilities: AbilityHandler = {
     if (err) {
       return { status: 'reject', message: err };
     }
-    state.log.push(
-      `${actor.displayName} творит философский камень (предмет — позже).`
-    );
+    state.log.push(`${actor.displayName} творит философский камень (предмет — позже).`);
     if (randInt(1, 100) <= 8 * actor.lvl) {
       state.log.push(`${actor.displayName} сохраняет ход.`);
       return { status: 'done', keepTurn: true };

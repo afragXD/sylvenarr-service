@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-
-import { applyAction, createBattleState } from '../engine';
 import { grantEffect } from '../effects';
+import { applyAction, createBattleState } from '../engine';
 import type { HeroClassStats } from '../types';
 import { demiurgeAbilities } from './demiurge';
 
@@ -157,9 +156,7 @@ describe('phase 3.10 pilots', () => {
       targetId: 'p2',
     });
     expect(result.ok).toBe(true);
-    const phantom = state.units.find(
-      (unit) => unit.isSummon && unit.summonerId === 'p1'
-    )!;
+    const phantom = state.units.find((unit) => unit.isSummon && unit.summonerId === 'p1')!;
     expect(phantom).toBeTruthy();
     expect(phantom.mana).toBe(Math.floor(ally.maxMana / 3));
     expect(phantom.maxMana).toBe(ally.maxMana);
@@ -190,9 +187,7 @@ describe('phase 3.10 pilots', () => {
     }
     state.activeUnitId = 'p1';
     state.turnPlayerId = 'h';
-    const before = state.units
-      .filter((unit) => unit.team === 1)
-      .map((unit) => unit.health);
+    const before = state.units.filter((unit) => unit.team === 1).map((unit) => unit.health);
     const result = applyAction(state, {
       playerId: 'h',
       unitId: 'p1',
@@ -208,7 +203,10 @@ describe('phase 3.10 pilots', () => {
 
   test('Demiurge slot 1 can cast from back row', () => {
     const heroes = new Map([
-      ['Demiurge', hero('Demiurge', { initiative: 99, mana: 15, power: 40, luck: 0, accuracy: 100 })],
+      [
+        'Demiurge',
+        hero('Demiurge', { initiative: 99, mana: 15, power: 40, luck: 0, accuracy: 100 }),
+      ],
       ['B', hero('B', { initiative: 1, armor: 0, health: 200, dodge: 0 })],
     ]);
     const state = createBattleState({
@@ -264,9 +262,7 @@ describe('phase 3.10 pilots', () => {
     expect(first.ok).toBe(true);
     expect(mage.mana).toBe(17);
     expect(mage.ectoplasmCd).toBe(2);
-    expect(state.units.some((unit) => unit.heroClassCode === 'Ectoplasm' && unit.alive)).toBe(
-      true
-    );
+    expect(state.units.some((unit) => unit.heroClassCode === 'Ectoplasm' && unit.alive)).toBe(true);
 
     // Второй призыв на следующем «ходе» мага: сбросим кд и вернём активность.
     mage.ectoplasmCd = 0;
@@ -293,6 +289,9 @@ describe('phase 3.10 pilots', () => {
       slot: 4,
     });
     expect(blocked.ok).toBe(false);
+    if (blocked.ok) {
+      throw new Error('ожидали отказ по лимиту эктоплазмы');
+    }
     expect(blocked.message).toMatch(/лимит|Лимит/i);
     expect(mage.mana).toBe(20);
     expect(state.activeUnitId).toBe('p1');

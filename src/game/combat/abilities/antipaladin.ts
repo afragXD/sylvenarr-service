@@ -1,9 +1,4 @@
-import {
-  dealDamage,
-  formatLastLogDamage,
-  harmWithSource,
-  markDeadIfNeeded,
-} from '../damage';
+import { dealDamage, formatLastLogDamage, harmWithSource, markDeadIfNeeded } from '../damage';
 import { formatLogDamage } from '../damageSources';
 import { grantEffect } from '../effects';
 import { isHolyClass } from '../races';

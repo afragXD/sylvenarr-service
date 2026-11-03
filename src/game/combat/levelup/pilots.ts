@@ -44,9 +44,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     if (unit.health > 0) {
       const healed = healUnit(unit, randInt(10, 15 + unit.lvl) * ind);
       if (healed > 0) {
-        state.log.push(
-          `${unit.displayName} восстанавливает ${healed} ОЗ (усиление отряда).`
-        );
+        state.log.push(`${unit.displayName} восстанавливает ${healed} ОЗ (усиление отряда).`);
       }
     }
     addMana(unit, randInt(1, 2) * ind);
@@ -88,8 +86,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   OrcKing(unit, ind, _state) {
-    const luckGain =
-      unit.luck <= 0 ? (Math.floor(unit.lvl / 2) + 3) * ind : 2 * ind;
+    const luckGain = unit.luck <= 0 ? (Math.floor(unit.lvl / 2) + 3) * ind : 2 * ind;
     unit.luck += luckGain;
     unit.damage += (Math.floor(unit.lvl / 2) + 1) * ind;
     unit.accuracy += 2 * ind;
@@ -155,9 +152,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     // Ульта «Личный слуга»: +1 заряд каждые 5 раундов (как Мародёр/Пайро).
     if (state.stage % 5 === 0 && ind > 0) {
       unit.ultaCharges += 1;
-      state.log.push(
-        `${unit.displayName} получает заряд личного слуги (${unit.ultaCharges}).`
-      );
+      state.log.push(`${unit.displayName} получает заряд личного слуги (${unit.ultaCharges}).`);
     }
     healUnit(unit, 5 * ind);
     // CUT-2026-11-01c AC-7: к прежнему +3 добавить lvl//3.

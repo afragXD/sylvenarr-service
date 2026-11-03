@@ -18,6 +18,15 @@ import {
   randInt,
 } from './damage';
 import { resistsForClass } from './defaultResists';
+import {
+  addMana,
+  grantEffect,
+  hasEffect,
+  healUnit,
+  tickEffectsOnTurnEnd,
+  tickEffectsOnTurnStart,
+} from './effects';
+import { setEffectState } from './effects/context';
 import { levelUpLivingUnits, levelUpUnit } from './level';
 import {
   applyIllnessTurnStart,
@@ -28,14 +37,9 @@ import {
   normalizeUnit,
 } from './morale';
 import { summarizeResists } from './resists';
-import { grantEffect, hasEffect, healUnit, tickEffectsOnTurnEnd, tickEffectsOnTurnStart, addMana } from './effects';
 import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, MAX_TEAM_SIZE, ROW_FRONT } from './settings';
 import { dropSfx, pushSfx } from './sfx';
-import {
-  classAttackMods,
-  classSkill,
-  listSkillTargets,
-} from './skills';
+import { classAttackMods, classSkill, listSkillTargets } from './skills';
 import type {
   AbilitySlot,
   BattleAction,
@@ -52,6 +56,10 @@ const DEFAULT_BATTLE_RULES: BattleRules = {
   maxRounds: MAX_ROUNDS,
   healthBonus: HEALTH_BONUS,
   startingLevel: 1,
+  fairEnabled: false,
+  fairFrequency: 5,
+  shopSize: 8,
+  goldBonus: 1,
 };
 
 export { meleeTargets } from './abilities';
@@ -139,6 +147,7 @@ export function createBattleState(input: {
     state.log.push(`Стартовый уровень: ${startLvls + 1}.`);
   }
 
+  setEffectState(state);
   advanceToNextUnit(state);
   return state;
 }
@@ -253,6 +262,7 @@ export function initiativeOrder(state: BattleState): BattleUnit[] {
  * Переходит к следующему юниту / раунду.
  */
 export function advanceToNextUnit(state: BattleState): void {
+  setEffectState(state);
   state.pendingPrompt = null;
   state.delayedPhase = state.delayedPhase ?? false;
   let order = initiativeOrder(state);
@@ -365,6 +375,7 @@ export function applyAction(
     readonly choice?: string;
   }
 ): { ok: true } | { ok: false; message: string } {
+  setEffectState(state);
   if (state.outcome !== 'ongoing') {
     return { ok: false, message: 'Бой уже завершён' };
   }
@@ -517,8 +528,7 @@ export function applyAction(
     return { ok: false, message: 'Нет доступных целей для атаки' };
   }
   const target =
-    (input.targetId ? targets.find((unit) => unit.id === input.targetId) : undefined) ??
-    targets[0];
+    (input.targetId ? targets.find((unit) => unit.id === input.targetId) : undefined) ?? targets[0];
   if (!target) {
     return { ok: false, message: 'Цель не найдена' };
   }
@@ -591,7 +601,11 @@ function applySkillAction(
       const damage = dealDamage(
         actor,
         enemy,
-        { kind: basicAttackKind(actor.heroClassCode), damageMult: skill.damageMult, armorIgnore: 0.2 },
+        {
+          kind: basicAttackKind(actor.heroClassCode),
+          damageMult: skill.damageMult,
+          armorIgnore: 0.2,
+        },
         state
       );
       if (damage > 0) {
@@ -620,9 +634,7 @@ function applySkillAction(
   if (skill.kind === 'heal_ally') {
     const base = Math.max(1, Math.round(target.maxHp * skill.healFraction));
     const healed = healUnit(target, base);
-    state.log.push(
-      `${actor.displayName}: ${skill.label} → ${target.displayName} (+${healed} ОЗ).`
-    );
+    state.log.push(`${actor.displayName}: ${skill.label} → ${target.displayName} (+${healed} ОЗ).`);
     finishUnitTurn(state, actor);
     return { ok: true };
   }
@@ -691,9 +703,7 @@ function resolveAttackWithClassMods(
       state
     );
     if (second > 0) {
-      state.log.push(
-        `${actor.displayName} наносит повторный удар ${formatLastLogDamage(second)}.`
-      );
+      state.log.push(`${actor.displayName} наносит повторный удар ${formatLastLogDamage(second)}.`);
       markDeadIfNeeded(state, target);
     }
   }
@@ -723,10 +733,7 @@ function resolveAttackWithClassMods(
   if (mods.cleaveFront) {
     const extras = state.units.filter(
       (unit) =>
-        unit.alive &&
-        unit.team !== actor.team &&
-        unit.row === ROW_FRONT &&
-        unit.id !== target.id
+        unit.alive && unit.team !== actor.team && unit.row === ROW_FRONT && unit.id !== target.id
     );
     for (const enemy of extras) {
       const cleave = dealDamage(
@@ -810,7 +817,7 @@ export function resolveOutcome(state: BattleState): void {
 export function forceSurrender(
   state: BattleState,
   surrenderingPlayerId: string,
-  surrenderingDisplayName?: string,
+  surrenderingDisplayName?: string
 ): void {
   if (state.outcome !== 'ongoing') {
     return;
@@ -859,16 +866,11 @@ export function buildTurnOrder(state: BattleState) {
     state.activeUnitId != null
       ? (state.units.find((unit) => unit.id === state.activeUnitId) ?? null)
       : null;
-  const acted = state.units
-    .filter((unit) => unit.alive && done.has(unit.id))
-    .sort(byInit);
+  const acted = state.units.filter((unit) => unit.alive && done.has(unit.id)).sort(byInit);
   const waiting = state.units
     .filter(
       (unit) =>
-        unit.alive &&
-        !done.has(unit.id) &&
-        !delayed.has(unit.id) &&
-        unit.id !== state.activeUnitId
+        unit.alive && !done.has(unit.id) && !delayed.has(unit.id) && unit.id !== state.activeUnitId
     )
     .sort(byInit);
   const delayedUnits = state.units
@@ -909,15 +911,14 @@ export function buildTurnOrder(state: BattleState) {
 export function toBattleSummary(state: BattleState) {
   const active = state.units.find((unit) => unit.id === state.activeUnitId) ?? null;
   const pilot = active ? isPilotClass(active.heroClassCode) : false;
-  const abilities =
-    active?.alive && pilot ? listPilotAbilities(state, active) : [];
+  const abilities = active?.alive && pilot ? listPilotAbilities(state, active) : [];
   const targets =
     active?.alive && !pilot
       ? attackTargets(state, active, basicAttackKind(active.heroClassCode)).map((unit) => unit.id)
-      : abilities.find((ability) => ability.slot === 1)?.legalTargetIds ?? [];
+      : (abilities.find((ability) => ability.slot === 1)?.legalTargetIds ?? []);
   const attackKind = active
     ? pilot
-      ? abilities.find((ability) => ability.slot === 1)?.attackKind ?? null
+      ? (abilities.find((ability) => ability.slot === 1)?.attackKind ?? null)
       : basicAttackKind(active.heroClassCode)
     : null;
   const skill = active && !pilot ? classSkill(active.heroClassCode) : null;

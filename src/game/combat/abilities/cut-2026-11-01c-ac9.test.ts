@@ -2,12 +2,9 @@ import { afterEach, describe, expect, spyOn, test } from 'bun:test';
 
 import { applyAction, createBattleState } from '../engine';
 import type { HeroClassStats } from '../types';
-import {
-  massDegradationBaseChance,
-  massDegradationLevelLoss,
-} from './witch';
-import { degradationSquareTargets } from './targets';
 import { listPilotAbilities } from './registry';
+import { degradationSquareTargets } from './targets';
+import { massDegradationBaseChance, massDegradationLevelLoss } from './witch';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
   code,

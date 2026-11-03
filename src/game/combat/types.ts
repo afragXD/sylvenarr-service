@@ -70,7 +70,19 @@ export type EffectId =
   /** Воин-призрак: Жизнь на нитке (+урон за % потерянного ОЗ). */
   | 'LIFE_THREAD'
   /** Инкуб «Огненный хлыст»: при смерти жжёт союзников (FIRE). */
-  | 'ERUPTION';
+  | 'ERUPTION'
+  /** Перенаправляет дебаффы на случайного врага без Отражения. */
+  | 'REFLECTION'
+  /** На старте хода: +мана (power). */
+  | 'REGENMANA'
+  /** На старте хода: −мана (power). */
+  | 'KILLMANA'
+  /** −точность на время эффекта. */
+  | 'DRUNK'
+  /** После попадания в ближнем бою — яд цели. */
+  | 'POISONEDWEAPON'
+  /** После попадания в ближнем бою — разрушение брони цели. */
+  | 'BREAKWEAPON';
 
 export type BattleEffect = {
   id: EffectId;
@@ -249,7 +261,7 @@ export type BattleUnit = {
   fettersTargetId?: string | null;
 };
 
-/** Активные правила боя из Match.rules (без ярмарки). */
+/** Активные правила боя из Match.rules. */
 export type BattleRules = {
   readonly maxTeamSize: number;
   readonly maxRowSize: number;
@@ -257,6 +269,14 @@ export type BattleRules = {
   readonly healthBonus: number;
   /** Стартовый уровень юнитов (1–30). */
   readonly startingLevel: number;
+  /** Ярмарка, перки и предметы (старые снимки — нет поля). */
+  readonly fairEnabled?: boolean;
+  /** Ярмарка раз в N раундов. */
+  readonly fairFrequency?: number;
+  /** Товаров на прилавке. */
+  readonly shopSize?: number;
+  /** Множитель стартового золота. */
+  readonly goldBonus?: number;
 };
 
 export type BattleState = {

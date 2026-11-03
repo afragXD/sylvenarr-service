@@ -169,10 +169,20 @@ describe('ResistManager', () => {
     });
     const state = emptyState();
     expect(
-      dealDamage(attacker, ecto, { kind: 'melee', damageMult: 1, armorIgnore: 1, forceHit: true }, state)
+      dealDamage(
+        attacker,
+        ecto,
+        { kind: 'melee', damageMult: 1, armorIgnore: 1, forceHit: true },
+        state
+      )
     ).toBe(0);
     expect(
-      dealDamage(attacker, ecto, { kind: 'melee', damageMult: 1, armorIgnore: 1, forceHit: true }, state)
+      dealDamage(
+        attacker,
+        ecto,
+        { kind: 'melee', damageMult: 1, armorIgnore: 1, forceHit: true },
+        state
+      )
     ).toBeGreaterThan(0);
   });
 

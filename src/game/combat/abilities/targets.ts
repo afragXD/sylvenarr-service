@@ -44,9 +44,7 @@ export function ownRowAllies(state: BattleState, actor: BattleUnit): BattleUnit[
  * Живые юниты той же команды и того же ряда, что и `ref`.
  */
 export function unitsOnSameRow(state: BattleState, ref: BattleUnit): BattleUnit[] {
-  return state.units.filter(
-    (unit) => unit.alive && unit.team === ref.team && unit.row === ref.row
-  );
+  return state.units.filter((unit) => unit.alive && unit.team === ref.team && unit.row === ref.row);
 }
 
 /**

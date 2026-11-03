@@ -11,11 +11,7 @@ function findMaster(state: BattleState, actor: BattleUnit): BattleUnit | null {
   return state.units.find((unit) => unit.id === actor.summonerId && unit.alive) ?? null;
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = enemiesOf(state, actor);
@@ -25,12 +21,7 @@ function abilityMeta(
         needsTarget: true,
         attackKind: 'magic',
         previewSource: 'AIR',
-        disabledReason:
-          actor.mana < 2
-            ? 'Нужно 2 МР'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+        disabledReason: actor.mana < 2 ? 'Нужно 2 МР' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -41,11 +32,7 @@ function abilityMeta(
         label: 'Кротовый отвар (2 МР)',
         needsTarget: true,
         disabledReason:
-          actor.mana < 2
-            ? 'Нужно 2 МР'
-            : allies.length === 0
-              ? 'Нет союзников'
-              : null,
+          actor.mana < 2 ? 'Нужно 2 МР' : allies.length === 0 ? 'Нет союзников' : null,
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -65,12 +52,7 @@ function abilityMeta(
         slot: 4,
         label: 'Поцелуй Лепрекона (3 МР)',
         needsTarget: false,
-        disabledReason:
-          actor.mana < 3
-            ? 'Нужно 3 МР'
-            : master
-              ? null
-              : 'Нет повелителя',
+        disabledReason: actor.mana < 3 ? 'Нужно 3 МР' : master ? null : 'Нет повелителя',
         legalTargetIds: [],
       };
     }

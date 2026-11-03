@@ -6,8 +6,8 @@ import { levelUpUnit } from '../level';
 import { applyClassLevelUp } from '../levelup';
 import { setWard } from '../resists';
 import type { HeroClassStats } from '../types';
-import { listPilotAbilities } from './registry';
 import { eternalHungerVampCoef } from './marauder';
+import { listPilotAbilities } from './registry';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
   code,

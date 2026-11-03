@@ -1,8 +1,8 @@
-import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { formatLogDamage } from '../damageSources';
 import { delEffect, grantEffect, hasEffect } from '../effects';
-import { applyResistMultiplier, mindResistFactor, rollSrcChance } from '../resists';
 import { isArtificialClass, isUndeadClass } from '../races';
+import { applyResistMultiplier, mindResistFactor, rollSrcChance } from '../resists';
 import { ROW_FRONT } from '../settings';
 import { applyCatalogStats } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -13,9 +13,7 @@ import type { AbilityHandler, AbilityOutcome } from './types';
 function infectTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {
   return meleeTargets(state, actor).filter(
     (unit) =>
-      unit.isSummon &&
-      !isUndeadClass(unit.heroClassCode) &&
-      !isArtificialClass(unit.heroClassCode)
+      unit.isSummon && !isUndeadClass(unit.heroClassCode) && !isArtificialClass(unit.heroClassCode)
   );
 }
 
@@ -74,11 +72,7 @@ function harmWithDeath(state: BattleState, target: BattleUnit, raw: number): num
   return dealt;
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = meleeTargets(state, actor);
@@ -99,11 +93,7 @@ function abilityMeta(
         label: `Взрыв блевотины (${actor.ultaCharges})`,
         needsTarget: true,
         disabledReason:
-          actor.ultaCharges <= 0
-            ? 'Нет зарядов'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+          actor.ultaCharges <= 0 ? 'Нет зарядов' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -116,11 +106,7 @@ function abilityMeta(
         needsTarget: true,
         attackKind: 'melee',
         disabledReason:
-          actor.lvl < 5
-            ? 'Нужен 5+ уровень'
-            : targets.length === 0
-              ? 'Нет саммонов вблизи'
-              : null,
+          actor.lvl < 5 ? 'Нужен 5+ уровень' : targets.length === 0 ? 'Нет саммонов вблизи' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -185,7 +171,9 @@ export const zombieAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: укус — промах.`);
         return { status: 'done' };
       }
-      state.log.push(`${actor.displayName} кусает ${target.displayName} ${formatLastLogDamage(damage)}.`);
+      state.log.push(
+        `${actor.displayName} кусает ${target.displayName} ${formatLastLogDamage(damage)}.`
+      );
       const cf = target.morale <= 0 ? 1 : 1.5;
       const dirt = Math.round(randInt(3, 4 + actor.lvl) * mindResistFactor(target) * cf);
       if (dirt > 0) {
@@ -232,9 +220,7 @@ export const zombieAbilities: AbilityHandler = {
           state.log.push(`${actor.displayName}: заражение сорвалось — нет класса зомби.`);
           return { status: 'done' };
         }
-        state.log.push(
-          `МОЗГИ! ${actor.displayName} превратил ${oldName} в зомби на 2 раунда!`
-        );
+        state.log.push(`МОЗГИ! ${actor.displayName} превратил ${oldName} в зомби на 2 раунда!`);
       } else {
         state.log.push(`Заражение не прошло — ${target.displayName} устоял.`);
       }

@@ -100,7 +100,11 @@ async function handleBattleMessage(
 
   if (message.type === 'action') {
     const action = message.action;
-    if (typeof message.unitId !== 'string' || typeof action !== 'string' || !BATTLE_ACTIONS.has(action)) {
+    if (
+      typeof message.unitId !== 'string' ||
+      typeof action !== 'string' ||
+      !BATTLE_ACTIONS.has(action)
+    ) {
       fail('Некорректное действие');
       return;
     }
@@ -132,7 +136,11 @@ async function handleBattleMessage(
     return;
   }
 
-  if (message.type === 'draw-offer' || message.type === 'draw-accept' || message.type === 'draw-decline') {
+  if (
+    message.type === 'draw-offer' ||
+    message.type === 'draw-accept' ||
+    message.type === 'draw-decline'
+  ) {
     const call =
       message.type === 'draw-offer'
         ? MatchesService.offerDraw

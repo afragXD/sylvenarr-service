@@ -150,8 +150,7 @@ export abstract class NewsService {
     id: string,
     body: NewsModel.updateBody
   ): Promise<
-    | { ok: true; item: NewsModel.newsItem }
-    | { ok: false; status: 404 | 409; message: string }
+    { ok: true; item: NewsModel.newsItem } | { ok: false; status: 404 | 409; message: string }
   > {
     const current = await prisma.news.findUnique({ where: { id } });
     if (!current) {

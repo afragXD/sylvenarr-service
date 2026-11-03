@@ -48,9 +48,16 @@ describe('battle sfx events', () => {
     });
     expect(result.ok).toBe(true);
     const events = toBattleSummary(state).sfxEvents;
-    expect(events[0]).toMatchObject({ unitId: 'p1', kind: 'ability', slot: 1, heroClassCode: 'Knight' });
+    expect(events[0]).toMatchObject({
+      unitId: 'p1',
+      kind: 'ability',
+      slot: 1,
+      heroClassCode: 'Knight',
+    });
     expect(events.some((event) => event.kind === 'death' && event.unitId === 'p2')).toBe(true);
-    expect(events.map((event) => event.seq)).toEqual([...events.map((event) => event.seq)].sort((a, b) => a - b));
+    expect(events.map((event) => event.seq)).toEqual(
+      [...events.map((event) => event.seq)].sort((a, b) => a - b)
+    );
   });
 
   test('rejected ability leaves no event', () => {

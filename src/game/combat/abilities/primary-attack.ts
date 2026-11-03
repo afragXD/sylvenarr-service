@@ -7,10 +7,7 @@ import { isPilotClass, listPilotAbilities } from './registry';
  * Тип основной атаки юнита: первый слот с уроном у пилота, базовая атака у остальных.
  * null — у пилота нет слотов с прямым уроном.
  */
-export function primaryAttackKindOrNull(
-  state: BattleState,
-  unit: BattleUnit
-): AttackKind | null {
+export function primaryAttackKindOrNull(state: BattleState, unit: BattleUnit): AttackKind | null {
   if (!isPilotClass(unit.heroClassCode)) {
     return basicAttackKind(unit.heroClassCode);
   }

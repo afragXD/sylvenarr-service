@@ -1,9 +1,4 @@
-import {
-  dealDamage,
-  formatLastLogDamage,
-  markDeadIfNeeded,
-  randInt,
-} from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { delEffect, grantEffect, hasEffect, healUnit, tryStun } from '../effects';
 import { rollSrcChance } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -101,11 +96,7 @@ function graveTargets(state: BattleState): Array<{
     .filter((item): item is NonNullable<typeof item> => item !== null);
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = meleeOrAll(state, actor, false);
@@ -266,10 +257,7 @@ export const ghostWarriorAbilities: AbilityHandler = {
       }
       const allies = alliesOf(state, actor);
       const healed = distributeHealBank(allies, bank);
-      const healLog =
-        healed.length > 0
-          ? healed.map((item) => `+${item.healed}`).join('/')
-          : '0';
+      const healLog = healed.length > 0 ? healed.map((item) => `+${item.healed}`).join('/') : '0';
       state.log.push(
         `${actor.displayName}: тауматургия (D=${dealtSum}, трупы=${corpses}) → банк ${bank} ОЗ [${healLog}].`
       );

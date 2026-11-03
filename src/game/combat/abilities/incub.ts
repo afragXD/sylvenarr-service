@@ -1,4 +1,10 @@
-import { dealDamage, formatLastLogDamage, harmWithSource, markDeadIfNeeded, randInt } from '../damage';
+import {
+  dealDamage,
+  formatLastLogDamage,
+  harmWithSource,
+  markDeadIfNeeded,
+  randInt,
+} from '../damage';
 import { formatLogDamage } from '../damageSources';
 import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
@@ -41,9 +47,7 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         attackKind: 'magic',
         previewSource: 'FIRE',
         disabledReason:
-          cdReason(actor, 2) ??
-          manaReason(actor, 3) ??
-          (targets.length === 0 ? 'Нет целей' : null),
+          cdReason(actor, 2) ?? manaReason(actor, 3) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -190,7 +194,12 @@ export const incubAbilities: AbilityHandler = {
       const share = Math.floor(actor.power / Math.max(1, row.length));
       for (const enemy of row) {
         const moraleFactor = Math.max(0.1, 1 - enemy.morale / 100);
-        const dealt = harmWithSource(state, enemy, Math.max(1, Math.round(share * moraleFactor)), 'MIND');
+        const dealt = harmWithSource(
+          state,
+          enemy,
+          Math.max(1, Math.round(share * moraleFactor)),
+          'MIND'
+        );
         if (dealt > 0) {
           state.log.push(
             `Истошный крик выворачивает разум ${enemy.displayName} ${formatLogDamage(dealt, 'MIND')}.`
@@ -198,7 +207,12 @@ export const incubAbilities: AbilityHandler = {
         }
         markDeadIfNeeded(state, enemy);
         if (enemy.alive && rollMindChance(state, enemy, 70 + actor.lvl)) {
-          grantEffect(enemy, 'FATMAN', 1 + Math.floor(actor.lvl / 10), 10 + Math.floor(actor.lvl / 2));
+          grantEffect(
+            enemy,
+            'FATMAN',
+            1 + Math.floor(actor.lvl / 10),
+            10 + Math.floor(actor.lvl / 2)
+          );
           state.log.push(`У ${enemy.displayName} кружится голова.`);
         }
       }

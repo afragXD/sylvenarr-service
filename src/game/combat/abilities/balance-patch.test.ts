@@ -70,9 +70,7 @@ describe('balance patch 2026-10', () => {
         { id: 'p1', playerId: 'h', heroClassCode: 'Knight', row: 0, pickOrder: 1 },
         { id: 'e1', playerId: 'g', heroClassCode: 'Knight', row: 0, pickOrder: 1 },
       ],
-      heroes: new Map([
-        ['Knight', hero('Knight', { initiative: 99 })],
-      ]),
+      heroes: new Map([['Knight', hero('Knight', { initiative: 99 })]]),
     });
     const unit = state.units.find((u) => u.id === 'p1')!;
     grantEffect(unit, 'POISON', 5, 1);

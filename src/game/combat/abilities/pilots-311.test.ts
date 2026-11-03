@@ -102,7 +102,18 @@ describe('phase 3.11 pilots', () => {
   test('Detective slot 4 grants CONTR that counters next hit', () => {
     const heroes = new Map([
       ['Detective', hero('Detective', { initiative: 99, accuracy: 100, luck: 0, damage: 40 })],
-      ['B', hero('B', { initiative: 1, armor: 0, health: 400, accuracy: 100, luck: 0, damage: 25, dodge: 0 })],
+      [
+        'B',
+        hero('B', {
+          initiative: 1,
+          armor: 0,
+          health: 400,
+          accuracy: 100,
+          luck: 0,
+          damage: 25,
+          dodge: 0,
+        }),
+      ],
     ]);
     const state = createBattleState({
       matchId: 'm',
@@ -168,7 +179,10 @@ describe('phase 3.11 pilots', () => {
 
   test('GhostWarrior slot 1: урон не зависит от кладбища (CUT AC-7)', () => {
     const heroes = new Map([
-      ['GhostWarrior', hero('GhostWarrior', { initiative: 99, luck: 0, damage: 30, accuracy: 100 })],
+      [
+        'GhostWarrior',
+        hero('GhostWarrior', { initiative: 99, luck: 0, damage: 30, accuracy: 100 }),
+      ],
       ['B', hero('B', { initiative: 1, armor: 0, health: 400 })],
     ]);
     const mk = (graves: number) => {

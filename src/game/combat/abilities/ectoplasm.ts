@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { createSummon, preferSummonRow } from './summon';
 import { meleeTargets } from './targets';
@@ -17,11 +17,7 @@ function countEctoplasmOnTeam(state: BattleState, team: 0 | 1): number {
   ).length;
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = meleeTargets(state, actor);
@@ -88,9 +84,7 @@ export const ectoplasmAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const target = meleeTargets(state, actor).find(
-        (unit) => unit.id === input.targetId
-      );
+      const target = meleeTargets(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }

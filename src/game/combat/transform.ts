@@ -20,11 +20,7 @@ export function baseMaxSummonsForClass(code: string): number {
 /**
  * Только класс и имя из каталога (порт transformToAnotherClass): статы боя не трогаем.
  */
-export function transformClassOnly(
-  state: BattleState,
-  unit: BattleUnit,
-  code: string
-): boolean {
+export function transformClassOnly(state: BattleState, unit: BattleUnit, code: string): boolean {
   const hero = state.catalog[code];
   if (!hero) {
     return false;
@@ -37,11 +33,7 @@ export function transformClassOnly(
 /**
  * Переписывает класс и базовые статы юнита из каталога (доля ОЗ сохраняется).
  */
-export function applyCatalogStats(
-  state: BattleState,
-  unit: BattleUnit,
-  code: string
-): boolean {
+export function applyCatalogStats(state: BattleState, unit: BattleUnit, code: string): boolean {
   const hero = state.catalog[code];
   if (!hero) {
     return false;

@@ -99,10 +99,7 @@ export class PresetsService {
   /**
    * Пресет доступен игроку: свой или глобальный.
    */
-  static async getUsableByPlayer(
-    presetId: string,
-    playerId: string
-  ): Promise<PresetRow | null> {
+  static async getUsableByPlayer(presetId: string, playerId: string): Promise<PresetRow | null> {
     const row = await prisma.squadPreset.findUnique({
       where: { id: presetId },
       include: presetInclude,
@@ -121,8 +118,7 @@ export class PresetsService {
     readonly isAdmin: boolean;
     readonly body: PresetsModel.createBody;
   }): Promise<
-    | { ok: true; preset: PresetsModel.preset }
-    | { ok: false; message: string; status: 400 | 403 }
+    { ok: true; preset: PresetsModel.preset } | { ok: false; message: string; status: 400 | 403 }
   > {
     const wantGlobal = Boolean(input.body.global);
     if (wantGlobal && !input.isAdmin) {
@@ -193,9 +189,7 @@ export class PresetsService {
     }
 
     let teamSize: number | undefined;
-    let slotsCreate:
-      | Array<{ heroClassCode: string; row: number; slotOrder: number }>
-      | undefined;
+    let slotsCreate: Array<{ heroClassCode: string; row: number; slotOrder: number }> | undefined;
     if (input.body.slots) {
       const heroesByCode = await loadHeroMap();
       const validated = validatePresetSlots({

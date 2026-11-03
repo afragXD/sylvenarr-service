@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
 import { dealDamage } from '../damage';
-import { applyAction, createBattleState } from '../engine';
 import { grantEffect } from '../effects';
+import { applyAction, createBattleState } from '../engine';
 import type { HeroClassStats } from '../types';
 import { listPilotAbilities } from './registry';
 

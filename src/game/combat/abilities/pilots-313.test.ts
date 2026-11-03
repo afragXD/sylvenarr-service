@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-
-import { applyAction, createBattleState } from '../engine';
 import { trySpendMana } from '../effects';
+import { applyAction, createBattleState } from '../engine';
 import type { HeroClassStats } from '../types';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({

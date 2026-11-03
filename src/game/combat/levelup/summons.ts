@@ -1,5 +1,5 @@
 import { randInt } from '../damage';
-import { healUnit, addMana } from '../effects';
+import { addMana, healUnit } from '../effects';
 import { bumpLevel } from './bump';
 import type { ClassLevelUpFn } from './types';
 

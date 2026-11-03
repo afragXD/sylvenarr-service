@@ -1,15 +1,11 @@
 import { randInt } from '../damage';
-import { enslaveUnit, grantEffect, healUnit, trySpendMana, tryStun, addMana } from '../effects';
+import { addMana, enslaveUnit, grantEffect, healUnit, trySpendMana, tryStun } from '../effects';
 import { resistsEnslave } from '../races';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, unitsOnSameRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const allies = alliesOf(state, actor);
@@ -38,11 +34,7 @@ function abilityMeta(
         label: `Песнь сирены (${actor.ultaCharges})`,
         needsTarget: true,
         disabledReason:
-          actor.ultaCharges <= 0
-            ? 'Нет зарядов'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+          actor.ultaCharges <= 0 ? 'Нет зарядов' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -52,12 +44,7 @@ function abilityMeta(
         slot: 4,
         label: 'Волшебные оковы',
         needsTarget: true,
-        disabledReason:
-          actor.mana < 2
-            ? 'Нужно 2 МР'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+        disabledReason: actor.mana < 2 ? 'Нужно 2 МР' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -143,15 +130,11 @@ export const mermaidAbilities: AbilityHandler = {
       // CUT-2026-11-01c AC-4: на гигантов — только с 10+ уровня Русалки.
       const targetSize = state.catalog[target.heroClassCode]?.size ?? 1;
       if (targetSize >= 2 && actor.lvl < 10) {
-        state.log.push(
-          `${actor.displayName}: песнь не действует на гигантов до 10 уровня.`
-        );
+        state.log.push(`${actor.displayName}: песнь не действует на гигантов до 10 уровня.`);
         return { status: 'done' };
       }
       enslaveUnit(target, actor);
-      state.log.push(
-        `${actor.displayName} порабощает ${target.displayName} песнью сирены.`
-      );
+      state.log.push(`${actor.displayName} порабощает ${target.displayName} песнью сирены.`);
       return { status: 'done' };
     }
 
@@ -166,9 +149,7 @@ export const mermaidAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       grantEffect(target, 'MAGIC_SHACKLES', 2 + Math.floor(actor.lvl / 6), 0);
-      state.log.push(
-        `${actor.displayName}: волшебные оковы на ${target.displayName}.`
-      );
+      state.log.push(`${actor.displayName}: волшебные оковы на ${target.displayName}.`);
       return { status: 'done' };
     }
 

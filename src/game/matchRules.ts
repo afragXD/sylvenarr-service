@@ -1,18 +1,9 @@
-import {
-  HEALTH_BONUS,
-  MAX_ROUNDS,
-  MAX_ROW_SIZE,
-  MAX_TEAM_SIZE,
-} from './combat/settings';
+import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, MAX_TEAM_SIZE } from './combat/settings';
 import { INITIAL_TEAM_SIZE } from './draft/settings';
 
 export type HeroDupesMode = 'allow' | 'uniqueTeam' | 'uniqueMatch';
 
-const HERO_DUPES_MODES: ReadonlySet<string> = new Set([
-  'allow',
-  'uniqueTeam',
-  'uniqueMatch',
-]);
+const HERO_DUPES_MODES: ReadonlySet<string> = new Set(['allow', 'uniqueTeam', 'uniqueMatch']);
 
 /** Полный снимок правил матча (legacy settings.py + резерв ярмарки). */
 export type MatchRules = {
@@ -90,10 +81,7 @@ function parseHeroDupes(value: unknown): HeroDupesMode {
  * Cross-field ошибки — fail; отдельные поля clamp в диапазон.
  */
 export function parseMatchRules(input: unknown): ParseMatchRulesResult {
-  const raw =
-    typeof input === 'object' && input !== null
-      ? (input as Record<string, unknown>)
-      : {};
+  const raw = typeof input === 'object' && input !== null ? (input as Record<string, unknown>) : {};
 
   const initialTeamSize = clampInt(
     asNumber(raw.initialTeamSize, DEFAULT_MATCH_RULES.initialTeamSize),
@@ -127,9 +115,7 @@ export function parseMatchRules(input: unknown): ParseMatchRulesResult {
     MATCH_RULES_LIMITS.startingLevel.max
   );
   const fairEnabled =
-    typeof raw.fairEnabled === 'boolean'
-      ? raw.fairEnabled
-      : DEFAULT_MATCH_RULES.fairEnabled;
+    typeof raw.fairEnabled === 'boolean' ? raw.fairEnabled : DEFAULT_MATCH_RULES.fairEnabled;
   const fairFrequency = clampInt(
     asNumber(raw.fairFrequency, DEFAULT_MATCH_RULES.fairFrequency),
     MATCH_RULES_LIMITS.fairFrequency.min,
@@ -147,8 +133,7 @@ export function parseMatchRules(input: unknown): ParseMatchRulesResult {
     MATCH_RULES_LIMITS.goldBonus.step
   );
   const heroDupes = parseHeroDupes(raw.heroDupes);
-  const rated =
-    typeof raw.rated === 'boolean' ? raw.rated : DEFAULT_MATCH_RULES.rated;
+  const rated = typeof raw.rated === 'boolean' ? raw.rated : DEFAULT_MATCH_RULES.rated;
 
   if (initialTeamSize > maxTeamSize) {
     return {

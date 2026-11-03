@@ -1,6 +1,6 @@
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { formatLogDamage } from '../damageSources';
-import { grantEffect, hasEffect, healUnit, trySpendMana, addMana } from '../effects';
+import { addMana, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import { setWard } from '../resists';
 import { ROW_FRONT } from '../settings';
 import { applyCatalogStats } from '../transform';
@@ -24,11 +24,7 @@ export function eternalHungerVampCoef(lvl: number, hpRatio: number): number {
   return Math.min(1, 0.2 + 0.03 * lvl + 0.8 * (1 - hpRatio));
 }
 
-function marauderMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function marauderMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = enemiesOf(state, actor);
@@ -86,11 +82,7 @@ function marauderMeta(
   }
 }
 
-function werewolfMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function werewolfMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = meleeOrAll(state, actor, false);
@@ -194,7 +186,9 @@ function applyMarauder(
         state
       );
       if (damage > 0) {
-        state.log.push(`${actor.displayName}: подавляющий огонь → ${enemy.displayName} ${formatLastLogDamage(damage)}.`);
+        state.log.push(
+          `${actor.displayName}: подавляющий огонь → ${enemy.displayName} ${formatLastLogDamage(damage)}.`
+        );
         if (randInt(1, 100) <= 60 + actor.lvl) {
           grantEffect(enemy, 'UNLUCKY', 1 + Math.floor(actor.lvl / 5), 20);
           grantEffect(enemy, 'SLOW', 1 + Math.floor(actor.lvl / 5), 15);
@@ -224,7 +218,9 @@ function applyMarauder(
     if (damage === 0) {
       state.log.push(`${actor.displayName}: мощный выстрел — промах.`);
     } else {
-      state.log.push(`${actor.displayName} мощным выстрелом бьёт ${target.displayName} ${formatLastLogDamage(damage)}.`);
+      state.log.push(
+        `${actor.displayName} мощным выстрелом бьёт ${target.displayName} ${formatLastLogDamage(damage)}.`
+      );
       markDeadIfNeeded(state, target);
     }
     return { status: 'done' };
@@ -298,7 +294,9 @@ function applyWerewolf(
     if (damage === 0) {
       state.log.push(`${actor.displayName}: промах.`);
     } else {
-      state.log.push(`${actor.displayName} рвёт ${target.displayName} ${formatLastLogDamage(damage)}.`);
+      state.log.push(
+        `${actor.displayName} рвёт ${target.displayName} ${formatLastLogDamage(damage)}.`
+      );
       if (randInt(1, 100) <= 71 + actor.lvl * 2) {
         const lose = Math.max(1, Math.round(target.damage * 0.5));
         grantEffect(target, 'WEAKNESS', 2, lose);
@@ -326,10 +324,7 @@ function applyWerewolf(
     if (damage === 0) {
       state.log.push(`${actor.displayName}: голод — промах.`);
     } else {
-      const vamp = Math.max(
-        1,
-        Math.round(eternalHungerVampCoef(actor.lvl, hpRatio) * damage)
-      );
+      const vamp = Math.max(1, Math.round(eternalHungerVampCoef(actor.lvl, hpRatio) * damage));
       const healed = healUnit(actor, vamp);
       addMana(actor, Math.floor(vamp / 5));
       state.log.push(
@@ -349,9 +344,7 @@ function applyWerewolf(
     const healed = healUnit(actor, 20 + actor.lvl * 5);
     const moraleGain = 10 + actor.lvl;
     actor.morale += moraleGain;
-    state.log.push(
-      `${actor.displayName} успокаивается (+${healed} ОЗ, мораль +${moraleGain}).`
-    );
+    state.log.push(`${actor.displayName} успокаивается (+${healed} ОЗ, мораль +${moraleGain}).`);
     return { status: 'done' };
   }
 
@@ -375,12 +368,10 @@ function applyWerewolf(
   if (wards < 2) {
     setWard(actor, 'WEAPON', 1, true);
     state.log.push(
-      `${actor.displayName} взывает к лунам: вард от оружия (${(actor.resists.WEAPON?.wardCharges ?? 0)}).`
+      `${actor.displayName} взывает к лунам: вард от оружия (${actor.resists.WEAPON?.wardCharges ?? 0}).`
     );
   } else {
-    state.log.push(
-      `${actor.displayName} взывает к лунам, но вардов уже ${wards} (кап 2).`
-    );
+    state.log.push(`${actor.displayName} взывает к лунам, но вардов уже ${wards} (кап 2).`);
   }
   return { status: 'done', keepTurn: true };
 }

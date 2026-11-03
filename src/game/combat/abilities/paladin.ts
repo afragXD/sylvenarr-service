@@ -1,4 +1,10 @@
-import { dealDamage, lastDealDamageResult, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import {
+  dealDamage,
+  formatLastLogDamage,
+  lastDealDamageResult,
+  markDeadIfNeeded,
+  randInt,
+} from '../damage';
 import { grantEffect, healUnit } from '../effects';
 import { levelUpUnit } from '../level';
 import { unholyDamageMult } from '../races';
@@ -13,11 +19,7 @@ function holySpearTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {
   return meleeTargets(state, { ...actor, row: ROW_FRONT });
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = meleeOrAll(state, actor, false);
@@ -64,11 +66,7 @@ function abilityMeta(
         label: 'Святое копьё',
         needsTarget: true,
         disabledReason:
-          actor.row !== ROW_BACK
-            ? 'Нужен задний ряд'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+          actor.row !== ROW_BACK ? 'Нужен задний ряд' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -173,7 +171,7 @@ export const paladinAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName} поглощает ${n} уровней у ${target.displayName}.`);
       } else {
         state.log.push(
-          `${actor.displayName}: душа ${target.displayName} устояла — уровни не поглощены.`,
+          `${actor.displayName}: душа ${target.displayName} устояла — уровни не поглощены.`
         );
       }
       markDeadIfNeeded(state, target);

@@ -1,14 +1,10 @@
-import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const allies = alliesOf(state, actor);
@@ -47,11 +43,7 @@ function abilityMeta(
         label: `Торпеда (${actor.ultaCharges})`,
         needsTarget: true,
         disabledReason:
-          actor.ultaCharges <= 0
-            ? 'Нет снарядов'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+          actor.ultaCharges <= 0 ? 'Нет снарядов' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -99,9 +91,7 @@ export const beerElementalAbilities: AbilityHandler = {
       const gain = 7 + actor.lvl * 2;
       target.morale += gain;
       state.log.push('Пиво течёт во мне, я един с пивом');
-      state.log.push(
-        `${actor.displayName}: ${target.displayName} получает +${gain} боевого духа.`
-      );
+      state.log.push(`${actor.displayName}: ${target.displayName} получает +${gain} боевого духа.`);
       return { status: 'done' };
     }
 

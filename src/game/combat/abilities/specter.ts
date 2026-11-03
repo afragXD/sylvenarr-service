@@ -7,11 +7,7 @@ import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types
 import { alliesOf, enemiesOf } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = enemiesOf(state, actor);
@@ -136,9 +132,7 @@ export const specterAbilities: AbilityHandler = {
       mage.mana = Math.max(0, mage.mana - drain);
       const taken = before - mage.mana;
       if (taken > 0) {
-        state.log.push(
-          `${actor.displayName} поглощает ${taken} МР у ${mage.displayName}.`
-        );
+        state.log.push(`${actor.displayName} поглощает ${taken} МР у ${mage.displayName}.`);
       }
     }
   },

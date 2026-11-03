@@ -5,7 +5,7 @@ import { grantEffect, hasEffect, tickEffectsOnTurnEnd } from '../effects';
 import { applyAction, createBattleState } from '../engine';
 import type { BattleState, HeroClassStats } from '../types';
 import { angelAbilities } from './angel';
-import { antipaladinAbilities, APAL } from './antipaladin';
+import { APAL, antipaladinAbilities } from './antipaladin';
 import { resetCooldowns, slotCd } from './cooldowns';
 import { incubAbilities } from './incub';
 import { oracleAbilities } from './oracle';
@@ -73,7 +73,10 @@ afterEach(() => {
 
 describe('Antipaladin', () => {
   test('Чёрная секира: убийство даёт доп. ход', () => {
-    const state = battle('Antipaladin', { actor: { damage: 500 }, enemy: { health: 10, armor: 0 } });
+    const state = battle('Antipaladin', {
+      actor: { damage: 500 },
+      enemy: { health: 10, armor: 0 },
+    });
     state.units.push({ ...unit(state, 'p3'), id: 'p4', resists: {}, effects: [] });
     fixRandom();
     const result = applyAction(state, {

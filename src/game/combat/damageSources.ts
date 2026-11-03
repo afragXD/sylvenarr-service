@@ -42,9 +42,7 @@ export const DAMAGE_SOURCE_LABELS: Record<DamageSource, string> = {
 };
 
 /** Источник урона по умолчанию для типа атаки. */
-export function sourceFromAttackStyle(
-  style: 'melee' | 'ranged' | 'magic'
-): DamageSource {
+export function sourceFromAttackStyle(style: 'melee' | 'ranged' | 'magic'): DamageSource {
   if (style === 'ranged') {
     return 'ARROWS';
   }

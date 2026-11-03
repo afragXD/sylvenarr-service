@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { delEffect, grantEffect, hasEffect, resurrectUnit } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, meleeOrAll, neighbourBehind, ownRowAllies } from './targets';
@@ -21,11 +21,7 @@ function sacrificeTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {
     .filter(Boolean);
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = meleeOrAll(state, actor, false);
@@ -61,11 +57,7 @@ function abilityMeta(
         label: 'Баллада',
         needsTarget: true,
         disabledReason:
-          actor.gold < cost
-            ? `Нужно ${cost} золота`
-            : allies.length === 0
-              ? 'Нет целей'
-              : null,
+          actor.gold < cost ? `Нужно ${cost} золота` : allies.length === 0 ? 'Нет целей' : null,
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -115,9 +107,7 @@ export const knightAbilities: AbilityHandler = {
       }
       grantEffect(ally, 'ROW_FORTIFY', 1, bonus);
     }
-    state.log.push(
-      `${actor.displayName} укрепляет доспехи ряда на ${bonus}.`
-    );
+    state.log.push(`${actor.displayName} укрепляет доспехи ряда на ${bonus}.`);
   },
 
   apply(state, actor, input): AbilityOutcome {
@@ -164,7 +154,9 @@ export const knightAbilities: AbilityHandler = {
               state
             );
             if (splash > 0) {
-              state.log.push(`Копьё задевает ${behind.displayName} ${formatLastLogDamage(splash)}.`);
+              state.log.push(
+                `Копьё задевает ${behind.displayName} ${formatLastLogDamage(splash)}.`
+              );
               markDeadIfNeeded(state, behind);
             }
           }

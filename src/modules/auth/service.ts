@@ -130,10 +130,7 @@ export abstract class AuthService {
 
     const player = await prisma.player.findFirst({
       where: {
-        OR: [
-          { displayName: raw },
-          { email: { equals: raw, mode: 'insensitive' } },
-        ],
+        OR: [{ displayName: raw }, { email: { equals: raw, mode: 'insensitive' } }],
       },
       select: { id: true, passwordHash: true },
     });

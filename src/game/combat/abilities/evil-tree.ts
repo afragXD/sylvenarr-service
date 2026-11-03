@@ -1,6 +1,6 @@
-import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { effectLogLabel } from '../effect-labels';
-import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana, addMana } from '../effects';
+import { addMana, delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf, ownRowAllies } from './targets';
@@ -8,11 +8,7 @@ import type { AbilityHandler, AbilityOutcome } from './types';
 
 type WisdomLesson = 'focus' | 'strength' | 'crit' | 'armor';
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const allies = alliesOf(state, actor);
@@ -55,11 +51,7 @@ function abilityMeta(
         label: 'Мудрость',
         needsTarget: true,
         disabledReason:
-          actor.mana < 3
-            ? 'Нужно 3 МР'
-            : allies.length === 0
-              ? 'Нет союзников'
-              : null,
+          actor.mana < 3 ? 'Нужно 3 МР' : allies.length === 0 ? 'Нет союзников' : null,
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -70,11 +62,7 @@ function abilityMeta(
         label: 'Взращивание',
         needsTarget: true,
         disabledReason:
-          actor.mana < 4
-            ? 'Нужно 4 МР'
-            : allies.length === 0
-              ? 'Нет союзников'
-              : null,
+          actor.mana < 4 ? 'Нужно 4 МР' : allies.length === 0 ? 'Нет союзников' : null,
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -158,9 +146,7 @@ export const evilTreeAbilities: AbilityHandler = {
           const bonus = Math.floor(damage * 0.35);
           const healed = healUnit(weakest, bonus);
           if (healed > 0) {
-            state.log.push(
-              `${weakest.displayName} получает ещё ${healed} ОЗ от сока корней.`
-            );
+            state.log.push(`${weakest.displayName} получает ещё ${healed} ОЗ от сока корней.`);
           }
         }
       }

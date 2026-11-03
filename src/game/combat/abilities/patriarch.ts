@@ -1,15 +1,11 @@
-import { dealDamage, markDeadIfNeeded, formatLastLogDamage } from '../damage';
-import { grantEffect, healUnit, resurrectUnit, trySpendMana, addMana } from '../effects';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded } from '../damage';
+import { addMana, grantEffect, healUnit, resurrectUnit, trySpendMana } from '../effects';
 import { ROW_BACK } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesInColumn, enemiesOf } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = enemiesOf(state, actor);
@@ -20,12 +16,7 @@ function abilityMeta(
         previewSource: 'HOLY',
         previewArmorIgnore: 0.1,
         needsTarget: true,
-        disabledReason:
-          actor.mana < 2
-            ? 'Нужно 2 МР'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+        disabledReason: actor.mana < 2 ? 'Нужно 2 МР' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -39,11 +30,7 @@ function abilityMeta(
         previewHealMin: heal,
         previewHealMax: heal,
         disabledReason:
-          actor.mana < 3
-            ? 'Нужно 3 МР'
-            : allies.length === 0
-              ? 'Нет союзников'
-              : null,
+          actor.mana < 3 ? 'Нужно 3 МР' : allies.length === 0 ? 'Нет союзников' : null,
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -71,11 +58,7 @@ function abilityMeta(
         label: `Святилище (${actor.ultaCharges})`,
         needsTarget: true,
         disabledReason:
-          actor.ultaCharges <= 0
-            ? 'Нет зарядов'
-            : allies.length === 0
-              ? 'Нет союзников'
-              : null,
+          actor.ultaCharges <= 0 ? 'Нет зарядов' : allies.length === 0 ? 'Нет союзников' : null,
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -195,9 +178,7 @@ export const patriarchAbilities: AbilityHandler = {
         .filter((entry) => entry.team === actor.team)
         .map((entry) => ({
           id: entry.unitId,
-          label: entry.forbiddenResurrect
-            ? `${entry.displayName} (нельзя)`
-            : entry.displayName,
+          label: entry.forbiddenResurrect ? `${entry.displayName} (нельзя)` : entry.displayName,
         }));
       options.push({ id: 'cancel', label: 'Отмена' });
       state.pendingPrompt = {

@@ -59,8 +59,9 @@ export function createSummon(
   const row = input.row === 1 ? 1 : 0;
   const column =
     input.column ??
-    state.units.filter((unit) => unit.alive && unit.team === input.summoner.team && unit.row === row)
-      .length;
+    state.units.filter(
+      (unit) => unit.alive && unit.team === input.summoner.team && unit.row === row
+    ).length;
   const maxHp = Math.max(1, Math.round(hero.health * state.rules.healthBonus));
   const unit: BattleUnit = {
     id: `summon-${input.summoner.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -148,9 +149,7 @@ export function createPhantomCopy(
   template: BattleUnit,
   row: number
 ): BattleUnit | null {
-  const teamAlive = state.units.filter(
-    (unit) => unit.alive && unit.team === summoner.team
-  ).length;
+  const teamAlive = state.units.filter((unit) => unit.alive && unit.team === summoner.team).length;
   if (teamAlive >= state.rules.maxTeamSize) {
     state.log.push('В команде нет места для фантома.');
     return null;
@@ -239,9 +238,7 @@ export function createPhantomCopy(
  * Свободные ряды: команда не полна, есть слот по maxRowSize и лимит саммонов хозяина.
  */
 export function availableSummonRows(state: BattleState, summoner: BattleUnit): number[] {
-  const teamAlive = state.units.filter(
-    (unit) => unit.alive && unit.team === summoner.team
-  ).length;
+  const teamAlive = state.units.filter((unit) => unit.alive && unit.team === summoner.team).length;
   if (teamAlive >= state.rules.maxTeamSize) {
     return [];
   }

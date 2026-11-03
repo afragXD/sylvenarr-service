@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { addMana, delEffect, grantEffect, healUnit } from '../effects';
 import { levelUpUnit } from '../level';
 import { rollMindChance } from '../resists';
@@ -8,11 +8,7 @@ import { availableSummonRows, createSummon } from './summon';
 import { alliesOf, enemiesOf } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = enemiesOf(state, actor);
@@ -24,8 +20,7 @@ function abilityMeta(
         previewSource: 'DEATH',
         previewDamageMult: 1.1,
         previewArmorIgnore: 0.15,
-        disabledReason:
-          actor.mana < 3 ? 'Нужно 3 МР' : targets.length === 0 ? 'Нет целей' : null,
+        disabledReason: actor.mana < 3 ? 'Нужно 3 МР' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -56,8 +51,7 @@ function abilityMeta(
         slot: 4,
         label: 'Показ коллекции',
         needsTarget: true,
-        disabledReason:
-          actor.mana < 2 ? 'Нужно 2 МР' : targets.length === 0 ? 'Нет целей' : null,
+        disabledReason: actor.mana < 2 ? 'Нужно 2 МР' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -68,11 +62,7 @@ function abilityMeta(
         label: 'Поглотить душу',
         needsTarget: true,
         disabledReason:
-          actor.mana < 3
-            ? 'Нужно 3 МР'
-            : allies.length === 0
-              ? 'Нет союзников'
-              : null,
+          actor.mana < 3 ? 'Нужно 3 МР' : allies.length === 0 ? 'Нет союзников' : null,
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -257,11 +247,11 @@ export const archlichAbilities: AbilityHandler = {
         if (target.isLichSummon) {
           const heal = healUnit(target, actor.lvl * 5 + 10);
           state.log.push(
-            `${actor.displayName} проводит ритуал над ${target.displayName}: +${levels} ур.${heal > 0 ? `, лечение ${heal}` : ''}.`,
+            `${actor.displayName} проводит ритуал над ${target.displayName}: +${levels} ур.${heal > 0 ? `, лечение ${heal}` : ''}.`
           );
         } else {
           state.log.push(
-            `${actor.displayName} проводит ритуал над ${target.displayName}: +${levels} ур.`,
+            `${actor.displayName} проводит ритуал над ${target.displayName}: +${levels} ур.`
           );
         }
       } else {
@@ -381,12 +371,7 @@ function resolvePrompt(
   return { status: 'reject', message: 'Неизвестный prompt' };
 }
 
-function spendMana(
-  actor: BattleUnit,
-  amount: number,
-  state: BattleState,
-  silent = false
-): boolean {
+function spendMana(actor: BattleUnit, amount: number, state: BattleState, silent = false): boolean {
   if (actor.mana < amount) {
     if (!silent) {
       state.log.push(`Недостаточно маны (${amount}).`);

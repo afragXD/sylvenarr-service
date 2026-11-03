@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, hasEffect } from '../effects';
 import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -19,11 +19,7 @@ function flamethrowerTargetCount(actor: BattleUnit): number {
   return 2 + Math.floor(actor.lvl / 7) + Math.floor(Math.max(0, actor.morale) / 30);
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1:
       return {
@@ -46,11 +42,7 @@ function abilityMeta(
         previewSource: 'FIRE',
         previewArmorIgnore: 0.2,
         disabledReason:
-          actor.row !== ROW_BACK
-            ? 'Нужен задний ряд'
-            : targets.length === 0
-              ? 'Нет целей'
-              : null,
+          actor.row !== ROW_BACK ? 'Нужен задний ряд' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -175,9 +167,7 @@ export const pyroAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Нужен союзник' };
       }
       grantEffect(target, 'FIREDWEAPON', Math.min(3, 1 + Math.floor(actor.lvl / 6)), 0);
-      state.log.push(
-        `${actor.displayName} зачаровывает оружие ${target.displayName} пламенем.`
-      );
+      state.log.push(`${actor.displayName} зачаровывает оружие ${target.displayName} пламенем.`);
       return { status: 'done' };
     }
 

@@ -213,9 +213,7 @@ describe('draftPreset + redaction', () => {
       }
 
       const guestView = await MatchesService.findById(matchId, guest.id);
-      expect(guestView?.draft.hostPicks.every((pick) => pick.displayName === 'Скрыто')).toBe(
-        true
-      );
+      expect(guestView?.draft.hostPicks.every((pick) => pick.displayName === 'Скрыто')).toBe(true);
 
       const guestApply = await MatchesService.draftPreset({
         matchId,
@@ -227,12 +225,12 @@ describe('draftPreset + redaction', () => {
         return;
       }
       expect(guestApply.match.status).toBe('fighting');
-      expect(
-        guestApply.match.draft.hostPicks.every((pick) => pick.displayName !== 'Скрыто')
-      ).toBe(true);
-      expect(
-        guestApply.match.draft.guestPicks.every((pick) => pick.displayName !== 'Скрыто')
-      ).toBe(true);
+      expect(guestApply.match.draft.hostPicks.every((pick) => pick.displayName !== 'Скрыто')).toBe(
+        true
+      );
+      expect(guestApply.match.draft.guestPicks.every((pick) => pick.displayName !== 'Скрыто')).toBe(
+        true
+      );
 
       const rejectAgain = await MatchesService.draftPreset({
         matchId,
@@ -248,9 +246,9 @@ describe('draftPreset + redaction', () => {
     'global preset apply ok; repeat after lock rejected',
     async () => {
       const { host, matchId } = await openDraftMatch();
-    const global = await prisma.squadPreset.findFirst({
-      where: { catalogCode: 'dracolich-mirror' },
-    });
+      const global = await prisma.squadPreset.findFirst({
+        where: { catalogCode: 'dracolich-mirror' },
+      });
       expect(global).not.toBeNull();
       if (!global) {
         return;

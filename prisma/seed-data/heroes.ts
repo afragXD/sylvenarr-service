@@ -37,7 +37,7 @@ const summonCodes = new Set([
   'Werewolf',
 ]);
 
-type RawHero = Omit<HeroSeed, 'isPlayable' | 'sortOrder' | 'size'>;
+type RawHero = Omit<HeroSeed, 'isPlayable' | 'sortOrder' | 'size' | 'maxMana'>;
 
 const rawHeroes: ReadonlyArray<RawHero> = [
   {

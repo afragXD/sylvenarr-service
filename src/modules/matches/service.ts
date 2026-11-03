@@ -556,9 +556,9 @@ export abstract class MatchesService {
     const nextRules: Record<string, unknown> = {
       ...rules,
       hostPresetName:
-        input.playerId === existing.hostId ? preset.name : rawRules.hostPresetName ?? null,
+        input.playerId === existing.hostId ? preset.name : (rawRules.hostPresetName ?? null),
       guestPresetName:
-        input.playerId === existing.guestId ? preset.name : rawRules.guestPresetName ?? null,
+        input.playerId === existing.guestId ? preset.name : (rawRules.guestPresetName ?? null),
     };
     await prisma.match.update({
       where: { id: existing.id },
@@ -640,6 +640,10 @@ export abstract class MatchesService {
         maxRounds: input.rules.maxRounds,
         healthBonus: input.rules.healthBonus,
         startingLevel: input.rules.startingLevel,
+        fairEnabled: input.rules.fairEnabled,
+        fairFrequency: input.rules.fairFrequency,
+        shopSize: input.rules.shopSize,
+        goldBonus: input.rules.goldBonus,
       },
     });
     await getBattleStore().set(state);
@@ -1301,8 +1305,8 @@ export abstract class MatchesService {
 
     const snapshot = parseResultSnapshot(row.resultSnapshot);
     // После finalize пики удаляются; для старых матчей без snapshot — fallback на picks.
-    let hostUnits = snapshot?.host.units ?? [];
-    let guestUnits = snapshot?.guest.units ?? [];
+    let hostUnits: MatchesModel.matchHistoryUnit[] = snapshot?.host.units ?? [];
+    let guestUnits: MatchesModel.matchHistoryUnit[] = snapshot?.guest.units ?? [];
     if (!snapshot) {
       const picks = await prisma.matchPick.findMany({
         where: { matchId },

@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, spyOn, test } from 'bun:test';
-
-import { applyAction, createBattleState } from '../engine';
 import { hasEffect } from '../effects';
+import { applyAction, createBattleState } from '../engine';
 import type { HeroClassStats } from '../types';
 import { paladinAbilities } from './paladin';
 

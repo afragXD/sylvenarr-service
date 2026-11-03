@@ -1,8 +1,8 @@
 import { Elysia, t } from 'elysia';
 
 import { PLAYER_COOKIE_NAME } from '../../shared/constants/session';
-import { saveStaticImage } from '../../shared/static-upload';
 import { playerSessionPlugin } from '../../shared/plugins/player-session';
+import { saveStaticImage } from '../../shared/static-upload';
 import { MatchesService } from '../matches/service';
 import { PlayersModel } from './model';
 import { PlayersService } from './service';
@@ -94,10 +94,7 @@ export const playersController = new Elysia({ prefix: '/players', tags: ['Player
     '/me/favorite-heroes',
     async ({ player, query }) => {
       const limit = query.limit ? Number(query.limit) : 5;
-      return await PlayersService.listFavoriteHeroes(
-        player.id,
-        Number.isFinite(limit) ? limit : 5
-      );
+      return await PlayersService.listFavoriteHeroes(player.id, Number.isFinite(limit) ? limit : 5);
     },
     {
       requireAuth: true,

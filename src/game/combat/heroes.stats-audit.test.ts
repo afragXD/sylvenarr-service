@@ -95,14 +95,15 @@ const LEGACY_STATS_DICT: Record<
   },
   Abbess: {
     displayName: 'Аббатиса',
-    health: 185,
+    // CUT-2026-11-01c AC-3: ОЗ 205, МР 12 (было 185 / 10 в боте).
+    health: 205,
     damage: 5,
     armor: 0,
     initiative: 30,
     dodge: 5,
     luck: 10,
     morale: 0,
-    mana: 10,
+    mana: 12,
     power: 28,
     gold: 380,
     accuracy: 105,
@@ -291,7 +292,8 @@ const LEGACY_STATS_DICT: Record<
   },
   Mermaid: {
     displayName: 'Русалка',
-    health: 162,
+    // CUT-2026-11-01c AC-3: ОЗ 180 (было 162 в боте).
+    health: 180,
     damage: 0,
     armor: 0,
     initiative: 48,
@@ -474,8 +476,9 @@ const LEGACY_STATS_DICT: Record<
   },
   Titan: {
     displayName: 'Титан',
+    // CUT-2026-11-01c AC-3: урон 26 (в legacy-боте было 36).
     health: 310,
-    damage: 36,
+    damage: 26,
     armor: 25,
     initiative: 47,
     dodge: 0,

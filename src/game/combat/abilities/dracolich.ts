@@ -1,4 +1,4 @@
-import { dealDamage, markDeadIfNeeded, randInt, formatLastLogDamage } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect, hasEffect, healUnit, resurrectUnit } from '../effects';
 import { levelUpUnit } from '../level';
 import { isUndeadClass } from '../races';
@@ -17,9 +17,7 @@ function lowHpDamageMult(actor: BattleUnit): number {
 function undeadGraveEntries(state: BattleState, actor: BattleUnit) {
   return state.graveyard.filter(
     (entry) =>
-      entry.team === actor.team &&
-      !entry.forbiddenResurrect &&
-      isUndeadClass(entry.heroClassCode)
+      entry.team === actor.team && !entry.forbiddenResurrect && isUndeadClass(entry.heroClassCode)
   );
 }
 
@@ -33,11 +31,7 @@ function isBelowExecuteThreshold(unit: BattleUnit): boolean {
   return unit.health < unit.maxHp * 0.2;
 }
 
-function abilityMeta(
-  state: BattleState,
-  actor: BattleUnit,
-  slot: AbilitySlot
-): AbilityInfo {
+function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
     case 1: {
       const targets = enemiesOf(state, actor);
@@ -70,8 +64,7 @@ function abilityMeta(
         slot: 3,
         label: `Молитва нежити (+${levels} ур.)`,
         needsTarget: false,
-        disabledReason:
-          cdReason(actor, 3) ?? (undead.length === 0 ? 'Нет нежити в отряде' : null),
+        disabledReason: cdReason(actor, 3) ?? (undead.length === 0 ? 'Нет нежити в отряде' : null),
         legalTargetIds: [],
       };
     }
@@ -90,14 +83,11 @@ function abilityMeta(
       const anyLow = targets.some(isBelowExecuteThreshold);
       return {
         slot: 5,
-        label: anyLow
-          ? 'Пожирание гада — ЦЕЛЬ НИЖЕ 20 % ОЗ — СОЖРЁТ'
-          : 'Пожирание гада',
+        label: anyLow ? 'Пожирание гада — ЦЕЛЬ НИЖЕ 20 % ОЗ — СОЖРЁТ' : 'Пожирание гада',
         needsTarget: true,
         attackKind: 'melee',
         previewSource: 'WEAPON',
-        disabledReason:
-          cdReason(actor, 5) ?? (targets.length === 0 ? 'Нет целей' : null),
+        disabledReason: cdReason(actor, 5) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -279,21 +269,16 @@ export const dracolichAbilities: AbilityHandler = {
       }
       shuffleEnemyColumns(state, actor);
       const row = state.units.filter(
-        (unit) =>
-          unit.alive && unit.team === target.team && unit.row === target.row
+        (unit) => unit.alive && unit.team === target.team && unit.row === target.row
       );
       const unluckyPower = 7 + actor.lvl * 2;
       for (const enemy of row) {
         grantEffect(enemy, 'UNLUCKY', 2, unluckyPower);
         if (randInt(1, 100) <= 85) {
           grantEffect(enemy, 'WEAKNESS', 2, Math.max(1, Math.round(enemy.damage * 0.5)));
-          state.log.push(
-            `${actor.displayName}: ${enemy.displayName} ослаблен гнилью.`
-          );
+          state.log.push(`${actor.displayName}: ${enemy.displayName} ослаблен гнилью.`);
         } else {
-          state.log.push(
-            `${actor.displayName}: ${enemy.displayName} теряет боевой дух.`
-          );
+          state.log.push(`${actor.displayName}: ${enemy.displayName} теряет боевой дух.`);
         }
       }
       return { status: 'done' };

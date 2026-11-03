@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-
-import { applyAction, createBattleState } from '../engine';
 import { grantEffect } from '../effects';
+import { applyAction, createBattleState } from '../engine';
 import type { HeroClassStats } from '../types';
 import { goldGolemAbilities } from './gold-golem';
 import { createSummon } from './summon';
@@ -394,13 +393,9 @@ describe('combat fixes', () => {
   });
 
   test('Marauder slot 4: вард от оружия при превращении', () => {
-    const state = twoUnitState(
-      'Marauder',
-      'B',
-      {},
-      {},
-      [['Werewolf', hero('Werewolf', { health: 150, damage: 25 })]]
-    );
+    const state = twoUnitState('Marauder', 'B', {}, {}, [
+      ['Werewolf', hero('Werewolf', { health: 150, damage: 25 })],
+    ]);
     const marauder = state.units.find((unit) => unit.id === 'p1')!;
     marauder.ultaCharges = 1;
     const cast = applyAction(state, { playerId: 'h', unitId: 'p1', action: 'ability', slot: 4 });
