@@ -1230,6 +1230,7 @@ export function toBattleSummary(state: BattleState) {
       resists: summarizeResists(unit),
       perks: unit.perks ?? [],
       merchant: unit.merchant ?? 0,
+      weaponReach: unit.weaponReach ?? defaultWeaponReach(unit.heroClassCode),
     })),
     teams: [
       {

@@ -116,6 +116,7 @@ export namespace MatchesModel {
     resists: t.Array(resistBrief),
     perks: t.Array(t.String()),
     merchant: t.Number(),
+    weaponReach: t.Number(),
   });
   export type battleUnit = typeof battleUnit.static;
 
