@@ -1,4 +1,9 @@
-import { computeStartingTeamGold, economyOn, emptyTeamEconomy } from '../economy';
+import {
+  applyClassEconomySetup,
+  computeStartingTeamGold,
+  economyOn,
+  emptyTeamEconomy,
+} from '../economy';
 import { summarizeInventory } from '../items/inventory';
 import { applyItemAction } from '../items/use';
 import {
@@ -152,6 +157,8 @@ export function createBattleState(input: {
     preChoiceDoneIds: [],
     graveyard: [],
   };
+
+  applyClassEconomySetup(state);
 
   const startLvls = Math.max(1, Math.min(30, Math.round(rules.startingLevel))) - 1;
   if (startLvls > 0) {

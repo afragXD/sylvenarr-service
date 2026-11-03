@@ -45,6 +45,8 @@ function fairState(opts?: { fairEnabled?: boolean }) {
       goldBonus: 1,
     },
   });
+  state.teams![0]!.inventory = [];
+  state.teams![1]!.inventory = [];
   const actor = state.units.find((u) => u.id === state.activeUnitId)!;
   return { state, actor };
 }

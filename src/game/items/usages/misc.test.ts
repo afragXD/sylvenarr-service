@@ -51,6 +51,9 @@ function battle() {
       goldBonus: 1,
     },
   });
+  // Тесты сами кладут предметы; стартовый инвентарь классов сбрасываем.
+  state.teams![0]!.inventory = [];
+  state.teams![1]!.inventory = [];
   const actor = state.units.find((u) => u.id === state.activeUnitId)!;
   const foe = state.units.find((u) => u.team !== actor.team)!;
   actor.perks = ['MISC'];

@@ -1,4 +1,5 @@
-import { addTeamGold } from '../../economy';
+import { addTeamGold, economyOn } from '../../economy';
+import { addItem } from '../../items/inventory';
 import { randInt } from '../damage';
 import { addMana, healUnit } from '../effects';
 import { changeResist, setWard } from '../resists';
@@ -14,7 +15,9 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   Assassin(unit, ind, state) {
     if (state.stage % 4 === 0 && ind > 0) {
       unit.darts += randInt(1, 2);
-      // Item(107) — вне скоупа до ярмарки 4.1
+      if (economyOn(state)) {
+        addItem(state, unit.team, 107, 1);
+      }
     }
     unit.deathNote += 3 * ind;
     unit.luck += randInt(1, 3) * ind;
@@ -23,11 +26,13 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     // kira cooldown — вне скоупа (поле не портировано)
   },
 
-  Paladin(unit, ind, _state) {
+  Paladin(unit, ind, state) {
     if (unit.hiddenLvl % 7 === 0) {
       unit.ultaCharges += 1;
       addMana(unit, 5);
-      // Item(475) — вне скоупа
+      if (economyOn(state)) {
+        addItem(state, unit.team, 475, 1);
+      }
     }
     // Было rand(1,2)×⌊lvl/2⌋; чуть слабее — ⌊lvl/3⌋.
     unit.armor += randInt(1, 2) * Math.floor(unit.lvl / 3) * ind;

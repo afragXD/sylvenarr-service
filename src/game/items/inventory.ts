@@ -93,6 +93,19 @@ export function randomItemCodesByCategories(
   return sampleCodes(pool, count);
 }
 
+/** Случайные коды одной категории с tier в [minTier, maxTier]. */
+export function randomItemCodesByCategoryAndTier(
+  category: number,
+  minTier: number,
+  maxTier: number,
+  count = 1
+): number[] {
+  const pool = ITEM_CATALOG.filter(
+    (item) => item.category === category && item.tier >= minTier && item.tier <= maxTier
+  ).map((item) => item.code);
+  return sampleCodes(pool, count);
+}
+
 /** Случайные коды из всего каталога. */
 export function randomItemCodes(count = 1): number[] {
   return sampleCodes(

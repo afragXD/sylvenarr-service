@@ -1,5 +1,6 @@
 import type { BattleState } from '../combat/types';
 
+export { applyClassEconomySetup, expectedClassPerks } from './class-setup';
 export {
   addTeamGold,
   computeStartingTeamGold,

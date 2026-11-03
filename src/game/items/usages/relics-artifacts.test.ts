@@ -57,6 +57,8 @@ function battle() {
       goldBonus: 1,
     },
   });
+  state.teams![0]!.inventory = [];
+  state.teams![1]!.inventory = [];
   const actor = state.units.find((u) => u.id === state.activeUnitId)!;
   const ally = state.units.find((u) => u.team === actor.team && u.id !== actor.id)!;
   const foe = state.units.find((u) => u.team !== actor.team)!;
