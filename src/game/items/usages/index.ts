@@ -1,26 +1,7 @@
-import type { BattleState, BattleUnit } from '../../combat/types';
+import { registerMiscItemUsages } from './misc';
+import type { ItemUsageHandler, ItemUsageOutcome } from './types';
 
-/** Исход обработчика предмета (порт return codes usages.py). */
-export type ItemUsageOutcome =
-  | { status: 'reject'; message: string }
-  | { status: 'pending' }
-  | {
-      status: 'done';
-      /** Сохранить ход (по умолчанию false). */
-      keepTurn?: boolean;
-      /** Расход экземпляра (по умолчанию true). */
-      consume?: boolean;
-    };
-
-export type ItemUsageContext = {
-  readonly state: BattleState;
-  readonly invoker: BattleUnit;
-  readonly target: BattleUnit;
-  readonly itemCode: number;
-  readonly choice?: string;
-};
-
-export type ItemUsageHandler = (ctx: ItemUsageContext) => ItemUsageOutcome;
+export type { ItemUsageContext, ItemUsageHandler, ItemUsageOutcome } from './types';
 
 /** Кейсы: LUDOMANIA не тратит ход. */
 export const CASE_ITEM_CODES: ReadonlySet<number> = new Set([
@@ -29,7 +10,7 @@ export const CASE_ITEM_CODES: ReadonlySet<number> = new Set([
 
 const handlers = new Map<number, ItemUsageHandler>();
 
-function notImplemented(_ctx: ItemUsageContext): ItemUsageOutcome {
+function notImplemented(_ctx: Parameters<ItemUsageHandler>[0]): ItemUsageOutcome {
   return { status: 'reject', message: 'не реализовано' };
 }
 
@@ -43,7 +24,14 @@ export function registerItemUsage(code: number, handler: ItemUsageHandler): void
   handlers.set(code, handler);
 }
 
-/** Сброс реестра (тесты). */
+function registerBuiltinItemUsages(): void {
+  registerMiscItemUsages(registerItemUsage);
+}
+
+/** Сброс реестра и повторная установка встроенных обработчиков (тесты). */
 export function clearItemUsagesForTests(): void {
   handlers.clear();
+  registerBuiltinItemUsages();
 }
+
+registerBuiltinItemUsages();

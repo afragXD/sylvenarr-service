@@ -256,6 +256,8 @@ export type BattleUnit = {
   perks?: string[];
   /** Навык торговли (множитель цен); старые снимки — нет поля. */
   merchant?: number;
+  /** Темп предложения перков (по умолчанию 6); старые снимки — нет поля. */
+  develop?: number;
   /** Кулдауны слотов в раундах (Antipaladin / Angel / Incub); в старых снимках поля нет. */
   abilityCds?: Partial<Record<AbilitySlot, number>>;
   /** Antipaladin: накопленный нанесённый урон для «Шквала ударов». */

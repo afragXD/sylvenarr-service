@@ -187,22 +187,22 @@ describe('item action (T5)', () => {
     expect(state.activeUnitId).toBe(actor.id);
   });
 
-  test('заглушка usages — «не реализовано»', () => {
+  test('заглушка usages — «не реализовано» (категория без обработчика)', () => {
     const { state, actor } = fairState();
-    addItem(state, actor.team, 237, 1);
-    actor.perks = ['MISC'];
+    addItem(state, actor.team, 411, 1);
+    actor.perks = ['TALISMANS'];
     const result = applyAction(state, {
       playerId: actor.playerId,
       unitId: actor.id,
       action: 'item',
-      itemCode: 237,
+      itemCode: 411,
       targetId: actor.id,
     });
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.message).toBe('не реализовано');
     }
-    expect(itemCount(state, actor.team, 237)).toBe(1);
+    expect(itemCount(state, actor.team, 411)).toBe(1);
   });
 
   test('сводка: economyEnabled, inventory, perks, merchant', () => {
