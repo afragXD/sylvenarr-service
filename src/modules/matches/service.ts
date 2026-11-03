@@ -1029,11 +1029,21 @@ export abstract class MatchesService {
     readonly matchId: string;
     readonly playerId: string;
     readonly unitId: string;
-    readonly action: 'attack' | 'defend' | 'wait' | 'skill' | 'ability' | 'move' | 'item';
+    readonly action:
+      | 'attack'
+      | 'defend'
+      | 'wait'
+      | 'skill'
+      | 'ability'
+      | 'move'
+      | 'item'
+      | 'perk_pick'
+      | 'perk_skip';
     readonly targetId?: string;
     readonly slot?: 1 | 2 | 3 | 4 | 5;
     readonly choice?: string;
     readonly itemCode?: number;
+    readonly perkId?: string;
   }): Promise<
     | { ok: true; match: MatchesModel.match }
     | { ok: false; message: string; status: 400 | 403 | 404 }
@@ -1066,6 +1076,7 @@ export abstract class MatchesService {
       slot: input.slot,
       choice: input.choice,
       itemCode: input.itemCode,
+      perkId: input.perkId,
     });
     if (!result.ok) {
       return { ok: false, message: result.message, status: 400 };

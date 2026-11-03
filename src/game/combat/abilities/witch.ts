@@ -1,3 +1,4 @@
+import { economyOn } from '../../economy';
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
@@ -217,6 +218,18 @@ export const witchAbilities: AbilityHandler = {
           state.log.push(
             `${actor.displayName}: деградация ${unit.displayName} (−${before - unit.lvl} ур., шанс был ${chance}%).`
           );
+          if (
+            economyOn(state) &&
+            !unit.isSummon &&
+            (unit.perks?.length ?? 0) > 0 &&
+            randInt(1, 100) <= Math.floor(actor.power / 3) + actor.lvl
+          ) {
+            const idx = randInt(0, unit.perks!.length - 1);
+            const removed = unit.perks!.splice(idx, 1)[0];
+            state.log.push(
+              `${actor.displayName}: деградация стирает перк «${removed}» у ${unit.displayName}.`
+            );
+          }
           chance = Math.max(0, chance - 15);
         } else {
           state.log.push(

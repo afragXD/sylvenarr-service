@@ -1,6 +1,34 @@
 import type { DamageSource } from './damageSources';
 
-export type BattleAction = 'attack' | 'defend' | 'wait' | 'skill' | 'ability' | 'move' | 'item';
+export type BattleAction =
+  | 'attack'
+  | 'defend'
+  | 'wait'
+  | 'skill'
+  | 'ability'
+  | 'move'
+  | 'item'
+  | 'perk_pick'
+  | 'perk_skip';
+
+/** Фаза боя (ярмарка / перки / бой). Старые снимки — нет поля → combat. */
+export type BattlePhase = 'combat' | 'perks' | 'fair';
+
+export type PerkOfferOption = {
+  id: string;
+  name: string;
+  description: string;
+  kind: 'item' | 'other';
+  /** Уже изучен — нельзя выбрать. */
+  learned: boolean;
+};
+
+export type PerkOffer = {
+  unitId: string;
+  playerId: string;
+  options: PerkOfferOption[];
+  done: boolean;
+};
 
 export type AbilitySlot = 1 | 2 | 3 | 4 | 5;
 
@@ -258,6 +286,10 @@ export type BattleUnit = {
   merchant?: number;
   /** Темп предложения перков (по умолчанию 6); старые снимки — нет поля. */
   develop?: number;
+  /** hiddenLvl, на котором последний раз предлагали/брали перк. */
+  lastPerkHiddenLvl?: number;
+  /** LOWHP_EXTRATURN: текущий ход уже «дополнительный». */
+  lowHpExtraTurn?: boolean;
   /** Множитель получаемого лечения (по умолчанию 1). */
   healRate?: number;
   /** Наёмный саммон: не исчезает со смертью хозяина. */
@@ -342,6 +374,10 @@ export type BattleState = {
   sfxSeq?: number;
   /** Звуковые события для клиентов (хвост, как у log). */
   sfxEvents?: BattleSfxEvent[];
+  /** Фаза: бой / выбор перков / ярмарка. */
+  phase?: BattlePhase;
+  /** Активные предложения перков (фаза perks). */
+  perkOffers?: PerkOffer[] | null;
 };
 
 export type BattleSfxEvent = {

@@ -230,6 +230,25 @@ export namespace MatchesModel {
     abilities: t.Array(abilityInfo),
     pendingPrompt: t.Nullable(pendingPrompt),
     economyEnabled: t.Boolean(),
+    phase: t.Union([t.Literal('combat'), t.Literal('perks'), t.Literal('fair')]),
+    perkOffers: t.Nullable(
+      t.Array(
+        t.Object({
+          unitId: t.String(),
+          playerId: t.String(),
+          done: t.Boolean(),
+          options: t.Array(
+            t.Object({
+              id: t.String(),
+              name: t.String(),
+              description: t.String(),
+              kind: t.Union([t.Literal('item'), t.Literal('other')]),
+              learned: t.Boolean(),
+            })
+          ),
+        })
+      )
+    ),
     units: t.Array(battleUnit),
     teams: t.Optional(t.Tuple([battleTeamEconomy, battleTeamEconomy])),
   });
@@ -309,6 +328,8 @@ export namespace MatchesModel {
       t.Literal('ability'),
       t.Literal('move'),
       t.Literal('item'),
+      t.Literal('perk_pick'),
+      t.Literal('perk_skip'),
     ]),
     targetId: t.Optional(t.String()),
     slot: t.Optional(
@@ -316,6 +337,7 @@ export namespace MatchesModel {
     ),
     choice: t.Optional(t.String()),
     itemCode: t.Optional(t.Number()),
+    perkId: t.Optional(t.String()),
   });
   export type battleActionBody = typeof battleActionBody.static;
 

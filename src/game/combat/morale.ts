@@ -1,4 +1,4 @@
-import { addTeamGold, teamGold } from '../economy';
+import { addTeamGold, economyOn, teamGold } from '../economy';
 import { firstActionAttackKind } from './abilities/primary-attack';
 import { alliesOf } from './abilities/targets';
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from './damage';
@@ -143,7 +143,9 @@ export function addMentalIllness(state: BattleState, unit: BattleUnit, fate: num
     }
     case 4: {
       unit.illnessKind = 'degradation';
-      // TODO(perks): Деградация — терять все перки
+      if (economyOn(state)) {
+        unit.perks = [];
+      }
       const loss = Math.floor(unit.lvl / 2);
       if (loss > 0) {
         levelUpUnit(unit, -loss, state);

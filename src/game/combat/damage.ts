@@ -8,12 +8,41 @@ import {
   hasEffect,
   tryStun,
 } from './effects';
+import { isDemonClass, isUndeadClass, isUnhumanClass } from './races';
 import { applyResistMultiplier } from './resists';
 import { pushSfx } from './sfx';
 import type { BattleState, BattleUnit } from './types';
 
 export const randInt = (min: number, max: number): number =>
   min + Math.floor(Math.random() * (max - min + 1));
+
+function unitHasPerkLocal(unit: BattleUnit, perkId: string): boolean {
+  return (unit.perks ?? []).includes(perkId);
+}
+
+function perkDamageMult(
+  state: BattleState,
+  attacker: BattleUnit,
+  defender: BattleUnit,
+  kind: AttackKind
+): number {
+  let mult = 1;
+  if (unitHasPerkLocal(attacker, 'CORPSE_BONUS')) {
+    mult *= 1 + 0.15 * state.units.filter((u) => !u.alive).length;
+  }
+  if (kind === 'melee') {
+    if (
+      unitHasPerkLocal(attacker, 'DARK_CREATURES_SLAYER') &&
+      (isUndeadClass(defender.heroClassCode) || isDemonClass(defender.heroClassCode))
+    ) {
+      mult *= 1.2;
+    }
+    if (unitHasPerkLocal(attacker, 'NONHUMAN_SLAYER') && isUnhumanClass(defender.heroClassCode)) {
+      mult *= 1.2;
+    }
+  }
+  return mult;
+}
 
 /** Защита от рекурсии CONTR ↔ CONTR. */
 let counterDepth = 0;
@@ -237,12 +266,19 @@ function computeBaseRaw(
     readonly kind: AttackKind;
     readonly damageMult?: number;
     readonly armorIgnore?: number;
-  }
+  },
+  state?: BattleState
 ): number {
-  const armorIgnore = opts.armorIgnore ?? 0;
-  const damageMult = (opts.damageMult ?? 1) * lifeThreadDamageMult(attacker);
+  const armorIgnore = Math.min(
+    1,
+    Math.max(0, (opts.armorIgnore ?? 0) + (attacker.armorPenetration ?? 0))
+  );
+  let damageMult = (opts.damageMult ?? 1) * lifeThreadDamageMult(attacker);
+  if (state) {
+    damageMult *= perkDamageMult(state, attacker, defender, opts.kind);
+  }
   // Защита — через +50 резистов (EFF.DEFEND), не через ×1.5 брони.
-  const armor = defender.armor * (1 - Math.min(1, Math.max(0, armorIgnore)));
+  const armor = defender.armor * (1 - armorIgnore);
   let raw: number;
   const style = opts.kind;
   if (style === 'magic') {
@@ -370,7 +406,7 @@ function computeRawDamage(
       fromDodgeBank: false,
     };
   }
-  let raw = computeBaseRaw(attacker, defender, opts);
+  let raw = computeBaseRaw(attacker, defender, opts, state);
   const crit = luck.kind === 'crit';
   const critFromBank = luck.kind === 'crit' && luck.fromBank;
   if (crit) {

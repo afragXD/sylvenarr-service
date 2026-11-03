@@ -339,6 +339,7 @@ export const matchesController = new Elysia({ prefix: '/matches', tags: ['Matche
         slot: body.slot,
         choice: body.choice,
         itemCode: body.itemCode,
+        perkId: body.perkId,
       });
       if (!result.ok) {
         return status(result.status, { message: result.message });

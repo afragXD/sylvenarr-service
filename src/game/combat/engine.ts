@@ -6,6 +6,9 @@ import {
 } from '../economy';
 import { summarizeInventory } from '../items/inventory';
 import { applyItemAction } from '../items/use';
+import { applyPerkPick, applyPerkSkip, perkPhaseFullyResolved } from '../perks/actions';
+import { tryBonusMovementKeepTurn, tryLowHpExtraTurn } from '../perks/hooks';
+import { beginPerkPhase } from '../perks/offers';
 import {
   applyAbility,
   attackTargets,
@@ -156,6 +159,8 @@ export function createBattleState(input: {
     drawOfferByPlayerId: null,
     preChoiceDoneIds: [],
     graveyard: [],
+    phase: 'combat',
+    perkOffers: null,
   };
 
   applyClassEconomySetup(state);
@@ -170,7 +175,10 @@ export function createBattleState(input: {
   }
 
   setEffectState(state);
-  advanceToNextUnit(state);
+  // Уровни → (ярмарка T12) → перки → раунд.
+  if (!beginPerkPhase(state)) {
+    advanceToNextUnit(state);
+  }
   return state;
 }
 
@@ -329,6 +337,10 @@ export function advanceToNextUnit(state: BattleState): void {
       }
       state.log.push(...levelUpLogs);
       applyMasochismRoundStart(state);
+      // Уровни → (ярмарка T12) → перки → раунд.
+      if (beginPerkPhase(state)) {
+        return;
+      }
       order = initiativeOrder(state);
     }
   }
@@ -396,12 +408,52 @@ export function applyAction(
     readonly slot?: AbilitySlot;
     readonly choice?: string;
     readonly itemCode?: number;
+    readonly perkId?: string;
   }
 ): { ok: true } | { ok: false; message: string } {
   setEffectState(state);
   if (state.outcome !== 'ongoing') {
     return { ok: false, message: 'Бой уже завершён' };
   }
+
+  if (state.phase === 'perks') {
+    if (input.action === 'perk_pick') {
+      if (!input.perkId) {
+        return { ok: false, message: 'Нужен perkId' };
+      }
+      const picked = applyPerkPick(state, {
+        playerId: input.playerId,
+        unitId: input.unitId,
+        perkId: input.perkId,
+      });
+      if (!picked.ok) {
+        return picked;
+      }
+      if (perkPhaseFullyResolved(state)) {
+        finishPerkPhase(state);
+      }
+      return { ok: true };
+    }
+    if (input.action === 'perk_skip') {
+      const skipped = applyPerkSkip(state, {
+        playerId: input.playerId,
+        unitId: input.unitId,
+      });
+      if (!skipped.ok) {
+        return skipped;
+      }
+      if (perkPhaseFullyResolved(state)) {
+        finishPerkPhase(state);
+      }
+      return { ok: true };
+    }
+    return { ok: false, message: 'Сейчас выбор перков' };
+  }
+
+  if (input.action === 'perk_pick' || input.action === 'perk_skip') {
+    return { ok: false, message: 'Сейчас не фаза выбора перков' };
+  }
+
   if (state.activeUnitId !== input.unitId || state.turnPlayerId !== input.playerId) {
     return { ok: false, message: 'Сейчас не ход этого юнита' };
   }
@@ -507,6 +559,10 @@ export function applyAction(
     state.log.push(
       `${actor.displayName} переходит на ${targetRow === ROW_FRONT ? 'передний' : 'задний'} ряд.`
     );
+    if (tryBonusMovementKeepTurn(state, actor)) {
+      resolveOutcome(state);
+      return { ok: true };
+    }
     finishUnitTurn(state, actor);
     return { ok: true };
   }
@@ -839,6 +895,13 @@ function resolveAttackWithClassMods(
   }
 }
 
+function finishPerkPhase(state: BattleState): void {
+  state.phase = 'combat';
+  state.perkOffers = null;
+  state.log.push('Выбор перков завершён.');
+  advanceToNextUnit(state);
+}
+
 function finishUnitTurn(state: BattleState, actor: BattleUnit): void {
   if (actor.alive) {
     endTurnTick(state, actor);
@@ -848,8 +911,12 @@ function finishUnitTurn(state: BattleState, actor: BattleUnit): void {
     maybeRewardHighMorale(state, actor);
     maybePunishLowMorale(state, actor);
   }
-  state.doneIds.push(actor.id);
   state.pendingPrompt = null;
+  if (actor.alive && tryLowHpExtraTurn(state, actor)) {
+    resolveOutcome(state);
+    return;
+  }
+  state.doneIds.push(actor.id);
   resolveOutcome(state);
   if (state.outcome === 'ongoing') {
     advanceToNextUnit(state);
@@ -891,6 +958,8 @@ export function resolveOutcome(state: BattleState): void {
   state.turnPlayerId = null;
   state.pendingPrompt = null;
   state.drawOfferByPlayerId = null;
+  state.phase = 'combat';
+  state.perkOffers = null;
 }
 
 /**
@@ -914,6 +983,8 @@ export function forceSurrender(
   state.turnPlayerId = null;
   state.pendingPrompt = null;
   state.drawOfferByPlayerId = null;
+  state.phase = 'combat';
+  state.perkOffers = null;
 }
 
 /**
@@ -927,6 +998,8 @@ export function forceDraw(state: BattleState): void {
   state.winnerPlayerId = null;
   state.log.push('Ничья по согласию.');
   state.activeUnitId = null;
+  state.phase = 'combat';
+  state.perkOffers = null;
   state.turnPlayerId = null;
   state.pendingPrompt = null;
   state.drawOfferByPlayerId = null;
@@ -1035,6 +1108,8 @@ export function toBattleSummary(state: BattleState) {
         }
       : null,
     economyEnabled: economyOn(state),
+    phase: state.phase ?? 'combat',
+    perkOffers: state.perkOffers ?? null,
     units: state.units.map((unit) => ({
       id: unit.id,
       playerId: unit.playerId,

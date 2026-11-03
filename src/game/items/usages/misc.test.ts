@@ -369,7 +369,7 @@ describe('misc item usages (T6)', () => {
       const { state, actor } = battle();
       addItem(state, actor.team, code, 1);
       expect(runItem(state, actor, code, actor.id).ok).toBe(true);
-      expect(itemCount(state, actor.team, code)).toBe(0);
+      // кейс расходуется; среди выпавших может снова оказаться тот же код
       check(teamInventory(state, actor.team));
       expect(toBattleSummary(state).teams[actor.team].inventory.length).toBeGreaterThan(0);
     }

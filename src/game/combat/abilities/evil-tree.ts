@@ -1,3 +1,5 @@
+import { economyOn } from '../../economy';
+import { addPerkToUnit, applyPerkInstant, pickUnlearnedPerkId } from '../../perks/apply';
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { effectLogLabel } from '../effect-labels';
 import { addMana, delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
@@ -201,6 +203,13 @@ export const evilTreeAbilities: AbilityHandler = {
         state.log.push(
           `${actor.displayName}: мудрость — ${target.displayName} укрепляет броню (${rounds} р.).`
         );
+      }
+      if (economyOn(state)) {
+        const perkId = pickUnlearnedPerkId(target);
+        if (perkId) {
+          addPerkToUnit(target, perkId);
+          applyPerkInstant(state, target, perkId);
+        }
       }
       return { status: 'done' };
     }

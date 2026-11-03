@@ -5,7 +5,17 @@ import { PLAYER_COOKIE_NAME } from '../../shared/constants/session';
 import { prisma } from '../../shared/db';
 import { MatchesService } from './service';
 
-const BATTLE_ACTIONS = new Set(['attack', 'defend', 'wait', 'skill', 'ability', 'move', 'item']);
+const BATTLE_ACTIONS = new Set([
+  'attack',
+  'defend',
+  'wait',
+  'skill',
+  'ability',
+  'move',
+  'item',
+  'perk_pick',
+  'perk_skip',
+]);
 const ABILITY_SLOTS = new Set([1, 2, 3, 4, 5]);
 
 type SocketSession = {
@@ -117,11 +127,21 @@ async function handleBattleMessage(
       matchId,
       playerId,
       unitId: message.unitId,
-      action: action as 'attack' | 'defend' | 'wait' | 'skill' | 'ability' | 'move' | 'item',
+      action: action as
+        | 'attack'
+        | 'defend'
+        | 'wait'
+        | 'skill'
+        | 'ability'
+        | 'move'
+        | 'item'
+        | 'perk_pick'
+        | 'perk_skip',
       targetId: typeof message.targetId === 'string' ? message.targetId : undefined,
       slot: typeof slot === 'number' ? (slot as 1 | 2 | 3 | 4 | 5) : undefined,
       choice: typeof message.choice === 'string' ? message.choice : undefined,
       itemCode: typeof message.itemCode === 'number' ? message.itemCode : undefined,
+      perkId: typeof message.perkId === 'string' ? message.perkId : undefined,
     });
     if (!result.ok) {
       fail(result.message);

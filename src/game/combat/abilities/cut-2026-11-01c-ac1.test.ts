@@ -261,11 +261,11 @@ describe('CUT-2026-11-01c AC-1', () => {
     expect(unit.alive).toBe(false);
   });
 
-  test('TODO(items) and TODO(perks) present in morale.ts source', async () => {
+  test('TODO(items) present in morale.ts source; TODO(perks) снят (T11)', async () => {
     const file = await Bun.file(new URL('../morale.ts', import.meta.url)).text();
     expect(file).toContain(
       'TODO(items): Шизофрения — уничтожать 2 случайных предмета, когда появятся предметы'
     );
-    expect(file).toContain('TODO(perks): Деградация — терять все перки');
+    expect(file).not.toContain('TODO(perks): Деградация — терять все перки');
   });
 });

@@ -1,3 +1,5 @@
+import { economyOn } from '../../economy';
+import { unitHasPerk } from '../../perks/apply';
 import { resistsForClass } from '../defaultResists';
 import { levelUpUnit } from '../level';
 import { cloneResists } from '../resists';
@@ -138,6 +140,10 @@ export function createSummon(
     levelUpUnit(unit, catchUp, state);
   }
   unit.health = unit.maxHp;
+  if (economyOn(state) && unitHasPerk(input.summoner, 'SUMMON_LEVEL_UP') && !input.replaceUnitId) {
+    levelUpUnit(unit, 3, state);
+    unit.health = unit.maxHp;
+  }
   return unit;
 }
 
