@@ -13,18 +13,14 @@ export const playersController = new Elysia({ prefix: '/players', tags: ['Player
     '/me',
     async ({ cookie }) => {
       const rawValue: unknown = cookie[PLAYER_COOKIE_NAME]?.value;
-      const jsonNull = () =>
-        new Response('null', {
-          status: 200,
-          headers: { 'content-type': 'application/json; charset=utf-8' },
-        });
+      // Возвращаем null (не new Response): Elysia 1.4 валидирует Response как {} → 422.
+      // Клиент в fetchCurrentPlayer уже принимает 200 + пустое тело / "null" / JSON null.
       if (typeof rawValue !== 'string' || rawValue.length === 0) {
-        // Явный JSON null — пустое тело ломает response.json() на клиенте
-        return jsonNull();
+        return null;
       }
       const player = await PlayersService.findAuthenticatedById(rawValue);
       if (!player) {
-        return jsonNull();
+        return null;
       }
       return player;
     },
