@@ -182,6 +182,10 @@ export function healUnit(unit: BattleUnit, amount: number): number {
   if (blessed) {
     healed = Math.round(healed * (1 + blessed.power));
   }
+  const rate = unit.healRate ?? 1;
+  if (rate !== 1) {
+    healed = Math.round(healed * rate);
+  }
   const before = unit.health;
   unit.health = Math.min(unit.maxHp, unit.health + healed);
   return unit.health - before;
@@ -232,13 +236,17 @@ export function shacklesBurnAmount(cost: number, lvl = 1): number {
  * Воскрешение (строгое): maxHp и инициатива режутся вдвое,
  * повторно воскресить юнита нельзя (forbiddenResurrect всегда).
  */
-export function resurrectUnit(state: BattleState, unit: BattleUnit): void {
+export function resurrectUnit(
+  state: BattleState,
+  unit: BattleUnit,
+  opts?: { readonly forbiddenResurrect?: boolean }
+): void {
   unit.alive = true;
   unit.maxHp = Math.max(1, Math.floor(unit.maxHp / 2));
   unit.health = unit.maxHp;
   unit.initiative = Math.max(1, Math.floor(unit.initiative / 2));
   unit.defending = false;
-  unit.forbiddenResurrect = true;
+  unit.forbiddenResurrect = opts?.forbiddenResurrect ?? true;
   state.graveyard = state.graveyard.filter((item) => item.unitId !== unit.id);
 }
 

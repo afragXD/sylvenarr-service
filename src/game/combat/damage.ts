@@ -821,7 +821,7 @@ export function markDeadIfNeeded(state: BattleState, unit: BattleUnit, opts?: Ma
   }
   if (!unit.isSummon) {
     const summons = state.units.filter(
-      (other) => other.alive && other.isSummon && other.summonerId === unit.id
+      (other) => other.alive && other.isSummon && other.summonerId === unit.id && !other.isMercenary
     );
     for (const summon of summons) {
       summon.health = 0;

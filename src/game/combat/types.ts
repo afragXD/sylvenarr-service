@@ -258,6 +258,12 @@ export type BattleUnit = {
   merchant?: number;
   /** Темп предложения перков (по умолчанию 6); старые снимки — нет поля. */
   develop?: number;
+  /** Множитель получаемого лечения (по умолчанию 1). */
+  healRate?: number;
+  /** Наёмный саммон: не исчезает со смертью хозяина. */
+  isMercenary?: boolean;
+  /** Искусственный юнит (предмет 762); психоз/болезни пропускаются. */
+  artificial?: boolean;
   /** Кулдауны слотов в раундах (Antipaladin / Angel / Incub); в старых снимках поля нет. */
   abilityCds?: Partial<Record<AbilitySlot, number>>;
   /** Antipaladin: накопленный нанесённый урон для «Шквала ударов». */

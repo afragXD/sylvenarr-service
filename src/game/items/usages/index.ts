@@ -1,4 +1,8 @@
+import { registerArtifactItemUsages } from './artifacts';
 import { registerMiscItemUsages } from './misc';
+import { registerOrbItemUsages } from './orbs';
+import { registerRelicItemUsages } from './relics';
+import { registerScrollItemUsages } from './scrolls';
 import type { ItemUsageHandler, ItemUsageOutcome } from './types';
 
 export type { ItemUsageContext, ItemUsageHandler, ItemUsageOutcome } from './types';
@@ -26,6 +30,10 @@ export function registerItemUsage(code: number, handler: ItemUsageHandler): void
 
 function registerBuiltinItemUsages(): void {
   registerMiscItemUsages(registerItemUsage);
+  registerRelicItemUsages(registerItemUsage);
+  registerArtifactItemUsages(registerItemUsage);
+  registerOrbItemUsages(registerItemUsage);
+  registerScrollItemUsages(registerItemUsage);
 }
 
 /** Сброс реестра и повторная установка встроенных обработчиков (тесты). */

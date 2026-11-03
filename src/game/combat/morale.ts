@@ -80,7 +80,11 @@ export function lowMoraleDebuffChance(morale: number): number {
 }
 
 function isMoraleImmune(unit: BattleUnit): boolean {
-  return isUndeadClass(unit.heroClassCode) || isArtificialClass(unit.heroClassCode);
+  return (
+    unit.artificial === true ||
+    isUndeadClass(unit.heroClassCode) ||
+    isArtificialClass(unit.heroClassCode)
+  );
 }
 
 function isMageUnit(state: BattleState, unit: BattleUnit): boolean {
