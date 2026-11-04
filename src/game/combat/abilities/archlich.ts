@@ -185,8 +185,10 @@ export const archlichAbilities: AbilityHandler = {
       // Было 3 применения; −1 → скелет-чемпион на 2-м.
       if (target.lichGrade === 2) {
         const ratio = Math.min(1, target.health / target.maxHp + 0.2);
+        const master = evolutionMaster(state, target, actor);
         const summon = createSummon(state, {
-          summoner: actor,
+          summoner: master,
+          level: actor.lvl,
           heroCode: 'SkeletonChampion',
           row: target.row,
           column: target.column,
@@ -313,6 +315,17 @@ export const archlichAbilities: AbilityHandler = {
   },
 };
 
+/**
+ * Эволюция меняет форму. Хозяин остаётся у того, кто призвал нежить.
+ * Если мастера уже нет в бою, форма закрепляется за кастером.
+ */
+function evolutionMaster(state: BattleState, target: BattleUnit, actor: BattleUnit): BattleUnit {
+  if (!target.summonerId) {
+    return actor;
+  }
+  return state.units.find((unit) => unit.id === target.summonerId) ?? actor;
+}
+
 function resolvePrompt(
   state: BattleState,
   actor: BattleUnit,
@@ -351,8 +364,10 @@ function resolvePrompt(
       return { status: 'reject', message: 'Цель эволюции потеряна' };
     }
     const code = choice === 'ghost' ? 'GhostWarrior' : 'EvilTree';
+    const master = evolutionMaster(state, target, actor);
     const summon = createSummon(state, {
-      summoner: actor,
+      summoner: master,
+      level: actor.lvl,
       heroCode: code,
       row: target.row,
       column: target.column,
