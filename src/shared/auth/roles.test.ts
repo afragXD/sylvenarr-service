@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { isStaffRole } from './roles';
+import { isCreatorRole, isStaffRole } from './roles';
 
 describe('isStaffRole', () => {
   test('admin и creator — staff', () => {
@@ -13,5 +13,13 @@ describe('isStaffRole', () => {
     expect(isStaffRole(null)).toBe(false);
     expect(isStaffRole(undefined)).toBe(false);
     expect(isStaffRole('')).toBe(false);
+  });
+});
+
+describe('isCreatorRole', () => {
+  test('только creator', () => {
+    expect(isCreatorRole('creator')).toBe(true);
+    expect(isCreatorRole('admin')).toBe(false);
+    expect(isCreatorRole('player')).toBe(false);
   });
 });

@@ -77,7 +77,7 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         label: 'Превращение',
         needsTarget: true,
         disabledReason:
-          cdReason(actor, 5, 3) ??
+          cdReason(actor, 5, 4) ??
           (actor.mana < 4 ? 'Нужно 4 МР' : targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
