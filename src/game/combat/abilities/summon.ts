@@ -1,6 +1,7 @@
 import { economyOn } from '../../economy';
 import { unitHasPerk } from '../../perks/apply';
 import { resistsForClass } from '../defaultResists';
+import { genderForClass } from '../gender';
 import { levelUpUnit } from '../level';
 import { cloneResists } from '../resists';
 import type { BattleState, BattleUnit } from '../types';
@@ -94,6 +95,7 @@ export function createSummon(
     resists: resistsForClass(hero.code),
     isSummon: true,
     summonerId: input.summoner.id,
+    gender: genderForClass(hero.code),
     horseIsDead: false,
     authority: 0,
     maxSummons: 0,
@@ -203,6 +205,7 @@ export function createPhantomCopy(
     resists: cloneResists(template.resists),
     isSummon: true,
     summonerId: summoner.id,
+    gender: genderForClass(template.heroClassCode),
     horseIsDead: false,
     authority: 0,
     maxSummons: 0,

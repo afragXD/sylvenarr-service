@@ -5,7 +5,7 @@ import { PresetsService } from './service';
 
 const suffix = Date.now().toString(36);
 
-async function createPlayer(role: 'player' | 'admin' = 'player') {
+async function createPlayer(role: 'player' | 'admin' | 'creator' = 'player') {
   return prisma.player.create({
     data: {
       displayName: `preset-test-${role}-${suffix}-${Math.random().toString(36).slice(2, 7)}`,
@@ -130,6 +130,31 @@ describe('PresetsService', () => {
     const removed = await PresetsService.remove({
       presetId: created.preset.id,
       playerId: admin.id,
+      isAdmin: true,
+    });
+    expect(removed.ok).toBe(true);
+    createdPresetIds.splice(createdPresetIds.indexOf(created.preset.id), 1);
+  });
+
+  test('creator creates and deletes global (как admin)', async () => {
+    const creator = await createPlayer('creator');
+    createdPlayerIds.push(creator.id);
+
+    const created = await PresetsService.create({
+      playerId: creator.id,
+      isAdmin: true,
+      body: { name: `Креатор ${suffix}`, slots: trioSlots, global: true },
+    });
+    expect(created.ok).toBe(true);
+    if (!created.ok) {
+      return;
+    }
+    createdPresetIds.push(created.preset.id);
+    expect(created.preset.isGlobal).toBe(true);
+
+    const removed = await PresetsService.remove({
+      presetId: created.preset.id,
+      playerId: creator.id,
       isAdmin: true,
     });
     expect(removed.ok).toBe(true);

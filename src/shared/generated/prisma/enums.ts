@@ -33,7 +33,8 @@ export type RatingResult = (typeof RatingResult)[keyof typeof RatingResult]
 
 export const PlayerRole = {
   player: 'player',
-  admin: 'admin'
+  admin: 'admin',
+  creator: 'creator'
 } as const
 
 export type PlayerRole = (typeof PlayerRole)[keyof typeof PlayerRole]

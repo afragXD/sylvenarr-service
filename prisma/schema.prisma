@@ -26,6 +26,8 @@ enum RatingResult {
 enum PlayerRole {
   player
   admin
+  /// Контент-креатор: пока те же права, что у admin.
+  creator
 }
 
 enum NewsCategory {

@@ -1,9 +1,59 @@
 import { addTeamGold } from '../../economy';
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { grantEffect } from '../effects';
+import { genderForClass } from '../gender';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesOf } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
+
+/** Штраф морали за каждую женщину в отряде (если F ≥ 1). */
+export const BEER_COMPANY_FEMALE_LOSS = 5;
+/** Бонус морали за каждого мужчину (только если F = 0). */
+export const BEER_COMPANY_MALE_GAIN = 4;
+
+function unitGender(unit: BattleUnit) {
+  return unit.gender ?? genderForClass(unit.heroClassCode);
+}
+
+/**
+ * Пассивка «Компания за кружкой»: в начале раунда.
+ * F ≥ 1 → −5·F; F = 0 и M ≥ 1 → +4·M. Себя не считаем.
+ */
+export function applyBeerCompanyMoraleRoundStart(state: BattleState): void {
+  for (const actor of state.units) {
+    if (!actor.alive || actor.heroClassCode !== 'BeerElemental') {
+      continue;
+    }
+    let females = 0;
+    let males = 0;
+    for (const ally of alliesOf(state, actor)) {
+      if (ally.id === actor.id) {
+        continue;
+      }
+      const g = unitGender(ally);
+      if (g === 'female') {
+        females += 1;
+      } else if (g === 'male') {
+        males += 1;
+      }
+    }
+    if (females >= 1) {
+      const loss = BEER_COMPANY_FEMALE_LOSS * females;
+      actor.morale -= loss;
+      state.log.push(
+        `${actor.displayName}: компания давит на дух (−${loss} боевого духа; дам в отряде: ${females}).`
+      );
+      continue;
+    }
+    if (males >= 1) {
+      const gain = BEER_COMPANY_MALE_GAIN * males;
+      actor.morale += gain;
+      state.log.push(
+        `${actor.displayName}: своя компания бодрит (+${gain} боевого духа; товарищей: ${males}).`
+      );
+    }
+  }
+}
 
 function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {

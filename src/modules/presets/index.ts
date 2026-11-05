@@ -1,5 +1,6 @@
 import { Elysia, t } from 'elysia';
 
+import { isStaffRole } from '../../shared/auth/roles';
 import { playerSessionPlugin } from '../../shared/plugins/player-session';
 import { PresetsModel } from './model';
 import { PresetsService } from './service';
@@ -56,7 +57,7 @@ export const presetsController = new Elysia({ prefix: '/presets', tags: ['Preset
     async ({ body, player, status }) => {
       const result = await PresetsService.create({
         playerId: player.id,
-        isAdmin: player.role === 'admin',
+        isAdmin: isStaffRole(player.role),
         body,
       });
       if (!result.ok) {
@@ -84,7 +85,7 @@ export const presetsController = new Elysia({ prefix: '/presets', tags: ['Preset
       const result = await PresetsService.update({
         presetId: params.id,
         playerId: player.id,
-        isAdmin: player.role === 'admin',
+        isAdmin: isStaffRole(player.role),
         body,
       });
       if (!result.ok) {
@@ -114,7 +115,7 @@ export const presetsController = new Elysia({ prefix: '/presets', tags: ['Preset
       const result = await PresetsService.remove({
         presetId: params.id,
         playerId: player.id,
-        isAdmin: player.role === 'admin',
+        isAdmin: isStaffRole(player.role),
       });
       if (!result.ok) {
         return status(result.status, { message: result.message });

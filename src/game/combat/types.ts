@@ -1,4 +1,7 @@
 import type { DamageSource } from './damageSources';
+import type { HeroGender } from './gender';
+
+export type { HeroGender } from './gender';
 
 export type BattleAction =
   | 'attack'
@@ -228,6 +231,11 @@ export type BattleUnit = {
   resists: ResistMap;
   isSummon: boolean;
   summonerId: string | null;
+  /**
+   * Пол юнита (CUT-2026-11-05 BeerElemental + переиспользование).
+   * Старые снимки без поля — трактовать через genderForClass(heroClassCode).
+   */
+  gender?: HeroGender;
   /** Пилотные runtime-флаги. */
   horseIsDead: boolean;
   authority: number;

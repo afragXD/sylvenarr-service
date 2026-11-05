@@ -46,6 +46,7 @@ import {
 } from './effects';
 import { setEffectState } from './effects/context';
 import { levelUpLivingUnits, levelUpUnit } from './level';
+import { applyBeerCompanyMoraleRoundStart } from './abilities/beer-elemental';
 import {
   applyIllnessTurnStart,
   applyMasochismRoundStart,
@@ -54,6 +55,7 @@ import {
   maybeRewardHighMorale,
   normalizeUnit,
 } from './morale';
+import { genderForClass } from './gender';
 import { summarizeResists } from './resists';
 import { HEALTH_BONUS, MAX_ROUNDS, MAX_ROW_SIZE, MAX_TEAM_SIZE, ROW_FRONT } from './settings';
 import { dropSfx, pushSfx } from './sfx';
@@ -236,6 +238,7 @@ function buildTeamUnits(
         resists: resistsForClass(hero.code),
         isSummon: false,
         summonerId: null,
+        gender: genderForClass(hero.code),
         horseIsDead: false,
         authority: 0,
         maxSummons: 0,
@@ -343,6 +346,7 @@ export function advanceToNextUnit(state: BattleState): void {
       }
       state.log.push(...levelUpLogs);
       applyMasochismRoundStart(state);
+      applyBeerCompanyMoraleRoundStart(state);
       // Уровни → перки (за раунд до ярмарки) → ярмарка → раунд.
       if (beginPerkPhase(state)) {
         return;
@@ -1223,6 +1227,7 @@ export function toBattleSummary(state: BattleState) {
       summonerName: unit.summonerId
         ? (state.units.find((other) => other.id === unit.summonerId)?.displayName ?? null)
         : null,
+      gender: unit.gender ?? genderForClass(unit.heroClassCode),
       horseIsDead: unit.horseIsDead,
       mana: unit.mana,
       maxMana: unit.maxMana,

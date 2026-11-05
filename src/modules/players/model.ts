@@ -3,7 +3,11 @@ import { t } from 'elysia';
 import { MatchesModel } from '../matches/model';
 
 export namespace PlayersModel {
-  export const playerRole = t.Union([t.Literal('player'), t.Literal('admin')]);
+  export const playerRole = t.Union([
+    t.Literal('player'),
+    t.Literal('admin'),
+    t.Literal('creator'),
+  ]);
   export type playerRole = typeof playerRole.static;
 
   export const player = t.Object({

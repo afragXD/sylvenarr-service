@@ -1,4 +1,5 @@
 import { resistsForClass } from './defaultResists';
+import { genderForClass } from './gender';
 import type { BattleState, BattleUnit } from './types';
 
 /**
@@ -27,6 +28,7 @@ export function transformClassOnly(state: BattleState, unit: BattleUnit, code: s
   }
   unit.heroClassCode = hero.code;
   unit.displayName = hero.displayName;
+  unit.gender = genderForClass(hero.code);
   return true;
 }
 
@@ -42,6 +44,7 @@ export function applyCatalogStats(state: BattleState, unit: BattleUnit, code: st
   const maxHp = Math.max(1, Math.round(hero.health * state.rules.healthBonus));
   unit.heroClassCode = hero.code;
   unit.displayName = hero.displayName;
+  unit.gender = genderForClass(hero.code);
   unit.maxHp = maxHp;
   unit.health = Math.max(1, Math.min(maxHp, Math.round(maxHp * ratio)));
   unit.damage = hero.damage;
