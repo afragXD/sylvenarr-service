@@ -44,7 +44,13 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         legalTargetIds: melee.map((unit) => unit.id),
       };
     case 3: {
-      const targets = state.units.filter((unit) => unit.alive && unit.team !== actor.team);
+      const targets = state.units.filter(
+        (unit) =>
+          unit.alive &&
+          unit.team !== actor.team &&
+          Math.abs(actor.row - unit.row) <= 1 &&
+          !(actor.row === 1 && unit.row === 1)
+      );
       return {
         slot: 3,
         label: 'Садист',

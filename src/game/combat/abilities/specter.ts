@@ -1,4 +1,4 @@
-import { markDeadIfNeeded, randInt } from '../damage';
+import { harmWithSource, markDeadIfNeeded, randInt } from '../damage';
 import { formatLogDamage } from '../damageSources';
 import { grantEffect, tryStun } from '../effects';
 import { setWardExact } from '../resists';
@@ -73,19 +73,22 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
 }
 
 function ghostParalysis(state: BattleState, actor: BattleUnit, target: BattleUnit): void {
-  const chance = Math.min(95, actor.accuracy + actor.lvl);
+  const chance = Math.min(88, actor.accuracy + actor.lvl);
   if (randInt(1, 100) <= chance) {
     if (tryStun(state, target, 1)) {
       state.log.push(`${actor.displayName} парализует ${target.displayName}.`);
     }
     return;
-  } else {
-    const dmg = Math.max(1, Math.round(actor.power * 0.5));
-    target.health -= dmg;
+  }
+  const mindAmount = randInt(5, 9) + actor.lvl * 2;
+  const dealt = harmWithSource(state, target, mindAmount, 'MIND');
+  if (dealt > 0) {
     state.log.push(
-      `${target.displayName} сопротивляется ужасу и теряет ${formatLogDamage(dmg, 'MIND')} ОЗ.`
+      `${target.displayName} сопротивляется ужасу и теряет ${formatLogDamage(dealt, 'MIND')} ОЗ.`
     );
     markDeadIfNeeded(state, target);
+  } else {
+    state.log.push(`${target.displayName} отражает удар разума.`);
   }
 }
 

@@ -77,6 +77,7 @@ export const DEFAULT_RESISTS: Record<string, ResistMap> = {
     ['DEATH', { value: 80, ward: 1 }],
     ['LOWERINGLEVEL', { immune: true }],
     ['POLYMORPH', { ward: 1 }],
+    ['STUN', { value: 33 }],
   ]),
   GhostWarrior: map([
     ['FIRE', { value: -15 }],
@@ -99,6 +100,7 @@ export const DEFAULT_RESISTS: Record<string, ResistMap> = {
     ['MOVEMENT', { immune: true }],
     ['FIRE', { value: 50, ward: 1 }],
     ['MIND', { ward: 1 }],
+    ['STUN', { value: 33 }],
   ]),
   Abbess: map([
     ['IMITATION', { ward: 1 }],
@@ -136,7 +138,7 @@ export const DEFAULT_RESISTS: Record<string, ResistMap> = {
     ['POLYMORPH', { ward: 1 }],
   ]),
   Titan: map([
-    ['STUN', { value: 25, ward: 1 }],
+    ['STUN', { value: 60, ward: 1 }],
     ['HOLY', { value: 25 }],
     ['DEATH', { value: 25 }],
   ]),

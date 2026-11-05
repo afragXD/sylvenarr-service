@@ -1,5 +1,5 @@
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
-import { addMana, delEffect, grantEffect, healUnit } from '../effects';
+import { addMana, delEffect, grantEffect, healUnit, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
 import { rollMindChance } from '../resists';
 import { pushSfx } from '../sfx';
@@ -92,8 +92,11 @@ export const archlichAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      if (!spendMana(actor, 3, state)) {
-        return { status: 'reject', message: 'Нужно 3 МР' };
+      {
+        const err = trySpendMana(actor, 3);
+        if (err) {
+          return { status: 'reject', message: err };
+        }
       }
       const damage = dealDamage(
         actor,
@@ -114,7 +117,7 @@ export const archlichAbilities: AbilityHandler = {
         .sort(() => Math.random() - 0.5)
         .slice(0, Math.max(1, Math.floor(actor.lvl / 5) + 1));
       for (const extra of extras) {
-        if (!spendMana(actor, 1, state, true)) {
+        if (trySpendMana(actor, 1)) {
           break;
         }
         const splash = dealDamage(
@@ -141,8 +144,11 @@ export const archlichAbilities: AbilityHandler = {
       if (target.id !== actor.id && !target.isLichSummon) {
         return { status: 'reject', message: 'Нужна своя нежить или сам лич' };
       }
-      if (!spendMana(actor, 3, state)) {
-        return { status: 'reject', message: 'Нужно 3 МР' };
+      {
+        const err = trySpendMana(actor, 3);
+        if (err) {
+          return { status: 'reject', message: err };
+        }
       }
 
       if (target.id === actor.id) {
@@ -240,8 +246,11 @@ export const archlichAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      if (!spendMana(actor, 2, state)) {
-        return { status: 'reject', message: 'Нужно 2 МР' };
+      {
+        const err = trySpendMana(actor, 2);
+        if (err) {
+          return { status: 'reject', message: err };
+        }
       }
       if (target.isSummon) {
         const levels = 1 + Math.floor(actor.lvl / 4);
@@ -269,8 +278,11 @@ export const archlichAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       // CUT-2026-11-01c AC-4: Показ коллекции — 2 МР.
-      if (!spendMana(actor, 2, state)) {
-        return { status: 'reject', message: 'Нужно 2 МР' };
+      {
+        const err = trySpendMana(actor, 2);
+        if (err) {
+          return { status: 'reject', message: err };
+        }
       }
       // Порт evade(other, 1) из бота.
       // Порт evade(): miss = dodge + 1 + 95 − accuracy.
@@ -296,8 +308,11 @@ export const archlichAbilities: AbilityHandler = {
     if (!victim || victim.id === actor.id) {
       return { status: 'reject', message: 'Нужен союзник' };
     }
-    if (!spendMana(actor, 3, state)) {
-      return { status: 'reject', message: 'Нужно 3 МР' };
+    {
+      const err = trySpendMana(actor, 3);
+      if (err) {
+        return { status: 'reject', message: err };
+      }
     }
     const manaBoost = Math.max(1, Math.round(victim.health / 30));
     addMana(actor, manaBoost);
@@ -386,13 +401,3 @@ function resolvePrompt(
   return { status: 'reject', message: 'Неизвестный prompt' };
 }
 
-function spendMana(actor: BattleUnit, amount: number, state: BattleState, silent = false): boolean {
-  if (actor.mana < amount) {
-    if (!silent) {
-      state.log.push(`Недостаточно маны (${amount}).`);
-    }
-    return false;
-  }
-  actor.mana -= amount;
-  return true;
-}

@@ -36,16 +36,17 @@ const seed = (code: string) => {
 
 describe('CUT-2026-11-01c AC-3', () => {
   test('fixture heroes-stats: Abbess/Mermaid/Titan/DemonLord числа', () => {
-    // QA 2026-11-03: боевая база 205/12, 180, 26; Демон-принц точность 95.
-    expect(seed('Abbess').health).toBe(205);
-    expect(seed('Abbess').mana).toBe(12);
-    expect(seed('Mermaid').health).toBe(180);
-    expect(seed('Titan').damage).toBe(26);
+    // CUT-2026-11-05 AC-3: 185/10/162/36; Демон-принц точность 95.
+    expect(seed('Abbess').health).toBe(185);
+    expect(seed('Abbess').mana).toBe(10);
+    expect(seed('Mermaid').health).toBe(162);
+    expect(seed('Mermaid').mana).toBe(10);
+    expect(seed('Titan').damage).toBe(36);
     expect(seed('DemonLord').accuracy).toBe(95);
   });
 
-  test('fixture knight-armor-growth: +lvl//4 на lvl 3/8/20', () => {
-    const base = (lvl: number) => {
+  test('fixture knight-armor-growth: base+⌊lvl/4⌋ не накопительно; L8 = 31', () => {
+    const singleStep = (lvl: number) => {
       const state = createBattleState({
         matchId: 'ac3-knight',
         hostPlayerId: 'h',
@@ -65,9 +66,31 @@ describe('CUT-2026-11-01c AC-3', () => {
       applyClassLevelUp(unit, 1, state);
       return unit.armor - 10;
     };
-    expect(base(3)).toBe(2 + 0); // 2 + 3//4
-    expect(base(8)).toBe(2 + 2);
-    expect(base(20)).toBe(2 + 5);
+    // +2 + дельта ⌊(L+1)/4⌋−⌊L/4⌋
+    expect(singleStep(3)).toBe(2 + 1); // 3→4: floor 0→1
+    expect(singleStep(8)).toBe(2 + 0); // 8→9: floor 2→2
+    expect(singleStep(19)).toBe(2 + 1); // 19→20: floor 4→5
+
+    const state = createBattleState({
+      matchId: 'ac3-knight-abs',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Knight', row: 0, pickOrder: 1 },
+        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes: new Map([
+        ['Knight', hero('Knight', { armor: 15 })],
+        ['B', hero('B')],
+      ]),
+    });
+    const unit = state.units.find((u) => u.id === 'p1')!;
+    unit.lvl = 1;
+    unit.armor = 15;
+    while (unit.lvl < 8) {
+      applyClassLevelUp(unit, 1, state);
+    }
+    expect(unit.armor).toBe(31);
   });
 
   test('fixture inquisitor-armor16 / werewolf damage 2..3+L//2', () => {
@@ -224,7 +247,7 @@ describe('CUT-2026-11-01c AC-4', () => {
     expect(ally.lvl).toBe(before + 1 + 2);
   });
 
-  test('fixture witch-imp: 1 раунд, 100% без резиста', () => {
+  test('fixture witch-imp: 2 раунда, 100% без резиста', () => {
     let ok = 0;
     for (let i = 0; i < 20; i += 1) {
       const state = createBattleState({
@@ -247,7 +270,8 @@ describe('CUT-2026-11-01c AC-4', () => {
       applyAbility(state, witch, { slot: 5, targetId: 'e1' });
       if (foe.heroClassCode === 'Imp') {
         ok += 1;
-        expect(foe.effects.find((e) => e.id === 'IMPISH')?.rounds).toBe(1);
+        expect(foe.effects.find((e) => e.id === 'IMPISH')?.rounds).toBe(2);
+        expect(witch.abilityCds?.[5]).toBe(4);
       }
     }
     expect(ok).toBe(20);

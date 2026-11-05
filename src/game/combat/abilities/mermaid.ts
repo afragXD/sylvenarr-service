@@ -1,9 +1,28 @@
 import { randInt } from '../damage';
-import { addMana, enslaveUnit, grantEffect, healUnit, trySpendMana, tryStun } from '../effects';
+import {
+  addMana,
+  enslaveUnit,
+  grantEffect,
+  hasEffect,
+  healUnit,
+  trySpendMana,
+  tryStun,
+} from '../effects';
 import { resistsEnslave } from '../races';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { alliesOf, enemiesOf, unitsOnSameRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
+
+function manaReason(actor: BattleUnit, cost: number): string | null {
+  if (hasEffect(actor, 'SILENCE')) {
+    return 'Немота — нельзя тратить ману';
+  }
+  if (actor.mana < cost) {
+    return `Нужно ${cost} МР`;
+  }
+  return null;
+}
 
 function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
   switch (slot) {
@@ -11,19 +30,21 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
       const allies = alliesOf(state, actor);
       return {
         slot: 1,
-        label: 'Морской бриз',
+        label: 'Морской бриз (1 МР)',
         needsTarget: true,
-        disabledReason: allies.length === 0 ? 'Нет союзников' : null,
+        disabledReason: manaReason(actor, 1) ?? (allies.length === 0 ? 'Нет союзников' : null),
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
     case 2: {
       const targets = enemiesOf(state, actor);
+      const cd = cdReason(actor, 2);
       return {
         slot: 2,
-        label: 'Обледенение ряда',
+        label: 'Обледенение ряда (2 МР)',
         needsTarget: true,
-        disabledReason: targets.length === 0 ? 'Нет целей' : null,
+        disabledReason:
+          cd ?? manaReason(actor, 2) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -42,9 +63,10 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
       const targets = enemiesOf(state, actor);
       return {
         slot: 4,
-        label: 'Волшебные оковы',
+        label: 'Волшебные оковы (2 МР)',
         needsTarget: true,
-        disabledReason: actor.mana < 2 ? 'Нужно 2 МР' : targets.length === 0 ? 'Нет целей' : null,
+        disabledReason:
+          manaReason(actor, 2) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -67,6 +89,10 @@ export const mermaidAbilities: AbilityHandler = {
     return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
   },
 
+  preChoice(_state, actor) {
+    tickSlotCds(actor);
+  },
+
   apply(state, actor, input): AbilityOutcome {
     const meta = abilityMeta(state, actor, input.slot);
     if (meta.disabledReason) {
@@ -74,11 +100,15 @@ export const mermaidAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
+      const err = trySpendMana(actor, 1);
+      if (err) {
+        return { status: 'reject', message: err };
+      }
       const target = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
+        addMana(actor, 1);
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      // Было: 20×(2−оз/max) + L×5, точность L×2+2 — слишком жирно.
       const bonusForLowHp = Math.round(actor.power * (2 - target.health / target.maxHp));
       const amount = actor.lvl * 2 + bonusForLowHp;
       const healed = healUnit(target, amount);
@@ -91,8 +121,13 @@ export const mermaidAbilities: AbilityHandler = {
     }
 
     if (input.slot === 2) {
+      const err = trySpendMana(actor, 2);
+      if (err) {
+        return { status: 'reject', message: err };
+      }
       const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
+        addMana(actor, 2);
         return { status: 'reject', message: 'Цель не найдена' };
       }
       const row = unitsOnSameRow(state, target);
@@ -106,6 +141,7 @@ export const mermaidAbilities: AbilityHandler = {
           state.log.push(`${enemy.displayName} отразил обледенение.`);
         }
       }
+      setSlotCd(actor, 2, 3);
       return { status: 'done' };
     }
 
@@ -127,7 +163,6 @@ export const mermaidAbilities: AbilityHandler = {
         );
         return { status: 'done' };
       }
-      // CUT-2026-11-01c AC-4: на гигантов — только с 10+ уровня Русалки.
       const targetSize = state.catalog[target.heroClassCode]?.size ?? 1;
       if (targetSize >= 2 && actor.lvl < 10) {
         state.log.push(`${actor.displayName}: песнь не действует на гигантов до 10 уровня.`);

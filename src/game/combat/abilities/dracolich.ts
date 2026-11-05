@@ -290,7 +290,7 @@ export const dracolichAbilities: AbilityHandler = {
       for (const unit of undead) {
         levelUpUnit(unit, levels, state);
       }
-      setSlotCd(actor, 3, 2);
+      setSlotCd(actor, 3, 4);
       state.log.push(
         `${actor.displayName} читает молитву нежити: +${levels} ур. (${undead.length} цел.).`
       );

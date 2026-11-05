@@ -244,7 +244,7 @@ describe('halloween pumpkin update', () => {
     expect(mage.crystalCharmsCd).toBe(2);
   });
 
-  test('Inquisitor telekinesis sets CD 2', () => {
+  test('Inquisitor telekinesis sets CD 3', () => {
     const heroes = new Map([
       ['Inquisitor', hero('Inquisitor', { initiative: 99, mana: 10 })],
       ['B', hero('B', { initiative: 1 })],
@@ -270,7 +270,7 @@ describe('halloween pumpkin update', () => {
       targetId: 'p2',
     });
     expect(result.ok).toBe(true);
-    expect(mage.telekinesisCd).toBe(2);
+    expect(mage.telekinesisCd).toBe(3);
   });
 
   test('Specter passive drains mage mana; ritual wards ally; veil grants CHAMELEON', () => {

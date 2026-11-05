@@ -135,7 +135,7 @@ export function initPilotFlags(unit: BattleUnit): void {
   unit.maxSummons = baseMaxSummonsForClass(unit.heroClassCode);
   switch (unit.heroClassCode) {
     case 'OrcKing':
-      unit.authority = 2 + Math.floor(Math.random() * 2);
+      unit.authority = 2;
       break;
     case 'DemonLord':
       unit.ultaCharges = 2;

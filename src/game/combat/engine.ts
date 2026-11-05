@@ -397,6 +397,9 @@ export function advanceToNextUnit(state: BattleState): void {
   state.activeUnitId = next.id;
   state.turnPlayerId = next.playerId;
   state.log.push(`—— ХОД: ${next.displayName} ——`);
+  if (next.alive) {
+    maybeRewardHighMorale(state, next);
+  }
 
   if (isPilotClass(next.heroClassCode) && !state.preChoiceDoneIds.includes(next.id)) {
     runPreChoice(state, next);
@@ -993,7 +996,6 @@ function finishUnitTurn(state: BattleState, actor: BattleUnit): void {
   }
   if (actor.alive) {
     normalizeUnit(actor, state);
-    maybeRewardHighMorale(state, actor);
     maybePunishLowMorale(state, actor);
   }
   state.pendingPrompt = null;
@@ -1217,6 +1219,10 @@ export function toBattleSummary(state: BattleState) {
         power: effect.power,
       })),
       isSummon: unit.isSummon,
+      summonerId: unit.summonerId,
+      summonerName: unit.summonerId
+        ? (state.units.find((other) => other.id === unit.summonerId)?.displayName ?? null)
+        : null,
       horseIsDead: unit.horseIsDead,
       mana: unit.mana,
       maxMana: unit.maxMana,

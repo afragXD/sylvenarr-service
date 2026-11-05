@@ -8,6 +8,7 @@ import {
 import { formatLogDamage } from '../damageSources';
 import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
+import { isUndeadClass } from '../races';
 import { changeResist, rollMindChance } from '../resists';
 import { applyCatalogStats } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -129,7 +130,11 @@ export const incubAbilities: AbilityHandler = {
     const lowest = Math.min(...enemies.map((unit) => unit.morale));
     const candidates = enemies.filter((unit) => unit.morale === lowest);
     const victim = candidates[randInt(0, candidates.length - 1)];
-    if (!victim || !rollMindChance(state, victim, 60 + actor.lvl)) {
+    if (
+      !victim ||
+      isUndeadClass(victim.heroClassCode) ||
+      !rollMindChance(state, victim, 60 + actor.lvl)
+    ) {
       return;
     }
     const loss = 5 + Math.floor(actor.lvl / 2);

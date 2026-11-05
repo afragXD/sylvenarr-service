@@ -190,7 +190,7 @@ export const inquisitorAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель недоступна' };
       }
-      actor.telekinesisCd = 2;
+      actor.telekinesisCd = 3;
       if (randInt(1, 100) <= 85 + actor.lvl) {
         const before = target.row;
         moveToOtherRow(target);

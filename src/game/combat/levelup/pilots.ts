@@ -143,10 +143,8 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Witch(unit, ind, _state) {
-    if (unit.hiddenLvl % 5 === 0 && ind > 0) {
-      unit.gun += 3;
-      unit.damage += randInt(10, 15);
-    }
+    // CUT-2026-11-05 AC-7: убран раундовый спайк gun/damage; прирост урона как у Мародёра.
+    unit.damage += (randInt(2, 5) + Math.floor(unit.lvl / 2)) * ind;
     addMana(unit, ind * randInt(1, 2));
     unit.power += (Math.floor(unit.lvl / 2) + 3) * ind;
     changeResist(unit, 'EARTH', 3 * ind);
@@ -161,8 +159,8 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
       state.log.push(`${unit.displayName} получает заряд личного слуги (${unit.ultaCharges}).`);
     }
     healUnit(unit, 5 * ind);
-    // CUT-2026-11-01c AC-7: к прежнему +3 добавить lvl//3.
-    unit.damage += (3 + Math.floor(unit.lvl / 3)) * ind;
+    // CUT-2026-11-05 AC-5: слабее рост атаки (дизейблер).
+    unit.damage += (1 + Math.floor(unit.lvl / 4)) * ind;
     unit.initiative += 2 * ind;
     bumpLevel(unit, ind);
   },
@@ -208,19 +206,27 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
       unit.initiative = Math.floor(unit.initiative / 2);
       unit.horseIsDead = true;
     }
-    // CUT-2026-11-01c AC-3: + lvl//4 к приросту брони.
-    unit.armor += (2 + Math.floor(unit.lvl / 4)) * ind;
+    // CUT-2026-11-05 AC-3: +2 за уровень + абсолютная дельта ⌊lvl/4⌋ (L8 → 31, не 33).
+    const armorFloorBefore = Math.floor(unit.lvl / 4);
+    unit.armor += 2 * ind;
     unit.accuracy += 3 * ind;
     unit.damage += (randInt(1, 2) + Math.floor(unit.lvl / 3)) * ind;
     bumpLevel(unit, ind);
+    unit.armor += (Math.floor(unit.lvl / 4) - armorFloorBefore) * ind;
   },
 
   Mermaid(unit, ind, _state) {
-    if (unit.hiddenLvl % 4 === 0) {
-      unit.ultaCharges += 1;
-    }
     addMana(unit, ind);
+    const hiddenBefore = unit.hiddenLvl;
     bumpLevel(unit, ind);
+    // CUT-2026-11-05 AC-4: заряд ульты при пересечении порога hiddenLvl % 4 === 0 (после bump).
+    if (ind > 0) {
+      for (let h = hiddenBefore + 1; h <= unit.hiddenLvl; h += 1) {
+        if (h % 4 === 0) {
+          unit.ultaCharges += 1;
+        }
+      }
+    }
   },
 
   Patriarch(unit, ind, _state) {
@@ -275,9 +281,11 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Titan(unit, ind, _state) {
-    unit.power += (Math.floor(unit.lvl / 4) + 2) * ind;
+    // CUT-2026-11-05 AC-7: AP как у Демон-принца; рост урона/силы сопоставим с гигантами.
+    unit.power += (Math.floor(unit.lvl / 4) + 3) * ind;
     unit.maxHp += 10 * ind;
-    unit.damage += (Math.floor(unit.lvl / 3) + 1) * ind;
+    unit.damage += (Math.floor(unit.lvl / 3) + 2) * ind;
+    unit.armorPenetration += 0.04 * ind;
     unit.luck += randInt(0, 1) * ind;
     addMana(unit, ind);
     bumpLevel(unit, ind);

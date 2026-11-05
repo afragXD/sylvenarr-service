@@ -10,7 +10,7 @@ import { rollSrcChance } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { availableSummonRows, createSummon } from './summon';
-import { alliesOf, enemiesInColumn, enemiesOf, meleeOrAll } from './targets';
+import { alliesOf, enemiesOf, meleeOrAll } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 /** Трупы союзников (герои и саммоны) для Тауматургии. */
@@ -82,7 +82,7 @@ export function distributeHealBank(
   return result;
 }
 
-function graveTargets(state: BattleState): Array<{
+function graveTargets(state: BattleState, actor: BattleUnit): Array<{
   entryId: string;
   label: string;
   unit: BattleUnit;
@@ -90,16 +90,27 @@ function graveTargets(state: BattleState): Array<{
   return state.graveyard
     .map((entry) => {
       const unit = state.units.find((item) => item.id === entry.unitId);
-      if (!unit || unit.alive) {
+      if (!unit || unit.alive || unit.team !== actor.team) {
         return null;
       }
       return {
         entryId: entry.unitId,
-        label: `${entry.displayName} (${entry.team === 0 ? 'свои' : 'враги'})`,
+        label: entry.displayName,
         unit,
       };
     })
     .filter((item): item is NonNullable<typeof item> => item !== null);
+}
+
+function removeCorpseFromBattle(state: BattleState, unitId: string): void {
+  state.units = state.units.filter((unit) => unit.id !== unitId);
+  state.graveyard = state.graveyard.filter((entry) => entry.unitId !== unitId);
+  state.doneIds = state.doneIds.filter((id) => id !== unitId);
+  state.delayedIds = state.delayedIds.filter((id) => id !== unitId);
+  state.preChoiceDoneIds = state.preChoiceDoneIds.filter((id) => id !== unitId);
+  if (state.activeUnitId === unitId) {
+    state.activeUnitId = null;
+  }
 }
 
 function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
@@ -117,21 +128,17 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
       };
     }
     case 2: {
-      const targets = enemiesOf(state, actor);
       const cd = cdReason(actor, 2);
       return {
         slot: 2,
         label: 'Чёрная жатва',
-        needsTarget: true,
-        attackKind: 'melee',
-        previewSource: 'WEAPON',
-        previewDamageMult: 0.75,
-        disabledReason: cd ?? (targets.length === 0 ? 'Нет целей' : null),
-        legalTargetIds: targets.map((unit) => unit.id),
+        needsTarget: false,
+        disabledReason: cd,
+        legalTargetIds: [],
       };
     }
     case 3: {
-      const graves = graveTargets(state);
+      const graves = graveTargets(state, actor);
       const rows = availableSummonRows(state, actor);
       return {
         slot: 3,
@@ -151,11 +158,13 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
     case 4: {
       const targets = enemiesOf(state, actor);
       const cd = cdReason(actor, 4);
+      const lowHp = actor.health >= actor.maxHp * 0.5;
       return {
         slot: 4,
         label: 'Оковы взаимного терпения',
         needsTarget: true,
-        disabledReason: cd ?? (targets.length === 0 ? 'Нет целей' : null),
+        disabledReason:
+          cd ?? (lowHp ? 'Нужно ОЗ < 50%' : targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -212,7 +221,7 @@ export const ghostWarriorAbilities: AbilityHandler = {
         `${actor.displayName} рубит катаной ${target.displayName} ${formatLastLogDamage(damage)}.`
       );
       // Оглушение источником Смерть; базовый шанс = прежний (65+L) + 10.
-      const stunChance = 75 + actor.lvl;
+      const stunChance = 68 + actor.lvl;
       let stunned = false;
       if (rollSrcChance(state, target, stunChance, 'DEATH')) {
         stunned = tryStun(state, target, 1);
@@ -232,45 +241,12 @@ export const ghostWarriorAbilities: AbilityHandler = {
     }
 
     if (input.slot === 2) {
-      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
-      if (!target) {
-        return { status: 'reject', message: 'Цель не найдена' };
-      }
-      let dealtSum = 0;
-      for (const enemy of enemiesInColumn(state, actor, target)) {
-        const damage = dealDamage(
-          actor,
-          enemy,
-          { kind: 'melee', damageMult: 0.75, armorIgnore: 0, source: 'WEAPON' },
-          state
-        );
-        if (damage > 0) {
-          dealtSum += damage;
-          state.log.push(
-            `${actor.displayName}: чёрная жатва бьёт ${enemy.displayName} ${formatLastLogDamage(damage)}.`
-          );
-          markDeadIfNeeded(state, enemy);
-        }
-      }
-      const corpses = allyCorpseCount(state, actor);
-      const bank = thamaturgyBank(dealtSum, corpses, actor.lvl);
-      const vampCf = thamaturgyVampCf(corpses);
-      const selfVamp = Math.round(dealtSum * vampCf);
-      if (selfVamp > 0) {
-        const sucked = healUnit(actor, selfVamp);
-        if (sucked > 0) {
-          state.log.push(
-            `${actor.displayName}: вампиризм жатвы (cf=${vampCf.toFixed(2)}) +${sucked} ОЗ.`
-          );
-        }
-      }
-      const allies = alliesOf(state, actor);
-      const healed = distributeHealBank(allies, bank);
-      const healLog = healed.length > 0 ? healed.map((item) => `+${item.healed}`).join('/') : '0';
+      actor.critBank += 1;
+      const accBoost = Math.max(1, Math.round(actor.accuracy * 0.2));
+      grantEffect(actor, 'FOCUSED', 2, accBoost);
       state.log.push(
-        `${actor.displayName}: тауматургия (D=${dealtSum}, трупы=${corpses}) → банк ${bank} ОЗ [${healLog}].`
+        `${actor.displayName}: чёрная жатва — +1 к криту, +${accBoost} точности на 2 р.`
       );
-      // Нерф владельца 2026-11-02: КД 3 (было 2).
       setSlotCd(actor, 2, 3);
       return { status: 'done' };
     }
@@ -279,7 +255,7 @@ export const ghostWarriorAbilities: AbilityHandler = {
       if (actor.ultaCharges <= 0) {
         return { status: 'reject', message: 'Нет зарядов' };
       }
-      const grave = graveTargets(state).find((item) => item.entryId === input.targetId);
+      const grave = graveTargets(state, actor).find((item) => item.entryId === input.targetId);
       if (!grave) {
         return { status: 'reject', message: 'Труп не найден' };
       }
@@ -289,7 +265,7 @@ export const ghostWarriorAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Нет места для слуги' };
       }
       actor.ultaCharges -= 1;
-      const desiredLvl = grave.unit.lvl + Math.floor(actor.lvl / 3);
+      const desiredLvl = Math.max(1, Math.floor(grave.unit.lvl / 2));
       const summon = createSummon(state, {
         summoner: actor,
         heroCode: 'SkeletonChampion',
@@ -300,9 +276,7 @@ export const ghostWarriorAbilities: AbilityHandler = {
         actor.ultaCharges += 1;
         return { status: 'reject', message: 'Не удалось поднять слугу' };
       }
-      // Труп израсходован.
-      state.graveyard = state.graveyard.filter((entry) => entry.unitId !== grave.entryId);
-      grave.unit.forbiddenResurrect = true;
+      removeCorpseFromBattle(state, grave.entryId);
       state.log.push(
         `${actor.displayName} поднимает личного слугу (${summon.displayName}, ур. ${summon.lvl}) из ${grave.unit.displayName} (зарядов ${actor.ultaCharges}).`
       );

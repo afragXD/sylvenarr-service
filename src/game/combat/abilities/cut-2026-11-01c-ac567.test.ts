@@ -353,7 +353,7 @@ describe('CUT-2026-11-01c AC-7 GhostWarrior', () => {
     gw.lvl = 9;
     gw.hiddenLvl = 9;
     applyClassLevelUp(gw, 1, state);
-    expect(gw.damage - dmgBefore).toBe(3 + 3); // base 3 + lvl//3
+    expect(gw.damage - dmgBefore).toBe(1 + Math.floor(9 / 4)); // CUT-2026-11-05: 1 + lvl//4
   });
 
   test('fixture fetters: transfer LIFE, no recursion', () => {
@@ -387,7 +387,7 @@ describe('CUT-2026-11-01c AC-7 GhostWarrior', () => {
     expect(g1.health).toBe(g1Before - 30);
   });
 
-  test('fixture servant: lvl = corpse.lvl + self.lvl//3', () => {
+  test('fixture servant: lvl = max(1, floor(corpse.lvl/2))', () => {
     const state = createBattleState({
       matchId: 'ac7-servant',
       hostPlayerId: 'h',
@@ -432,7 +432,8 @@ describe('CUT-2026-11-01c AC-7 GhostWarrior', () => {
       (u) => u.alive && u.isSummon && u.heroClassCode === 'SkeletonChampion'
     );
     expect(servant).toBeTruthy();
-    expect(servant!.lvl).toBe(5 + Math.floor(9 / 3)); // 8
+    expect(servant!.lvl).toBe(Math.max(1, Math.floor(5 / 2)));
+    expect(state.units.some((u) => u.id === 'ally')).toBe(false);
     // Ульта: старт 1 → после каста 0; слот-КД нет.
     expect(gw.ultaCharges).toBe(0);
     expect(gw.abilityCds?.[3] ?? 0).toBe(0);

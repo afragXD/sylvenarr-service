@@ -274,7 +274,7 @@ export function applyMasochismRoundStart(state: BattleState): void {
 }
 
 /**
- * Бонус за высокую мораль после хода (порт rewardForHighMorale).
+ * Бонус за высокую мораль в начале своего хода (до действий; порт rewardForHighMorale).
  * Chance(morale) → на 2 раунда: маги +25% силы магии (ABSOLUTEPOWER), воины +33% урона (STRENGTH).
  */
 export function maybeRewardHighMorale(state: BattleState, unit: BattleUnit): void {

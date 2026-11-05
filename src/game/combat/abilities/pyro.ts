@@ -112,6 +112,15 @@ export const pyroAbilities: AbilityHandler = {
             `${actor.displayName}: огнемёт → ${enemy.displayName} ${formatLastLogDamage(damage)}.`
           );
           markDeadIfNeeded(state, enemy);
+          if (randInt(1, 100) <= 70) {
+            const gain = randInt(1, 3);
+            actor.morale += gain;
+            state.log.push(
+              `${actor.displayName}: огнемёт поднимает боевой дух (+${gain}).`
+            );
+          }
+        } else {
+          state.log.push(`${actor.displayName}: огнемёт — промах по ${enemy.displayName}.`);
         }
       }
       return { status: 'done' };

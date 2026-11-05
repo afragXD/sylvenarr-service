@@ -67,7 +67,7 @@ const LEGACY_STATS_DICT: Record<
   },
   Detective: {
     displayName: 'Детектив',
-    health: 200,
+    health: 180,
     damage: 30,
     armor: 0,
     initiative: 44,
@@ -95,15 +95,15 @@ const LEGACY_STATS_DICT: Record<
   },
   Abbess: {
     displayName: 'Аббатиса',
-    // CUT-2026-11-01c AC-3: ОЗ 205, МР 12 (было 185 / 10 в боте).
-    health: 205,
+    // CUT-2026-11-05 AC-3: 185 / 10.
+    health: 185,
     damage: 5,
     armor: 0,
     initiative: 30,
     dodge: 5,
     luck: 10,
     morale: 0,
-    mana: 12,
+    mana: 10,
     power: 28,
     gold: 380,
     accuracy: 105,
@@ -162,15 +162,15 @@ const LEGACY_STATS_DICT: Record<
     mana: 12,
     power: 28,
     gold: 400,
-    accuracy: 88,
+    accuracy: 95,
   },
   GhostWarrior: {
     displayName: 'Воин-призрак',
     health: 200,
-    damage: 35,
+    damage: 23,
     armor: 0,
     initiative: 15,
-    dodge: 15,
+    dodge: 7,
     luck: 0,
     morale: -200,
     mana: 0,
@@ -292,15 +292,15 @@ const LEGACY_STATS_DICT: Record<
   },
   Mermaid: {
     displayName: 'Русалка',
-    // CUT-2026-11-01c AC-3: ОЗ 180 (было 162 в боте).
-    health: 180,
+    // CUT-2026-11-05 AC-3/AC-4: ОЗ 162, МР 10.
+    health: 162,
     damage: 0,
     armor: 0,
     initiative: 48,
     dodge: 0,
     luck: 0,
     morale: 0,
-    mana: 2,
+    mana: 10,
     power: 30,
     gold: 290,
     accuracy: 100,
@@ -476,9 +476,9 @@ const LEGACY_STATS_DICT: Record<
   },
   Titan: {
     displayName: 'Титан',
-    // CUT-2026-11-01c AC-3: урон 26 (в legacy-боте было 36).
+    // CUT-2026-11-05 AC-3: урон 36.
     health: 310,
-    damage: 26,
+    damage: 36,
     armor: 25,
     initiative: 47,
     dodge: 0,

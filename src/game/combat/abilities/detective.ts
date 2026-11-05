@@ -272,14 +272,14 @@ export const detectiveAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       actor.ultaCharges -= 1;
-      const chance = 50 + actor.lvl;
+      const chance = 50 + actor.lvl * 2;
       const rowEnemies = enemiesOf(state, actor, IGNORE_GUARD).filter(
         (unit) => unit.row === target.row
       );
       let poisoned = 0;
       for (const enemy of rowEnemies) {
         if (randInt(1, 100) <= chance) {
-          grantEffect(enemy, 'POISON', 1, 0.8);
+          grantEffect(enemy, 'POISON', 2, 0.8);
           poisoned += 1;
         }
       }

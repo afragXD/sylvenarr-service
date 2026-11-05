@@ -249,7 +249,7 @@ export const witchAbilities: AbilityHandler = {
     if (!target) {
       return { status: 'reject', message: 'Цель недоступна' };
     }
-    setSlotCd(actor, 5, 3);
+    setSlotCd(actor, 5, 4);
     if (rollSrcChance(state, target, 100, 'EARTH', 'POLYMORPH')) {
       if (hasEffect(target, 'IMPISH')) {
         delEffect(target, 'IMPISH', state);
@@ -269,8 +269,7 @@ export const witchAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName}: в каталоге нет беса — превращение сорвалось.`);
         return { status: 'done' };
       }
-      // CUT-2026-11-01c AC-4: Форма беса 1 раунд (было 2), шанс 100%.
-      grantEffect(target, 'IMPISH', 1, 0);
+      grantEffect(target, 'IMPISH', 2, 0);
       state.log.push(
         `${actor.displayName} обращает ${victimName} в жалкого беса (без особых атак и брони).`
       );
