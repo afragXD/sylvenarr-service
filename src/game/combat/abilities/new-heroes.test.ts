@@ -272,6 +272,35 @@ describe('Oracle', () => {
 });
 
 describe('Incub', () => {
+  test('Психический шок: нежить без модификатора морали (даже при −200)', () => {
+    const state = battle('Incub', {
+      actor: { power: 100, mana: 20 },
+      enemy: { health: 5000 },
+    });
+    const actor = unit(state, 'p1');
+    const undead = unit(state, 'p3');
+    undead.heroClassCode = 'Zombie';
+    undead.morale = -200;
+    undead.resists = {};
+    const undeadHp = undead.health;
+    expect(incubAbilities.apply(state, actor, { slot: 1, targetId: 'p3' }).status).toBe('done');
+    // share = 100; фактор для нежити = 1 (не 3 от −200 морали).
+    expect(undeadHp - undead.health).toBe(100);
+
+    const livingState = battle('Incub', {
+      actor: { power: 100, mana: 20 },
+      enemy: { health: 5000 },
+    });
+    const living = unit(livingState, 'p3');
+    living.morale = -200;
+    living.resists = {};
+    const livingHp = living.health;
+    expect(
+      incubAbilities.apply(livingState, unit(livingState, 'p1'), { slot: 1, targetId: 'p3' }).status
+    ).toBe('done');
+    expect(livingHp - living.health).toBe(300);
+  });
+
   test('Нечистый договор: расплата 75% макс. ОЗ по истечении', () => {
     const state = battle('Incub');
     const ally = unit(state, 'p2');

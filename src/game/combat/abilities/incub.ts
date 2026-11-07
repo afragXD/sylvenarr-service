@@ -198,7 +198,10 @@ export const incubAbilities: AbilityHandler = {
       );
       const share = Math.floor(actor.power / Math.max(1, row.length));
       for (const enemy of row) {
-        const moraleFactor = Math.max(0.1, 1 - enemy.morale / 100);
+        // Нежить: мораль не модифицирует урон ни в плюс, ни в минус.
+        const moraleFactor = isUndeadClass(enemy.heroClassCode)
+          ? 1
+          : Math.max(0.1, 1 - enemy.morale / 100);
         const dealt = harmWithSource(
           state,
           enemy,
