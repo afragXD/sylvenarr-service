@@ -59,7 +59,7 @@ describe('phase 3.11 pilots', () => {
     expect(state.pendingPrompt).toBeNull();
   });
 
-  test('Detective slot 2 poisons target row for 1 round with chance', () => {
+  test('Detective slot 2 poisons target row for 2 rounds with chance', () => {
     const heroes = new Map([
       ['Detective', hero('Detective', { initiative: 99 })],
       ['B', hero('B', { initiative: 1 })],
@@ -94,7 +94,7 @@ describe('phase 3.11 pilots', () => {
     for (const foe of front) {
       const poison = foe.effects.find((effect) => effect.id === 'POISON');
       expect(poison).toBeTruthy();
-      expect(poison!.rounds).toBe(1);
+      expect(poison!.rounds).toBe(2);
     }
     expect(back.effects.some((effect) => effect.id === 'POISON')).toBe(false);
   });

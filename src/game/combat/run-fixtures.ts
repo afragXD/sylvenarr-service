@@ -35,6 +35,14 @@ import { battleApiJson, withSeed } from './test/seededRandom';
 
 const SEED = 20261101;
 const RUNS_DIR = join(import.meta.dir, 'fixtures', 'runs');
+const RUN_SHA =
+  process.env.GIT_SHA?.trim() ||
+  process.env.COMMIT_SHA?.trim() ||
+  Bun.spawnSync(['git', 'rev-parse', 'HEAD'], { cwd: join(import.meta.dir, '../../..') })
+    .stdout.toString()
+    .trim() ||
+  'unknown';
+const RUN_AT = new Date().toISOString();
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
   code,
@@ -82,10 +90,11 @@ function writeRun(fixtureId: string, result: Record<string, unknown>) {
   const payload = {
     fixtureId,
     seed: SEED,
+    sha: RUN_SHA,
+    ranAt: RUN_AT,
     result,
   };
   writeFileSync(join(RUNS_DIR, `${fixtureId}.json`), `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
-  // Также совместимый battleApiJson-снимок внутри result уже есть.
   console.log(`ok ${fixtureId}`);
 }
 
@@ -277,10 +286,13 @@ const runners: Record<string, () => Record<string, unknown>> = {
     state.teams![0]!.inventory = [];
     state.teams![0]!.gold = 500;
     unit.accuracy = 100;
+    const goldBefore = teamGold(state, 0);
     addMentalIllness(state, unit, 3);
+    const goldAfter = teamGold(state, 0);
     return snap(state, {
       inventory: state.teams![0]!.inventory,
-      gold: teamGold(state, 0),
+      goldBefore,
+      goldAfter,
       illnessKind: unit.illnessKind,
     });
   },
@@ -339,6 +351,7 @@ const runners: Record<string, () => Record<string, unknown>> = {
   },
 
   'ac2-mind-beer-pyro'() {
+    // Как в unit-тесте: Demiurge slot 3 «подчиняет» → удар элементаля WEAPON, не FIRE.
     const state = createBattleState({
       matchId: 'ac2-mind-beer-pyro',
       hostPlayerId: 'h',
@@ -350,28 +363,32 @@ const runners: Record<string, () => Record<string, unknown>> = {
       ],
       heroes: new Map([
         ['Demiurge', hero('Demiurge', { initiative: 99, mana: 15, power: 30 })],
-        ['BeerElemental', hero('BeerElemental', { initiative: 50, damage: 40, accuracy: 100 })],
+        ['BeerElemental', hero('BeerElemental', { initiative: 1, damage: 40, accuracy: 100 })],
         ['Pyro', hero('Pyro', { initiative: 1, health: 200 })],
       ]),
     });
+    const pyro = state.units.find((u) => u.id === 'e2')!;
+    const beer = state.units.find((u) => u.id === 'e1')!;
+    pyro.health = 30;
+    pyro.lvl = 1;
+    setWard(pyro, 'FIRE', 5);
+    beer.health = 180;
+    beer.lvl = 1;
     state.activeUnitId = 'p1';
     state.turnPlayerId = 'h';
     applyAction(state, {
       playerId: 'h',
       unitId: 'p1',
       action: 'ability',
-      slot: 2,
+      slot: 3,
       targetId: 'e1',
     });
-    state.activeUnitId = 'e1';
-    state.turnPlayerId = 'g';
-    applyAction(state, {
-      playerId: 'g',
-      unitId: 'e1',
-      action: 'attack',
-      targetId: 'e2',
+    const subordinated = state.log.some((line) => line.includes('подчиняет'));
+    return snap(state, {
+      subordinated,
+      hasWeaponLog: state.log.some((line) => line.includes('⟦WEAPON⟧')),
+      hasFireLog: state.log.some((line) => line.includes('⟦FIRE⟧')),
     });
-    return snap(state);
   },
 
   'ac2-assassin-mimic-mana'() {
@@ -1142,12 +1159,12 @@ const runners: Record<string, () => Record<string, unknown>> = {
       playerId: 'h',
       unitId: 'w',
       action: 'ability',
-      slot: 5,
+      slot: 4,
       targetId: 'f0',
     });
     return snap(state, {
       mana: witch.mana,
-      cd: witch.abilityCds?.[5] ?? null,
+      cd: witch.abilityCds?.[4] ?? null,
       chain,
       primaryLoss: massDegradationLevelLoss(10, true),
       otherLoss: massDegradationLevelLoss(10, false),

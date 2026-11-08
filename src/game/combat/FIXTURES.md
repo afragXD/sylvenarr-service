@@ -49,7 +49,19 @@ Seed по умолчанию для регрессий: **20261101**, если �
 
 Снимки API JSON (эталон): `src/game/combat/fixtures/*.json` (`fixtures-api.test.ts`).
 
-**Фактические прогоны** (fixture id + seed + result JSON):  
+**Фактические прогоны** (fixture id + seed + **sha** + **ranAt** + result JSON):  
 `bun src/game/combat/run-fixtures.ts` → `src/game/combat/fixtures/runs/<id>.json`.
 
-Полный вывод `bun test src/game/combat src/modules/app` на SHA: `fixtures/RUN-<sha>.txt`.
+Полный вывод `bun test src/game/combat src/modules/app` на SHA: `fixtures/RUN-<sha>.txt`  
+(в шапке файла — `sha=` и `ranAt=`).
+
+### AC-13 — откуда клиент берёт прогноз урона/шанса
+
+1. Снимок боя (WS/`GET` матча) отдаёт `abilities[]` с полями сервера  
+   `previewHealMin` / `previewHealMax` / `previewDamageMult` / `previewArmorIgnore` /  
+   `previewSource` / `previewAccuracyPenalty` / `attackKind`.
+2. UI: `BattlePanel.attackPreviewFor` →  
+   - обычная атака: клиентская `previewWeaponAttack` (`features/battle/lib/attackPreview.ts`);  
+   - способность: `previewAbilityOnTarget` (сначала серверные preview* из `abilities`,  
+     иначе фоллбек `previewHealFromAbilityParts` / `getAbilityPreview`).
+3. QA сверяет серверные preview* в JSON abilities с тултипом `≈MIN–MAX` / попадание %.
