@@ -25,7 +25,7 @@ const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassS
 });
 
 describe('CUT-2026-11-01c AC-8 Dracolich', () => {
-  test('fixture prayer: lvl 6 → +2 всей нежити включая себя, КД 2', () => {
+  test('fixture prayer: lvl 6 → +2 всей нежити включая себя, КД 4', () => {
     const state = createBattleState({
       matchId: 'ac8-prayer',
       hostPlayerId: 'h',
@@ -61,7 +61,7 @@ describe('CUT-2026-11-01c AC-8 Dracolich', () => {
     expect(draco.lvl).toBe(8); // +2
     expect(zombie.lvl).toBe(5);
     expect(knight.lvl).toBe(4); // не нежить
-    expect(draco.abilityCds?.[3]).toBe(2);
+    expect(draco.abilityCds?.[3]).toBe(4);
   });
 
   test('fixture necro ×2 и skip второй цели', () => {
