@@ -1,6 +1,8 @@
 {
   "fixtureId": "ac10-mentor",
   "seed": 20261101,
+  "sha": "6b2933d79512c343b21b9938b9740aaa0427d51c",
+  "ranAt": "2026-11-08T20:56:45.520Z",
   "result": {
     "log": [
       "Бой начался.",
@@ -39,7 +41,7 @@
         "accuracy": 100
       },
       {
-        "id": "summon-p1-1794169539320-r3e1j",
+        "id": "summon-p1-1794171405562-r3e1j",
         "heroClassCode": "Ectoplasm",
         "health": 130,
         "maxHp": 130,
@@ -99,7 +101,7 @@
           "accuracy": 100
         },
         {
-          "id": "summon-p1-1794169539320-r3e1j",
+          "id": "summon-p1-1794171405562-r3e1j",
           "heroClassCode": "Ectoplasm",
           "health": 130,
           "maxHp": 130,

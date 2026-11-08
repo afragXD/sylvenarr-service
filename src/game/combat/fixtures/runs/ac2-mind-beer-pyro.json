@@ -1,14 +1,17 @@
 {
   "fixtureId": "ac2-mind-beer-pyro",
   "seed": 20261101,
+  "sha": "6b2933d79512c343b21b9938b9740aaa0427d51c",
+  "ranAt": "2026-11-08T20:56:45.520Z",
   "result": {
     "log": [
       "Бой начался.",
       "—— ХОД: Demiurge ——",
-      "HOMIE DE FLANDERS",
-      "Пиво течёт во мне, я един с пивом",
-      "BeerElemental: Pyro получает +9 боевого духа.",
-      "—— ХОД: Demiurge ——"
+      "ПОМРАЧЕНИЕ РАССУДКА",
+      "Demiurge подчиняет BeerElemental → Pyro (42)⟦WEAPON⟧.",
+      "Pyro погибает.",
+      "—— ХОД: BeerElemental ——",
+      "BeerElemental просадил 36 золота в азартные игры!"
     ],
     "units": [
       {
@@ -18,7 +21,7 @@
         "maxHp": 130,
         "alive": true,
         "morale": 0,
-        "mana": 15,
+        "mana": 13,
         "lvl": 1,
         "damage": 40,
         "power": 30,
@@ -28,7 +31,7 @@
       {
         "id": "e1",
         "heroClassCode": "BeerElemental",
-        "health": 130,
+        "health": 180,
         "maxHp": 130,
         "alive": true,
         "morale": 0,
@@ -42,10 +45,10 @@
       {
         "id": "e2",
         "heroClassCode": "Pyro",
-        "health": 130,
+        "health": 0,
         "maxHp": 130,
-        "alive": true,
-        "morale": 9,
+        "alive": false,
+        "morale": 0,
         "mana": 15,
         "lvl": 1,
         "damage": 40,
@@ -56,18 +59,22 @@
     ],
     "teamGold": [
       100,
-      150
+      114
     ],
+    "subordinated": true,
+    "hasWeaponLog": true,
+    "hasFireLog": false,
     "apiJson": {
       "fixtureId": "ac2-mind-beer-pyro",
       "seed": 20261101,
       "log": [
         "Бой начался.",
         "—— ХОД: Demiurge ——",
-        "HOMIE DE FLANDERS",
-        "Пиво течёт во мне, я един с пивом",
-        "BeerElemental: Pyro получает +9 боевого духа.",
-        "—— ХОД: Demiurge ——"
+        "ПОМРАЧЕНИЕ РАССУДКА",
+        "Demiurge подчиняет BeerElemental → Pyro (42)⟦WEAPON⟧.",
+        "Pyro погибает.",
+        "—— ХОД: BeerElemental ——",
+        "BeerElemental просадил 36 золота в азартные игры!"
       ],
       "units": [
         {
@@ -77,7 +84,7 @@
           "maxHp": 130,
           "alive": true,
           "morale": 0,
-          "mana": 15,
+          "mana": 13,
           "lvl": 1,
           "damage": 40,
           "power": 30,
@@ -87,7 +94,7 @@
         {
           "id": "e1",
           "heroClassCode": "BeerElemental",
-          "health": 130,
+          "health": 180,
           "maxHp": 130,
           "alive": true,
           "morale": 0,
@@ -101,10 +108,10 @@
         {
           "id": "e2",
           "heroClassCode": "Pyro",
-          "health": 130,
+          "health": 0,
           "maxHp": 130,
-          "alive": true,
-          "morale": 9,
+          "alive": false,
+          "morale": 0,
           "mana": 15,
           "lvl": 1,
           "damage": 40,
@@ -115,7 +122,7 @@
       ],
       "teamGold": [
         100,
-        150
+        114
       ]
     }
   }

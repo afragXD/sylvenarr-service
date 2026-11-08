@@ -1,6 +1,8 @@
 {
   "fixtureId": "schizo-empty",
   "seed": 20261101,
+  "sha": "6b2933d79512c343b21b9938b9740aaa0427d51c",
+  "ranAt": "2026-11-08T20:56:45.520Z",
   "result": {
     "log": [
       "Бой начался.",
@@ -42,7 +44,8 @@
       100
     ],
     "inventory": [],
-    "gold": 200,
+    "goldBefore": 500,
+    "goldAfter": 200,
     "illnessKind": "schizophrenia",
     "apiJson": {
       "fixtureId": "schizo-empty",

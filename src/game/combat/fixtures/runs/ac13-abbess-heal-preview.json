@@ -1,6 +1,8 @@
 {
   "fixtureId": "ac13-abbess-heal-preview",
   "seed": 20261101,
+  "sha": "6b2933d79512c343b21b9938b9740aaa0427d51c",
+  "ranAt": "2026-11-08T20:56:45.520Z",
   "result": {
     "log": [
       "Бой начался.",
