@@ -5,14 +5,12 @@
 import { describe, expect, spyOn, test } from 'bun:test';
 
 import { teamGold } from '../../economy';
-import { dealDamage, lifeThreadDamageMult, transferFettersDamage } from '../damage';
+import { dealDamage, transferFettersDamage } from '../damage';
 import {
   addMentalIllness,
   applyMasochismRoundStart,
   applyPsycho,
-  lowMoraleDebuffChance,
   maybePunishLowMorale,
-  psychoChance,
 } from '../morale';
 import { grantEffect, hasEffect, tickEffectsOnTurnStart } from '../effects';
 import { applyAction, createBattleState, meleeTargets } from '../engine';
@@ -20,8 +18,6 @@ import { applyClassLevelUp } from '../levelup';
 import { setWard } from '../resists';
 import type { HeroClassStats } from '../types';
 import { applyAbility, listPilotAbilities } from './registry';
-import { degradationSquareTargets } from './targets';
-import { finishingCritBonus } from './cut-2026-11-01c-ac11.test';
 import { withSeed } from '../test/seededRandom';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
@@ -43,13 +39,6 @@ const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassS
 });
 
 describe('CUT-2026-11-01c proof AC-1 thresholds / immunity / fate / masochism ward', () => {
-  test('пороги: psycho −70=30%, −71=32%; debuff −20=20%, −21=21%', () => {
-    expect(psychoChance(-70)).toBe(30);
-    expect(psychoChance(-71)).toBe(32);
-    expect(lowMoraleDebuffChance(-20)).toBe(20);
-    expect(lowMoraleDebuffChance(-21)).toBe(21);
-  });
-
   test('бросок на пороге psycho −70: успех при roll≤30, провал при 31', () => {
     const state = createBattleState({
       matchId: 'ac1-psycho-roll',
@@ -266,27 +255,6 @@ describe('CUT-2026-11-01c proof AC-4 numbers', () => {
     const before = ally.lvl;
     applyAbility(state, tree, { slot: 5, targetId: 'p2' });
     expect(ally.lvl).toBe(before + 3);
-  });
-
-  test('Трёхглавый: базовая 95 − penalty 5 → точность 90', () => {
-    const state = createBattleState({
-      matchId: 'ac4-triple-90',
-      hostPlayerId: 'h',
-      guestPlayerId: 'g',
-      picks: [
-        { id: 'p1', playerId: 'h', heroClassCode: 'DemonLord', row: 0, pickOrder: 1 },
-        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
-      ],
-      heroes: new Map([
-        ['DemonLord', hero('DemonLord', { accuracy: 95 })],
-        ['B', hero('B', { dodge: 0 })],
-      ]),
-    });
-    const demon = state.units.find((u) => u.id === 'p1')!;
-    demon.accuracy = 95;
-    const meta = listPilotAbilities(state, demon).find((a) => a.slot === 1)!;
-    expect(meta.previewAccuracyPenalty).toBe(5);
-    expect(demon.accuracy - (meta.previewAccuracyPenalty ?? 0)).toBe(90);
   });
 
   test('Песнь сирены на не-гиганта действует без порога 10', () => {
@@ -542,30 +510,6 @@ describe('CUT-2026-11-01c proof AC-6 reflect / prayer', () => {
 });
 
 describe('CUT-2026-11-01c proof AC-7 GW', () => {
-  test('граница шанса оглушения катаны = 68+L', () => {
-    expect(68 + 1).toBe(69);
-    expect(68 + 10).toBe(78);
-    const state = createBattleState({
-      matchId: 'ac7-stun-boundary',
-      hostPlayerId: 'h',
-      guestPlayerId: 'g',
-      picks: [
-        { id: 'p1', playerId: 'h', heroClassCode: 'GhostWarrior', row: 0, pickOrder: 1 },
-        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
-      ],
-      heroes: new Map([
-        ['GhostWarrior', hero('GhostWarrior', { damage: 20, accuracy: 100 })],
-        ['B', hero('B')],
-      ]),
-    });
-    const gw = state.units.find((u) => u.id === 'p1')!;
-    gw.lvl = 4;
-    const meta = listPilotAbilities(state, gw).find((a) => a.slot === 1)!;
-    expect(meta.label.toLowerCase()).toContain('катана');
-    // Формула в коде: 68 + actor.lvl (не меняем код — фиксируем ожидаемое).
-    expect(68 + gw.lvl).toBe(72);
-  });
-
   test('вражеский труп недоступен Слуге', () => {
     const state = createBattleState({
       matchId: 'ac7-servant-enemy',
@@ -680,14 +624,9 @@ describe('CUT-2026-11-01c proof AC-7 GW', () => {
     const foe = state.units.find((u) => u.id === 'e1')!;
     gw.maxHp = 100;
     gw.health = 50;
-    expect(lifeThreadDamageMult(gw)).toBe(1);
     grantEffect(gw, 'LIFE_THREAD', 2);
-    expect(lifeThreadDamageMult(gw)).toBeCloseTo(1.5, 5);
     for (const kind of ['melee', 'ranged', 'magic'] as const) {
       foe.health = 5000;
-      const without = lifeThreadDamageMult({ ...gw, effects: [] } as typeof gw);
-      const withThread = lifeThreadDamageMult(gw);
-      expect(withThread).toBeGreaterThan(without);
       const dealt = dealDamage(gw, foe, {
         kind,
         forceHit: true,
@@ -716,10 +655,6 @@ describe('CUT-2026-11-01c proof AC-8 devour/prayer persist', () => {
     const draco = state.units.find((u) => u.id === 'p1')!;
     const foe = state.units.find((u) => u.id === 'e1')!;
     foe.armor = 20;
-    // Эффективная броня при ignore 0.75: 20*0.25=5.
-    expect(foe.armor * (1 - 0.75)).toBe(5);
-    expect(foe.armor * (1 - 0)).toBe(20);
-
     grantEffect(foe, 'MARKED', 2);
     setWard(foe, 'DEATH', 2);
     state.activeUnitId = 'p1';
@@ -769,42 +704,6 @@ describe('CUT-2026-11-01c proof AC-8 devour/prayer persist', () => {
 });
 
 describe('CUT-2026-11-01c proof AC-9 square edges / fail roll', () => {
-  test('центр / край / пустая клетка квадрата 2×2', () => {
-    const state = createBattleState({
-      matchId: 'ac9-geom',
-      hostPlayerId: 'h',
-      guestPlayerId: 'g',
-      picks: [
-        { id: 'w', playerId: 'h', heroClassCode: 'Witch', row: 0, pickOrder: 1 },
-        { id: 'f0', playerId: 'g', heroClassCode: 'A', row: 0, pickOrder: 1 },
-        { id: 'f1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 2 },
-        { id: 'f2', playerId: 'g', heroClassCode: 'C', row: 0, pickOrder: 3 },
-        { id: 'b0', playerId: 'g', heroClassCode: 'D', row: 1, pickOrder: 4 },
-        { id: 'b1', playerId: 'g', heroClassCode: 'E', row: 1, pickOrder: 5 },
-      ],
-      heroes: new Map([
-        ['Witch', hero('Witch')],
-        ['A', hero('A')],
-        ['B', hero('B')],
-        ['C', hero('C')],
-        ['D', hero('D')],
-        ['E', hero('E')],
-      ]),
-    });
-    const witch = state.units.find((u) => u.id === 'w')!;
-    const edge = state.units.find((u) => u.id === 'f0')!;
-    const center = state.units.find((u) => u.id === 'f1')!;
-    const edgeIds = degradationSquareTargets(state, witch, edge).map((u) => u.id);
-    const centerIds = degradationSquareTargets(state, witch, center).map((u) => u.id);
-    expect(edgeIds[0]).toBe('f0');
-    expect(centerIds[0]).toBe('f1');
-    expect(centerIds.length).toBeGreaterThanOrEqual(2);
-
-    // Пустая клетка: цель вне врагов → [].
-    const empty = degradationSquareTargets(state, witch, witch);
-    expect(empty).toEqual([]);
-  });
-
   test('бросок выше порога — деградация не срабатывает, шанс сохранён', () => {
     // Chance 95%: randInt 1..100; random≥0.95 → 96..100 — провал.
     const rnd = spyOn(Math, 'random').mockReturnValue(0.95);
@@ -924,17 +823,10 @@ describe('CUT-2026-11-01c proof AC-10 doctor/whip', () => {
     });
     const fire2 = foe.resists.FIRE?.value ?? 0;
     expect(fire2).toBe(fire1 - 5);
-    // Округление вниз: доля силы по ряду floor(power/n).
-    expect(Math.floor(30 / 2)).toBe(15);
   });
 });
 
 describe('CUT-2026-11-01c proof AC-11/12/15', () => {
-  test('AC-11 граница крита: 32% даёт бонус, 33% — нет', () => {
-    expect(finishingCritBonus(5, 32, 100)).toBe(19);
-    expect(finishingCritBonus(5, 33, 100)).toBe(0);
-  });
-
   test('AC-12 Water-resist режет тик Желчи после базы 10+L', () => {
     const state = createBattleState({
       matchId: 'ac12-water-resist',

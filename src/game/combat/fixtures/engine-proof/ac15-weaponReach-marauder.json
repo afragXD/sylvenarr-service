@@ -1,0 +1,28 @@
+{
+  "fixtureId": "ac15-weaponReach-marauder",
+  "seed": 20261101,
+  "weaponReach": 1,
+  "legalTargetIds": [
+    "e0",
+    "e1"
+  ],
+  "blockedColumnTarget": "e2",
+  "blocked": true,
+  "battleSummary": {
+    "weaponReach": 1,
+    "unitIds": [
+      "atk",
+      "e0",
+      "e1",
+      "e2"
+    ]
+  },
+  "marauderWeakness": true,
+  "marauderLog": [
+    "Бой начался.",
+    "—— ХОД: Marauder ——",
+    "МОЩНЫЙ ВЫСТРЕЛ",
+    "Marauder мощным выстрелом бьёт B (51)⟦ARROWS⟧.",
+    "—— ХОД: B ——"
+  ]
+}

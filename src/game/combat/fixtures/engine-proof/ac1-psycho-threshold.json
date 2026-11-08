@@ -1,0 +1,35 @@
+{
+  "fixtureId": "ac1-psycho-threshold",
+  "seed": 20261101,
+  "morale": -70,
+  "rollSuccess": 30,
+  "rollFail": 31,
+  "illnessOn30": true,
+  "illnessOn31": false,
+  "apiJson": {
+    "fixtureId": "ac1-psycho-threshold",
+    "seed": 20261101,
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Knight ——",
+      "Knight укрепляет доспехи ряда на 2.",
+      "Knight: апатия — уклонение 0, крит 0, инициатива 5."
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Knight",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true
+      }
+    ]
+  }
+}

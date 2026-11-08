@@ -1,0 +1,32 @@
+{
+  "fixtureId": "ac8-devour-armor",
+  "seed": 20261101,
+  "withMark": {
+    "dealt": 35,
+    "wardAfter": 2,
+    "wardBefore": 2,
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Dracolich ——",
+      "ПОЖИРАНИЕ ГАДА",
+      "Dracolich пожирает B (35)⟦WEAPON⟧ (метка: −75% брони).",
+      "—— ХОД: B ——"
+    ],
+    "marked": true
+  },
+  "without": {
+    "dealt": 20,
+    "wardAfter": 2,
+    "wardBefore": 2,
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Dracolich ——",
+      "ПОЖИРАНИЕ ГАДА",
+      "Dracolich пожирает B (20)⟦WEAPON⟧.",
+      "—— ХОД: B ——"
+    ],
+    "marked": false
+  },
+  "effectiveArmorMarked": 5,
+  "armorPlain": 20
+}

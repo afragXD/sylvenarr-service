@@ -1,0 +1,60 @@
+{
+  "fixtureId": "ac13-abbess-spear-heal",
+  "seed": 20261101,
+  "spearSamples": [
+    36,
+    38,
+    36,
+    39,
+    39,
+    38,
+    36,
+    40,
+    41,
+    40,
+    38,
+    42,
+    41,
+    38,
+    39,
+    37,
+    40,
+    40,
+    41,
+    36
+  ],
+  "healSamples": [
+    33,
+    34,
+    37,
+    24,
+    32,
+    36,
+    24,
+    33,
+    29,
+    29,
+    27,
+    36,
+    24,
+    31,
+    30,
+    30,
+    25,
+    30,
+    24,
+    31
+  ],
+  "spearMin": 36,
+  "spearMax": 42,
+  "healMin": 24,
+  "healMax": 37,
+  "spearRangeExpected": [
+    36,
+    42
+  ],
+  "healRangeExpected": [
+    24,
+    37
+  ]
+}

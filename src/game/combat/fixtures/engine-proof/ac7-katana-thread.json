@@ -1,0 +1,39 @@
+{
+  "fixtureId": "ac7-katana-thread",
+  "seed": 20261101,
+  "stunChanceAtL4": 72,
+  "stunnedLog": [
+    "Бой начался.",
+    "—— ХОД: GhostWarrior ——",
+    "ПРИЗРАЧНАЯ КАТАНА",
+    "GhostWarrior рубит катаной B (20)⟦WEAPON⟧.",
+    "B парализован.",
+    "B оглушён и пропускает ход. (авто)",
+    "Эффект Оглушение спадает с B.",
+    "Раунд 2.",
+    "Отряд становится сильнее (ур. 5).",
+    "—— ХОД: GhostWarrior ——"
+  ],
+  "notStunnedLog": [
+    "Бой начался.",
+    "—— ХОД: GhostWarrior ——",
+    "ПРИЗРАЧНАЯ КАТАНА",
+    "GhostWarrior рубит катаной B (20)⟦WEAPON⟧.",
+    "B теряет 11 боевого духа (оглушение не сработало).",
+    "—— ХОД: B ——"
+  ],
+  "lifeThreadMults": {
+    "melee": {
+      "withThread": 60,
+      "without": 41
+    },
+    "ranged": {
+      "withThread": 62,
+      "without": 41
+    },
+    "magic": {
+      "withThread": 50,
+      "without": 33
+    }
+  }
+}

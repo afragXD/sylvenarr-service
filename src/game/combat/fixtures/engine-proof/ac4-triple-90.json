@@ -1,0 +1,24 @@
+{
+  "fixtureId": "ac4-triple-90",
+  "seed": 20261101,
+  "hitChance": 90,
+  "missChance": 10,
+  "missRoll": 10,
+  "hitRoll": 11,
+  "labelNote": "hitChance 90; движок бросает промах (≤missChance), не «roll≤90»",
+  "missLog": [
+    "Бой начался.",
+    "—— ХОД: DemonLord ——",
+    "ТРЁХГЛАВЫЙ УДАР (ПО РЯДУ)",
+    "DemonLord промахивается по B.",
+    "—— ХОД: B ——"
+  ],
+  "hitLog": [
+    "Бой начался.",
+    "—— ХОД: DemonLord ——",
+    "ТРЁХГЛАВЫЙ УДАР (ПО РЯДУ)",
+    "DemonLord бьёт B (46)⟦WEAPON⟧ (трёхглавый удар).",
+    "—— ХОД: B ——"
+  ],
+  "foeHealthAfterHit": 3204
+}
