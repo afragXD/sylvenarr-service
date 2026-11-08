@@ -59,7 +59,7 @@ export const heroClassRoleTagMap: Readonly<Record<string, ReadonlyArray<string>>
   Marauder: ['dd_ranged', 'aoe', 'morph'],
   Archlich: ['dd_mage', 'summoner', 'undead', 'morale_damage'],
   Witch: ['dd_ranged', 'vampirism', 'morph', 'mark'],
-  GhostWarrior: ['dd_melee', 'undead', 'vampirism', 'buffer'],
+  GhostWarrior: ['dd_melee', 'undead', 'summoner', 'buffer'],
   Specter: ['control', 'undead', 'mark'],
   Oracle: ['healer', 'buffer', 'support'],
   Herbalist: ['buffer', 'healer', 'support'],
