@@ -37,6 +37,10 @@ ENV GIT_SHA=$GIT_SHA
 COPY --from=build /app/server server
 COPY --from=build /app/GIT_SHA /app/GIT_SHA
 COPY --from=build /app/node_modules /app/node_modules
+COPY --from=build /app/package.json /app/package.json
+COPY --from=build /app/bun.lock /app/bun.lock
+COPY --from=build /app/prisma /app/prisma
+COPY --from=build /app/prisma.config.ts /app/prisma.config.ts
 # Seed для volume `/app/static` (общий с Angie): public/avatars и т.п.
 # Сцены новостей на volume кладутся руками / через POST /admin/news/upload.
 COPY --from=build /app/static /app/static-seed
