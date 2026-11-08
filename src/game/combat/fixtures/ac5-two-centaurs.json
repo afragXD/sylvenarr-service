@@ -1,0 +1,36 @@
+{
+  "fixtureId": "ac5-two-centaurs",
+  "seed": 20261101,
+  "log": [
+    "Бой начался.",
+    "—— ХОД: Knight ——",
+    "Knight укрепляет доспехи ряда на 2.",
+    "БАЛЛАДА",
+    "Knight исполняет боевую балладу для Knight (−102 золота, +16 силы).",
+    "—— ХОД: Knight ——",
+    "Knight: вард «Оружие» поглощает удар. Вард рассеивается."
+  ],
+  "units": [
+    {
+      "id": "p1",
+      "heroClassCode": "Knight",
+      "health": 118,
+      "maxHp": 200,
+      "alive": true
+    },
+    {
+      "id": "p2",
+      "heroClassCode": "Knight",
+      "health": 130,
+      "maxHp": 130,
+      "alive": true
+    },
+    {
+      "id": "e1",
+      "heroClassCode": "B",
+      "health": 130,
+      "maxHp": 130,
+      "alive": true
+    }
+  ]
+}

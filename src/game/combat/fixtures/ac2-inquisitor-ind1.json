@@ -1,0 +1,24 @@
+{
+  "fixtureId": "ac2-inquisitor-ind1",
+  "seed": 20261101,
+  "log": [
+    "Бой начался.",
+    "—— ХОД: B ——"
+  ],
+  "units": [
+    {
+      "id": "p1",
+      "heroClassCode": "Inquisitor",
+      "health": 130,
+      "maxHp": 130,
+      "alive": true
+    },
+    {
+      "id": "e1",
+      "heroClassCode": "B",
+      "health": 130,
+      "maxHp": 130,
+      "alive": true
+    }
+  ]
+}

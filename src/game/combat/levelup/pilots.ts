@@ -110,7 +110,14 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
       unit.ultaCharges += 1;
     }
     unit.damage += (randInt(2, 5) + Math.floor(unit.lvl / 2)) * ind;
-    addTeamGold(state, unit.team, randInt(30, 50) * ind);
+    // Честный доход за усиление отряда; сумма без изменений, строка в лог (AC-15).
+    const goldGain = randInt(30, 50) * ind;
+    if (goldGain !== 0) {
+      addTeamGold(state, unit.team, goldGain);
+      state.log.push(
+        `${goldGain > 0 ? '+' : ''}${goldGain} золота: усиление отряда (${unit.displayName})`,
+      );
+    }
     addMana(unit, ind);
     unit.power += (Math.floor(unit.lvl / 2) + 1) * ind;
     bumpLevel(unit, ind);

@@ -16,3 +16,8 @@
 - `combat/hub.ts` — fan-out для WebSocket
 - `combat/skills.ts` — классовые множители и подписи атак (полный порт characters/* — дальше)
 - Роуты: `POST /matches/:id/battle/action`, WS `/matches/ws/:id`
+
+## Фикстуры баланса (CUT-2026-11-01c)
+
+Каталог fixture id / seed / API JSON: **[combat/FIXTURES.md](./combat/FIXTURES.md)**.  
+Хелпер seed: `combat/test/seededRandom.ts`.

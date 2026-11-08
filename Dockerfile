@@ -10,6 +10,8 @@ RUN bun install
 # Копирование исходного кода
 COPY . .
 
+ARG GIT_SHA=unknown
+ENV GIT_SHA=$GIT_SHA
 ENV NODE_ENV=production
 
 # Компиляция в двоичный файл с оптимизациями
@@ -25,6 +27,9 @@ RUN bun build \
 FROM oven/bun:1-slim
 
 WORKDIR /app
+
+ARG GIT_SHA=unknown
+ENV GIT_SHA=$GIT_SHA
 
 COPY --from=build /app/server server
 COPY --from=build /app/node_modules /app/node_modules

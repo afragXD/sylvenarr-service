@@ -1,0 +1,25 @@
+{
+  "fixtureId": "ac15c-contr-melee",
+  "seed": 20261101,
+  "log": [
+    "Бой начался.",
+    "—— ХОД: B ——",
+    "B отвечает контрударом по A (27)⟦WEAPON⟧."
+  ],
+  "units": [
+    {
+      "id": "p1",
+      "heroClassCode": "A",
+      "health": 103,
+      "maxHp": 130,
+      "alive": true
+    },
+    {
+      "id": "e1",
+      "heroClassCode": "B",
+      "health": 118,
+      "maxHp": 130,
+      "alive": true
+    }
+  ]
+}

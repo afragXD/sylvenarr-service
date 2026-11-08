@@ -1,0 +1,25 @@
+{
+  "fixtureId": "ac6-ranged-magic",
+  "seed": 20261101,
+  "log": [
+    "Бой начался.",
+    "—— ХОД: B ——",
+    "B мастерски уклоняется от атаки A!"
+  ],
+  "units": [
+    {
+      "id": "p1",
+      "heroClassCode": "A",
+      "health": 130,
+      "maxHp": 130,
+      "alive": true
+    },
+    {
+      "id": "e1",
+      "heroClassCode": "B",
+      "health": 210,
+      "maxHp": 325,
+      "alive": true
+    }
+  ]
+}

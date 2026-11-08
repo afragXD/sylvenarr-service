@@ -2,7 +2,10 @@ import { describe, expect, test } from 'bun:test';
 
 import { dealDamage, estimateDamageRange } from '../damage';
 import { createBattleState } from '../engine';
+import { ROW_BACK } from '../settings';
 import type { HeroClassStats } from '../types';
+import { listPilotAbilities } from './registry';
+import { pyRound } from './abbess';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
   code,
@@ -81,5 +84,33 @@ describe('CUT-2026-11-01c AC-13 damage preview', () => {
     // raw = max(1, round(5 - 20 + 0..2)) = 1
     expect(est.maxDamage).toBeLessThan(10);
     expect(est.minDamage).toBeGreaterThanOrEqual(0);
+  });
+
+  test('fixture abbess-heal-preview: power 49 → previewHeal 24–37', () => {
+    const state = createBattleState({
+      matchId: 'ac13-abbess-heal-preview',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Abbess', row: ROW_BACK, pickOrder: 1 },
+        { id: 'p2', playerId: 'h', heroClassCode: 'Ally', row: 0, pickOrder: 2 },
+        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes: new Map([
+        ['Abbess', hero('Abbess', { power: 49, mana: 10, maxMana: 10, initiative: 99 })],
+        ['Ally', hero('Ally')],
+        ['B', hero('B')],
+      ]),
+    });
+    const abbess = state.units.find((u) => u.id === 'p1')!;
+    abbess.row = ROW_BACK;
+    abbess.power = 49;
+    abbess.mana = 10;
+    const hand = listPilotAbilities(state, abbess).find((a) => a.slot === 2);
+    expect(hand).toBeTruthy();
+    expect(hand!.previewHealMin).toBe(pyRound(49 * 0.5));
+    expect(hand!.previewHealMax).toBe(pyRound(49 * 0.75));
+    expect(hand!.previewHealMin).toBe(24);
+    expect(hand!.previewHealMax).toBe(37);
   });
 });

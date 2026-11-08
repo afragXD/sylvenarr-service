@@ -22,10 +22,16 @@ export abstract class AppService {
     const uptimeFormatted = `${uptimeDays} days. ${uptimeHours.toString().padStart(2, '0')}:${uptimeMinutes
       .toString()
       .padStart(2, '0')}`;
+    const commit =
+      process.env.GIT_SHA?.trim() ||
+      process.env.COMMIT_SHA?.trim() ||
+      process.env.SOURCE_VERSION?.trim() ||
+      'unknown';
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
       version: process.version || 'unknown',
+      commit,
       uptime: uptimeFormatted,
       database: {
         status: dbStatus,

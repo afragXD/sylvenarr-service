@@ -1,0 +1,29 @@
+{
+  "fixtureId": "ac15-marauder-gold",
+  "seed": 20261101,
+  "log": [
+    "Бой начался.",
+    "—— ХОД: B ——",
+    "+38 золота: усиление отряда (Мародёр)"
+  ],
+  "units": [
+    {
+      "id": "p1",
+      "heroClassCode": "Marauder",
+      "health": 130,
+      "maxHp": 130,
+      "alive": true
+    },
+    {
+      "id": "e1",
+      "heroClassCode": "B",
+      "health": 130,
+      "maxHp": 130,
+      "alive": true
+    }
+  ],
+  "teamGold": [
+    138,
+    100
+  ]
+}

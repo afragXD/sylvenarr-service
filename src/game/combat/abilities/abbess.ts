@@ -37,10 +37,14 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
     }
     case 2: {
       const allies = alliesOf(state, actor);
+      const healLo = pyRound(actor.power * 0.5);
+      const healHi = pyRound(actor.power * 0.75);
       return {
         slot: 2,
         label: 'Божественная длань',
         needsTarget: true,
+        previewHealMin: Math.min(healLo, healHi),
+        previewHealMax: Math.max(healLo, healHi),
         disabledReason:
           actor.mana < 3
             ? 'Нужно 3 МР'

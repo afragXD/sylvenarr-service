@@ -5,6 +5,8 @@ export namespace AppModel {
     status: t.Literal('ok'),
     timestamp: t.String(),
     version: t.String(),
+    /** SHA коммита сервиса (GIT_SHA / COMMIT_SHA / SOURCE_VERSION). */
+    commit: t.String(),
     uptime: t.String(),
     database: t.Object({
       status: t.Union([t.Literal('connected'), t.Literal('disconnected')]),
