@@ -9,6 +9,9 @@ RUN bun install
 
 # Копирование исходного кода
 COPY . .
+RUN R=$(sed -n 's/^ref: //p' .git/HEAD 2>/dev/null); \
+    SHA=$( [ -n "$R" ] && { cat ".git/$R" 2>/dev/null || awk -v r="$R" '$2==r{print $1}' .git/packed-refs 2>/dev/null; } || head -c40 .git/HEAD 2>/dev/null ); \
+    echo "${SHA:-unknown}" > /app/GIT_SHA && rm -rf .git
 
 ARG GIT_SHA=unknown
 ENV GIT_SHA=$GIT_SHA
@@ -32,6 +35,7 @@ ARG GIT_SHA=unknown
 ENV GIT_SHA=$GIT_SHA
 
 COPY --from=build /app/server server
+COPY --from=build /app/GIT_SHA /app/GIT_SHA
 COPY --from=build /app/node_modules /app/node_modules
 # Seed для volume `/app/static` (общий с Angie): public/avatars и т.п.
 # Сцены новостей на volume кладутся руками / через POST /admin/news/upload.

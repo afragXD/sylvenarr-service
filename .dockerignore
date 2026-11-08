@@ -4,6 +4,9 @@ dist
 .dockerignore
 Dockerfile
 .git
+!.git/HEAD
+!.git/packed-refs
+!.git/refs/heads
 .gitignore
 README.md
 *.log
