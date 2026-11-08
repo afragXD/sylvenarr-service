@@ -1,0 +1,92 @@
+{
+  "fixtureId": "ac6-ranged-magic",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: B ——",
+      "B мастерски уклоняется от атаки A!"
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "A",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 210,
+        "maxHp": 325,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      100
+    ],
+    "hit": 42,
+    "miss": 0,
+    "ranged": 41,
+    "magic": 32,
+    "apiJson": {
+      "fixtureId": "ac6-ranged-magic",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: B ——",
+        "B мастерски уклоняется от атаки A!"
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "A",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 210,
+          "maxHp": 325,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        100
+      ]
+    }
+  }
+}

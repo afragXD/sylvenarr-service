@@ -1,0 +1,118 @@
+{
+  "fixtureId": "ac13-abbess-heal-preview",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Abbess ——"
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Abbess",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 10,
+        "lvl": 1,
+        "damage": 40,
+        "power": 49,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "p2",
+        "heroClassCode": "Ally",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      150,
+      100
+    ],
+    "previewHealMin": 24,
+    "previewHealMax": 37,
+    "expectedMin": 24,
+    "expectedMax": 37,
+    "apiJson": {
+      "fixtureId": "ac13-abbess-heal-preview",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Abbess ——"
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Abbess",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 10,
+          "lvl": 1,
+          "damage": 40,
+          "power": 49,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "p2",
+          "heroClassCode": "Ally",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        150,
+        100
+      ]
+    }
+  }
+}

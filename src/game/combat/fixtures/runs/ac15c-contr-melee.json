@@ -1,0 +1,91 @@
+{
+  "fixtureId": "ac15c-contr-melee",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: B ——",
+      "B отвечает контрударом по A (27)⟦WEAPON⟧."
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "A",
+        "health": 103,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 10,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 118,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 4,
+        "damage": 30,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      100
+    ],
+    "hpBefore": 130,
+    "hpAfter": 103,
+    "contrRounds": 1,
+    "apiJson": {
+      "fixtureId": "ac15c-contr-melee",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: B ——",
+        "B отвечает контрударом по A (27)⟦WEAPON⟧."
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "A",
+          "health": 103,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 10,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 118,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 4,
+          "damage": 30,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        100
+      ]
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "fixtureId": "schizo-empty",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: B ——",
+      "A: шизофрения — точность −33%; нет предметов, −300 золота."
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "A",
+        "health": 200,
+        "maxHp": 200,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 67
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 200,
+        "maxHp": 200,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      200,
+      100
+    ],
+    "inventory": [],
+    "gold": 200,
+    "illnessKind": "schizophrenia",
+    "apiJson": {
+      "fixtureId": "schizo-empty",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: B ——",
+        "A: шизофрения — точность −33%; нет предметов, −300 золота."
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "A",
+          "health": 200,
+          "maxHp": 200,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 67
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 200,
+          "maxHp": 200,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        200,
+        100
+      ]
+    }
+  }
+}

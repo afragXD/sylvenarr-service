@@ -1,0 +1,93 @@
+{
+  "fixtureId": "ac1-max-morale-life",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Knight ——",
+      "Knight укрепляет доспехи ряда на 2.",
+      "Knight: максимальный боевой дух! Доп. жизнь (1), мораль → 50."
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Knight",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 50,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 2,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      100
+    ],
+    "maxMorale": 100,
+    "lives": 1,
+    "morale": 50,
+    "apiJson": {
+      "fixtureId": "ac1-max-morale-life",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Knight ——",
+        "Knight укрепляет доспехи ряда на 2.",
+        "Knight: максимальный боевой дух! Доп. жизнь (1), мораль → 50."
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Knight",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 50,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 2,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        100
+      ]
+    }
+  }
+}

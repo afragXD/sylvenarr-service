@@ -1,0 +1,176 @@
+{
+  "fixtureId": "ac9-sq",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: A ——"
+    ],
+    "units": [
+      {
+        "id": "w",
+        "heroClassCode": "Witch",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "f0",
+        "heroClassCode": "A",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "f1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "b0",
+        "heroClassCode": "C",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "b1",
+        "heroClassCode": "D",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      300
+    ],
+    "squareIds": [
+      "f0",
+      "f1",
+      "b0",
+      "b1"
+    ],
+    "apiJson": {
+      "fixtureId": "ac9-sq",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: A ——"
+      ],
+      "units": [
+        {
+          "id": "w",
+          "heroClassCode": "Witch",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "f0",
+          "heroClassCode": "A",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "f1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "b0",
+          "heroClassCode": "C",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "b1",
+          "heroClassCode": "D",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        300
+      ]
+    }
+  }
+}

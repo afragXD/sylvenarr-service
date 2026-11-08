@@ -1,0 +1,102 @@
+{
+  "fixtureId": "ac10-whip",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Incub ——",
+      "Прекрасное и ужасающее присутствие Incub: B теряет 5 боевого духа.",
+      "ОГНЕННЫЙ ХЛЫСТ",
+      "Incub хлещет огнём B (30)⟦FIRE⟧.",
+      "B: извержение на 2 р., сопротивление огню −5 (навсегда).",
+      "—— ХОД: B ——"
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Incub",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 17,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 165,
+        "maxHp": 195,
+        "alive": true,
+        "morale": -5,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      100
+    ],
+    "foeEffects": [
+      {
+        "id": "ERUPTION",
+        "rounds": 2
+      }
+    ],
+    "apiJson": {
+      "fixtureId": "ac10-whip",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Incub ——",
+        "Прекрасное и ужасающее присутствие Incub: B теряет 5 боевого духа.",
+        "ОГНЕННЫЙ ХЛЫСТ",
+        "Incub хлещет огнём B (30)⟦FIRE⟧.",
+        "B: извержение на 2 р., сопротивление огню −5 (навсегда).",
+        "—— ХОД: B ——"
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Incub",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 17,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 165,
+          "maxHp": 195,
+          "alive": true,
+          "morale": -5,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        100
+      ]
+    }
+  }
+}

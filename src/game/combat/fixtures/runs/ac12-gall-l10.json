@@ -1,0 +1,101 @@
+{
+  "fixtureId": "ac12-gall-l10",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: B ——",
+      "ЗВЕРИНАЯ ЖЕЛЧЬ",
+      "Werewolf обливает колонну желчью.",
+      "B получает (20)⟦WATER⟧ урона от Желчь.",
+      "Желчь разъедает броню B: −4.",
+      "—— ХОД: B ——"
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Werewolf",
+        "health": 98,
+        "maxHp": 98,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 10,
+        "damage": 25,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 305,
+        "maxHp": 325,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 16,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      100
+    ],
+    "gall": {
+      "rounds": 3,
+      "power": 20
+    },
+    "armor": 16,
+    "apiJson": {
+      "fixtureId": "ac12-gall-l10",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: B ——",
+        "ЗВЕРИНАЯ ЖЕЛЧЬ",
+        "Werewolf обливает колонну желчью.",
+        "B получает (20)⟦WATER⟧ урона от Желчь.",
+        "Желчь разъедает броню B: −4.",
+        "—— ХОД: B ——"
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Werewolf",
+          "health": 98,
+          "maxHp": 98,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 10,
+          "damage": 25,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 305,
+          "maxHp": 325,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 16,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        100
+      ]
+    }
+  }
+}

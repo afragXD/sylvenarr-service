@@ -1,0 +1,122 @@
+{
+  "fixtureId": "ac2-mind-beer-pyro",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Demiurge ——",
+      "HOMIE DE FLANDERS",
+      "Пиво течёт во мне, я един с пивом",
+      "BeerElemental: Pyro получает +9 боевого духа.",
+      "—— ХОД: Demiurge ——"
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Demiurge",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 30,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "BeerElemental",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e2",
+        "heroClassCode": "Pyro",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 9,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      150
+    ],
+    "apiJson": {
+      "fixtureId": "ac2-mind-beer-pyro",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Demiurge ——",
+        "HOMIE DE FLANDERS",
+        "Пиво течёт во мне, я един с пивом",
+        "BeerElemental: Pyro получает +9 боевого духа.",
+        "—— ХОД: Demiurge ——"
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Demiurge",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 30,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "BeerElemental",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e2",
+          "heroClassCode": "Pyro",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 9,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        150
+      ]
+    }
+  }
+}

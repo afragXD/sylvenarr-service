@@ -1,0 +1,100 @@
+{
+  "fixtureId": "ac9-ward",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Inquisitor ——",
+      "МАССОВАЯ ДЕГРАДАЦИЯ",
+      "Witch: массовая деградация по квадрату (1 цел., старт 95%).",
+      "Inquisitor: «Понижение уровня» блокирует воздействие.",
+      "Witch: деградация Inquisitor не сработала (шанс 95% сохранён).",
+      "—— ХОД: Inquisitor ——"
+    ],
+    "units": [
+      {
+        "id": "w",
+        "heroClassCode": "Witch",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 10,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "inq",
+        "heroClassCode": "Inquisitor",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      100
+    ],
+    "lvlBefore": 1,
+    "lvlAfter": 1,
+    "loweringWardBefore": 1,
+    "loweringWardAfter": 0,
+    "apiJson": {
+      "fixtureId": "ac9-ward",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Inquisitor ——",
+        "МАССОВАЯ ДЕГРАДАЦИЯ",
+        "Witch: массовая деградация по квадрату (1 цел., старт 95%).",
+        "Inquisitor: «Понижение уровня» блокирует воздействие.",
+        "Witch: деградация Inquisitor не сработала (шанс 95% сохранён).",
+        "—— ХОД: Inquisitor ——"
+      ],
+      "units": [
+        {
+          "id": "w",
+          "heroClassCode": "Witch",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 10,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "inq",
+          "heroClassCode": "Inquisitor",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        100
+      ]
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "fixtureId": "ac10-mentor",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: B ——",
+      "ТЕНЕВОЙ НАСТАВНИК",
+      "Incub наставляет саммона Ectoplasm: +25 удачи (без повышения уровня).",
+      "—— ХОД: B ——"
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Incub",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 16,
+        "lvl": 10,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "summon-p1-1794169539320-r3e1j",
+        "heroClassCode": "Ectoplasm",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 4,
+        "damage": 40,
+        "power": 46,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      100
+    ],
+    "summonLvl": 4,
+    "lucky": true,
+    "apiJson": {
+      "fixtureId": "ac10-mentor",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: B ——",
+        "ТЕНЕВОЙ НАСТАВНИК",
+        "Incub наставляет саммона Ectoplasm: +25 удачи (без повышения уровня).",
+        "—— ХОД: B ——"
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Incub",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 16,
+          "lvl": 10,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "summon-p1-1794169539320-r3e1j",
+          "heroClassCode": "Ectoplasm",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 4,
+          "damage": 40,
+          "power": 46,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        100
+      ]
+    }
+  }
+}

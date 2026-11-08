@@ -1,0 +1,131 @@
+{
+  "fixtureId": "ac5-two-centaurs",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Knight ——",
+      "Knight укрепляет доспехи ряда на 2.",
+      "БАЛЛАДА",
+      "Knight исполняет боевую балладу для Knight (−102 золота, +16 силы).",
+      "—— ХОД: Knight ——",
+      "Knight: вард «Оружие» поглощает удар. Вард рассеивается."
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Knight",
+        "health": 118,
+        "maxHp": 200,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 2,
+        "accuracy": 100
+      },
+      {
+        "id": "p2",
+        "heroClassCode": "Knight",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 56,
+        "power": 40,
+        "armor": 2,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      398,
+      100
+    ],
+    "cleared": {
+      "poison": false,
+      "burning": false,
+      "bleeding": false
+    },
+    "sacDisabled": "нельзя, нужно 120 ОЗ",
+    "k2Alive": true,
+    "apiJson": {
+      "fixtureId": "ac5-two-centaurs",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Knight ——",
+        "Knight укрепляет доспехи ряда на 2.",
+        "БАЛЛАДА",
+        "Knight исполняет боевую балладу для Knight (−102 золота, +16 силы).",
+        "—— ХОД: Knight ——",
+        "Knight: вард «Оружие» поглощает удар. Вард рассеивается."
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Knight",
+          "health": 118,
+          "maxHp": 200,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 2,
+          "accuracy": 100
+        },
+        {
+          "id": "p2",
+          "heroClassCode": "Knight",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 56,
+          "power": 40,
+          "armor": 2,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        398,
+        100
+      ]
+    }
+  }
+}

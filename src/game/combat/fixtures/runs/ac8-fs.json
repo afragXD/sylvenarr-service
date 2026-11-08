@@ -1,0 +1,98 @@
+{
+  "fixtureId": "ac8-fs",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Dracolich ——",
+      "ПОЖИРАНИЕ ГАДА — ЦЕЛЬ НИЖЕ 20 % ОЗ — СОЖРЁТ",
+      "Dracolich пожирает B (41)⟦WEAPON⟧.",
+      "Dracolich сжирает ослабевшего B (было < 20 % ОЗ).",
+      "B на пороге смерти — вард «Смертельный удар» спасает (остаётся 1 ОЗ).",
+      "—— ХОД: B ——"
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Dracolich",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 1,
+        "maxHp": 325,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      100
+    ],
+    "foeAlive": true,
+    "finalStrikeWard": null,
+    "apiJson": {
+      "fixtureId": "ac8-fs",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Dracolich ——",
+        "ПОЖИРАНИЕ ГАДА — ЦЕЛЬ НИЖЕ 20 % ОЗ — СОЖРЁТ",
+        "Dracolich пожирает B (41)⟦WEAPON⟧.",
+        "Dracolich сжирает ослабевшего B (было < 20 % ОЗ).",
+        "B на пороге смерти — вард «Смертельный удар» спасает (остаётся 1 ОЗ).",
+        "—— ХОД: B ——"
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Dracolich",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 1,
+          "maxHp": 325,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        100
+      ]
+    }
+  }
+}

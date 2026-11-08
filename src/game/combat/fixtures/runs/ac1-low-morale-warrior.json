@@ -1,0 +1,92 @@
+{
+  "fixtureId": "ac1-low-morale-warrior",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Knight ——",
+      "Knight укрепляет доспехи ряда на 2.",
+      "Knight: упадок духа ослабляет атаку (−10 урона на 2 р.)."
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Knight",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": -90,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 30,
+        "power": 40,
+        "armor": 2,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      100
+    ],
+    "applied": true,
+    "damage": 30,
+    "apiJson": {
+      "fixtureId": "ac1-low-morale-warrior",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Knight ——",
+        "Knight укрепляет доспехи ряда на 2.",
+        "Knight: упадок духа ослабляет атаку (−10 урона на 2 р.)."
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Knight",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": -90,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 30,
+          "power": 40,
+          "armor": 2,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        100
+      ]
+    }
+  }
+}

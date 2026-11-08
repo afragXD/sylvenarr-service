@@ -1,0 +1,155 @@
+{
+  "fixtureId": "ac8-prayer",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Zombie ——",
+      "МОЛИТВА НЕЖИТИ (+2 УР.)",
+      "Dracolich читает молитву нежити: +2 ур. (2 цел.).",
+      "—— ХОД: B ——"
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Dracolich",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 8,
+        "damage": 44,
+        "power": 44,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "p2",
+        "heroClassCode": "Zombie",
+        "health": 136,
+        "maxHp": 140,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 5,
+        "damage": 48,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "p3",
+        "heroClassCode": "Knight",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 4,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      225,
+      100
+    ],
+    "ok": true,
+    "levels": {
+      "draco": 8,
+      "zombie": 5,
+      "knight": 4
+    },
+    "cd": 4,
+    "apiJson": {
+      "fixtureId": "ac8-prayer",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Zombie ——",
+        "МОЛИТВА НЕЖИТИ (+2 УР.)",
+        "Dracolich читает молитву нежити: +2 ур. (2 цел.).",
+        "—— ХОД: B ——"
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Dracolich",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 8,
+          "damage": 44,
+          "power": 44,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "p2",
+          "heroClassCode": "Zombie",
+          "health": 136,
+          "maxHp": 140,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 5,
+          "damage": 48,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "p3",
+          "heroClassCode": "Knight",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 4,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        225,
+        100
+      ]
+    }
+  }
+}

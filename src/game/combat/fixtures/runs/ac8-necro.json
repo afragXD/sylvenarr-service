@@ -1,0 +1,149 @@
+{
+  "fixtureId": "ac8-necro",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Archlich ——",
+      "ВЫСШАЯ НЕКРОМАНТИЯ ×2",
+      "Dracolich взывает к нежити на кладбище."
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Dracolich",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "a1",
+        "heroClassCode": "Archlich",
+        "health": 0,
+        "maxHp": 130,
+        "alive": false,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "a2",
+        "heroClassCode": "Zombie",
+        "health": 0,
+        "maxHp": 130,
+        "alive": false,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      225,
+      100
+    ],
+    "firstOk": true,
+    "a1Alive": false,
+    "prompt": null,
+    "apiJson": {
+      "fixtureId": "ac8-necro",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Archlich ——",
+        "ВЫСШАЯ НЕКРОМАНТИЯ ×2",
+        "Dracolich взывает к нежити на кладбище."
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Dracolich",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "a1",
+          "heroClassCode": "Archlich",
+          "health": 0,
+          "maxHp": 130,
+          "alive": false,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "a2",
+          "heroClassCode": "Zombie",
+          "health": 0,
+          "maxHp": 130,
+          "alive": false,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        225,
+        100
+      ]
+    }
+  }
+}

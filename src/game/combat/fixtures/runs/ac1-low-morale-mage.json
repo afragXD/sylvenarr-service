@@ -1,0 +1,90 @@
+{
+  "fixtureId": "ac1-low-morale-mage",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Pyro ——",
+      "Pyro: упадок духа ослабляет магию (−10 СМ на 2 р.)."
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Pyro",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": -90,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      100
+    ],
+    "applied": true,
+    "power": 40,
+    "apiJson": {
+      "fixtureId": "ac1-low-morale-mage",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Pyro ——",
+        "Pyro: упадок духа ослабляет магию (−10 СМ на 2 р.)."
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Pyro",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": -90,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        100
+      ]
+    }
+  }
+}

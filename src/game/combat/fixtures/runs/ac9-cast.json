@@ -1,0 +1,192 @@
+{
+  "fixtureId": "ac9-cast",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: A ——",
+      "ПРЕВРАЩЕНИЕ",
+      "Witch: в каталоге нет беса — превращение сорвалось.",
+      "—— ХОД: B ——"
+    ],
+    "units": [
+      {
+        "id": "w",
+        "heroClassCode": "Witch",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 16,
+        "lvl": 10,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "f0",
+        "heroClassCode": "A",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 10,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "f1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 10,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "b0",
+        "heroClassCode": "C",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 10,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "b1",
+        "heroClassCode": "D",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 10,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      300
+    ],
+    "mana": 16,
+    "cd": 4,
+    "chain": [
+      95,
+      80,
+      65,
+      50
+    ],
+    "primaryLoss": 3,
+    "otherLoss": 2,
+    "levels": {
+      "f0": 10,
+      "f1": 10,
+      "b0": 10,
+      "b1": 10
+    },
+    "apiJson": {
+      "fixtureId": "ac9-cast",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: A ——",
+        "ПРЕВРАЩЕНИЕ",
+        "Witch: в каталоге нет беса — превращение сорвалось.",
+        "—— ХОД: B ——"
+      ],
+      "units": [
+        {
+          "id": "w",
+          "heroClassCode": "Witch",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 16,
+          "lvl": 10,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "f0",
+          "heroClassCode": "A",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 10,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "f1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 10,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "b0",
+          "heroClassCode": "C",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 10,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "b1",
+          "heroClassCode": "D",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 10,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        300
+      ]
+    }
+  }
+}

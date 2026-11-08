@@ -1,0 +1,121 @@
+{
+  "fixtureId": "ac8-necro1",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Zombie ——",
+      "ВЫСШАЯ НЕКРОМАНТИЯ ×2",
+      "Dracolich взывает к нежити на кладбище."
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Dracolich",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "a1",
+        "heroClassCode": "Zombie",
+        "health": 0,
+        "maxHp": 130,
+        "alive": false,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      150,
+      100
+    ],
+    "ok": true,
+    "a1Alive": false,
+    "activeUnitId": "p1",
+    "apiJson": {
+      "fixtureId": "ac8-necro1",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Zombie ——",
+        "ВЫСШАЯ НЕКРОМАНТИЯ ×2",
+        "Dracolich взывает к нежити на кладбище."
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Dracolich",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "a1",
+          "heroClassCode": "Zombie",
+          "health": 0,
+          "maxHp": 130,
+          "alive": false,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        150,
+        100
+      ]
+    }
+  }
+}

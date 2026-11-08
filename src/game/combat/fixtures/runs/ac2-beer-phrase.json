@@ -1,0 +1,124 @@
+{
+  "fixtureId": "ac2-beer-phrase",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: BeerElemental ——",
+      "BeerElemental просадил 39 золота в азартные игры!",
+      "HOMIE DE FLANDERS",
+      "Пиво течёт во мне, я един с пивом",
+      "BeerElemental: Ally получает +9 боевого духа.",
+      "—— ХОД: Ally ——"
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "BeerElemental",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "p2",
+        "heroClassCode": "Ally",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 9,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      111,
+      100
+    ],
+    "apiJson": {
+      "fixtureId": "ac2-beer-phrase",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: BeerElemental ——",
+        "BeerElemental просадил 39 золота в азартные игры!",
+        "HOMIE DE FLANDERS",
+        "Пиво течёт во мне, я един с пивом",
+        "BeerElemental: Ally получает +9 боевого духа.",
+        "—— ХОД: Ally ——"
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "BeerElemental",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "p2",
+          "heroClassCode": "Ally",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 9,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        111,
+        100
+      ]
+    }
+  }
+}

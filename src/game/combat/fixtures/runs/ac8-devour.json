@@ -1,0 +1,99 @@
+{
+  "fixtureId": "ac8-devour",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Dracolich ——",
+      "ПОЖИРАНИЕ ГАДА — ЦЕЛЬ НИЖЕ 20 % ОЗ — СОЖРЁТ",
+      "Dracolich пожирает B (36)⟦WEAPON⟧ (метка: −75% брони).",
+      "Dracolich сжирает ослабевшего B (было < 20 % ОЗ).",
+      "B погибает.",
+      "Победа игрока 1."
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Dracolich",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 0,
+        "maxHp": 325,
+        "alive": false,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 20,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      100
+    ],
+    "foeAlive": false,
+    "foeArmor": 20,
+    "hpRatio": 0.19,
+    "apiJson": {
+      "fixtureId": "ac8-devour",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Dracolich ——",
+        "ПОЖИРАНИЕ ГАДА — ЦЕЛЬ НИЖЕ 20 % ОЗ — СОЖРЁТ",
+        "Dracolich пожирает B (36)⟦WEAPON⟧ (метка: −75% брони).",
+        "Dracolich сжирает ослабевшего B (было < 20 % ОЗ).",
+        "B погибает.",
+        "Победа игрока 1."
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Dracolich",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 0,
+          "maxHp": 325,
+          "alive": false,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 20,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        100
+      ]
+    }
+  }
+}

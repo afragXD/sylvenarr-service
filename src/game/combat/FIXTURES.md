@@ -47,4 +47,9 @@ Seed по умолчанию для регрессий: **20261101**, если �
 | AC-15 | `ac15-marauder-gold` | 20261101 | `+N золота: усиление отряда` | `fixtures-api.test.ts` |
 | AC-15c | `ac15c-contr-melee` | 20261101 | CONTR + ближняя атака | `fixtures-api.test.ts` |
 
-Снимки API JSON пишутся/сверяются в `src/game/combat/fixtures/*.json` тестом `fixtures-api.test.ts`.
+Снимки API JSON (эталон): `src/game/combat/fixtures/*.json` (`fixtures-api.test.ts`).
+
+**Фактические прогоны** (fixture id + seed + result JSON):  
+`bun src/game/combat/run-fixtures.ts` → `src/game/combat/fixtures/runs/<id>.json`.
+
+Полный вывод `bun test src/game/combat src/modules/app` на SHA: `fixtures/RUN-<sha>.txt`.

@@ -1,0 +1,130 @@
+{
+  "fixtureId": "ac5-sac",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Ally ——",
+      "САМОПОЖЕРТВОВАНИЕ (МОЖНО, НУЖНО 120 ОЗ)",
+      "Knight жертвует собой (200 урона себе) ради Ally.",
+      "Knight погибает.",
+      "Ally возвращается к жизни.",
+      "Конь Knight погибает — пика недоступна.",
+      "—— ХОД: B ——"
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Knight",
+        "health": 0,
+        "maxHp": 200,
+        "alive": false,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "p2",
+        "heroClassCode": "Ally",
+        "health": 65,
+        "maxHp": 65,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      150,
+      100
+    ],
+    "blockedAt119": "нельзя, нужно 120 ОЗ",
+    "knightAlive": false,
+    "allyAlive": true,
+    "sacrificedSelf": true,
+    "apiJson": {
+      "fixtureId": "ac5-sac",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Ally ——",
+        "САМОПОЖЕРТВОВАНИЕ (МОЖНО, НУЖНО 120 ОЗ)",
+        "Knight жертвует собой (200 урона себе) ради Ally.",
+        "Knight погибает.",
+        "Ally возвращается к жизни.",
+        "Конь Knight погибает — пика недоступна.",
+        "—— ХОД: B ——"
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Knight",
+          "health": 0,
+          "maxHp": 200,
+          "alive": false,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "p2",
+          "heroClassCode": "Ally",
+          "health": 65,
+          "maxHp": 65,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        150,
+        100
+      ]
+    }
+  }
+}

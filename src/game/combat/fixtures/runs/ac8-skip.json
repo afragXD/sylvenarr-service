@@ -1,0 +1,157 @@
+{
+  "fixtureId": "ac8-skip",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Zombie ——",
+      "ВЫСШАЯ НЕКРОМАНТИЯ ×2",
+      "Dracolich взывает к нежити на кладбище.",
+      "Dracolich поднимает нежить: Zombie (½ max ОЗ, ½ инициативы).",
+      "Dracolich: выберите вторую цель некромантии (или пропустите).",
+      "Dracolich пропускает вторую цель некромантии.",
+      "—— ХОД: B ——"
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Dracolich",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "a1",
+        "heroClassCode": "Zombie",
+        "health": 65,
+        "maxHp": 65,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "a2",
+        "heroClassCode": "Specter",
+        "health": 0,
+        "maxHp": 130,
+        "alive": false,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      225,
+      100
+    ],
+    "promptBefore": "dracolich_resurrect_2",
+    "promptAfter": null,
+    "a1Alive": true,
+    "apiJson": {
+      "fixtureId": "ac8-skip",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Zombie ——",
+        "ВЫСШАЯ НЕКРОМАНТИЯ ×2",
+        "Dracolich взывает к нежити на кладбище.",
+        "Dracolich поднимает нежить: Zombie (½ max ОЗ, ½ инициативы).",
+        "Dracolich: выберите вторую цель некромантии (или пропустите).",
+        "Dracolich пропускает вторую цель некромантии.",
+        "—— ХОД: B ——"
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Dracolich",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "a1",
+          "heroClassCode": "Zombie",
+          "health": 65,
+          "maxHp": 65,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "a2",
+          "heroClassCode": "Specter",
+          "health": 0,
+          "maxHp": 130,
+          "alive": false,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        225,
+        100
+      ]
+    }
+  }
+}

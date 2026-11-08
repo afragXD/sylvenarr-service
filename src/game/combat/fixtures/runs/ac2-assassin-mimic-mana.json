@@ -1,0 +1,122 @@
+{
+  "fixtureId": "ac2-assassin-mimic-mana",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Assassin ——",
+      "ЗВОН СМЕРТИ",
+      "Мимик принимает облик Paladin (+1 ур., мораль +4).",
+      "—— ХОД: Paladin ——"
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Paladin",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 4,
+        "mana": 4,
+        "lvl": 2,
+        "damage": 41,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "p2",
+        "heroClassCode": "Paladin",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 10,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      150,
+      100
+    ],
+    "heroClassCode": "Paladin",
+    "mana": 4,
+    "apiJson": {
+      "fixtureId": "ac2-assassin-mimic-mana",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Assassin ——",
+        "ЗВОН СМЕРТИ",
+        "Мимик принимает облик Paladin (+1 ур., мораль +4).",
+        "—— ХОД: Paladin ——"
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Paladin",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 4,
+          "mana": 4,
+          "lvl": 2,
+          "damage": 41,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "p2",
+          "heroClassCode": "Paladin",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 10,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        150,
+        100
+      ]
+    }
+  }
+}

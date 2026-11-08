@@ -1,0 +1,158 @@
+{
+  "fixtureId": "ac10-doc",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Oracle ——"
+    ],
+    "units": [
+      {
+        "id": "inc",
+        "heroClassCode": "Incub",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "orc",
+        "heroClassCode": "Oracle",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      150,
+      100
+    ],
+    "incubSlots": [
+      {
+        "slot": 1,
+        "label": "Психический шок (ряд)"
+      },
+      {
+        "slot": 2,
+        "label": "Огненный хлыст"
+      },
+      {
+        "slot": 3,
+        "label": "Нечистый договор"
+      },
+      {
+        "slot": 4,
+        "label": "Теневой наставник"
+      },
+      {
+        "slot": 5,
+        "label": "Рождение Зла"
+      }
+    ],
+    "oracleSlots": [
+      {
+        "slot": 1,
+        "label": "Восстановление ОЗ"
+      },
+      {
+        "slot": 2,
+        "label": "Миг могущества"
+      },
+      {
+        "slot": 3,
+        "label": "Знамение Галлеана"
+      },
+      {
+        "slot": 4,
+        "label": "Аркана энергии (1)"
+      },
+      {
+        "slot": 5,
+        "label": "Чудесный доктор"
+      }
+    ],
+    "apiJson": {
+      "fixtureId": "ac10-doc",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Oracle ——"
+      ],
+      "units": [
+        {
+          "id": "inc",
+          "heroClassCode": "Incub",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "orc",
+          "heroClassCode": "Oracle",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        150,
+        100
+      ]
+    }
+  }
+}

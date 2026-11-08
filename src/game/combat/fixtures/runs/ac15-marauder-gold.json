@@ -1,0 +1,91 @@
+{
+  "fixtureId": "ac15-marauder-gold",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: B ——",
+      "+38 золота: усиление отряда (Мародёр)"
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Marauder",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 2,
+        "damage": 45,
+        "power": 41,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      138,
+      100
+    ],
+    "goldBefore": 100,
+    "goldAfter": 138,
+    "gain": 38,
+    "apiJson": {
+      "fixtureId": "ac15-marauder-gold",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: B ——",
+        "+38 золота: усиление отряда (Мародёр)"
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Marauder",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 2,
+          "damage": 45,
+          "power": 41,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        138,
+        100
+      ]
+    }
+  }
+}

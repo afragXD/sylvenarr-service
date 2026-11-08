@@ -1,0 +1,91 @@
+{
+  "fixtureId": "ac1-spend-life",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Knight ——",
+      "Knight укрепляет доспехи ряда на 2.",
+      "Knight тратит доп. жизнь и продолжает бой с 75 ОЗ (без штрафа к инициативе)."
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "Knight",
+        "health": 75,
+        "maxHp": 75,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 2,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      100
+    ],
+    "initiative": 99,
+    "apiJson": {
+      "fixtureId": "ac1-spend-life",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Knight ——",
+        "Knight укрепляет доспехи ряда на 2.",
+        "Knight тратит доп. жизнь и продолжает бой с 75 ОЗ (без штрафа к инициативе)."
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "Knight",
+          "health": 75,
+          "maxHp": 75,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 2,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        100
+      ]
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "fixtureId": "ac6-chain",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: B ——",
+      "Отражение боли: A получает (21)⟦DEFAULT⟧ обратно."
+    ],
+    "units": [
+      {
+        "id": "a",
+        "heroClassCode": "A",
+        "health": 304,
+        "maxHp": 325,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "b",
+        "heroClassCode": "B",
+        "health": 283,
+        "maxHp": 325,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      }
+    ],
+    "teamGold": [
+      100,
+      100
+    ],
+    "dealt": 42,
+    "aDelta": 21,
+    "bDelta": 42,
+    "apiJson": {
+      "fixtureId": "ac6-chain",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: B ——",
+        "Отражение боли: A получает (21)⟦DEFAULT⟧ обратно."
+      ],
+      "units": [
+        {
+          "id": "a",
+          "heroClassCode": "A",
+          "health": 304,
+          "maxHp": 325,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "b",
+          "heroClassCode": "B",
+          "health": 283,
+          "maxHp": 325,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        }
+      ],
+      "teamGold": [
+        100,
+        100
+      ]
+    }
+  }
+}

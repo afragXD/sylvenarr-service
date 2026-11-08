@@ -1,0 +1,128 @@
+{
+  "fixtureId": "ac6-pr",
+  "seed": 20261101,
+  "result": {
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Ally ——",
+      "ТЁМНАЯ МОЛИТВА",
+      "SkeletonChampion читает тёмную молитву — Ally отражает боль (2 р.).",
+      "—— ХОД: Ally ——",
+      "Отражение боли: B получает (20)⟦DEFAULT⟧ обратно.",
+      "B промахивается по Ally."
+    ],
+    "units": [
+      {
+        "id": "p1",
+        "heroClassCode": "SkeletonChampion",
+        "health": 130,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "p2",
+        "heroClassCode": "Ally",
+        "health": 155,
+        "maxHp": 195,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 100
+      },
+      {
+        "id": "e1",
+        "heroClassCode": "B",
+        "health": 110,
+        "maxHp": 130,
+        "alive": true,
+        "morale": 0,
+        "mana": 15,
+        "lvl": 1,
+        "damage": 40,
+        "power": 40,
+        "armor": 0,
+        "accuracy": 0
+      }
+    ],
+    "teamGold": [
+      150,
+      100
+    ],
+    "dealt": 40,
+    "reflected": 20,
+    "missNoReflect": true,
+    "hasPainReflect": true,
+    "apiJson": {
+      "fixtureId": "ac6-pr",
+      "seed": 20261101,
+      "log": [
+        "Бой начался.",
+        "—— ХОД: Ally ——",
+        "ТЁМНАЯ МОЛИТВА",
+        "SkeletonChampion читает тёмную молитву — Ally отражает боль (2 р.).",
+        "—— ХОД: Ally ——",
+        "Отражение боли: B получает (20)⟦DEFAULT⟧ обратно.",
+        "B промахивается по Ally."
+      ],
+      "units": [
+        {
+          "id": "p1",
+          "heroClassCode": "SkeletonChampion",
+          "health": 130,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "p2",
+          "heroClassCode": "Ally",
+          "health": 155,
+          "maxHp": 195,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 100
+        },
+        {
+          "id": "e1",
+          "heroClassCode": "B",
+          "health": 110,
+          "maxHp": 130,
+          "alive": true,
+          "morale": 0,
+          "mana": 15,
+          "lvl": 1,
+          "damage": 40,
+          "power": 40,
+          "armor": 0,
+          "accuracy": 0
+        }
+      ],
+      "teamGold": [
+        150,
+        100
+      ]
+    }
+  }
+}
