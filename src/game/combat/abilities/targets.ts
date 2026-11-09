@@ -23,6 +23,16 @@ export function omitConcealed(actor: BattleUnit, units: readonly BattleUnit[]): 
 }
 
 /**
+ * Массовый вражеский удар: невидимый враг выпадает, невидимый союзник остаётся.
+ */
+export function withoutHiddenEnemies(
+  actor: BattleUnit,
+  units: readonly BattleUnit[],
+): BattleUnit[] {
+  return units.filter((unit) => unit.team === actor.team || !hasEffect(unit, 'INVISIBLE'));
+}
+
+/**
  * Все живые враги (без SANCTUM; без GUARDED, если не ignoreGuard; без INVISIBLE).
  */
 export function enemiesOf(

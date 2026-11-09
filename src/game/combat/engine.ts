@@ -557,6 +557,7 @@ export function applyAction(
       if (itemCode == null) {
         return { ok: false, message: 'Нужно завершить выбор предмета' };
       }
+      const wasHidden = hasEffect(actor, 'INVISIBLE');
       return settleItem(
         state,
         actor,
@@ -565,7 +566,8 @@ export function applyAction(
           targetId: input.targetId,
           choice: input.choice,
           continuingPrompt: true,
-        })
+        }),
+        wasHidden,
       );
     }
     if (input.action !== 'ability' || !input.choice) {
@@ -575,6 +577,7 @@ export function applyAction(
     if (!promptSlot) {
       return { ok: false, message: 'Нужно завершить выбор способности' };
     }
+    const wasHidden = hasEffect(actor, 'INVISIBLE');
     const outcome = applyAbility(state, actor, {
       slot: promptSlot,
       targetId: input.targetId,
@@ -584,7 +587,7 @@ export function applyAction(
     if (outcome.status === 'done' && !outcome.keepTurn && input.choice !== 'cancel') {
       pushSfx(state, actor, 'ability', promptSlot);
     }
-    return settleAbility(state, actor, outcome);
+    return settleAbility(state, actor, outcome, wasHidden);
   }
 
   if (input.action === 'wait') {
@@ -667,6 +670,7 @@ export function applyAction(
       state.log.push(label.toLocaleUpperCase('ru-RU'));
     }
     const sfxSeq = pushSfx(state, actor, 'ability', slot);
+    const wasHidden = hasEffect(actor, 'INVISIBLE');
     const outcome = applyAbility(state, actor, {
       slot,
       targetId: input.targetId,
@@ -678,7 +682,7 @@ export function applyAction(
     if (outcome.status === 'reject' || outcome.status === 'pending') {
       dropSfx(state, sfxSeq);
     }
-    return settleAbility(state, actor, outcome);
+    return settleAbility(state, actor, outcome, wasHidden);
   }
 
   if (input.action === 'skill') {
@@ -697,6 +701,7 @@ export function applyAction(
     if (itemCode == null) {
       return { ok: false, message: 'Нужен код предмета' };
     }
+    const wasHidden = hasEffect(actor, 'INVISIBLE');
     return settleItem(
       state,
       actor,
@@ -704,7 +709,8 @@ export function applyAction(
         itemCode,
         targetId: input.targetId,
         choice: input.choice,
-      })
+      }),
+      wasHidden,
     );
   }
 
@@ -715,6 +721,7 @@ export function applyAction(
     const capsLogAt = state.log.length;
     state.log.push(label.toLocaleUpperCase('ru-RU'));
     const sfxSeq = pushSfx(state, actor, 'ability', 1);
+    const wasHidden = hasEffect(actor, 'INVISIBLE');
     const outcome = applyAbility(state, actor, {
       slot: 1,
       targetId: input.targetId,
@@ -725,7 +732,7 @@ export function applyAction(
     if (outcome.status === 'reject' || outcome.status === 'pending') {
       dropSfx(state, sfxSeq);
     }
-    return settleAbility(state, actor, outcome);
+    return settleAbility(state, actor, outcome, wasHidden);
   }
 
   const hiddenAttack = rejectConcealedAction(state, actor, [input.targetId]);
@@ -743,8 +750,11 @@ export function applyAction(
   }
 
   state.log.push('АТАКА');
+  const wasHidden = hasEffect(actor, 'INVISIBLE');
   resolveAttackWithClassMods(state, actor, target);
-  revealAfterAction(state, actor);
+  if (wasHidden) {
+    revealAfterAction(state, actor);
+  }
   finishUnitTurn(state, actor);
   return { ok: true };
 }
@@ -774,7 +784,8 @@ function settleAbility(
     message?: string;
     keepTurn?: boolean;
     extraTurnForUnitId?: string;
-  }
+  },
+  wasHidden: boolean,
 ): { ok: true } | { ok: false; message: string } {
   if (outcome.status === 'reject') {
     return { ok: false, message: outcome.message ?? 'Способность недоступна' };
@@ -792,11 +803,15 @@ function settleAbility(
     );
   }
   if (outcome.keepTurn) {
-    revealAfterAction(state, actor);
+    if (wasHidden) {
+      revealAfterAction(state, actor);
+    }
     resolveOutcome(state);
     return { ok: true };
   }
-  revealAfterAction(state, actor);
+  if (wasHidden) {
+    revealAfterAction(state, actor);
+  }
   finishUnitTurn(state, actor);
   return { ok: true };
 }
@@ -804,7 +819,8 @@ function settleAbility(
 function settleItem(
   state: BattleState,
   actor: BattleUnit,
-  result: ReturnType<typeof applyItemAction>
+  result: ReturnType<typeof applyItemAction>,
+  wasHidden: boolean,
 ): { ok: true } | { ok: false; message: string } {
   if (!result.ok) {
     return { ok: false, message: result.message };
@@ -815,11 +831,15 @@ function settleItem(
   markDeadIfNeeded(state, actor);
   if (result.keepTurn) {
     state.pendingPrompt = null;
-    revealAfterAction(state, actor);
+    if (wasHidden) {
+      revealAfterAction(state, actor);
+    }
     resolveOutcome(state);
     return { ok: true };
   }
-  revealAfterAction(state, actor);
+  if (wasHidden) {
+    revealAfterAction(state, actor);
+  }
   finishUnitTurn(state, actor);
   return { ok: true };
 }
@@ -833,13 +853,16 @@ function applySkillAction(
   if (skill.kind === 'none') {
     return { ok: false, message: 'У этого героя нет особого навыка' };
   }
+  const wasHidden = hasEffect(actor, 'INVISIBLE');
 
   if (skill.kind === 'heal_self') {
     state.log.push(skill.label.toLocaleUpperCase('ru-RU'));
     const base = Math.max(1, Math.round(actor.maxHp * skill.healFraction));
     const healed = healUnit(actor, base);
     state.log.push(`${actor.displayName}: ${skill.label} (+${healed} ОЗ).`);
-    revealAfterAction(state, actor);
+    if (wasHidden) {
+      revealAfterAction(state, actor);
+    }
     finishUnitTurn(state, actor);
     return { ok: true };
   }
@@ -871,7 +894,9 @@ function applySkillAction(
       }
       markDeadIfNeeded(state, enemy);
     }
-    revealAfterAction(state, actor);
+    if (wasHidden) {
+      revealAfterAction(state, actor);
+    }
     finishUnitTurn(state, actor);
     return { ok: true };
   }
@@ -892,7 +917,9 @@ function applySkillAction(
     const base = Math.max(1, Math.round(target.maxHp * skill.healFraction));
     const healed = healUnit(target, base);
     state.log.push(`${actor.displayName}: ${skill.label} → ${target.displayName} (+${healed} ОЗ).`);
-    revealAfterAction(state, actor);
+    if (wasHidden) {
+      revealAfterAction(state, actor);
+    }
     finishUnitTurn(state, actor);
     return { ok: true };
   }
@@ -915,7 +942,9 @@ function applySkillAction(
     );
   }
   markDeadIfNeeded(state, target);
-  revealAfterAction(state, actor);
+  if (wasHidden) {
+    revealAfterAction(state, actor);
+  }
   finishUnitTurn(state, actor);
   return { ok: true };
 }

@@ -24,15 +24,15 @@
   ],
   "lifeThreadMults": {
     "melee": {
-      "withThread": 63,
-      "without": 40
+      "withThread": 60,
+      "without": 42
     },
     "ranged": {
-      "withThread": 62,
-      "without": 41
+      "withThread": 60,
+      "without": 42
     },
     "magic": {
-      "withThread": 45,
+      "withThread": 53,
       "without": 29
     }
   }

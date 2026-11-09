@@ -2,7 +2,7 @@ import { economyOn, spendTeamGold, teamGold } from '../../economy';
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { delEffect, grantEffect, resurrectUnit } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { alliesOf, meleeOrAll, neighbourBehind, ownRowAllies } from './targets';
+import { alliesOf, isConcealedFrom, meleeOrAll, neighbourBehind, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function sacrificeHpNeed(actor: BattleUnit): number {
@@ -153,7 +153,7 @@ export const knightAbilities: AbilityHandler = {
         maybeKillHorse(actor, state);
         if (target.alive && randInt(1, 100) <= 50 + actor.lvl * 2) {
           const behind = neighbourBehind(state, target);
-          if (behind) {
+          if (behind && !isConcealedFrom(actor, behind)) {
             const splash = dealDamage(
               actor,
               behind,

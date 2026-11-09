@@ -6,7 +6,7 @@ import { applyResistMultiplier, mindResistFactor, rollSrcChance } from '../resis
 import { ROW_FRONT } from '../settings';
 import { applyCatalogStats } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { alliesOf, enemiesOf, meleeTargets, unitsOnSameRow } from './targets';
+import { alliesOf, enemiesOf, meleeTargets, unitsOnSameRow, withoutHiddenEnemies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 /** Вражеские саммоны в зоне ближнего боя (инфицирование). */
@@ -232,7 +232,7 @@ export const zombieAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const row = unitsOnSameRow(state, target);
+      const row = withoutHiddenEnemies(actor, unitsOnSameRow(state, target));
       const share = actor.health / Math.max(3, row.length);
       state.log.push(
         'Зомби бомбочкой бросается в толпу врагов - его омерзительное, сгнившее тело пульсирует и, наконец, взрывается кровавым фонтаном.'

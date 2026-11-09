@@ -7,7 +7,7 @@ import { ROW_BACK } from '../settings';
 import { reduceMaxHp } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
-import { alliesOf, enemiesOf, unitsOnSameRow } from './targets';
+import { alliesOf, enemiesOf, unitsOnSameRow, withoutHiddenEnemies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 /** Python 3 round: halfway cases round to even. */
@@ -215,7 +215,7 @@ export const abbessAbilities: AbilityHandler = {
       if (err) {
         return { status: 'reject', message: err };
       }
-      for (const unit of unitsOnSameRow(state, target)) {
+      for (const unit of withoutHiddenEnemies(actor, unitsOnSameRow(state, target))) {
         clearAllEffects(unit, state);
       }
       setSlotCd(actor, 4, 3);

@@ -8,12 +8,12 @@ import {
 import { formatLogDamage } from '../damageSources';
 import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
-import { isUndeadClass } from '../races';
+import { isArtificialClass, isUndeadClass } from '../races';
 import { changeResist, rollMindChance } from '../resists';
 import { applyCatalogStats } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
-import { alliesOf, enemiesOf } from './targets';
+import { alliesOf, enemiesOf, withoutHiddenEnemies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 /** Раунд и уровень, с которых доступно «Рождение Зла». */
@@ -195,14 +195,17 @@ export const incubAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const row = state.units.filter(
-        (unit) => unit.alive && unit.team === target.team && unit.row === target.row
+      const row = withoutHiddenEnemies(
+        actor,
+        state.units.filter(
+          (unit) => unit.alive && unit.team === target.team && unit.row === target.row,
+        ),
       );
       const share = Math.floor(actor.power / Math.max(1, row.length));
       for (const enemy of row) {
-        // Нежить: мораль не модифицирует урон ни в плюс, ни в минус.
+        // Нежить и искусственные: мораль не модифицирует урон ни в плюс, ни в минус.
         const moraleFactor =
-          isUndeadClass(enemy.heroClassCode) || enemy.heroClassCode === 'GoldGolem'
+          isUndeadClass(enemy.heroClassCode) || isArtificialClass(enemy.heroClassCode)
             ? 1
             : Math.max(0.1, 1 - enemy.morale / 100);
         const dealt = harmWithSource(

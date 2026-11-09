@@ -4,6 +4,7 @@ import { randInt } from '../damage';
 import { addMana, healUnit } from '../effects';
 import { changeResist, setWard } from '../resists';
 import type { BattleUnit } from '../types';
+import { chargeDueBeforeBump, chargeGainedAfterBump } from '../abilities/charge-hints';
 import { bumpLevel } from './bump';
 import type { ClassLevelUpFn } from './types';
 
@@ -13,7 +14,7 @@ function werewolfRage(unit: BattleUnit): number {
 
 export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   Assassin(unit, ind, state) {
-    if (state.stage % 4 === 0 && ind > 0) {
+    if (chargeDueBeforeBump('Assassin', unit.hiddenLvl, state.stage, ind)) {
       unit.darts += randInt(1, 2);
       if (economyOn(state)) {
         addItem(state, unit.team, 107, 1);
@@ -27,7 +28,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Paladin(unit, ind, state) {
-    if (unit.hiddenLvl % 7 === 0) {
+    if (chargeDueBeforeBump('Paladin', unit.hiddenLvl, state.stage, ind)) {
       unit.ultaCharges += 1;
       addMana(unit, 5);
       if (economyOn(state)) {
@@ -68,8 +69,8 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     bumpLevel(unit, ind);
   },
 
-  DemonLord(unit, ind, _state) {
-    if (unit.hiddenLvl % 5 === 0) {
+  DemonLord(unit, ind, state) {
+    if (chargeDueBeforeBump('DemonLord', unit.hiddenLvl, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     unit.power += randInt(2, 4) * ind;
@@ -106,7 +107,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Marauder(unit, ind, state) {
-    if (state.stage % 5 === 0) {
+    if (chargeDueBeforeBump('Marauder', unit.hiddenLvl, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     unit.damage += (randInt(2, 5) + Math.floor(unit.lvl / 2)) * ind;
@@ -124,7 +125,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Werewolf(unit, ind, state) {
-    if (state.stage % 5 === 0 && ind > 0) {
+    if (chargeDueBeforeBump('Werewolf', unit.hiddenLvl, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     // CUT-2026-11-01c AC-3: randInt(2,3) + L//2 (было 1..3).
@@ -150,7 +151,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Witch(unit, ind, state) {
-    if (state.stage % 5 === 0 && ind > 0) {
+    if (chargeDueBeforeBump('Witch', unit.hiddenLvl, state.stage, ind)) {
       unit.gun += 4;
     }
     unit.damage += (randInt(2, 5) + Math.floor(unit.lvl / 2)) * ind;
@@ -163,7 +164,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
 
   GhostWarrior(unit, ind, state) {
     // Ульта «Личный слуга»: +1 заряд каждые 5 раундов (как Мародёр/Пайро).
-    if (state.stage % 5 === 0 && ind > 0) {
+    if (chargeDueBeforeBump('GhostWarrior', unit.hiddenLvl, state.stage, ind)) {
       unit.ultaCharges += 1;
       state.log.push(`${unit.displayName} получает заряд личного слуги (${unit.ultaCharges}).`);
     }
@@ -174,8 +175,8 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     bumpLevel(unit, ind);
   },
 
-  Oracle(unit, ind, _state) {
-    if (unit.hiddenLvl % 6 === 0) {
+  Oracle(unit, ind, state) {
+    if (chargeDueBeforeBump('Oracle', unit.hiddenLvl, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     addMana(unit, 2 * ind);
@@ -201,8 +202,8 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     bumpLevel(unit, ind);
   },
 
-  BeerElemental(unit, ind, _state) {
-    if (unit.hiddenLvl % 6 === 0) {
+  BeerElemental(unit, ind, state) {
+    if (chargeDueBeforeBump('BeerElemental', unit.hiddenLvl, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     unit.power += randInt(1, 2) * ind;
@@ -229,18 +230,11 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     unit.power += (randInt(0, 1) + Math.floor(unit.lvl / 2)) * ind;
     const hiddenBefore = unit.hiddenLvl;
     bumpLevel(unit, ind);
-    // Заряд Песни сирены, когда скрытый уровень после повышения кратен 5.
-    if (ind > 0) {
-      for (let h = hiddenBefore + 1; h <= unit.hiddenLvl; h += 1) {
-        if (h % 5 === 0) {
-          unit.ultaCharges += 1;
-        }
-      }
-    }
+    unit.ultaCharges += chargeGainedAfterBump('Mermaid', hiddenBefore, unit.hiddenLvl, ind);
   },
 
-  Patriarch(unit, ind, _state) {
-    if (unit.hiddenLvl % 7 === 0) {
+  Patriarch(unit, ind, state) {
+    if (chargeDueBeforeBump('Patriarch', unit.hiddenLvl, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     unit.armor += 3 * ind;
@@ -253,7 +247,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   Pyro(unit, ind, state) {
     unit.damage += 2;
     unit.power += (2 + Math.floor(unit.lvl / 3)) * ind;
-    if (state.stage % 5 === 0 && ind > 0) {
+    if (chargeDueBeforeBump('Pyro', unit.hiddenLvl, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     bumpLevel(unit, ind);

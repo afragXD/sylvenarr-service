@@ -12,7 +12,7 @@ import {
 import { resistsEnslave } from '../races';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
-import { alliesOf, enemiesOf, unitsOnSameRow } from './targets';
+import { alliesOf, enemiesOf, unitsOnSameRow, withoutHiddenEnemies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function manaReason(actor: BattleUnit, cost: number): string | null {
@@ -141,7 +141,7 @@ export const mermaidAbilities: AbilityHandler = {
         addMana(actor, 2);
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const row = unitsOnSameRow(state, target);
+      const row = withoutHiddenEnemies(actor, unitsOnSameRow(state, target));
       const chance = 38 + actor.lvl;
       for (const enemy of row) {
         if (randInt(1, 100) <= chance) {

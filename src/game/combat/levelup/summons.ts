@@ -1,3 +1,4 @@
+import { chargeDueBeforeBump } from '../abilities/charge-hints';
 import { randInt } from '../damage';
 import { addMana, healUnit } from '../effects';
 import { bumpLevel } from './bump';
@@ -33,7 +34,7 @@ export const summonLevelUps: Record<string, ClassLevelUpFn> = {
     unit.maxHp += 5 * ind;
     healUnit(unit, 3 * ind);
     unit.damage += 4 * ind;
-    if (state.stage % 4 === 0 && ind > 0) {
+    if (chargeDueBeforeBump('Zombie', unit.hiddenLvl, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     bumpLevel(unit, ind);

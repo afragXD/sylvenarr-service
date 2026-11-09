@@ -1,5 +1,5 @@
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, healUnit } from '../effects';
+import { grantEffect, healUnit, tryStun } from '../effects';
 import { rollMindChance } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
@@ -149,7 +149,9 @@ export const demonLordAbilities: AbilityHandler = {
         markDeadIfNeeded(state, enemy);
         if (enemy.alive && randInt(1, 100) <= 70 + actor.lvl) {
           grantEffect(enemy, 'PETRIFIED', 2, 15);
-          state.log.push(`${enemy.displayName} каменеет.`);
+          grantEffect(enemy, 'CHAINED', 2, 0);
+          tryStun(state, enemy, 1 + Math.floor(actor.lvl / 8));
+          state.log.push(`${enemy.displayName} обращается в камень.`);
         }
       }
       setSlotCd(actor, 2, 2);

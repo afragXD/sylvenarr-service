@@ -13,6 +13,7 @@ import {
   meleeTargets,
   moveToOtherRow,
   unitsOnSameRow,
+  withoutHiddenEnemies,
 } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
@@ -175,7 +176,7 @@ function applyMarauder(
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }
-    for (const enemy of unitsOnSameRow(state, target)) {
+    for (const enemy of withoutHiddenEnemies(actor, unitsOnSameRow(state, target))) {
       if (hasEffect(enemy, 'SANCTUM')) {
         continue;
       }

@@ -5,7 +5,7 @@ import { isHolyClass } from '../races';
 import { rollSrcChance } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
-import { alliesOf, meleeTargets, neighbourBehind } from './targets';
+import { alliesOf, isConcealedFrom, meleeTargets, neighbourBehind, withoutHiddenEnemies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 /** Порог шкалы нанесённого урона для «Шквала ударов». */
@@ -169,8 +169,11 @@ export const antipaladinAbilities: AbilityHandler = {
 
     if (input.slot === 3) {
       setSlotCd(actor, 3, 4);
-      const row = state.units.filter(
-        (unit) => unit.alive && unit.team === target.team && unit.row === target.row
+      const row = withoutHiddenEnemies(
+        actor,
+        state.units.filter(
+          (unit) => unit.alive && unit.team === target.team && unit.row === target.row,
+        ),
       );
       const amount = Math.floor(actor.damage / 3) + actor.lvl * 2;
       for (const enemy of row) {
@@ -205,7 +208,7 @@ export const antipaladinAbilities: AbilityHandler = {
     if (first === 0) {
       state.log.push(`${actor.displayName}: таран не достигает ${target.displayName}.`);
     }
-    if (behind?.alive && actor.alive) {
+    if (behind?.alive && actor.alive && !isConcealedFrom(actor, behind)) {
       ramHit(state, actor, behind);
     }
     return { status: 'done' };

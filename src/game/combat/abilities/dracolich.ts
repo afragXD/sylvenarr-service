@@ -5,7 +5,7 @@ import { isUndeadClass } from '../races';
 import { applyResistMultiplier } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
-import { enemiesOf, meleeTargets } from './targets';
+import { enemiesOf, meleeTargets, withoutHiddenEnemies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 const PROMPT_REZ_1 = 'dracolich_resurrect';
@@ -269,8 +269,11 @@ export const dracolichAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       shuffleEnemyColumns(state, actor);
-      const row = state.units.filter(
-        (unit) => unit.alive && unit.team === target.team && unit.row === target.row
+      const row = withoutHiddenEnemies(
+        actor,
+        state.units.filter(
+          (unit) => unit.alive && unit.team === target.team && unit.row === target.row,
+        ),
       );
       const unluckyPower = 7 + actor.lvl * 2;
       for (const enemy of row) {
