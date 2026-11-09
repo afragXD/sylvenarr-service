@@ -1,6 +1,8 @@
 {
   "fixtureId": "ac15-weaponReach-marauder",
   "seed": 20261101,
+  "cut": "CUT-2026-11-09 AC-15",
+  "cutNote": "мощный выстрел 50→51 после r2 accuracy/damage path",
   "weaponReach": 1,
   "legalTargetIds": [
     "e0",
@@ -22,7 +24,7 @@
     "Бой начался.",
     "—— ХОД: Marauder ——",
     "МОЩНЫЙ ВЫСТРЕЛ",
-    "Marauder мощным выстрелом бьёт B (51)⟦ARROWS⟧.",
+    "Marauder мощным выстрелом бьёт B (50)⟦ARROWS⟧.",
     "—— ХОД: B ——"
   ]
 }

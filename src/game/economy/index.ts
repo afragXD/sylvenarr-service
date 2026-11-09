@@ -5,6 +5,7 @@ export {
   applyFairSellAll,
   applyFairStop,
   beginFairPhase,
+  buildFairShop,
   buyPrice,
   fairPhaseFullyResolved,
   selectTrader,

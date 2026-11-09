@@ -1,11 +1,18 @@
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, healUnit, trySpendMana } from '../effects';
+import { grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import { consumeSrcFactor, rollSrcChance } from '../resists';
 import { reduceMaxHp } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { alliesOf, enemiesOf, meleeTargets, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
+
+/** Дрожь земли: все живые враги, включая GUARDED/SANCTUM; невидимых пропускает (AC-1). */
+function tremorTargets(state: BattleState, actor: BattleUnit): BattleUnit[] {
+  return state.units.filter(
+    (unit) => unit.alive && unit.team !== actor.team && !hasEffect(unit, 'INVISIBLE'),
+  );
+}
 
 function manaReason(actor: BattleUnit, cost: number): string | null {
   return actor.mana < cost ? `Нужно ${cost} МР` : null;
@@ -215,7 +222,8 @@ export const titanAbilities: AbilityHandler = {
       }
       actor.ultaCharges -= 1;
       const chance = 80 + actor.lvl;
-      for (const enemy of enemiesOf(state, actor)) {
+      // CUT-2026-11-09 AC-6: GUARDED и SANCTUM получают урон; INVISIBLE — нет.
+      for (const enemy of tremorTargets(state, actor)) {
         dealDamage(actor, enemy, { kind: 'magic', damageMult: 0.75, source: 'EARTH' }, state);
         if (enemy.alive) {
           const weak = Math.round(enemy.damage * 0.33);

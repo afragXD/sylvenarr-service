@@ -249,7 +249,10 @@ describe('CUT-2026-11-01c engine-proof', () => {
     rndFail.mockRestore();
     expect(hasEffect(fail.unit, 'STRENGTH')).toBe(false);
 
+    // CUT-2026-11-09: лог сдвинулся из‑за пассивки Рыцаря (броня ряду) при смене порядка хода.
     writeFixture('ac1-debuff-threshold-legacy', {
+      cut: 'CUT-2026-11-09 AC-11',
+      cutNote: 'Knight passive ROW armor line appears when Knight acts first',
       morale: -20,
       rollSuccess: 20,
       rollFail: 21,
@@ -520,7 +523,10 @@ describe('CUT-2026-11-01c engine-proof', () => {
       mults[kind] = { withThread, without };
     }
 
+    // CUT-2026-11-09: лог/урон сдвинуты балансом r2 (невидимость/точность).
     writeFixture('ac7-katana-thread-legacy', {
+      cut: 'CUT-2026-11-09 AC-7',
+      cutNote: 'legacy katana log shifted with r2 combat balance',
       stunChanceAtL4: 72,
       stunnedLog: stunned.log,
       notStunnedLog: notStunned.log,
@@ -861,7 +867,10 @@ describe('CUT-2026-11-01c engine-proof', () => {
     expect(odd.sameDmg).toBe(49);
     expect(odd.otherDmg).toBe(24);
 
+    // CUT-2026-11-09: splash-цифры обновлены после r2.
     writeFixture('ac10-fire-floor', {
+      cut: 'CUT-2026-11-09 AC-10',
+      cutNote: 'fire floor splash samples regenerated after r2',
       evenMaxHp: 200,
       evenSplash: [even.sameDmg, even.otherDmg],
       oddMaxHp: 199,
@@ -931,6 +940,8 @@ describe('CUT-2026-11-01c engine-proof', () => {
     expect(scream.log.some((l) => l.includes('(15)⟦MIND⟧'))).toBe(true);
 
     writeFixture('ac10-fire-floor-legacy', {
+      cut: 'CUT-2026-11-09 AC-10',
+      cutNote: 'legacy fire floor log regenerated after r2',
       whipLog: whip.log,
       screamDamage: [d1, d2],
       shareFloor: 15,
@@ -1062,6 +1073,8 @@ describe('CUT-2026-11-01c engine-proof', () => {
     expect(hasEffect(marauder, 'WEAKNESS')).toBe(true);
 
     writeFixture('ac15-weaponReach-marauder', {
+      cut: 'CUT-2026-11-09 AC-15',
+      cutNote: 'мощный выстрел 50→51 после r2 accuracy/damage path',
       weaponReach: atk.weaponReach,
       legalTargetIds: legal,
       blockedColumnTarget: 'e2',
@@ -1154,6 +1167,8 @@ describe('CUT-2026-11-01c engine-proof', () => {
     }
 
     writeFixture('ac13-abbess-spear-heal', {
+      cut: 'CUT-2026-11-09 AC-4',
+      cutNote: 'длань/копьё samples regenerated under AC-4 heal range',
       spearSamples,
       healSamples,
       spearMin: Math.min(...spearSamples),

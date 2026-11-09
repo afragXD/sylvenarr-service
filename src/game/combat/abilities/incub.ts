@@ -8,7 +8,7 @@ import {
 import { formatLogDamage } from '../damageSources';
 import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
-import { isArtificialClass, isUndeadClass } from '../races';
+import { isUndeadClass } from '../races';
 import { changeResist, rollMindChance } from '../resists';
 import { applyCatalogStats } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -203,9 +203,9 @@ export const incubAbilities: AbilityHandler = {
       );
       const share = Math.floor(actor.power / Math.max(1, row.length));
       for (const enemy of row) {
-        // Нежить и искусственные: мораль не модифицирует урон ни в плюс, ни в минус.
+        // CUT-2026-11-09 AC-14: фактор 1 только у нежити и Золотого голема; Бес — как живой.
         const moraleFactor =
-          isUndeadClass(enemy.heroClassCode) || isArtificialClass(enemy.heroClassCode)
+          isUndeadClass(enemy.heroClassCode) || enemy.heroClassCode === 'GoldGolem'
             ? 1
             : Math.max(0.1, 1 - enemy.morale / 100);
         const dealt = harmWithSource(

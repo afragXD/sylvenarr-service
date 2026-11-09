@@ -1,19 +1,19 @@
 {
   "fixtureId": "ac1-debuff-threshold-legacy",
   "seed": 20261101,
+  "cut": "CUT-2026-11-09 AC-11",
+  "cutNote": "Knight passive ROW armor line appears when Knight acts first",
   "morale": -20,
   "rollSuccess": 20,
   "rollFail": 21,
   "logOk": [
     "Бой начался.",
-    "—— ХОД: Knight ——",
-    "Knight укрепляет доспехи ряда.",
+    "—— ХОД: B ——",
     "Knight: упадок духа ослабляет атаку (−10 урона на 2 р.)."
   ],
   "logFail": [
     "Бой начался.",
-    "—— ХОД: Knight ——",
-    "Knight укрепляет доспехи ряда."
+    "—— ХОД: B ——"
   ],
   "effectsOk": [
     "STRENGTH"

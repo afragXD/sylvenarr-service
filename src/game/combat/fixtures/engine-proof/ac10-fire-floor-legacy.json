@@ -1,13 +1,16 @@
 {
   "fixtureId": "ac10-fire-floor-legacy",
   "seed": 20261101,
+  "cut": "CUT-2026-11-09 AC-10",
+  "cutNote": "legacy fire floor log regenerated after r2",
   "whipLog": [
     "Бой начался.",
     "—— ХОД: Incub ——",
+    "Прекрасное и ужасающее присутствие Incub: B теряет 5 боевого духа.",
     "ОГНЕННЫЙ ХЛЫСТ",
     "Incub хлещет огнём B (22)⟦FIRE⟧.",
     "B: извержение на 2 р., сопротивление огню −5 (навсегда).",
-    "—— ХОД: C ——"
+    "—— ХОД: B ——"
   ],
   "screamDamage": [
     15,

@@ -1,6 +1,8 @@
 {
   "fixtureId": "ac7-katana-thread-legacy",
   "seed": 20261101,
+  "cut": "CUT-2026-11-09 AC-7",
+  "cutNote": "legacy katana log shifted with r2 combat balance",
   "stunChanceAtL4": 72,
   "stunnedLog": [
     "Бой начался.",
@@ -29,11 +31,11 @@
     },
     "ranged": {
       "withThread": 60,
-      "without": 42
+      "without": 41
     },
     "magic": {
-      "withThread": 53,
-      "without": 29
+      "withThread": 48,
+      "without": 31
     }
   }
 }

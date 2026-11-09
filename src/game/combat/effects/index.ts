@@ -903,8 +903,13 @@ export function grantEffect(
   if (isDebuffId(id) && hasEffect(unit, 'REFLECTION')) {
     const state = currentEffectState();
     if (state) {
+      // CUT-2026-11-09 AC-1: отражение не выбирает невидимого.
       const enemies = state.units.filter(
-        (other) => other.alive && other.team !== unit.team && !hasEffect(other, 'REFLECTION')
+        (other) =>
+          other.alive &&
+          other.team !== unit.team &&
+          !hasEffect(other, 'REFLECTION') &&
+          !hasEffect(other, 'INVISIBLE'),
       );
       if (enemies.length > 0) {
         const target = enemies[randInt(0, enemies.length - 1)];
@@ -921,6 +926,10 @@ export function grantEffect(
   const existing = unit.effects.find((effect) => effect.id === id);
   if (existing) {
     existing.rounds += rounds;
+    // CUT-2026-11-09 AC-1: повторный каст невидимости — не снимать в этом же действии.
+    if (id === 'INVISIBLE') {
+      existing.refreshedThisAction = true;
+    }
     return;
   }
   const effect: BattleEffect = { id, rounds, power, fresh: true };
@@ -933,7 +942,13 @@ export function grantEffect(
 
 /** Снимает невидимость после активного действия носителя. Защита и ожидание не вызывают. */
 export function revealAfterAction(state: BattleState, actor: BattleUnit): void {
-  if (!hasEffect(actor, 'INVISIBLE')) {
+  const effect = actor.effects.find((item) => item.id === 'INVISIBLE');
+  if (!effect) {
+    return;
+  }
+  // CUT-2026-11-09 AC-1: обновление невидимости этим действием её не снимает.
+  if (effect.refreshedThisAction) {
+    effect.refreshedThisAction = undefined;
     return;
   }
   delEffect(actor, 'INVISIBLE', state);

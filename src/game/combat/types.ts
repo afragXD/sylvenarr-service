@@ -157,6 +157,8 @@ export type BattleEffect = {
    * Сбрасывается start-тиком в начале следующего хода носителя.
    */
   fresh?: boolean;
+  /** CUT-2026-11-09 AC-1: невидимость обновлена этим действием — revealAfterAction не снимает. */
+  refreshedThisAction?: boolean;
 };
 
 /** Запись на кладбище для воскрешения. */

@@ -188,7 +188,8 @@ describe('CUT-2026-11-09 r2 invisibility', () => {
     expect(hasEffect(ally, 'INVISIBLE')).toBe(true);
   });
 
-  test('Дрожь земли и рёв не задевают GUARDED, SANCTUM и невидимого', () => {
+  test('Дрожь бьёт GUARDED/SANCTUM, рёв и дрожь пропускают невидимого', () => {
+    // CUT-2026-11-09 AC-6: дрожь по всем, включая охрану и святилище.
     randomSpy = spyOn(Math, 'random').mockReturnValue(0);
     const heroes = new Map([
       ['Titan', hero('Titan', { initiative: 99, mana: 20, maxMana: 20, power: 30, damage: 40 })],
@@ -214,8 +215,8 @@ describe('CUT-2026-11-09 r2 invisibility', () => {
     const hidHp = unit(titan, 'hid').health;
     expect(titanAbilities.apply(titan, unit(titan, 'a'), { slot: 5 }).status).toBe('done');
     expect(unit(titan, 'open').health).toBeLessThan(openHp);
-    expect(unit(titan, 'guard').health).toBe(guardHp);
-    expect(unit(titan, 'sanct').health).toBe(sanctHp);
+    expect(unit(titan, 'guard').health).toBeLessThan(guardHp); // CUT-2026-11-09 AC-6
+    expect(unit(titan, 'sanct').health).toBeLessThan(sanctHp); // CUT-2026-11-09 AC-6
     expect(unit(titan, 'hid').health).toBe(hidHp);
 
     const demon = makeState(
@@ -239,7 +240,8 @@ describe('CUT-2026-11-09 r2 invisibility', () => {
     expect(unit(demon, 'hid').morale).toBe(hidMorale);
   });
 
-  test('Психический шок: Бес с моралью −200 бьётся с фактором 1', () => {
+  test('Психический шок: Бес с моралью −200 бьётся с фактором 3', () => {
+    // CUT-2026-11-09 AC-14: Бес учитывает мораль (×3 при −200).
     const heroes = new Map([
       ['Incub', hero('Incub', { initiative: 99, power: 100, mana: 20, maxMana: 20 })],
       ['Imp', hero('Imp', { initiative: 1, health: 5000, armor: 0 })],
@@ -256,7 +258,7 @@ describe('CUT-2026-11-09 r2 invisibility', () => {
     imp.resists = {};
     const hp = imp.health;
     expect(incubAbilities.apply(state, unit(state, 'a'), { slot: 1, targetId: 'imp' }).status).toBe('done');
-    expect(hp - imp.health).toBe(100);
+    expect(hp - imp.health).toBe(300); // CUT-2026-11-09 AC-14 (было 100)
   });
 });
 

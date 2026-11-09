@@ -35,7 +35,7 @@ function livingHeroItemCategories(state: BattleState): number[] {
 }
 
 /** Категории в случайном порядке, по кругу по 1, не больше ⌈shopSize/k⌉ из одной, без повторов. */
-function buildFairShop(state: BattleState, shopSize: number): number[] {
+export function buildFairShop(state: BattleState, shopSize: number): number[] {
   const categories = livingHeroItemCategories(state);
   if (categories.length === 0 || shopSize <= 0) {
     state.log.push('Витрина пуста: у живых героев нет навыков на предметы.');
