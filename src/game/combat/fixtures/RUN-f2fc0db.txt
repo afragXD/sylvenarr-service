@@ -1,0 +1,468 @@
+sha=f2fc0db3ba51afbc4f3198b430a6a0a828eaa218
+ranAt=2026-11-09T06:46:44.9348211Z
+seed=20261101
+CUT engine-proof verify
+summary: pass=347 fail=0
+
+bun test v1.3.5 (1e86cebd)
+bun.exe : 
+C:\Users\Admin\AppData\Local\Temp\ps-script-2d86baf2-6b32-462a-8bfa-ba6dd3d68dd9.ps1:128 знак:8
++ $raw = & bun test src/game/combat src/modules/app 2>&1 | Out-String
++        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+src\game\combat\cut-2026-11-05-ac9-heroStats.test.ts:
+(pass) CUT-2026-11-05 AC-9 heroStats sync > L1 / L15 / L30: серверный level-up при mocked randInt ≡ expectedRandInt [16
+.00ms]
+(pass) CUT-2026-11-05 AC-9 heroStats sync > Knight L8 armor = 31 при mocked rand
+
+src\game\combat\damage.luck.test.ts:
+(pass) evade / luck как в боте > accuracy 100 и dodge 0: промаха нет (даже на «высоком» броске)
+(pass) evade / luck как в боте > отрицательная удача: крит-провал отменяет удар по цели
+(pass) evade / luck как в боте > банк уклонений тратится и даёт промах
+(pass) evade / luck как в боте > randInt sanity
+
+src\game\combat\engine.test.ts:
+(pass) combat engine > creates units and picks first actor
+(pass) combat engine > attack can finish the battle [16.00ms]
+(pass) combat engine > Knight ability slot 2 pierces back row
+(pass) combat engine > Knight slot 2 rejected when horse is dead
+(pass) combat engine > OrcKing summon prompt flow
+(pass) combat engine > effect tick damages and expires
+(pass) combat engine > summary exposes pilot abilities
+(pass) combat engine > resolveOutcome draw when both dead
+(pass) combat engine > second wait in delayed phase advances round
+(pass) combat engine > buildTurnOrder is round timeline: acted before active
+(pass) combat engine > buildTurnOrder excludes dead units
+(pass) combat engine > startingLevel applies level-ups at battle start
+(pass) combat engine > forceSurrender awards win to opponent
+(pass) combat engine > forceDraw ends as draw and clears offer
+(pass) combat engine > wait does not re-tick ability CD or DoT in the same round
+
+src\game\combat\fixtures-api.test.ts:
+(pass) CUT-2026-11-01c deterministic fixtures + API JSON > fixture ac2-inquisitor-ind1: ind > 0 даёт +16 брони / +10 си
+лы
+(pass) CUT-2026-11-01c deterministic fixtures + API JSON > fixture ac15-marauder-gold: лог +N золота при level-up
+(pass) CUT-2026-11-01c deterministic fixtures + API JSON > fixture ac15c-contr-melee: CONTR отвечает на ближнюю атаку
+(pass) CUT-2026-11-01c deterministic fixtures + API JSON > fixture ac5-two-centaurs: снятие яда/ожога/крови; 59%; ward+
+lives
+(pass) CUT-2026-11-01c deterministic fixtures + API JSON > fixture ac6-ranged-magic: попадание / промах / ranged / magi
+c
+
+src\game\combat\heroes.stats-audit.test.ts:
+(pass) heroSeeds ↔ legacy stats_dict > полный набор кодов совпадает
+(pass) heroSeeds ↔ legacy stats_dict > числовые статы совпадают с ботом; displayName = бот или явный override
+(pass) heroSeeds ↔ legacy stats_dict > size / isPlayable как в сиде (гиганты / саммоны)
+
+src\game\combat\level.test.ts:
+(pass) levels 4.0 > units start at lvl 1 and hiddenLvl 1
+(pass) levels 4.0 > levelup at round change; dead stay put
+(pass) levels 4.0 > wait loop advances round and levels living units [16.00ms]
+(pass) levels 4.0 > ability formula uses unit.lvl
+(pass) levels 4.0 > result snapshot includes lvl
+(pass) class level-up growth > Herbalist: armor +2 per level
+(pass) class level-up growth > Knight: armor +2, accuracy +3
+(pass) class level-up growth > Assassin: damage += lvl (pre-bump), deathNote +3
+(pass) class level-up growth > multi-levelup applies growth per intermediate level
+(pass) class level-up growth > multi-levelup hits milestones that a single ind jump would skip
+(pass) class level-up growth > Patriarch: armor+3, power+4, mana+1
+(pass) class level-up growth > Abbess: maxHp +5
+(pass) class level-up growth > Inquisitor: heals on level-up and logs it
+(pass) class level-up growth > OrcKing: luck grows faster while negative (bot crit)
+(pass) class level-up growth > Demiurge: bump first, then power/armor
+(pass) class level-up growth > Pyro quirk: damage += 2 without * ind
+(pass) class level-up growth > GoblinTrapper: grows stats but hiddenLvl stays 1
+(pass) class level-up growth > end-round level-up changes class stats
+(pass) class level-up growth > GoldGolem: damage +2
+(pass) class level-up growth > Mermaid: mana +1
+(pass) class level-up growth > SkeletonChampion: скрытый уровень 9 ещё не наёмник и гибнет с хозяином
+(pass) class level-up growth > SkeletonChampion: следующее повышение делает наёмника, он остаётся жив
+(pass) class level-up growth > SkeletonChampion: понижение при скрытом уровне 9 тоже ставит наёмника
+(pass) class level-up growth > SkeletonChampion: понижение уровня не снимает наёмника
+
+src\game\combat\morale.test.ts:
+(pass) morale + battle summary > toBattleSummary includes resists and morale
+(pass) morale + battle summary > normalizeUnit mirrors bot Hero.normalize (+ max-morale life)
+(pass) morale + battle summary > psycho: undead skips
+(pass) morale + battle summary > psycho: artificial skips
+(pass) morale + battle summary > psycho: morale < -100 kills
+(pass) morale + battle summary > psycho: illness fires once in -70..-100 band
+(pass) morale + battle summary > mental illness: no soul uplift (case 6 removed)
+(pass) morale + battle summary > HAPPY buffs morale not luck
+(pass) morale + battle summary > maybeRewardHighMorale grants STRENGTH at morale 100
+(pass) morale + battle summary > crit raises morale by 5
+(pass) summon death cascade > summons die when summoner dies
+(pass) golem resonance + beer Homie > GoldGolem slot 4 grants ABSOLUTEPOWER
+(pass) golem resonance + beer Homie > BeerElemental Сливняк deals numeric water damage
+(pass) golem resonance + beer Homie > BeerElemental Homie raises ally morale
+(pass) class morale deltas > Assassin slot 5 reduces morale
+(pass) class morale deltas > Inquisitor slot 2 lowers foe morale on hit
+(pass) class morale deltas > Specter slot 3 does not lower morale (FATMAN instead)
+(pass) class morale deltas > Specter dark ritual lowers ally morale by 7
+
+src\game\combat\resists.test.ts:
+(pass) ResistManager > positive resist reduces damage
+(pass) ResistManager > negative resist amplifies damage
+(pass) ResistManager > ward zeroes damage and spends charge
+(pass) ResistManager > immunity stably blocks
+(pass) ResistManager > changeResist and defaults
+(pass) ResistManager > Ectoplasm weapon ward from defaults
+(pass) ResistManager > FINALSTRIKE ward: ведьма выживает с 1 ОЗ, заряд расходуется
+(pass) ResistManager > FINALSTRIKE value: шанс спасения и деградация value −25
+
+src\game\combat\sfx.test.ts:
+(pass) battle sfx events > pilot ability emits ability event before death
+(pass) battle sfx events > rejected ability leaves no event [16.00ms]
+(pass) battle sfx events > state without sfx fields still summarizes
+
+src\modules\app\service.test.ts:
+(pass) AppService.healthcheck > отдаёт commit из GIT_SHA [750.00ms]
+(pass) AppService.healthcheck > без env commit = unknown [110.00ms]
+
+src\game\combat\abilities\archlich.test.ts:
+(pass) Archlich evolution keeps the original master > чужая нежить остаётся саммоном своего лича
+
+src\game\combat\abilities\attack-kind.test.ts:
+(pass) melee reach is a property of the attack > Assassin stiletto cannot reach the back row while the front is alive
+(pass) melee reach is a property of the attack > Witch heel (no bullets) cannot reach the back row
+(pass) melee reach is a property of the attack > Witch revolver reaches the back row
+(pass) melee reach is a property of the attack > Pyro flamethrower can hit the back row while the front is alive
+(pass) weapon enchants and counters only on melee > Paladin soul shatter with FIREDWEAPON: no BURNING, no counter
+(pass) weapon enchants and counters only on melee > Paladin blades with FIREDWEAPON set the target on fire
+(pass) weapon enchants and counters only on melee > ranged shot on a CONTR target does not trigger a counter
+(pass) weapon enchants and counters only on melee > melee hit on a CONTR target triggers a counter
+(pass) weapon enchants and counters only on melee > Knight spear ignores CONTR
+(pass) weapon enchants and counters only on melee > DemonLord triple strike scales with attack, not spell power
+(pass) Zombie starting charge > summoned Zombie has 1 charge
+(pass) Zombie starting charge > infected summon becomes a Zombie with 1 charge for 2 rounds
+(pass) Zombie starting charge > infection is melee and rejects heroes
+(pass) ENSLAVED blocks suicide abilities > Pyro self-immolation is disabled
+(pass) ENSLAVED blocks suicide abilities > Zombie kamikaze is disabled
+(pass) high morale reward by class > warrior gets +33% attack
+(pass) high morale reward by class > mage gets +25% spell power
+
+src\game\combat\abilities\balance-patch.test.ts:
+(pass) balance patch 2026-10 > SANCTUM on only front unit still blocks melee to back row
+(pass) balance patch 2026-10 > DoT does not re-tick after wasEffected until new round
+(pass) balance patch 2026-10 > Pyro and Archlich resists
+(pass) balance patch 2026-10 > BeerElemental slot 5 Сливняк deals water magic
+(pass) balance patch 2026-10 > BeerElemental slot 1 Homie raises ally morale
+(pass) balance patch 2026-10 > units start with maxMana from hero stats
+
+src\game\combat\abilities\beer-company.test.ts:
+(pass) genderForClass > female / male / none карта
+(pass) BeerElemental компания за кружкой > юниты получают gender при создании
+(pass) BeerElemental компания за кружкой > F≥1: −5·F, без бонуса M
+(pass) BeerElemental компания за кружкой > F=0: +4·M (себя не считает)
+(pass) BeerElemental компания за кружкой > только ПЭ в отряде: без изменений (себя не M)
+(pass) BeerElemental компания за кружкой > EvilTree (none) не даёт M
+
+src\game\combat\abilities\cut-2026-11-01c-ac1.test.ts:
+(pass) CUT-2026-11-01c AC-1 > fixture max-morale-life: lives кап 1, мораль = maxMorale//2
+(pass) CUT-2026-11-01c AC-1 > fixture spend-life: maxHp 150→75, ОЗ=75, инициатива без штрафа
+(pass) CUT-2026-11-01c AC-1 > psychoChance / lowMoraleDebuffChance числа МБ
+(pass) CUT-2026-11-01c AC-1 > fixture low-morale-mage: power 50 → 40 на 2 р.
+(pass) CUT-2026-11-01c AC-1 > fixture low-morale-warrior: damage 40 → 30 на 2 р.
+(pass) CUT-2026-11-01c AC-1 > low morale: undead/artificial иммунны
+(pass) CUT-2026-11-01c AC-1 > fixture paranoia: бьёт союзника с наименьшими ОЗ
+(pass) CUT-2026-11-01c AC-1 > fixture apathy: dodge 0, crit 0, initiative 5
+(pass) CUT-2026-11-01c AC-1 > fixture schizophrenia: −33% точности и −300 золота за ход
+(pass) CUT-2026-11-01c AC-1 > fixture degradation: lvl 9 → 5, mana 0
+(pass) CUT-2026-11-01c AC-1 > fixture masochism: 13 урона в начале раунда, сквозь броню/варды
+(pass) CUT-2026-11-01c AC-1 > psycho once per battle; death below -100; no Душевный подъём in code path
+(pass) CUT-2026-11-01c AC-1 > деградация: при включённой экономике стирает перки, при выключенной — нет
+(pass) CUT-2026-11-01c AC-1 > шизофрения economyOn: уничтожает 2 предмета; пусто — −300 золота
+(pass) CUT-2026-11-01c AC-1 > шизофрения economyOff: инвентарь не трогает
+
+src\game\combat\abilities\cut-2026-11-01c-ac10.test.ts:
+(pass) CUT-2026-11-01c AC-10 Incub / Oracle > fixture mentor: саммон без повышения уровня
+(pass) CUT-2026-11-01c AC-10 Incub / Oracle > fixture doctor: у Инкуба нет, у Оракула slot 5
+(pass) CUT-2026-11-01c AC-10 Incub / Oracle > fixture whip: 3 МР, КД 2, ERUPTION 3р на L8, FIRE −5 навсегда, смерть → s
+plash
+
+src\game\combat\abilities\cut-2026-11-01c-ac11.test.ts:
+(pass) CUT-2026-11-01c AC-11 Werewolf / Inquisitor > fixture setWard: cumulative=false не копит; true копит
+(pass) CUT-2026-11-01c AC-11 Werewolf / Inquisitor > fixture moon-call: keepTurn, КД 4, кап 2 варда
+(pass) CUT-2026-11-01c AC-11 Werewolf / Inquisitor > fixture azart: 32% → +19 при L5; 33% → 0
+
+src\game\combat\abilities\cut-2026-11-01c-ac12.test.ts:
+(pass) CUT-2026-11-01c AC-12 Gall / accuracy / Death Sentence > fixture gall-cast-l10: длительность 3, power 20
+(pass) CUT-2026-11-01c AC-12 Gall / accuracy / Death Sentence > fixture gall-l10: 3 тика ×20 Вода, −4 брони/тик, без во
+зврата
+(pass) CUT-2026-11-01c AC-12 Gall / accuracy / Death Sentence > fixture gall-floor: броня не ниже 0
+(pass) CUT-2026-11-01c AC-12 Gall / accuracy / Death Sentence > fixture focused-labels: +/− имена, без «Сосредоточение»
+(pass) CUT-2026-11-01c AC-12 Gall / accuracy / Death Sentence > fixture death-sentence: −броня наложить, возврат при сн
+ятии
+
+src\game\combat\abilities\cut-2026-11-01c-ac13.test.ts:
+(pass) CUT-2026-11-01c AC-13 damage preview > fixture melee-preview: estimate совпадает с 20 фактическими ударами
+(pass) CUT-2026-11-01c AC-13 damage preview > fixture low-damage: max < 10 помечается как низкий на клиенте (сервер даё
+т малые числа)
+(pass) CUT-2026-11-01c AC-13 damage preview > fixture abbess-heal-preview: power 49 → previewHeal 24–37
+
+src\game\combat\abilities\cut-2026-11-01c-ac2.test.ts:
+(pass) CUT-2026-11-01c AC-2 > fixture beer-phrase-once: Homie пишет фразу ровно один раз
+(pass) CUT-2026-11-01c AC-2 > fixture mind-beer-pyro: Помрачение — удар элементаля не FIRE
+(pass) CUT-2026-11-01c AC-2 > fixture assassin-mimic-mana: мана до/после совпадает
+(pass) CUT-2026-11-01c AC-2 > eternalHungerVampCoef растёт при падении ОЗ (L1 / L10)
+(pass) CUT-2026-11-01c AC-2 > fixture eternal-hunger: передний ряд, без armorIgnore, КД 2
+(pass) CUT-2026-11-01c AC-2 > fixture inquisitor-ind0: при ind=0 нет +брони/+силы на stage%5
+
+src\game\combat\abilities\cut-2026-11-01c-ac34.test.ts:
+(pass) CUT-2026-11-01c AC-3 > fixture heroes-stats: Abbess/Mermaid/Titan/DemonLord числа
+(pass) CUT-2026-11-01c AC-3 > fixture knight-armor-growth: base+⌊lvl/4⌋ не накопительно; L8 = 31
+(pass) CUT-2026-11-01c AC-3 > fixture inquisitor-armor16 / werewolf damage 2..3+L//2 [15.00ms]
+(pass) CUT-2026-11-01c AC-4 > fixture abbess-heal: power 40 → 20..30; power 41 → 20..31
+(pass) CUT-2026-11-01c AC-4 > fixture herbalist-elixir: lvl 1/9/10 фракции и длительность
+(pass) CUT-2026-11-01c AC-4 > fixture evil-tree: INTERDICT 2 р.; взращивание 1+L//5
+(pass) CUT-2026-11-01c AC-4 > fixture witch-imp: 2 раунда, 100% без резиста
+(pass) CUT-2026-11-01c AC-4 > fixture cds/mp: Mimic 3, Flame 2, Sling 2, Collection 2 МР
+(pass) CUT-2026-11-01c AC-4 > fixture mermaid-siren: гигант с lvl 9 — нет, с 10 — да
+(pass) CUT-2026-11-01c AC-4 > fixture demon-triple: accuracyPenalty 5 при базовой 95
+
+src\game\combat\abilities\cut-2026-11-01c-ac567.test.ts:
+(pass) CUT-2026-11-01c AC-5 Knight > fixture ballad-single: economyOff STRENGTH +(15+L); economyOn +(20+2L) [16.00ms]
+(pass) CUT-2026-11-01c AC-5 Knight > fixture sacrifice: 60% ok / 59% no; ignore saves; no loop
+(pass) CUT-2026-11-01c AC-6 SkeletonChampion > fixture pain-reflect: melee 40→20, miss 0, expire 2r, no contract
+(pass) CUT-2026-11-01c AC-6 SkeletonChampion > fixture pain-reflect: два носителя не цепочат отражение
+(pass) CUT-2026-11-01c AC-7 GhostWarrior > fixture thamaturgy bank math + distribute
+(pass) CUT-2026-11-01c AC-7 GhostWarrior > fixture life-thread mult + rounds; growth lvl9 +3
+(pass) CUT-2026-11-01c AC-7 GhostWarrior > fixture fetters: transfer LIFE, no recursion
+(pass) CUT-2026-11-01c AC-7 GhostWarrior > fixture servant: lvl = max(1, floor(corpse.lvl/2))
+(pass) CUT-2026-11-01c AC-7 GhostWarrior > fixture harvest CD 3; servant ulta +1 на stage%5
+(pass) CUT-2026-11-01c AC-7 GhostWarrior > fixture life-thread ability CD 2
+(pass) CUT-2026-11-01c AC-7 GhostWarrior > fixture katana: stun fail → morale loss 9..12 at lvl 4
+
+src\game\combat\abilities\cut-2026-11-01c-ac8.test.ts:
+(pass) CUT-2026-11-01c AC-8 Dracolich > fixture prayer: lvl 6 → +2 всей нежити включая себя, КД 4
+(pass) CUT-2026-11-01c AC-8 Dracolich > fixture necro ×2 и skip второй цели
+(pass) CUT-2026-11-01c AC-8 Dracolich > fixture necro: одна цель → после подъёма ход завершается без зависания
+(pass) CUT-2026-11-01c AC-8 Dracolich > fixture devour: MARKED броня 20→5; 19% казнь / 20% нет; CAPS; КД 3; FINALSTRIKE
+(pass) CUT-2026-11-01c AC-8 Dracolich > fixture skip второго выбора некромантии
+
+src\game\combat\abilities\cut-2026-11-01c-ac9.test.ts:
+(pass) CUT-2026-11-01c AC-9 Witch mass degradation > fixture chance/loss formulas L10
+(pass) CUT-2026-11-01c AC-9 Witch mass degradation > fixture square 2×2: цель + сосед + двое напротив
+(pass) CUT-2026-11-01c AC-9 Witch mass degradation > fixture cast: 5 МР, КД 3, primary −3 / others −2 при L10, цепочка 
+шансов [15.00ms]
+(pass) CUT-2026-11-01c AC-9 Witch mass degradation > fixture fail: шанс не падает после провала
+(pass) CUT-2026-11-01c AC-9 Witch mass degradation > fixture MIND/LOWERING ward учитывается
+
+src\game\combat\abilities\cut-2026-11-01c-engine-proof.test.ts:
+(pass) CUT-2026-11-01c engine-proof > AC-1: psycho −85/−100 — границы 60/61 и 90/91
+(pass) CUT-2026-11-01c engine-proof > AC-1: debuff −50/−90 (кап 70) — границы 50/51 и 70/71
+(pass) CUT-2026-11-01c engine-proof > AC-4: Тройной удар hitChance 90 — граница промаха missChance / missChance+1
+(pass) CUT-2026-11-01c engine-proof > AC-7: Нить жизни — ×1.40 при 40% потери и ×1.75 при 90% (melee/ranged/magic)
+(pass) CUT-2026-11-01c engine-proof > AC-8: казнь 19%/не 20%; FINALSTRIKE; DEATHWARD не тратится
+(pass) CUT-2026-11-01c engine-proof > AC-9: деградация — край / центр / пустая цель
+(pass) CUT-2026-11-01c engine-proof > AC-10: смерть с Извержением — 200→50/25 FIRE; нечётный maxHP через floor
+(pass) CUT-2026-11-01c engine-proof > AC-11: граница крита Азарта через applyAction (32% да, 33% нет)
+(pass) CUT-2026-11-01c engine-proof > AC-15: weaponReach JSON + слабость Мародёра
+(pass) CUT-2026-11-01c engine-proof > AC-13: 20 некрит Копий (36–42) и 20 лечений (24–37)
+
+src\game\combat\abilities\cut-2026-11-01c-proof.test.ts:
+(pass) CUT-2026-11-01c proof AC-1 thresholds / immunity / fate / masochism ward > бросок на пороге psycho −70: успех пр
+и roll≤30, провал при 31
+(pass) CUT-2026-11-01c proof AC-1 thresholds / immunity / fate / masochism ward > детерминированный иммунитет нежити и 
+искусственных к psycho/debuff
+(pass) CUT-2026-11-01c proof AC-1 thresholds / immunity / fate / masochism ward > seed выбора болезни: fate 1..5 детерм
+инированы
+(pass) CUT-2026-11-01c proof AC-1 thresholds / immunity / fate / masochism ward > мазохизм сквозь вард WEAPON и броню
+(pass) CUT-2026-11-01c proof AC-4 numbers > гоблины КД 2 после призыва
+(pass) CUT-2026-11-01c proof AC-4 numbers > призыв зомби Архилича: 3 МР
+(pass) CUT-2026-11-01c proof AC-4 numbers > Взращивание L10 → +3
+(pass) CUT-2026-11-01c proof AC-4 numbers > Песнь сирены на не-гиганта действует без порога 10
+(pass) CUT-2026-11-01c proof AC-5 ballad/sac/two-centaurs > Баллада L20 economyOff → +35
+(pass) CUT-2026-11-01c proof AC-5 ballad/sac/two-centaurs > самопожертвование проходит сквозь обычный и DEATH вард
+(pass) CUT-2026-11-01c proof AC-5 ballad/sac/two-centaurs > два Кентавра: позитивный подъём + причина запрета; HP ≤ max
+(pass) CUT-2026-11-01c proof AC-6 reflect / prayer > Оковы на носителя Отражения: урон переносится без возврата
+(pass) CUT-2026-11-01c proof AC-6 reflect / prayer > магическая атака не отражает PAIN_REFLECT
+(pass) CUT-2026-11-01c proof AC-6 reflect / prayer > Тёмная молитва: без МР и без КД; Контракта в слотах нет
+(pass) CUT-2026-11-01c proof AC-7 GW > вражеский труп недоступен Слуге
+(pass) CUT-2026-11-01c proof AC-7 GW > Оковы не копируют DoT; КД 3
+(pass) CUT-2026-11-01c proof AC-7 GW > Жизнь на нитке через способность: L1/7/14 раунды; mult melee/ranged/magic
+(pass) CUT-2026-11-01c proof AC-8 devour/prayer persist > Пожирание: Метка 20→эфф.5; без метки ×1; DEATHWARD не мешает 
+WEAPON-пути
+(pass) CUT-2026-11-01c proof AC-8 devour/prayer persist > уровень от Молитвы держится до конца матча (не откатывается)
+(pass) CUT-2026-11-01c proof AC-9 square edges / fail roll > бросок выше порога — деградация не срабатывает, шанс сохра
+нён
+(pass) CUT-2026-11-01c proof AC-10 doctor/whip > Доктор: КД 2, бонус 50+5L, 2 раунда
+(pass) CUT-2026-11-01c proof AC-10 doctor/whip > взрыв Хлыста — источник Огонь; повторный Хлыст ещё −5 FIRE
+(pass) CUT-2026-11-01c proof AC-11/12/15 > AC-12 Water-resist режет тик Желчи после базы 10+L
+(pass) CUT-2026-11-01c proof AC-11/12/15 > AC-15 weaponReach: JSON недоступной колонки; слабость Мародёра после выстрел
+а
+
+src\game\combat\abilities\cut-2026-11-03b-t13.test.ts:
+(pass) CUT-2026-11-03b T13 ability↔items > Herbalist slot 4: off — хил; on — крафт из пула
+(pass) CUT-2026-11-03b T13 ability↔items > Herbalist slot 4 on: код 0 — неудача без предмета
+(pass) CUT-2026-11-03b T13 ability↔items > Demiurge slot 5: off — без предмета; on — предмет по тиру
+(pass) CUT-2026-11-03b T13 ability↔items > Detective slot 2: off — яд ряда; on — prompt; кража; блок у ярмарки
+(pass) CUT-2026-11-03b T13 ability↔items > Detective on: отравить отряд через prompt
+
+src\game\combat\abilities\cut-2026-11-05.test.ts:
+(pass) CUT-2026-11-05 > Mermaid heal costs 1 MP and scales with power
+(pass) CUT-2026-11-05 > GhostWarrior harvest self-buff only
+(pass) CUT-2026-11-05 > GhostWarrior fetters blocked at HP >= 50%
+(pass) CUT-2026-11-05 > Detective economy-off poison: 50+2L% and 2 rounds
+(pass) CUT-2026-11-05 > Archlich spends mana via trySpendMana (shackles burn)
+(pass) CUT-2026-11-05 > Mermaid freeze rejects under SILENCE
+(pass) CUT-2026-11-05 > giant STUN resists: Titan 60 ward 1
+
+src\game\combat\abilities\fixes.test.ts:
+(pass) combat fixes > defend: +50 resists like bot Hero.protection
+(pass) combat fixes > Witch slot 5 transforms foe into Imp with Imp abilities
+(pass) combat fixes > Mermaid enslave: жертва ходит под контролем, затем возвращается
+(pass) combat fixes > Mermaid enslave: саммоны очарованного хозяина возвращаются с ним
+(pass) combat fixes > Archlich slot 3 ритуал: саммон +1+master.lvl//4 уровней
+(pass) combat fixes > Archlich slot 5 поглощает уровни союзника
+(pass) combat fixes > EvilTree slot 5 «Взращивание»: 4 МР → 1+L//5 уровней цели
+(pass) combat fixes > Patriarch воскрешение: ½ maxHp, ½ инициативы, повторно нельзя
+(pass) combat fixes > Witch slot 4: вард LOWERINGLEVEL блокирует массовую деградацию
+(pass) combat fixes > Marauder slot 4: вард от оружия при превращении
+(pass) combat fixes > Marauder slot 3: слабость после урона, не до выстрела
+(pass) combat fixes > GoldGolem slot 4 ABSOLUTEPOWER always 1 round
+(pass) combat fixes > GoldGolem preChoice: вард LOWERINGLEVEL союзнику
+(pass) combat fixes > MAGIC_SHACKLES: самоубийство маной сразу помечает смерть
+
+src\game\combat\abilities\halloween-pumpkin.test.ts:
+(pass) halloween pumpkin update > Specter resists: ARROWS 20, WEAPON 15, FIRE -15
+(pass) halloween pumpkin update > Zombie and Pyro start with 1 ultaCharge
+(pass) halloween pumpkin update > Zombie slot 2 spends ulta and applies accuracy/dodge debuffs
+(pass) halloween pumpkin update > Zombie slot 4 kamikaze damages enemy row and dies
+(pass) halloween pumpkin update > Zombie ulta recharges every 4 stages
+(pass) halloween pumpkin update > Pyro slot 5 self-immolation buffs allies when HP >= half
+(pass) halloween pumpkin update > Pyro slot 3 spends bottle and burns enemy front
+(pass) halloween pumpkin update > Inquisitor slot 5 crystal charms: 3 MP, CD 2, any row
+(pass) halloween pumpkin update > Inquisitor telekinesis sets CD 3
+(pass) halloween pumpkin update > Specter passive drains mage mana; ritual wards ally; veil grants CHAMELEON
+
+src\game\combat\abilities\level-drain.test.ts:
+(pass) petrify and level drain > DemonLord slot 2 applies STUNNED so target skips turn
+(pass) petrify and level drain > Paladin slot 3 transfers levels via levelUpUnit
+(pass) petrify and level drain > Paladin slot 3 drains levels even on killing blow
+(pass) petrify and level drain > Paladin slot 3: HOLY ward on Chance blocks level drain [15.00ms]
+(pass) petrify and level drain > Paladin soul shatter sets CD 3 and drains on Chance(100, HOLY, LOWERING)
+(pass) petrify and level drain > Witch slot 4 lowers target level
+
+src\game\combat\abilities\new-heroes.test.ts:
+(pass) Antipaladin > Чёрная секира: убийство даёт доп. ход
+(pass) Antipaladin > Шквал ударов: закрыт до порога, затем списывает APAL
+(pass) Antipaladin > Садист ставит кулдаун 4 и не пополняет шкалу
+(pass) Antipaladin > Руна берсерка: броня → атака и точный откат
+(pass) Antipaladin > спасение от смертельного удара снижает резист на 33
+(pass) Antipaladin > Неумолимый таран бьёт визуального соседа сзади при рассинхроне column
+(pass) Angel > Прикосновение блаженства лечит две разные цели через выбор
+(pass) Angel > Где твои крылья: процент текущего ОЗ врага, гиганты недоступны
+(pass) Angel > Минута славы сбрасывает кулдауны цели
+(pass) Angel > resetCooldowns обнуляет старые поля
+(pass) Titan > убийство даёт заряд исцеляющей волны
+(pass) Titan > Восточный ветер снимает замедление и ускоряет ряд
+(pass) Oracle > Чудесный доктор (slot 5): ОЗ сверх максимума и точный откат
+(pass) Incub > Психический шок: нежить без модификатора морали (даже при −200)
+(pass) Incub > Нечистый договор: расплата 75% макс. ОЗ по истечении
+(pass) Incub > Рождение Зла: недоступно рано, затем превращение в DemonLord
+
+src\game\combat\abilities\orc-king.test.ts:
+(pass) OrcKing preChoice > cursed aura drains enemy luck when orc luck is low
+(pass) OrcKing summon prompt > slot 2 disabled when at summon cap
+(pass) OrcKing summon prompt > cancel summon refunds authority and keeps turn
+
+src\game\combat\abilities\pilots-310.test.ts:
+(pass) phase 3.10 pilots > Oracle slot 2 always grants extra turn and sets CD 2
+(pass) phase 3.10 pilots > Oracle slot 3 grants AIRWEAPON on odd lvl and VAMPWEAPON on even
+(pass) phase 3.10 pilots > Demiurge preChoice grants AIRSHIELD +33 ARROWS, not GUARDED
+(pass) phase 3.10 pilots > Demiurge clone starts with one third of template maxMana
+(pass) phase 3.10 pilots > Demiurge slot 1 chains to at least two enemies
+(pass) phase 3.10 pilots > Demiurge slot 1 can cast from back row
+(pass) phase 3.10 pilots > Demiurge slot 4 costs 3 MP, sets ectoplasmCd, rejects at summon cap without turn loss
+(pass) phase 3.10 pilots > Demiurge slot 3 sets mindCloudCd and prefers fragile ally [16.00ms]
+(pass) phase 3.10 pilots > Pyro slot 2 deals more vs BURNING
+
+src\game\combat\abilities\pilots-311.test.ts:
+(pass) phase 3.11 pilots > Specter slot 1 opens second-mind prompt
+(pass) phase 3.11 pilots > Detective slot 2 poisons target row for 2 rounds with chance
+(pass) phase 3.11 pilots > Detective slot 4 grants CONTR that counters next hit
+(pass) phase 3.11 pilots > Detective slot 3 spends ulta and grants INVISIBLE
+(pass) phase 3.11 pilots > GhostWarrior slot 1: урон не зависит от кладбища (CUT AC-7)
+(pass) phase 3.11 pilots > Specter slot 3 Сглаз: MARKED + FATMAN на уклонение, не мораль
+
+src\game\combat\abilities\pilots-312.test.ts:
+(pass) phase 3.12 pilots > GoldGolem slot 1 can stun
+(pass) phase 3.12 pilots > BeerElemental slot 4 spends ulta and grants POISON
+(pass) phase 3.12 pilots > BeerElemental critBank forces crit
+(pass) phase 3.12 pilots > EvilTree INTERDICT blocks heal
+
+src\game\combat\abilities\pilots-313.test.ts:
+(pass) phase 3.13 pilots > Mermaid MAGIC_SHACKLES burns on mana spend [16.00ms]
+(pass) phase 3.13 pilots > Dracolich Пожирание гада (slot 5) kills below 20% HP
+(pass) phase 3.13 pilots > Dracolich resurrect offers only undead
+(pass) phase 3.13 pilots > Mermaid enslave flips team
+
+src\game\combat\abilities\pilots-37.test.ts:
+(pass) phase 3.7 pilots > DemonLord slot 1 hits whole enemy row
+(pass) phase 3.7 pilots > DemonLord slot 1 hits all 3 Assassins on the back row
+(pass) phase 3.7 pilots > DemonLord slot 4 grants FIRESHIELD, HASTE and burns attacker
+(pass) phase 3.7 pilots > Assassin slot 2 polymorphs into target and gains a level
+(pass) phase 3.7 pilots > Assassin mimic Archlich can summon; summon stays after POLYMORPH ends
+(pass) phase 3.7 pilots > Assassin dart applies poison
+(pass) phase 3.7 pilots > Paladin summary exposes five abilities
+
+src\game\combat\abilities\pilots-38.test.ts:
+(pass) phase 3.8 pilots > Abbess slot 4 clears effects on ally row
+(pass) phase 3.8 pilots > Witch slot 1 spends a gun round
+(pass) phase 3.8 pilots > Inquisitor slot 3 can move enemy row
+(pass) phase 3.8 pilots > Inquisitor summary exposes five abilities
+(pass) phase 3.8 pilots > Inquisitor slot 2 sets tortureLightningCd 2
+
+src\game\combat\abilities\pilots-39.test.ts:
+(pass) phase 3.9 pilots > Marauder slot 1 deals more vs MARKED
+(pass) phase 3.9 pilots > Herbalist slot 3 clears POISON on target and self
+(pass) phase 3.9 pilots > Herbalist slot 2 STRENGTH is 25% for 1 round
+(pass) phase 3.9 pilots > Patriarch SANCTUM hides ally from attack targets
+(pass) phase 3.9 pilots > GUARDED: метка без брони, блокирует атаку, детектив пробивает
+
+src\game\combat\abilities\summon.test.ts:
+(pass) createSummon > matches summoner level and grown stats
+(pass) createSummon > respects maxSummons of owner
+(pass) createSummon > replaceUnitId removes old unit instead of leaving a corpse
+
+src\game\combat\abilities\targets.columns.test.ts:
+(pass) meleeTargets column reach (CUT T2) > дистанция 1: соседняя колонка достижима при reach 1
+(pass) meleeTargets column reach (CUT T2) > блокировка юнитом между колонками при reach 1
+(pass) meleeTargets column reach (CUT T2) > reach 2 (Knight): цель через одну колонку достижима
+(pass) meleeTargets column reach (CUT T2) > мёртвые не блокируют колонку
+(pass) meleeTargets column reach (CUT T2) > старый снимок без weaponReach: DemonLord → 2
+(pass) meleeTargets column reach (CUT T2) > GoldGolem в драфте получает REFLECTION на 6 раундов
+(pass) meleeTargets column reach (CUT T2) > GoldGolem-саммон получает REFLECTION на 6 раундов
+
+src\game\combat\effects\effects.test.ts:
+(pass) effects > BLESSED multiplies heal
+(pass) effects > FEAR ticks morale via mind resist (bot VOT)
+(pass) effects > VAMPWEAPON heals on dealDamage
+(pass) effects > CONTR counters after hit
+(pass) effects > SILENCE blocks mana spend
+(pass) effects > STUNNED is detected for turn skip
+(pass) effects > VAMPWEAPON 1 раунд: вампиризм работает в свой ход и спадает в его конце
+(pass) effects > fresh: self-buff не тикает в конце хода наложения
+(pass) effects > AIRSHIELD: +ARROWS resist, откат при спадении
+(pass) effects > tryStun: стан + иммунитет на 2 раунда после него
+(pass) effects > tryStun: вард STUN поглощает оглушение
+(pass) effects > resurrectUnit: ½ maxHp, ½ инициативы, запрет повторного воскрешения
+(pass) effects > POISON: дот по формуле бота (power — множитель)
+(pass) effects > DoT поглощается вардом цели
+
+src\game\combat\effects\reflection.test.ts:
+(pass) REFLECTION > дебафф уходит случайному врагу без Отражения
+(pass) REFLECTION > если врагов без Отражения нет — дебафф остаётся на носителе
+(pass) REGENMANA / KILLMANA > REGENMANA восполняет ману на старте хода
+(pass) REGENMANA / KILLMANA > KILLMANA снимает ману на старте хода
+(pass) DRUNK > снижает точность и откатывает при снятии
+(pass) POISONEDWEAPON / BREAKWEAPON / destroyArmor > destroyArmor не опускает броню ниже 0 и учитывает DESTROYARMOR
+(pass) POISONEDWEAPON / BREAKWEAPON / destroyArmor > POISONEDWEAPON накладывает яд после попадания в ближнем бою
+(pass) POISONEDWEAPON / BREAKWEAPON / destroyArmor > BREAKWEAPON снимает броню после попадания
+
+ 347 pass
+ 0 fail
+ 2064 expect() calls
+Ran 347 tests across 44 files. [2.16s]
