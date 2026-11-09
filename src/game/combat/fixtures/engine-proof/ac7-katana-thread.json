@@ -1,39 +1,41 @@
 {
   "fixtureId": "ac7-katana-thread",
   "seed": 20261101,
-  "stunChanceAtL4": 72,
-  "stunnedLog": [
-    "Бой начался.",
-    "—— ХОД: GhostWarrior ——",
-    "ПРИЗРАЧНАЯ КАТАНА",
-    "GhostWarrior рубит катаной B (20)⟦WEAPON⟧.",
-    "B парализован.",
-    "B оглушён и пропускает ход. (авто)",
-    "Эффект Оглушение спадает с B.",
-    "Раунд 2.",
-    "Отряд становится сильнее (ур. 5).",
-    "—— ХОД: GhostWarrior ——"
-  ],
-  "notStunnedLog": [
-    "Бой начался.",
-    "—— ХОД: GhostWarrior ——",
-    "ПРИЗРАЧНАЯ КАТАНА",
-    "GhostWarrior рубит катаной B (20)⟦WEAPON⟧.",
-    "B теряет 11 боевого духа (оглушение не сработало).",
-    "—— ХОД: B ——"
-  ],
-  "lifeThreadMults": {
-    "melee": {
-      "withThread": 62,
-      "without": 42
+  "lifeThreadExact": {
+    "lost40": {
+      "melee": {
+        "withThread": 56,
+        "without": 40,
+        "mult": 1.4
+      },
+      "ranged": {
+        "withThread": 56,
+        "without": 40,
+        "mult": 1.4
+      },
+      "magic": {
+        "withThread": 45,
+        "without": 32,
+        "mult": 1.4
+      }
     },
-    "ranged": {
-      "withThread": 63,
-      "without": 42
-    },
-    "magic": {
-      "withThread": 53,
-      "without": 31
+    "lost90": {
+      "melee": {
+        "withThread": 70,
+        "without": 40,
+        "mult": 1.75
+      },
+      "ranged": {
+        "withThread": 70,
+        "without": 40,
+        "mult": 1.75
+      },
+      "magic": {
+        "withThread": 56,
+        "without": 32,
+        "mult": 1.75
+      }
     }
-  }
+  },
+  "note": "×1.40 при 40% потерянных ОЗ; ×1.75 при 90%; melee/ranged/magic через dealDamage"
 }

@@ -7,18 +7,22 @@ import { join } from 'node:path';
 
 import { describe, expect, spyOn, test } from 'bun:test';
 
-import { dealDamage, estimateDamageRange, lastDealDamageResult } from '../damage';
+import {
+  dealDamage,
+  estimateDamageRange,
+  lastDealDamageResult,
+  markDeadIfNeeded,
+} from '../damage';
 import {
   applyPsycho,
   maybePunishLowMorale,
 } from '../morale';
-import { grantEffect, hasEffect } from '../effects';
+import { hasEffect } from '../effects';
 import { applyAction, createBattleState, meleeTargets, toBattleSummary } from '../engine';
 import { setWard } from '../resists';
 import { ROW_BACK } from '../settings';
 import type { HeroClassStats } from '../types';
 import { battleApiJson } from '../test/seededRandom';
-import { applyAbility } from './registry';
 
 const SEED = 20261101;
 const FIXTURE_DIR = join(import.meta.dir, '../fixtures/engine-proof');
@@ -56,10 +60,10 @@ function writeFixture(fixtureId: string, payload: Record<string, unknown>): void
 }
 
 describe('CUT-2026-11-01c engine-proof', () => {
-  test('AC-1: порог psycho −70 — roll 30 болезнь, 31 нет', () => {
-    const mk = () => {
+  test('AC-1: psycho −85/−100 — границы 60/61 и 90/91', () => {
+    const mk = (morale: number) => {
       const state = createBattleState({
-        matchId: 'ac1-psycho-threshold',
+        matchId: `ac1-psycho-${morale}`,
         hostPlayerId: 'h',
         guestPlayerId: 'g',
         picks: [
@@ -72,37 +76,36 @@ describe('CUT-2026-11-01c engine-proof', () => {
         ]),
       });
       const unit = state.units.find((u) => u.id === 'p1')!;
-      unit.morale = -70;
+      unit.morale = morale;
       unit.illness = false;
       unit.illnessKind = null;
       return { state, unit };
     };
 
-    const ok = mk();
-    const rndOk = spyOn(Math, 'random').mockReturnValue(rFor(1, 100, 30));
-    applyPsycho(ok.state, ok.unit);
-    // fate randInt(1,5) — не важен для illness flag
-    rndOk.mockRestore();
-    expect(ok.unit.illness).toBe(true);
+    const run = (morale: number, roll: number) => {
+      const { state, unit } = mk(morale);
+      const rnd = spyOn(Math, 'random').mockReturnValue(rFor(1, 100, roll));
+      applyPsycho(state, unit);
+      rnd.mockRestore();
+      return unit.illness;
+    };
 
-    const fail = mk();
-    const rndFail = spyOn(Math, 'random').mockReturnValue(rFor(1, 100, 31));
-    applyPsycho(fail.state, fail.unit);
-    rndFail.mockRestore();
-    expect(fail.unit.illness).toBe(false);
+    expect(run(-85, 60)).toBe(true);
+    expect(run(-85, 61)).toBe(false);
+    expect(run(-100, 90)).toBe(true);
+    expect(run(-100, 91)).toBe(false);
 
     writeFixture('ac1-psycho-threshold', {
-      morale: -70,
-      rollSuccess: 30,
-      rollFail: 31,
-      illnessOn30: ok.unit.illness,
-      illnessOn31: fail.unit.illness,
+      cases: [
+        { morale: -85, rollSuccess: 60, rollFail: 61, illnessOnSuccess: true, illnessOnFail: false },
+        { morale: -100, rollSuccess: 90, rollFail: 91, illnessOnSuccess: true, illnessOnFail: false },
+      ],
       apiJson: JSON.parse(
         battleApiJson({
           fixtureId: 'ac1-psycho-threshold',
           seed: SEED,
-          log: ok.state.log,
-          units: ok.state.units.map((u) => ({
+          log: mk(-85).state.log,
+          units: mk(-85).state.units.map((u) => ({
             id: u.id,
             heroClassCode: u.heroClassCode,
             health: u.health,
@@ -114,10 +117,10 @@ describe('CUT-2026-11-01c engine-proof', () => {
     });
   });
 
-  test('AC-1: порог debuff −20 — roll 20 дебафф, 21 нет', () => {
-    const mk = () => {
+  test('AC-1: debuff −50/−90 (кап 70) — границы 50/51 и 70/71', () => {
+    const mk = (morale: number) => {
       const state = createBattleState({
-        matchId: 'ac1-debuff-threshold',
+        matchId: `ac1-debuff-${morale}`,
         hostPlayerId: 'h',
         guestPlayerId: 'g',
         picks: [
@@ -130,32 +133,41 @@ describe('CUT-2026-11-01c engine-proof', () => {
         ]),
       });
       const unit = state.units.find((u) => u.id === 'p1')!;
-      unit.morale = -20;
+      unit.morale = morale;
       unit.effects = [];
       return { state, unit };
     };
 
-    const ok = mk();
-    const rndOk = spyOn(Math, 'random').mockReturnValue(rFor(1, 100, 20));
-    maybePunishLowMorale(ok.state, ok.unit);
-    rndOk.mockRestore();
-    expect(hasEffect(ok.unit, 'STRENGTH')).toBe(true);
-    expect(ok.state.log.some((l) => l.includes('упадок духа'))).toBe(true);
+    const run = (morale: number, roll: number) => {
+      const { state, unit } = mk(morale);
+      const rnd = spyOn(Math, 'random').mockReturnValue(rFor(1, 100, roll));
+      maybePunishLowMorale(state, unit);
+      rnd.mockRestore();
+      return { debuffed: hasEffect(unit, 'STRENGTH'), log: state.log, effects: unit.effects.map((e) => e.id) };
+    };
 
-    const fail = mk();
-    const rndFail = spyOn(Math, 'random').mockReturnValue(rFor(1, 100, 21));
-    maybePunishLowMorale(fail.state, fail.unit);
-    rndFail.mockRestore();
-    expect(hasEffect(fail.unit, 'STRENGTH')).toBe(false);
+    const m50ok = run(-50, 50);
+    const m50fail = run(-50, 51);
+    const m90ok = run(-90, 70);
+    const m90fail = run(-90, 71);
+    expect(m50ok.debuffed).toBe(true);
+    expect(m50fail.debuffed).toBe(false);
+    expect(m90ok.debuffed).toBe(true);
+    expect(m90fail.debuffed).toBe(false);
+    expect(m50ok.log.some((l) => l.includes('упадок духа'))).toBe(true);
 
     writeFixture('ac1-debuff-threshold', {
-      morale: -20,
-      rollSuccess: 20,
-      rollFail: 21,
-      logOk: ok.state.log,
-      logFail: fail.state.log,
-      effectsOk: ok.unit.effects.map((e) => e.id),
-      effectsFail: fail.unit.effects.map((e) => e.id),
+      cases: [
+        { morale: -50, rollSuccess: 50, rollFail: 51 },
+        { morale: -90, rollSuccess: 70, rollFail: 71, chanceCappedAt: 70 },
+      ],
+      logOk: m50ok.log,
+      logFail: m50fail.log,
+      effectsOk: m50ok.effects,
+      effectsFail: m50fail.effects,
+      logCapOk: m90ok.log,
+      effectsCapOk: m90ok.effects,
+      effectsCapFail: m90fail.effects,
     });
   });
 
@@ -254,57 +266,7 @@ describe('CUT-2026-11-01c engine-proof', () => {
     });
   });
 
-  test('AC-7: Катана L4 — стан на roll 72, нет на 73; Нить жизни множит урон', () => {
-    const runKatana = (stunRoll: number) => {
-      const state = createBattleState({
-        matchId: `ac7-stun-${stunRoll}`,
-        hostPlayerId: 'h',
-        guestPlayerId: 'g',
-        picks: [
-          { id: 'p1', playerId: 'h', heroClassCode: 'GhostWarrior', row: 0, pickOrder: 1 },
-          { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
-        ],
-        heroes: new Map([
-          ['GhostWarrior', hero('GhostWarrior', { damage: 20, accuracy: 100, luck: 0, initiative: 99 })],
-          ['B', hero('B', { health: 500, dodge: 0 })],
-        ]),
-      });
-      const gw = state.units.find((u) => u.id === 'p1')!;
-      gw.lvl = 4;
-      let n = 0;
-      const rnd = spyOn(Math, 'random').mockImplementation(() => {
-        n += 1;
-        // 1: evade randInt(1,100) при missChance≈−4 всё ещё вызывается
-        if (n === 1) {
-          return rFor(1, 100, 50);
-        }
-        // 2: melee damage randInt(0,2)
-        if (n === 2) {
-          return rFor(0, 2, 0);
-        }
-        // 3: stun rollSrcChance
-        return rFor(1, 100, stunRoll);
-      });
-      state.activeUnitId = 'p1';
-      state.turnPlayerId = 'h';
-      applyAction(state, {
-        playerId: 'h',
-        unitId: 'p1',
-        action: 'ability',
-        slot: 1,
-        targetId: 'e1',
-      });
-      rnd.mockRestore();
-      return state;
-    };
-
-    const stunned = runKatana(72);
-    const notStunned = runKatana(73);
-    expect(stunned.log.some((l) => l.includes('парализован'))).toBe(true);
-    expect(notStunned.log.some((l) => l.includes('парализован'))).toBe(false);
-    expect(notStunned.log.some((l) => l.includes('боевого духа'))).toBe(true);
-
-    // Жизнь на нитке: слот 5 → dealDamage с/без эффекта
+  test('AC-7: Нить жизни — ×1.40 при 40% потери и ×1.75 при 90% (melee/ranged/magic)', () => {
     const state = createBattleState({
       matchId: 'ac7-life-thread',
       hostPlayerId: 'h',
@@ -321,48 +283,71 @@ describe('CUT-2026-11-01c engine-proof', () => {
     const gw = state.units.find((u) => u.id === 'p1')!;
     const foe = state.units.find((u) => u.id === 'e1')!;
     gw.maxHp = 100;
-    gw.health = 50;
+    gw.health = 100;
     state.activeUnitId = 'p1';
     state.turnPlayerId = 'h';
     applyAction(state, { playerId: 'h', unitId: 'p1', action: 'ability', slot: 5 });
     expect(hasEffect(gw, 'LIFE_THREAD')).toBe(true);
 
     const kinds = ['melee', 'ranged', 'magic'] as const;
-    const mults: Record<string, { withThread: number; without: number }> = {};
-    for (const kind of kinds) {
-      foe.health = 5000;
-      const withThread = dealDamage(
-        gw,
-        foe,
-        { kind, forceHit: true, source: kind === 'magic' ? 'FIRE' : undefined },
-        state
-      );
-      const saved = gw.effects.filter((e) => e.id === 'LIFE_THREAD');
-      gw.effects = gw.effects.filter((e) => e.id !== 'LIFE_THREAD');
-      foe.health = 5000;
-      const without = dealDamage(
-        gw,
-        foe,
-        { kind, forceHit: true, source: kind === 'magic' ? 'FIRE' : undefined },
-        state
-      );
-      gw.effects.push(...saved);
-      expect(withThread).toBeGreaterThan(without);
-      mults[kind] = { withThread, without };
+    const scenarios = [
+      { lostPct: 40, health: 60, expectedMult: 1.4 },
+      { lostPct: 90, health: 10, expectedMult: 1.75 },
+    ] as const;
+
+    const results: Record<string, Record<string, { withThread: number; without: number; mult: number }>> =
+      {};
+
+    for (const scenario of scenarios) {
+      gw.health = scenario.health;
+      results[`lost${scenario.lostPct}`] = {};
+      for (const kind of kinds) {
+        const deal = () => {
+          const rnd = spyOn(Math, 'random').mockImplementation(() =>
+            kind === 'magic' ? rFor(-3, 3, 0) : rFor(0, 2, 0)
+          );
+          foe.health = 5000;
+          const dealt = dealDamage(
+            gw,
+            foe,
+            { kind, forceHit: true, source: kind === 'magic' ? 'FIRE' : undefined },
+            state
+          );
+          rnd.mockRestore();
+          return dealt;
+        };
+
+        const withThread = deal();
+        const saved = gw.effects.filter((e) => e.id === 'LIFE_THREAD');
+        gw.effects = gw.effects.filter((e) => e.id !== 'LIFE_THREAD');
+        const without = deal();
+        gw.effects.push(...saved);
+
+        expect(withThread).toBe(Math.round(without * scenario.expectedMult));
+        results[`lost${scenario.lostPct}`][kind] = {
+          withThread,
+          without,
+          mult: scenario.expectedMult,
+        };
+      }
     }
 
     writeFixture('ac7-katana-thread', {
-      stunChanceAtL4: 72,
-      stunnedLog: stunned.log,
-      notStunnedLog: notStunned.log,
-      lifeThreadMults: mults,
+      lifeThreadExact: results,
+      note: '×1.40 при 40% потерянных ОЗ; ×1.75 при 90%; melee/ranged/magic через dealDamage',
     });
   });
 
-  test('AC-8: Пожирание — Метка 20→эфф.5 vs ×1; DEATHWARD не тратится', () => {
-    const run = (marked: boolean) => {
+  test('AC-8: казнь 19%/не 20%; FINALSTRIKE; DEATHWARD не тратится', () => {
+    const mk = (opts: {
+      matchId: string;
+      health: number;
+      finalStrike?: boolean;
+      deathWard?: boolean;
+      damage?: number;
+    }) => {
       const state = createBattleState({
-        matchId: marked ? 'ac8-devour-marked' : 'ac8-devour-plain',
+        matchId: opts.matchId,
         hostPlayerId: 'h',
         guestPlayerId: 'g',
         picks: [
@@ -370,20 +355,28 @@ describe('CUT-2026-11-01c engine-proof', () => {
           { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
         ],
         heroes: new Map([
-          ['Dracolich', hero('Dracolich', { damage: 40, accuracy: 100, luck: 0, initiative: 99 })],
-          ['B', hero('B', { health: 500, armor: 20, dodge: 0 })],
+          [
+            'Dracolich',
+            hero('Dracolich', {
+              damage: opts.damage ?? 1,
+              accuracy: 100,
+              luck: 0,
+              initiative: 99,
+            }),
+          ],
+          ['B', hero('B', { health: 100, armor: 0, dodge: 0 })],
         ]),
       });
-      const draco = state.units.find((u) => u.id === 'p1')!;
       const foe = state.units.find((u) => u.id === 'e1')!;
-      foe.armor = 20;
-      foe.health = 400;
-      if (marked) {
-        grantEffect(foe, 'MARKED', 2);
+      foe.maxHp = 100;
+      foe.health = opts.health;
+      foe.armor = 0;
+      if (opts.deathWard) {
+        setWard(foe, 'DEATH', 2);
       }
-      setWard(foe, 'DEATH', 2);
-      const wardBefore = foe.resists.DEATH?.wardCharges ?? 0;
-      // evade + damage: force via high acc; fix damage die to 0
+      if (opts.finalStrike) {
+        foe.resists.FINALSTRIKE = { value: 0, wardCharges: 1 };
+      }
       let n = 0;
       const rnd = spyOn(Math, 'random').mockImplementation(() => {
         n += 1;
@@ -394,6 +387,7 @@ describe('CUT-2026-11-01c engine-proof', () => {
       });
       state.activeUnitId = 'p1';
       state.turnPlayerId = 'h';
+      const deathWardBefore = foe.resists.DEATH?.wardCharges ?? 0;
       applyAction(state, {
         playerId: 'h',
         unitId: 'p1',
@@ -403,29 +397,40 @@ describe('CUT-2026-11-01c engine-proof', () => {
       });
       rnd.mockRestore();
       return {
-        dealt: 400 - foe.health,
-        wardAfter: foe.resists.DEATH?.wardCharges ?? 0,
-        wardBefore,
+        alive: foe.alive,
+        health: foe.health,
         log: state.log,
-        marked,
+        deathWardBefore,
+        deathWardAfter: foe.resists.DEATH?.wardCharges ?? 0,
+        finalStrikeAfter: foe.resists.FINALSTRIKE?.wardCharges ?? 0,
       };
     };
 
-    const withMark = run(true);
-    const without = run(false);
-    expect(withMark.dealt).toBeGreaterThan(without.dealt);
-    expect(withMark.log.some((l) => l.includes('метка'))).toBe(true);
-    expect(withMark.wardAfter).toBe(withMark.wardBefore);
-    expect(without.wardAfter).toBe(without.wardBefore);
-    // Эфф. броня 5 vs 20 при damage 40, die 0: 35 vs 20
-    expect(withMark.dealt).toBe(40 - 5);
-    expect(without.dealt).toBe(40 - 20);
+    const at19 = mk({ matchId: 'ac8-exec-19', health: 19 });
+    const at20 = mk({ matchId: 'ac8-exec-20', health: 20 });
+    expect(at19.alive).toBe(false);
+    expect(at19.log.some((l) => l.includes('< 20 % ОЗ') || l.includes('сжирает'))).toBe(true);
+    expect(at20.alive).toBe(true);
+    expect(at20.health).toBeGreaterThan(0);
+
+    const fs = mk({ matchId: 'ac8-fs', health: 10, finalStrike: true });
+    expect(fs.alive).toBe(true);
+    expect(fs.health).toBe(1);
+    expect(fs.finalStrikeAfter).toBe(0);
+
+    const dw = mk({ matchId: 'ac8-deathward', health: 80, deathWard: true, damage: 40 });
+    expect(dw.deathWardAfter).toBe(dw.deathWardBefore);
+    expect(dw.deathWardBefore).toBe(2);
 
     writeFixture('ac8-devour-armor', {
-      withMark,
-      without,
-      effectiveArmorMarked: 5,
-      armorPlain: 20,
+      executeAt19: { alive: at19.alive, log: at19.log },
+      noExecuteAt20: { alive: at20.alive, health: at20.health, log: at20.log },
+      finalStrike: { alive: fs.alive, health: fs.health, wardAfter: fs.finalStrikeAfter, log: fs.log },
+      deathWard: {
+        before: dw.deathWardBefore,
+        after: dw.deathWardAfter,
+        log: dw.log,
+      },
     });
   });
 
@@ -509,71 +514,89 @@ describe('CUT-2026-11-01c engine-proof', () => {
     });
   });
 
-  test('AC-10: Хлыст — FIRE в логе; крик с power 31 на 2 цели — floor split', () => {
-    const whip = createBattleState({
-      matchId: 'ac10-whip-fire',
-      hostPlayerId: 'h',
-      guestPlayerId: 'g',
-      picks: [
-        { id: 'p1', playerId: 'h', heroClassCode: 'Incub', row: 0, pickOrder: 1 },
-        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
-        { id: 'e2', playerId: 'g', heroClassCode: 'C', row: 0, pickOrder: 2 },
-      ],
-      heroes: new Map([
-        ['Incub', hero('Incub', { mana: 20, power: 30, accuracy: 100, luck: 0, initiative: 99 })],
-        ['B', hero('B', { health: 200 })],
-        ['C', hero('C', { health: 200 })],
-      ]),
-    });
-    whip.activeUnitId = 'p1';
-    whip.turnPlayerId = 'h';
-    applyAction(whip, {
-      playerId: 'h',
-      unitId: 'p1',
-      action: 'ability',
-      slot: 2,
-      targetId: 'e1',
-    });
-    expect(whip.log.some((l) => l.includes('⟦FIRE⟧') || /огн/i.test(l))).toBe(true);
+  test('AC-10: смерть с Извержением — 200→50/25 FIRE; нечётный maxHP через floor', () => {
+    const runSplash = (maxHp: number) => {
+      const state = createBattleState({
+        matchId: `ac10-eruption-${maxHp}`,
+        hostPlayerId: 'h',
+        guestPlayerId: 'g',
+        picks: [
+          { id: 'p1', playerId: 'h', heroClassCode: 'Incub', row: 0, pickOrder: 1 },
+          { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+          { id: 'e2', playerId: 'g', heroClassCode: 'C', row: 0, pickOrder: 2 },
+          { id: 'e3', playerId: 'g', heroClassCode: 'D', row: 1, pickOrder: 3 },
+        ],
+        heroes: new Map([
+          ['Incub', hero('Incub', { mana: 20, power: 30, accuracy: 100, luck: 0, initiative: 99 })],
+          ['B', hero('B', { health: maxHp })],
+          ['C', hero('C', { health: 500 })],
+          ['D', hero('D', { health: 500 })],
+        ]),
+      });
+      const incub = state.units.find((u) => u.id === 'p1')!;
+      const carrier = state.units.find((u) => u.id === 'e1')!;
+      const sameRow = state.units.find((u) => u.id === 'e2')!;
+      const otherRow = state.units.find((u) => u.id === 'e3')!;
+      incub.lvl = 8;
+      carrier.maxHp = maxHp;
+      carrier.health = maxHp;
+      sameRow.maxHp = 500;
+      sameRow.health = 500;
+      otherRow.maxHp = 500;
+      otherRow.health = 500;
+      // Снять сейвы/резисты: смерть носителя и полный FIRE-splash.
+      carrier.resists = {};
+      carrier.lives = 0;
+      sameRow.resists = {};
+      otherRow.resists = {};
 
-    const scream = createBattleState({
-      matchId: 'ac10-scream-floor',
-      hostPlayerId: 'h',
-      guestPlayerId: 'g',
-      picks: [
-        { id: 'p1', playerId: 'h', heroClassCode: 'Incub', row: 0, pickOrder: 1 },
-        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
-        { id: 'e2', playerId: 'g', heroClassCode: 'C', row: 0, pickOrder: 2 },
-      ],
-      heroes: new Map([
-        ['Incub', hero('Incub', { mana: 20, power: 31, accuracy: 100, luck: 0, initiative: 99 })],
-        ['B', hero('B', { health: 200, morale: 0 })],
-        ['C', hero('C', { health: 200, morale: 0 })],
-      ]),
-    });
-    const incub = scream.units.find((u) => u.id === 'p1')!;
-    const e1 = scream.units.find((u) => u.id === 'e1')!;
-    const e2 = scream.units.find((u) => u.id === 'e2')!;
-    e1.morale = 0;
-    e2.morale = 0;
-    const hp1 = e1.health;
-    const hp2 = e2.health;
-    // applyAbility напрямую — без пассива Presence (не портит moraleFactor).
-    const rnd = spyOn(Math, 'random').mockReturnValue(0);
-    applyAbility(scream, incub, { slot: 1, targetId: 'e1' });
-    rnd.mockRestore();
-    const d1 = hp1 - e1.health;
-    const d2 = hp2 - e2.health;
-    // floor(31/2)=15 при morale 0
-    expect(d1).toBe(15);
-    expect(d2).toBe(15);
-    expect(scream.log.some((l) => l.includes('(15)⟦MIND⟧'))).toBe(true);
+      state.activeUnitId = 'p1';
+      state.turnPlayerId = 'h';
+      applyAction(state, {
+        playerId: 'h',
+        unitId: 'p1',
+        action: 'ability',
+        slot: 2,
+        targetId: 'e1',
+      });
+      expect(hasEffect(carrier, 'ERUPTION')).toBe(true);
+
+      const sameBefore = sameRow.health;
+      const otherBefore = otherRow.health;
+      carrier.health = 0;
+      markDeadIfNeeded(state, carrier);
+
+      const sameDmg = sameBefore - sameRow.health;
+      const otherDmg = otherBefore - otherRow.health;
+      const expectedX = Math.floor(maxHp * 0.25);
+      return {
+        state,
+        sameDmg,
+        otherDmg,
+        expectedX,
+        expectedOther: Math.floor(expectedX / 2),
+        log: state.log,
+      };
+    };
+
+    const even = runSplash(200);
+    expect(even.sameDmg).toBe(50);
+    expect(even.otherDmg).toBe(25);
+    expect(even.log.some((l) => l.includes('⟦FIRE⟧') && l.includes('извержен'))).toBe(true);
+
+    // 199: floor(49.75)=49 (round дал бы 50) — фиксируем floor.
+    const odd = runSplash(199);
+    expect(odd.sameDmg).toBe(49);
+    expect(odd.otherDmg).toBe(24);
 
     writeFixture('ac10-fire-floor', {
-      whipLog: whip.log,
-      screamDamage: [d1, d2],
-      shareFloor: 15,
-      power: 31,
+      evenMaxHp: 200,
+      evenSplash: [even.sameDmg, even.otherDmg],
+      oddMaxHp: 199,
+      oddSplash: [odd.sameDmg, odd.otherDmg],
+      oddNote: '⌊199×0.25⌋=49, ⌊49/2⌋=24',
+      evenLog: even.log,
+      oddLog: odd.log,
     });
   });
 

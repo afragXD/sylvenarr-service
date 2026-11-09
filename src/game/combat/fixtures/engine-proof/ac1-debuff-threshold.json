@@ -1,9 +1,19 @@
 {
   "fixtureId": "ac1-debuff-threshold",
   "seed": 20261101,
-  "morale": -20,
-  "rollSuccess": 20,
-  "rollFail": 21,
+  "cases": [
+    {
+      "morale": -50,
+      "rollSuccess": 50,
+      "rollFail": 51
+    },
+    {
+      "morale": -90,
+      "rollSuccess": 70,
+      "rollFail": 71,
+      "chanceCappedAt": 70
+    }
+  ],
   "logOk": [
     "Бой начался.",
     "—— ХОД: Knight ——",
@@ -17,5 +27,14 @@
   "effectsOk": [
     "STRENGTH"
   ],
-  "effectsFail": []
+  "effectsFail": [],
+  "logCapOk": [
+    "Бой начался.",
+    "—— ХОД: B ——",
+    "Knight: упадок духа ослабляет атаку (−10 урона на 2 р.)."
+  ],
+  "effectsCapOk": [
+    "STRENGTH"
+  ],
+  "effectsCapFail": []
 }

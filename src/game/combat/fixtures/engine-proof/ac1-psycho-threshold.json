@@ -1,19 +1,29 @@
 {
   "fixtureId": "ac1-psycho-threshold",
   "seed": 20261101,
-  "morale": -70,
-  "rollSuccess": 30,
-  "rollFail": 31,
-  "illnessOn30": true,
-  "illnessOn31": false,
+  "cases": [
+    {
+      "morale": -85,
+      "rollSuccess": 60,
+      "rollFail": 61,
+      "illnessOnSuccess": true,
+      "illnessOnFail": false
+    },
+    {
+      "morale": -100,
+      "rollSuccess": 90,
+      "rollFail": 91,
+      "illnessOnSuccess": true,
+      "illnessOnFail": false
+    }
+  ],
   "apiJson": {
     "fixtureId": "ac1-psycho-threshold",
     "seed": 20261101,
     "log": [
       "Бой начался.",
       "—— ХОД: Knight ——",
-      "Knight укрепляет доспехи ряда на 2.",
-      "Knight: апатия — уклонение 0, крит 0, инициатива 5."
+      "Knight укрепляет доспехи ряда на 2."
     ],
     "units": [
       {

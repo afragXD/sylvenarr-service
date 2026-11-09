@@ -1,32 +1,52 @@
 {
   "fixtureId": "ac8-devour-armor",
   "seed": 20261101,
-  "withMark": {
-    "dealt": 35,
-    "wardAfter": 2,
-    "wardBefore": 2,
+  "executeAt19": {
+    "alive": false,
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Dracolich ——",
+      "ПОЖИРАНИЕ ГАДА — ЦЕЛЬ НИЖЕ 20 % ОЗ — СОЖРЁТ",
+      "Dracolich пожирает B (1)⟦WEAPON⟧.",
+      "Dracolich сжирает ослабевшего B (было < 20 % ОЗ).",
+      "B погибает.",
+      "Победа игрока 1."
+    ]
+  },
+  "noExecuteAt20": {
+    "alive": true,
+    "health": 19,
     "log": [
       "Бой начался.",
       "—— ХОД: Dracolich ——",
       "ПОЖИРАНИЕ ГАДА",
-      "Dracolich пожирает B (35)⟦WEAPON⟧ (метка: −75% брони).",
+      "Dracolich пожирает B (1)⟦WEAPON⟧.",
       "—— ХОД: B ——"
-    ],
-    "marked": true
+    ]
   },
-  "without": {
-    "dealt": 20,
-    "wardAfter": 2,
-    "wardBefore": 2,
+  "finalStrike": {
+    "alive": true,
+    "health": 1,
+    "wardAfter": 0,
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Dracolich ——",
+      "ПОЖИРАНИЕ ГАДА — ЦЕЛЬ НИЖЕ 20 % ОЗ — СОЖРЁТ",
+      "Dracolich пожирает B (1)⟦WEAPON⟧.",
+      "Dracolich сжирает ослабевшего B (было < 20 % ОЗ).",
+      "B на пороге смерти — вард «Смертельный удар» спасает (остаётся 1 ОЗ).",
+      "—— ХОД: B ——"
+    ]
+  },
+  "deathWard": {
+    "before": 2,
+    "after": 2,
     "log": [
       "Бой начался.",
       "—— ХОД: Dracolich ——",
       "ПОЖИРАНИЕ ГАДА",
-      "Dracolich пожирает B (20)⟦WEAPON⟧.",
+      "Dracolich пожирает B (40)⟦WEAPON⟧.",
       "—— ХОД: B ——"
-    ],
-    "marked": false
-  },
-  "effectiveArmorMarked": 5,
-  "armorPlain": 20
+    ]
+  }
 }

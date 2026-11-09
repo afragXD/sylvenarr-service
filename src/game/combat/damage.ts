@@ -746,10 +746,10 @@ export type MarkDeadOpts = {
 };
 
 /**
- * Смерть с Извержением (CUT AC-10): X = maxHp×0.25 Огнём своему ряду, X//2 — другому.
+ * Смерть с Извержением (CUT AC-10): X = ⌊maxHp×0.25⌋ Огнём своему ряду, X//2 — другому.
  */
 function applyEruptionOnDeath(state: BattleState, dead: BattleUnit): void {
-  const x = Math.round(dead.maxHp * 0.25);
+  const x = Math.floor(dead.maxHp * 0.25);
   if (x <= 0) {
     return;
   }
