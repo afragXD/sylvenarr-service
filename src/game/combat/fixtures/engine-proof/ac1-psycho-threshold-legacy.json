@@ -1,0 +1,9 @@
+{
+  "fixtureId": "ac1-psycho-threshold-legacy",
+  "seed": 20261101,
+  "morale": -70,
+  "rollSuccess": 30,
+  "rollFail": 31,
+  "illnessOn30": true,
+  "illnessOn31": false
+}

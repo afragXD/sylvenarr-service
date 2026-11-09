@@ -2,6 +2,7 @@ import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../d
 import { grantEffect, hasEffect, healUnit, resurrectUnit } from '../effects';
 import { levelUpUnit } from '../level';
 import { isUndeadClass } from '../races';
+import { applyResistMultiplier } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { enemiesOf, meleeTargets } from './targets';
@@ -325,12 +326,23 @@ export const dracolichAbilities: AbilityHandler = {
         );
         markDeadIfNeeded(state, target);
         // Казнь по ОЗ до атаки; только если удар попал.
+        // DEATH-вард — как обычный смертельный удар источником DEATH; иначе FINALSTRIKE/lives.
         if (execute && target.alive) {
-          target.health = 0;
-          state.log.push(
-            `${actor.displayName} сжирает ослабевшего ${target.displayName} (было < 20 % ОЗ).`
-          );
-          markDeadIfNeeded(state, target);
+          const deathResist = applyResistMultiplier(target, 'DEATH');
+          if (deathResist.blocked) {
+            if (deathResist.blockReason) {
+              state.log.push(deathResist.blockReason);
+            }
+            state.log.push(
+              `${actor.displayName} пытается сожрать ${target.displayName}, но вард от смерти спасает.`
+            );
+          } else {
+            target.health = 0;
+            state.log.push(
+              `${actor.displayName} сжирает ослабевшего ${target.displayName} (было < 20 % ОЗ).`
+            );
+            markDeadIfNeeded(state, target);
+          }
         }
       }
       setSlotCd(actor, 5, 3);

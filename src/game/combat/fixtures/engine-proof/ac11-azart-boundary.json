@@ -1,21 +1,16 @@
 {
   "fixtureId": "ac11-azart-boundary",
   "seed": 20261101,
-  "at32": [
-    "Бой начался.",
-    "—— ХОД: Inquisitor ——",
-    "АЗАРТ ДОБИВАНИЯ",
-    "Inquisitor: азарт добивания (+19 пп крита, цель < 33 % ОЗ).",
-    "Inquisitor бьёт булавой B (42)⟦WEAPON⟧.",
-    "B погибает.",
-    "Победа игрока 1."
-  ],
-  "at33": [
-    "Бой начался.",
-    "—— ХОД: Inquisitor ——",
-    "АЗАРТ ДОБИВАНИЯ",
-    "Inquisitor бьёт булавой B (41)⟦WEAPON⟧.",
-    "B погибает.",
-    "Победа игрока 1."
-  ]
+  "at32critRoll19": {
+    "crit": true,
+    "damage": 80
+  },
+  "at32critRoll20": {
+    "crit": false,
+    "damage": 40
+  },
+  "at33critRoll19": {
+    "crit": false,
+    "damage": 40
+  }
 }

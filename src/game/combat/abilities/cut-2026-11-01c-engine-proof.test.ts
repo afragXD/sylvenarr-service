@@ -17,12 +17,13 @@ import {
   applyPsycho,
   maybePunishLowMorale,
 } from '../morale';
-import { hasEffect } from '../effects';
+import { grantEffect, hasEffect } from '../effects';
 import { applyAction, createBattleState, meleeTargets, toBattleSummary } from '../engine';
 import { setWard } from '../resists';
 import { ROW_BACK } from '../settings';
 import type { HeroClassStats } from '../types';
 import { battleApiJson } from '../test/seededRandom';
+import { applyAbility } from './registry';
 
 const SEED = 20261101;
 const FIXTURE_DIR = join(import.meta.dir, '../fixtures/engine-proof');
@@ -168,6 +169,94 @@ describe('CUT-2026-11-01c engine-proof', () => {
       logCapOk: m90ok.log,
       effectsCapOk: m90ok.effects,
       effectsCapFail: m90fail.effects,
+    });
+  });
+
+  test('AC-1: порог psycho −70 — roll 30 болезнь, 31 нет', () => {
+    const mk = () => {
+      const state = createBattleState({
+        matchId: 'ac1-psycho-threshold-legacy',
+        hostPlayerId: 'h',
+        guestPlayerId: 'g',
+        picks: [
+          { id: 'p1', playerId: 'h', heroClassCode: 'Knight', row: 0, pickOrder: 1 },
+          { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+        ],
+        heroes: new Map([
+          ['Knight', hero('Knight')],
+          ['B', hero('B')],
+        ]),
+      });
+      const unit = state.units.find((u) => u.id === 'p1')!;
+      unit.morale = -70;
+      unit.illness = false;
+      unit.illnessKind = null;
+      return { state, unit };
+    };
+
+    const ok = mk();
+    const rndOk = spyOn(Math, 'random').mockReturnValue(rFor(1, 100, 30));
+    applyPsycho(ok.state, ok.unit);
+    rndOk.mockRestore();
+    expect(ok.unit.illness).toBe(true);
+
+    const fail = mk();
+    const rndFail = spyOn(Math, 'random').mockReturnValue(rFor(1, 100, 31));
+    applyPsycho(fail.state, fail.unit);
+    rndFail.mockRestore();
+    expect(fail.unit.illness).toBe(false);
+
+    writeFixture('ac1-psycho-threshold-legacy', {
+      morale: -70,
+      rollSuccess: 30,
+      rollFail: 31,
+      illnessOn30: ok.unit.illness,
+      illnessOn31: fail.unit.illness,
+    });
+  });
+
+  test('AC-1: порог debuff −20 — roll 20 дебафф, 21 нет', () => {
+    const mk = () => {
+      const state = createBattleState({
+        matchId: 'ac1-debuff-threshold-legacy',
+        hostPlayerId: 'h',
+        guestPlayerId: 'g',
+        picks: [
+          { id: 'p1', playerId: 'h', heroClassCode: 'Knight', row: 0, pickOrder: 1 },
+          { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+        ],
+        heroes: new Map([
+          ['Knight', hero('Knight', { damage: 40, power: 40 })],
+          ['B', hero('B')],
+        ]),
+      });
+      const unit = state.units.find((u) => u.id === 'p1')!;
+      unit.morale = -20;
+      unit.effects = [];
+      return { state, unit };
+    };
+
+    const ok = mk();
+    const rndOk = spyOn(Math, 'random').mockReturnValue(rFor(1, 100, 20));
+    maybePunishLowMorale(ok.state, ok.unit);
+    rndOk.mockRestore();
+    expect(hasEffect(ok.unit, 'STRENGTH')).toBe(true);
+    expect(ok.state.log.some((l) => l.includes('упадок духа'))).toBe(true);
+
+    const fail = mk();
+    const rndFail = spyOn(Math, 'random').mockReturnValue(rFor(1, 100, 21));
+    maybePunishLowMorale(fail.state, fail.unit);
+    rndFail.mockRestore();
+    expect(hasEffect(fail.unit, 'STRENGTH')).toBe(false);
+
+    writeFixture('ac1-debuff-threshold-legacy', {
+      morale: -20,
+      rollSuccess: 20,
+      rollFail: 21,
+      logOk: ok.state.log,
+      logFail: fail.state.log,
+      effectsOk: ok.unit.effects.map((e) => e.id),
+      effectsFail: fail.unit.effects.map((e) => e.id),
     });
   });
 
@@ -338,7 +427,108 @@ describe('CUT-2026-11-01c engine-proof', () => {
     });
   });
 
-  test('AC-8: казнь 19%/не 20%; FINALSTRIKE; DEATHWARD не тратится', () => {
+  test('AC-7: Катана L4 — стан на roll 72, нет на 73; Нить жизни множит урон', () => {
+    const runKatana = (stunRoll: number) => {
+      const state = createBattleState({
+        matchId: `ac7-stun-${stunRoll}`,
+        hostPlayerId: 'h',
+        guestPlayerId: 'g',
+        picks: [
+          { id: 'p1', playerId: 'h', heroClassCode: 'GhostWarrior', row: 0, pickOrder: 1 },
+          { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+        ],
+        heroes: new Map([
+          ['GhostWarrior', hero('GhostWarrior', { damage: 20, accuracy: 100, luck: 0, initiative: 99 })],
+          ['B', hero('B', { health: 500, dodge: 0 })],
+        ]),
+      });
+      const gw = state.units.find((u) => u.id === 'p1')!;
+      gw.lvl = 4;
+      let n = 0;
+      const rnd = spyOn(Math, 'random').mockImplementation(() => {
+        n += 1;
+        if (n === 1) {
+          return rFor(1, 100, 50);
+        }
+        if (n === 2) {
+          return rFor(0, 2, 0);
+        }
+        return rFor(1, 100, stunRoll);
+      });
+      state.activeUnitId = 'p1';
+      state.turnPlayerId = 'h';
+      applyAction(state, {
+        playerId: 'h',
+        unitId: 'p1',
+        action: 'ability',
+        slot: 1,
+        targetId: 'e1',
+      });
+      rnd.mockRestore();
+      return state;
+    };
+
+    const stunned = runKatana(72);
+    const notStunned = runKatana(73);
+    expect(stunned.log.some((l) => l.includes('парализован'))).toBe(true);
+    expect(notStunned.log.some((l) => l.includes('парализован'))).toBe(false);
+    expect(notStunned.log.some((l) => l.includes('боевого духа'))).toBe(true);
+
+    const state = createBattleState({
+      matchId: 'ac7-life-thread-legacy',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'GhostWarrior', row: 0, pickOrder: 1 },
+        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+      ],
+      heroes: new Map([
+        ['GhostWarrior', hero('GhostWarrior', { damage: 40, power: 40, accuracy: 100, luck: 0 })],
+        ['B', hero('B', { health: 5000, armor: 0 })],
+      ]),
+    });
+    const gw = state.units.find((u) => u.id === 'p1')!;
+    const foe = state.units.find((u) => u.id === 'e1')!;
+    gw.maxHp = 100;
+    gw.health = 50;
+    state.activeUnitId = 'p1';
+    state.turnPlayerId = 'h';
+    applyAction(state, { playerId: 'h', unitId: 'p1', action: 'ability', slot: 5 });
+    expect(hasEffect(gw, 'LIFE_THREAD')).toBe(true);
+
+    const kinds = ['melee', 'ranged', 'magic'] as const;
+    const mults: Record<string, { withThread: number; without: number }> = {};
+    for (const kind of kinds) {
+      foe.health = 5000;
+      const withThread = dealDamage(
+        gw,
+        foe,
+        { kind, forceHit: true, source: kind === 'magic' ? 'FIRE' : undefined },
+        state
+      );
+      const saved = gw.effects.filter((e) => e.id === 'LIFE_THREAD');
+      gw.effects = gw.effects.filter((e) => e.id !== 'LIFE_THREAD');
+      foe.health = 5000;
+      const without = dealDamage(
+        gw,
+        foe,
+        { kind, forceHit: true, source: kind === 'magic' ? 'FIRE' : undefined },
+        state
+      );
+      gw.effects.push(...saved);
+      expect(withThread).toBeGreaterThan(without);
+      mults[kind] = { withThread, without };
+    }
+
+    writeFixture('ac7-katana-thread-legacy', {
+      stunChanceAtL4: 72,
+      stunnedLog: stunned.log,
+      notStunnedLog: notStunned.log,
+      lifeThreadMults: mults,
+    });
+  });
+
+  test('AC-8: казнь 19%/не 20%; FINALSTRIKE; DEATH-вард спасает от казни', () => {
     const mk = (opts: {
       matchId: string;
       health: number;
@@ -418,19 +608,101 @@ describe('CUT-2026-11-01c engine-proof', () => {
     expect(fs.health).toBe(1);
     expect(fs.finalStrikeAfter).toBe(0);
 
-    const dw = mk({ matchId: 'ac8-deathward', health: 80, deathWard: true, damage: 40 });
-    expect(dw.deathWardAfter).toBe(dw.deathWardBefore);
-    expect(dw.deathWardBefore).toBe(2);
+    const dwWeapon = mk({ matchId: 'ac8-deathward-weapon', health: 80, deathWard: true, damage: 40 });
+    expect(dwWeapon.deathWardAfter).toBe(dwWeapon.deathWardBefore);
+    expect(dwWeapon.deathWardBefore).toBe(2);
+
+    const dwExec = mk({ matchId: 'ac8-deathward-exec', health: 19, deathWard: true, damage: 1 });
+    expect(dwExec.alive).toBe(true);
+    expect(dwExec.health).toBeGreaterThan(0);
+    expect(dwExec.deathWardAfter).toBe(dwExec.deathWardBefore - 1);
+    expect(
+      dwExec.log.some((l) => l.includes('вард от смерти') || /вард.*Смерт/i.test(l))
+    ).toBe(true);
 
     writeFixture('ac8-devour-armor', {
       executeAt19: { alive: at19.alive, log: at19.log },
       noExecuteAt20: { alive: at20.alive, health: at20.health, log: at20.log },
       finalStrike: { alive: fs.alive, health: fs.health, wardAfter: fs.finalStrikeAfter, log: fs.log },
-      deathWard: {
-        before: dw.deathWardBefore,
-        after: dw.deathWardAfter,
-        log: dw.log,
+      deathWardWeaponPath: {
+        before: dwWeapon.deathWardBefore,
+        after: dwWeapon.deathWardAfter,
+        log: dwWeapon.log,
       },
+      deathWardSavesExecute: {
+        alive: dwExec.alive,
+        health: dwExec.health,
+        before: dwExec.deathWardBefore,
+        after: dwExec.deathWardAfter,
+        log: dwExec.log,
+      },
+    });
+  });
+
+  test('AC-8: Пожирание — Метка 20→эфф.5 vs ×1; DEATHWARD не тратится', () => {
+    const run = (marked: boolean) => {
+      const state = createBattleState({
+        matchId: marked ? 'ac8-devour-marked' : 'ac8-devour-plain',
+        hostPlayerId: 'h',
+        guestPlayerId: 'g',
+        picks: [
+          { id: 'p1', playerId: 'h', heroClassCode: 'Dracolich', row: 0, pickOrder: 1 },
+          { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+        ],
+        heroes: new Map([
+          ['Dracolich', hero('Dracolich', { damage: 40, accuracy: 100, luck: 0, initiative: 99 })],
+          ['B', hero('B', { health: 500, armor: 20, dodge: 0 })],
+        ]),
+      });
+      const foe = state.units.find((u) => u.id === 'e1')!;
+      foe.armor = 20;
+      foe.health = 400;
+      if (marked) {
+        grantEffect(foe, 'MARKED', 2);
+      }
+      setWard(foe, 'DEATH', 2);
+      const wardBefore = foe.resists.DEATH?.wardCharges ?? 0;
+      let n = 0;
+      const rnd = spyOn(Math, 'random').mockImplementation(() => {
+        n += 1;
+        if (n === 1) {
+          return rFor(1, 100, 50);
+        }
+        return rFor(0, 2, 0);
+      });
+      state.activeUnitId = 'p1';
+      state.turnPlayerId = 'h';
+      applyAction(state, {
+        playerId: 'h',
+        unitId: 'p1',
+        action: 'ability',
+        slot: 5,
+        targetId: 'e1',
+      });
+      rnd.mockRestore();
+      return {
+        dealt: 400 - foe.health,
+        wardAfter: foe.resists.DEATH?.wardCharges ?? 0,
+        wardBefore,
+        log: state.log,
+        marked,
+      };
+    };
+
+    const withMark = run(true);
+    const without = run(false);
+    expect(withMark.dealt).toBeGreaterThan(without.dealt);
+    expect(withMark.log.some((l) => l.includes('метка'))).toBe(true);
+    expect(withMark.wardAfter).toBe(withMark.wardBefore);
+    expect(without.wardAfter).toBe(without.wardBefore);
+    expect(withMark.dealt).toBe(40 - 5);
+    expect(without.dealt).toBe(40 - 20);
+
+    writeFixture('ac8-devour-armor-legacy', {
+      withMark,
+      without,
+      effectiveArmorMarked: 5,
+      armorPlain: 20,
     });
   });
 
@@ -600,10 +872,76 @@ describe('CUT-2026-11-01c engine-proof', () => {
     });
   });
 
-  test('AC-11: граница крита Азарта через applyAction (32% да, 33% нет)', () => {
-    const run = (hp: number) => {
+  test('AC-10: Хлыст — FIRE в логе; крик с power 31 на 2 цели — floor split', () => {
+    const whip = createBattleState({
+      matchId: 'ac10-whip-fire',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Incub', row: 0, pickOrder: 1 },
+        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+        { id: 'e2', playerId: 'g', heroClassCode: 'C', row: 0, pickOrder: 2 },
+      ],
+      heroes: new Map([
+        ['Incub', hero('Incub', { mana: 20, power: 30, accuracy: 100, luck: 0, initiative: 99 })],
+        ['B', hero('B', { health: 200 })],
+        ['C', hero('C', { health: 200 })],
+      ]),
+    });
+    whip.activeUnitId = 'p1';
+    whip.turnPlayerId = 'h';
+    applyAction(whip, {
+      playerId: 'h',
+      unitId: 'p1',
+      action: 'ability',
+      slot: 2,
+      targetId: 'e1',
+    });
+    expect(whip.log.some((l) => l.includes('⟦FIRE⟧') || /огн/i.test(l))).toBe(true);
+
+    const scream = createBattleState({
+      matchId: 'ac10-scream-floor',
+      hostPlayerId: 'h',
+      guestPlayerId: 'g',
+      picks: [
+        { id: 'p1', playerId: 'h', heroClassCode: 'Incub', row: 0, pickOrder: 1 },
+        { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
+        { id: 'e2', playerId: 'g', heroClassCode: 'C', row: 0, pickOrder: 2 },
+      ],
+      heroes: new Map([
+        ['Incub', hero('Incub', { mana: 20, power: 31, accuracy: 100, luck: 0, initiative: 99 })],
+        ['B', hero('B', { health: 200, morale: 0 })],
+        ['C', hero('C', { health: 200, morale: 0 })],
+      ]),
+    });
+    const incub = scream.units.find((u) => u.id === 'p1')!;
+    const e1 = scream.units.find((u) => u.id === 'e1')!;
+    const e2 = scream.units.find((u) => u.id === 'e2')!;
+    e1.morale = 0;
+    e2.morale = 0;
+    const hp1 = e1.health;
+    const hp2 = e2.health;
+    const rnd = spyOn(Math, 'random').mockReturnValue(0);
+    applyAbility(scream, incub, { slot: 1, targetId: 'e1' });
+    rnd.mockRestore();
+    const d1 = hp1 - e1.health;
+    const d2 = hp2 - e2.health;
+    expect(d1).toBe(15);
+    expect(d2).toBe(15);
+    expect(scream.log.some((l) => l.includes('(15)⟦MIND⟧'))).toBe(true);
+
+    writeFixture('ac10-fire-floor-legacy', {
+      whipLog: whip.log,
+      screamDamage: [d1, d2],
+      shareFloor: 15,
+      power: 31,
+    });
+  });
+
+  test('AC-11: граница крита Азарта — детерминированный бросок (результат удара)', () => {
+    const run = (hp: number, critRoll: number) => {
       const state = createBattleState({
-        matchId: `ac11-azart-${hp}`,
+        matchId: `ac11-azart-${hp}-${critRoll}`,
         hostPlayerId: 'h',
         guestPlayerId: 'g',
         picks: [
@@ -611,15 +949,34 @@ describe('CUT-2026-11-01c engine-proof', () => {
           { id: 'e1', playerId: 'g', heroClassCode: 'B', row: 0, pickOrder: 1 },
         ],
         heroes: new Map([
-          ['Inquisitor', hero('Inquisitor', { luck: 0, accuracy: 100, initiative: 99 })],
-          ['B', hero('B', { health: 100, armor: 0 })],
+          [
+            'Inquisitor',
+            hero('Inquisitor', { luck: 0, accuracy: 100, damage: 40, initiative: 99 }),
+          ],
+          ['B', hero('B', { health: 100, armor: 0, dodge: 0 })],
         ]),
       });
       const inq = state.units.find((u) => u.id === 'p1')!;
       const foe = state.units.find((u) => u.id === 'e1')!;
       inq.lvl = 5;
+      inq.critBank = 0;
       foe.maxHp = 100;
       foe.health = hp;
+      foe.resists = {};
+      let n = 0;
+      const finishing = hp < 33;
+      const rnd = spyOn(Math, 'random').mockImplementation(() => {
+        n += 1;
+        // 1: evade randInt(1,100)
+        if (n === 1) {
+          return rFor(1, 100, 50);
+        }
+        // 2: при азарте — бросок крита; иначе сразу кость урона
+        if (finishing && n === 2) {
+          return rFor(1, 100, critRoll);
+        }
+        return rFor(0, 2, 0);
+      });
       state.activeUnitId = 'p1';
       state.turnPlayerId = 'h';
       applyAction(state, {
@@ -629,16 +986,27 @@ describe('CUT-2026-11-01c engine-proof', () => {
         slot: 1,
         targetId: 'e1',
       });
-      return state;
+      rnd.mockRestore();
+      const result = lastDealDamageResult();
+      return { state, result, dealt: result.damage, crit: result.crit };
     };
-    const low = run(32);
-    const high = run(33);
-    expect(low.log.some((l) => l.includes('азарт добивания (+19 пп крита'))).toBe(true);
-    expect(high.log.some((l) => l.includes('азарт добивания'))).toBe(false);
+
+    // L5: +19 пп → порог 19; roll 19 крит, 20 нет.
+    const critOk = run(32, 19);
+    const critFail = run(32, 20);
+    expect(critOk.crit).toBe(true);
+    expect(critFail.crit).toBe(false);
+    expect(critOk.dealt).toBeGreaterThan(critFail.dealt);
+
+    // Тот же бросок 19 при 33% — прежний порог (luck 0) → без крита.
+    const at33 = run(33, 19);
+    expect(at33.crit).toBe(false);
+    expect(at33.dealt).toBe(critFail.dealt);
 
     writeFixture('ac11-azart-boundary', {
-      at32: low.log,
-      at33: high.log,
+      at32critRoll19: { crit: critOk.crit, damage: critOk.dealt },
+      at32critRoll20: { crit: critFail.crit, damage: critFail.dealt },
+      at33critRoll19: { crit: at33.crit, damage: at33.dealt },
     });
   });
 

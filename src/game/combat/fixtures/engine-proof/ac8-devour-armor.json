@@ -38,7 +38,7 @@
       "—— ХОД: B ——"
     ]
   },
-  "deathWard": {
+  "deathWardWeaponPath": {
     "before": 2,
     "after": 2,
     "log": [
@@ -46,6 +46,21 @@
       "—— ХОД: Dracolich ——",
       "ПОЖИРАНИЕ ГАДА",
       "Dracolich пожирает B (40)⟦WEAPON⟧.",
+      "—— ХОД: B ——"
+    ]
+  },
+  "deathWardSavesExecute": {
+    "alive": true,
+    "health": 18,
+    "before": 2,
+    "after": 1,
+    "log": [
+      "Бой начался.",
+      "—— ХОД: Dracolich ——",
+      "ПОЖИРАНИЕ ГАДА — ЦЕЛЬ НИЖЕ 20 % ОЗ — СОЖРЁТ",
+      "Dracolich пожирает B (1)⟦WEAPON⟧.",
+      "B: вард «Смерть» поглощает удар.",
+      "Dracolich пытается сожрать B, но вард от смерти спасает.",
       "—— ХОД: B ——"
     ]
   }
