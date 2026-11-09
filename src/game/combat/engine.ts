@@ -26,7 +26,7 @@ import {
   runPreChoice,
 } from './abilities';
 import { maybeKillHorse } from './abilities/knight';
-import { moveToOtherRow } from './abilities/targets';
+import { CONCEALED_TARGET_MESSAGE, isConcealedFrom, moveToOtherRow, omitConcealed } from './abilities/targets';
 import { basicAttackKind } from './attack-style';
 import {
   dealDamage,
@@ -41,6 +41,7 @@ import {
   grantEffect,
   hasEffect,
   healUnit,
+  revealAfterAction,
   tickEffectsOnTurnEnd,
   tickEffectsOnTurnStart,
 } from './effects';
@@ -220,6 +221,7 @@ function buildTeamUnits(
         column,
         maxHp,
         health: maxHp,
+        initialMaxHp: maxHp,
         damage: hero.damage,
         armor: hero.armor,
         initiative: hero.initiative,
@@ -683,6 +685,10 @@ export function applyAction(
     if (isPilotClass(actor.heroClassCode)) {
       return { ok: false, message: 'Используйте слоты способностей' };
     }
+    const hiddenSkill = rejectConcealedAction(state, actor, [input.targetId]);
+    if (hiddenSkill) {
+      return { ok: false, message: hiddenSkill };
+    }
     return applySkillAction(state, actor, input.targetId);
   }
 
@@ -722,6 +728,10 @@ export function applyAction(
     return settleAbility(state, actor, outcome);
   }
 
+  const hiddenAttack = rejectConcealedAction(state, actor, [input.targetId]);
+  if (hiddenAttack) {
+    return { ok: false, message: hiddenAttack };
+  }
   const targets = attackTargets(state, actor, basicAttackKind(actor.heroClassCode));
   if (targets.length === 0) {
     return { ok: false, message: 'Нет доступных целей для атаки' };
@@ -734,8 +744,26 @@ export function applyAction(
 
   state.log.push('АТАКА');
   resolveAttackWithClassMods(state, actor, target);
+  revealAfterAction(state, actor);
   finishUnitTurn(state, actor);
   return { ok: true };
+}
+
+function rejectConcealedAction(
+  state: BattleState,
+  actor: BattleUnit,
+  ids: readonly (string | undefined)[],
+): string | null {
+  for (const id of ids) {
+    if (!id) {
+      continue;
+    }
+    const unit = state.units.find((item) => item.id === id && item.alive);
+    if (unit && isConcealedFrom(actor, unit)) {
+      return CONCEALED_TARGET_MESSAGE;
+    }
+  }
+  return null;
 }
 
 function settleAbility(
@@ -764,9 +792,11 @@ function settleAbility(
     );
   }
   if (outcome.keepTurn) {
+    revealAfterAction(state, actor);
     resolveOutcome(state);
     return { ok: true };
   }
+  revealAfterAction(state, actor);
   finishUnitTurn(state, actor);
   return { ok: true };
 }
@@ -785,9 +815,11 @@ function settleItem(
   markDeadIfNeeded(state, actor);
   if (result.keepTurn) {
     state.pendingPrompt = null;
+    revealAfterAction(state, actor);
     resolveOutcome(state);
     return { ok: true };
   }
+  revealAfterAction(state, actor);
   finishUnitTurn(state, actor);
   return { ok: true };
 }
@@ -807,12 +839,16 @@ function applySkillAction(
     const base = Math.max(1, Math.round(actor.maxHp * skill.healFraction));
     const healed = healUnit(actor, base);
     state.log.push(`${actor.displayName}: ${skill.label} (+${healed} ОЗ).`);
+    revealAfterAction(state, actor);
     finishUnitTurn(state, actor);
     return { ok: true };
   }
 
   if (skill.kind === 'cleave') {
-    const enemies = state.units.filter((unit) => unit.alive && unit.team !== actor.team);
+    const enemies = omitConcealed(
+      actor,
+      state.units.filter((unit) => unit.alive && unit.team !== actor.team),
+    );
     if (enemies.length === 0) {
       return { ok: false, message: 'Нет целей' };
     }
@@ -835,6 +871,7 @@ function applySkillAction(
       }
       markDeadIfNeeded(state, enemy);
     }
+    revealAfterAction(state, actor);
     finishUnitTurn(state, actor);
     return { ok: true };
   }
@@ -855,6 +892,7 @@ function applySkillAction(
     const base = Math.max(1, Math.round(target.maxHp * skill.healFraction));
     const healed = healUnit(target, base);
     state.log.push(`${actor.displayName}: ${skill.label} → ${target.displayName} (+${healed} ОЗ).`);
+    revealAfterAction(state, actor);
     finishUnitTurn(state, actor);
     return { ok: true };
   }
@@ -877,6 +915,7 @@ function applySkillAction(
     );
   }
   markDeadIfNeeded(state, target);
+  revealAfterAction(state, actor);
   finishUnitTurn(state, actor);
   return { ok: true };
 }
@@ -930,7 +969,7 @@ function resolveAttackWithClassMods(
 
   if (mods.splashChance > 0 && Math.random() < mods.splashChance) {
     const behind = neighbourBehind(state, target);
-    if (behind) {
+    if (behind && !isConcealedFrom(actor, behind)) {
       const splash = dealDamage(
         actor,
         behind,
@@ -951,9 +990,12 @@ function resolveAttackWithClassMods(
   }
 
   if (mods.cleaveFront) {
-    const extras = state.units.filter(
-      (unit) =>
-        unit.alive && unit.team !== actor.team && unit.row === ROW_FRONT && unit.id !== target.id
+    const extras = omitConcealed(
+      actor,
+      state.units.filter(
+        (unit) =>
+          unit.alive && unit.team !== actor.team && unit.row === ROW_FRONT && unit.id !== target.id,
+      ),
     );
     for (const enemy of extras) {
       const cleave = dealDamage(
@@ -1196,7 +1238,13 @@ export function toBattleSummary(state: BattleState) {
           unitId: state.pendingPrompt.unitId,
           kind: state.pendingPrompt.kind,
           slot: state.pendingPrompt.slot ?? null,
-          options: state.pendingPrompt.options,
+          options: state.pendingPrompt.options.filter((option) => {
+            const unit = state.units.find((item) => item.id === option.id && item.alive);
+            if (!unit || !active) {
+              return true;
+            }
+            return !isConcealedFrom(active, unit);
+          }),
           source: state.pendingPrompt.source ?? 'ability',
           itemCode: state.pendingPrompt.itemCode ?? null,
         }

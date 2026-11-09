@@ -240,11 +240,13 @@ describe('fair phase (T12)', () => {
       picks: [
         { id: 'h1', playerId: 'h', heroClassCode: 'Knight', row: 0, pickOrder: 1 },
         { id: 'h2', playerId: 'h', heroClassCode: 'Abbess', row: 0, pickOrder: 2 },
+        { id: 'h3', playerId: 'h', heroClassCode: 'Titan', row: 1, pickOrder: 3 },
         { id: 'g1', playerId: 'g', heroClassCode: 'Assassin', row: 0, pickOrder: 1 },
       ],
       heroes: new Map([
         ['Knight', hero('Knight', { initiative: 50 })],
-        ['Abbess', hero('Abbess', { initiative: 5 })],
+        ['Abbess', hero('Abbess', { initiative: 40 })],
+        ['Titan', hero('Titan', { initiative: 5 })],
         ['Assassin', hero('Assassin')],
       ]),
       rules: {
@@ -259,10 +261,10 @@ describe('fair phase (T12)', () => {
         goldBonus: 1,
       },
     });
-    const abbess = state.units.find((u) => u.heroClassCode === 'Abbess')!;
-    expect(abbess.merchant).toBe(0.2);
+    const titan = state.units.find((u) => u.heroClassCode === 'Titan')!;
+    expect(titan.merchant).toBe(0.2); // CUT-2026-11-09 AC-6
     const trader = selectTrader(state, 0)!;
-    expect(trader.heroClassCode).toBe('Abbess');
+    expect(trader.heroClassCode).toBe('Titan'); // CUT-2026-11-09 AC-6
   });
 
   test('оба стопа → Ярмарка завершена', () => {

@@ -131,12 +131,12 @@ export const oracleAbilities: AbilityHandler = {
       }
       // Нечётный уровень — электрическое оружие; чётный — вампиризм.
       if (actor.lvl % 2 === 1) {
-        grantEffect(target, 'AIRWEAPON', 2, 0);
+        grantEffect(target, 'AIRWEAPON', 2, 0, { casterLvl: actor.lvl });
         state.log.push(
           `${actor.displayName}: знамение зачаровывает оружие ${target.displayName} электричеством.`
         );
       } else {
-        const vampPower = 0.2 + actor.lvl * 0.02;
+        const vampPower = Math.min(0.75, 0.3 + actor.lvl * 0.03);
         grantEffect(target, 'VAMPWEAPON', 2, vampPower);
         state.log.push(
           `${actor.displayName}: знамение даёт ${target.displayName} вампирическое оружие (${Math.round(vampPower * 100)}%).`

@@ -1,5 +1,5 @@
 import { markDeadIfNeeded, randInt, rollChance } from '../../combat/damage';
-import { clearDebuffs, grantEffect, healUnit } from '../../combat/effects';
+import { clearDebuffs, grantEffect, hasEffect, healUnit } from '../../combat/effects';
 import { chancePercent } from '../../combat/morale';
 import { changeResist } from '../../combat/resists';
 import { done, invokerLvl, log, tryItemSummon, unitsOnRow } from './helpers';
@@ -18,6 +18,9 @@ function musketEvade(ctx: ItemUsageContext): boolean {
 const HANDLERS: Record<number, (ctx: ItemUsageContext) => ItemUsageOutcome> = {
   322: (ctx) => {
     for (const enemy of unitsOnRow(ctx, ctx.target)) {
+      if (hasEffect(enemy, 'INVISIBLE')) {
+        continue;
+      }
       enemy.health -= randInt(40, 60);
       markDeadIfNeeded(ctx.state, enemy);
     }

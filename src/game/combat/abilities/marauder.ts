@@ -338,7 +338,7 @@ function applyWerewolf(
 
   if (input.slot === 3) {
     const parent = actor.transformParentCode ?? 'Marauder';
-    if (!applyCatalogStats(state, actor, parent)) {
+    if (!applyCatalogStats(state, actor, parent, { resistMode: 'restore' })) {
       return { status: 'reject', message: 'Не удалось вернуть форму' };
     }
     actor.transformParentCode = null;
@@ -354,10 +354,10 @@ function applyWerewolf(
     if (!target) {
       return { status: 'reject', message: 'Цель не найдена' };
     }
-    // CUT AC-12: урон/тик = 10+L (в power), длительность 2+L//8; броня −(2+L//5) за тик в effects.
+    // Урон/тик = 10+L (в power). Броня −(3+⌊L/5⌋) берёт L из casterLvl.
     const power = 10 + actor.lvl;
     for (const enemy of enemiesInColumn(state, actor, target)) {
-      grantEffect(enemy, 'GALL', 2 + Math.floor(actor.lvl / 8), power);
+      grantEffect(enemy, 'GALL', 2 + Math.floor(actor.lvl / 8), power, { casterLvl: actor.lvl });
     }
     state.log.push(`${actor.displayName} обливает колонну желчью.`);
     return { status: 'done' };

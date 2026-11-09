@@ -1,7 +1,8 @@
 import { randInt } from '../combat/damage';
 import type { BattleState, BattleUnit, FairState } from '../combat/types';
-import { getItem } from '../items/catalog';
-import { addItem, randomItemCodes, removeItem, teamInventory } from '../items/inventory';
+import { getItem, ITEM_CATALOG } from '../items/catalog';
+import { addItem, removeItem, teamInventory } from '../items/inventory';
+import { PERK_BY_ID } from '../perks/catalog';
 import { economyOn } from './on';
 import { addTeamGold, spendTeamGold, teamGold } from './wallet';
 
@@ -15,6 +16,63 @@ export function buyPrice(cost: number, merchant: number): number {
 /** Цена продажи: round(cost × min(0,8; 0,6 + merchant × 0,5)). */
 export function sellPrice(cost: number, merchant: number): number {
   return Math.round(cost * Math.min(0.8, 0.6 + merchant * 0.5));
+}
+
+function livingHeroItemCategories(state: BattleState): number[] {
+  const categories = new Set<number>();
+  for (const unit of state.units) {
+    if (!unit.alive || unit.isSummon) {
+      continue;
+    }
+    for (const perkId of unit.perks ?? []) {
+      const perk = PERK_BY_ID.get(perkId);
+      if (perk?.kind === 'item' && typeof perk.category === 'number') {
+        categories.add(perk.category);
+      }
+    }
+  }
+  return [...categories];
+}
+
+/** Категории в случайном порядке, по кругу по 1, не больше ⌈shopSize/k⌉ из одной, без повторов. */
+function buildFairShop(state: BattleState, shopSize: number): number[] {
+  const categories = livingHeroItemCategories(state);
+  if (categories.length === 0 || shopSize <= 0) {
+    state.log.push('Витрина пуста: у живых героев нет навыков на предметы.');
+    return [];
+  }
+  const order = [...categories];
+  for (let index = order.length - 1; index > 0; index -= 1) {
+    const swap = randInt(0, index);
+    const current = order[index]!;
+    order[index] = order[swap]!;
+    order[swap] = current;
+  }
+  const cap = Math.ceil(shopSize / order.length);
+  const counts = new Map<number, number>();
+  const picked = new Set<number>();
+  const result: number[] = [];
+  let progressed = true;
+  while (result.length < shopSize && progressed) {
+    progressed = false;
+    for (const category of order) {
+      if (result.length >= shopSize || (counts.get(category) ?? 0) >= cap) {
+        continue;
+      }
+      const pool = ITEM_CATALOG.filter(
+        (item) => item.category === category && !item.sellOnly && !picked.has(item.code),
+      );
+      if (pool.length === 0) {
+        continue;
+      }
+      const item = pool[randInt(0, pool.length - 1)]!;
+      picked.add(item.code);
+      counts.set(category, (counts.get(category) ?? 0) + 1);
+      result.push(item.code);
+      progressed = true;
+    }
+  }
+  return result;
 }
 
 function fairFrequencyOf(state: BattleState): number {
@@ -144,9 +202,10 @@ export function beginFairPhase(state: BattleState): boolean {
     turnTeam = 1;
   }
 
+  const shop = buildFairShop(state, shopSizeOf(state));
   const fair: FairState = {
     index,
-    shop: randomItemCodes(shopSizeOf(state)),
+    shop,
     turnTeam,
     stopped: [false, false],
     traderIds: [trader0.id, trader1.id],

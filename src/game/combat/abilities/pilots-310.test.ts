@@ -91,7 +91,7 @@ describe('phase 3.10 pilots', () => {
     expect(odd.effects.some((effect) => effect.id === 'AIRWEAPON')).toBe(true);
     const even = mk(4);
     const vamp = even.effects.find((effect) => effect.id === 'VAMPWEAPON');
-    expect(vamp?.power).toBeCloseTo(0.2 + 4 * 0.02);
+    expect(vamp?.power).toBeCloseTo(Math.min(0.75, 0.3 + 4 * 0.03)); // CUT-2026-11-09 AC-13
   });
 
   test('Demiurge preChoice grants AIRSHIELD +33 ARROWS, not GUARDED', () => {

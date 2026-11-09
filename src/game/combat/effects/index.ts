@@ -1,4 +1,3 @@
-import { economyOn } from '../../economy/on';
 import { DAMAGE_SOURCE_LABELS, type DamageSource, formatLogDamage } from '../damageSources';
 import { effectLogLabel } from '../effect-labels';
 import {
@@ -7,7 +6,7 @@ import {
   consumeSrcFactor,
   mindResistFactor,
 } from '../resists';
-import { applyCatalogStats, transformClassOnly } from '../transform';
+import { applyCatalogStats, popResistSnapshot, transformClassOnly } from '../transform';
 import type { BattleEffect, BattleState, BattleUnit, EffectId } from '../types';
 import { currentEffectState } from './context';
 
@@ -55,10 +54,37 @@ function dotTickAmount(unit: BattleUnit, effect: BattleEffect): number {
   }
 }
 
-/** Снятие брони за тик Желчи: power = 10+L → −(2 + L//5), не ниже 0. */
+/**
+ * Снятие брони за тик Желчи: −(3 + ⌊L/5⌋), не ниже 0.
+ * L кастера лежит в casterLvl. Старые снимки: power = 10+L.
+ */
 function gallArmorStrip(effect: BattleEffect): number {
-  const lvl = Math.max(0, Math.round(effect.power) - 10);
-  return Math.max(0, 2 + Math.floor(lvl / 5));
+  const lvl =
+    typeof effect.casterLvl === 'number'
+      ? effect.casterLvl
+      : Math.max(0, Math.round(effect.power) - 10);
+  return Math.max(0, 3 + Math.floor(lvl / 5));
+}
+
+/**
+ * Сдвигает стат и запоминает фактическую дельту (после пола).
+ * floor не задан — сдвиг без ограничения.
+ */
+function applyStatShift(
+  effect: BattleEffect,
+  current: number,
+  delta: number,
+  floor?: number,
+): number {
+  const next = floor === undefined ? current + delta : Math.max(floor, current + delta);
+  effect.applied = next - current;
+  return next;
+}
+
+/** Возвращает стат ровно на сохранённую дельту. */
+function undoStatShift(effect: BattleEffect, current: number, fallbackApplied: number): number {
+  const applied = typeof effect.applied === 'number' ? effect.applied : fallbackApplied;
+  return current - applied;
 }
 
 /**
@@ -189,7 +215,51 @@ export function healUnit(unit: BattleUnit, amount: number): number {
   }
   const before = unit.health;
   unit.health = Math.min(unit.maxHp, unit.health + healed);
-  return unit.health - before;
+  const gained = unit.health - before;
+  copyLoveHeal(unit, gained);
+  return gained;
+}
+
+let loveCopying = false;
+
+/** Оковы любви: фактический прирост ОЗ копируется партнёру один раз. */
+function copyLoveHeal(unit: BattleUnit, gained: number): void {
+  if (loveCopying || gained <= 0) {
+    return;
+  }
+  const link = unit.effects.find((effect) => effect.id === 'LOVE_SHACKLES');
+  if (!link?.linkId) {
+    return;
+  }
+  const state = currentEffectState();
+  if (!state) {
+    return;
+  }
+  const other = state.units.find((item) => item.id === link.linkId && item.alive);
+  const back = other?.effects.find(
+    (effect) => effect.id === 'LOVE_SHACKLES' && effect.linkId === unit.id,
+  );
+  if (!other || !back) {
+    return;
+  }
+  loveCopying = true;
+  const before = other.health;
+  other.health = Math.min(other.maxHp, other.health + gained);
+  const copied = other.health - before;
+  loveCopying = false;
+  if (copied > 0) {
+    state.log.push(`${other.displayName} делит лечение: +${copied} ОЗ.`);
+  }
+}
+
+/** Смерть любого конца рвёт Оковы любви. */
+export function breakLoveLinks(state: BattleState, unit: BattleUnit): void {
+  for (const other of [...state.units]) {
+    const link = other.effects.find((effect) => effect.id === 'LOVE_SHACKLES');
+    if (link && (other.id === unit.id || link.linkId === unit.id)) {
+      delEffect(other, 'LOVE_SHACKLES', state);
+    }
+  }
 }
 
 /**
@@ -219,9 +289,31 @@ export function trySpendMana(unit: BattleUnit, cost: number): string | null {
     return `Нужно ${cost} МР`;
   }
   unit.mana -= cost;
-  if (hasEffect(unit, 'MAGIC_SHACKLES') && cost > 0) {
-    const burn = Math.max(1, Math.round(cost * (10 + Math.floor(unit.lvl / 4))));
-    unit.health -= burn;
+  const shackles = unit.effects.find((effect) => effect.id === 'MAGIC_SHACKLES');
+  if (shackles && cost > 0) {
+    const casterLvl = shackles.casterLvl ?? 1;
+    const raw = shacklesBurnAmount(cost, casterLvl);
+    const state = currentEffectState();
+    let burn = raw;
+    if (state) {
+      const resist = applyResistMultiplier(unit, 'DEFAULT');
+      if (resist.blocked) {
+        burn = 0;
+        if (resist.blockReason) {
+          state.log.push(resist.blockReason);
+        }
+      } else {
+        burn = Math.max(0, Math.round(raw * resist.multiplier));
+      }
+      if (burn > 0) {
+        state.log.push(
+          `${unit.displayName} получает ${formatLogDamage(burn, 'DEFAULT')} от волшебных оков.`,
+        );
+      }
+    }
+    if (burn > 0) {
+      unit.health -= burn;
+    }
   }
   return null;
 }
@@ -230,7 +322,7 @@ export function trySpendMana(unit: BattleUnit, cost: number): string | null {
  * Урон от MAGIC_SHACKLES за последнюю трату `cost` МР (для лога).
  */
 export function shacklesBurnAmount(cost: number, lvl = 1): number {
-  return Math.max(1, Math.round(cost * (10 + Math.floor(lvl / 4))));
+  return Math.max(0, cost * (5 + Math.floor(lvl / 4)));
 }
 
 /**
@@ -281,13 +373,8 @@ export function tryStun(state: BattleState, target: BattleUnit, rounds: number):
     );
     return false;
   }
-  // Значение резиста STUN (перк SIGMALIKE, предметы) — только при включённой экономике.
-  if (
-    economyOn(state) &&
-    stunResist &&
-    stunResist.value > 0 &&
-    randInt(1, 100) <= stunResist.value
-  ) {
+  // CUT-2026-11-09 AC-7: процент STUN работает и без ярмарки.
+  if (stunResist && stunResist.value > 0 && randInt(1, 100) <= stunResist.value) {
     state.log.push(`${target.displayName} сопротивляется оглушению.`);
     return false;
   }
@@ -459,11 +546,11 @@ export function tickEffectsOnTurnEnd(unit: BattleUnit, state?: BattleState): str
 export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
   switch (effect.id) {
     case 'STRENGTH':
-      unit.damage += Math.round(effect.power);
+      unit.damage = applyStatShift(effect, unit.damage, Math.round(effect.power));
       break;
     case 'HAPPY':
       // В боте attrs=['morale'], не luck.
-      unit.morale += Math.round(effect.power);
+      unit.morale = applyStatShift(effect, unit.morale, Math.round(effect.power));
       break;
     case 'ABSOLUTEPOWER': {
       // Доля (0,1] → round(power * frac); иначе абсолютный бонус.
@@ -471,12 +558,12 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
         effect.power > 0 && effect.power <= 1
           ? Math.max(1, Math.round(unit.power * effect.power))
           : Math.round(effect.power);
-      unit.power += bonus;
+      unit.power = applyStatShift(effect, unit.power, bonus);
       effect.power = bonus;
       break;
     }
     case 'FATMAN':
-      unit.dodge = Math.max(0, unit.dodge - Math.round(effect.power));
+      unit.dodge = applyStatShift(effect, unit.dodge, -Math.round(effect.power), 0);
       break;
     case 'GUARDED':
       // TempLabels: только метка (блок выбора цели), без брони.
@@ -491,25 +578,30 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
       // VOT: мораль тикает в tickEffectsOnTurnStart, не на apply.
       break;
     case 'HASTE':
-      unit.initiative += Math.round(effect.power || 20);
+      unit.initiative = applyStatShift(effect, unit.initiative, Math.round(effect.power || 20));
       break;
     case 'CHAMELEON':
-      unit.dodge += Math.round(effect.power || 20);
+      unit.dodge = applyStatShift(effect, unit.dodge, Math.round(effect.power || 20));
       break;
     case 'PETRIFIED':
-      unit.armor += Math.round(effect.power || 15);
+      unit.armor = applyStatShift(effect, unit.armor, Math.round(effect.power || 15));
       break;
     case 'SLOW':
-      unit.initiative = Math.max(1, unit.initiative - Math.round(effect.power || 15));
+      unit.initiative = applyStatShift(
+        effect,
+        unit.initiative,
+        -Math.round(effect.power || 15),
+        1,
+      );
       break;
     case 'STONEFLESH':
-      unit.armor += Math.max(1, Math.round(effect.power || 20));
+      unit.armor = applyStatShift(effect, unit.armor, Math.max(1, Math.round(effect.power || 20)));
       break;
     case 'DEATHSENTENCE':
-      unit.armor = Math.max(0, unit.armor - Math.round(effect.power || 5));
+      unit.armor = applyStatShift(effect, unit.armor, -Math.round(effect.power || 5), 0);
       break;
     case 'INTERFERENCE':
-      unit.power = Math.max(0, unit.power - Math.round(effect.power || 5));
+      unit.power = applyStatShift(effect, unit.power, -Math.round(effect.power || 5), 0);
       break;
     case 'IMPISH':
       // Класс/имя и броня выставляет способность ведьмы; здесь только якорь эффекта.
@@ -521,28 +613,29 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
       }
       break;
     case 'LUCKY':
-      unit.luck += Math.round(effect.power || 20);
+      unit.luck = applyStatShift(effect, unit.luck, Math.round(effect.power || 20));
       break;
     case 'FOCUSED':
-      unit.accuracy += Math.round(effect.power || 15);
+      unit.accuracy = applyStatShift(effect, unit.accuracy, Math.round(effect.power || 15));
       break;
     case 'DRUNK':
-      unit.accuracy -= Math.round(effect.power);
+      unit.accuracy = applyStatShift(effect, unit.accuracy, -Math.round(effect.power));
       break;
     case 'INVISIBLE':
-      unit.dodge += Math.round(effect.power || 25);
+      // CUT-2026-11-09 AC-1: уклонение не растёт. applied=0 — снятие не трогает чужой бонус.
+      effect.applied = 0;
       break;
     case 'WEAKNESS':
-      unit.damage = Math.max(1, unit.damage - Math.round(effect.power || 5));
+      unit.damage = applyStatShift(effect, unit.damage, -Math.round(effect.power || 5), 0);
       break;
     case 'UNLUCKY':
-      unit.luck = Math.max(0, unit.luck - Math.round(effect.power || 20));
+      unit.luck = applyStatShift(effect, unit.luck, -Math.round(effect.power || 20), 0);
       break;
     case 'GALL':
       // CUT AC-12: броня снимается только на тиках DoT, навсегда (без отката).
       break;
     case 'ROW_FORTIFY':
-      unit.armor += Math.max(1, Math.round(effect.power || 1));
+      unit.armor = applyStatShift(effect, unit.armor, Math.max(1, Math.round(effect.power || 1)));
       break;
     case 'ASHILLNESS': {
       // power — доля (VK [0.25, 0.25]); снижаем мощь и инициативу один раз.
@@ -557,10 +650,10 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
       // Вся броня уходит в атаку; снятое значение запоминаем для точного отката.
       effect.extra = unit.armor;
       unit.armor = 0;
-      unit.damage += Math.round(effect.power);
+      unit.damage = applyStatShift(effect, unit.damage, Math.round(effect.power));
       break;
     case 'IMAGINARY_HEALTH':
-      unit.health += Math.round(effect.power);
+      unit.health = applyStatShift(effect, unit.health, Math.round(effect.power));
       break;
     case 'DEATHWARD':
       changeResist(unit, 'FINALSTRIKE', Math.round(effect.power || 100));
@@ -589,16 +682,16 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
 function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleState): void {
   switch (effect.id) {
     case 'STRENGTH':
-      unit.damage = Math.max(0, unit.damage - Math.round(effect.power));
+      unit.damage = undoStatShift(effect, unit.damage, Math.round(effect.power));
       break;
     case 'HAPPY':
-      unit.morale -= Math.round(effect.power);
+      unit.morale = undoStatShift(effect, unit.morale, Math.round(effect.power));
       break;
     case 'ABSOLUTEPOWER':
-      unit.power = Math.max(0, unit.power - Math.round(effect.power));
+      unit.power = undoStatShift(effect, unit.power, Math.round(effect.power));
       break;
     case 'FATMAN':
-      unit.dodge += Math.round(effect.power);
+      unit.dodge = undoStatShift(effect, unit.dodge, -Math.round(effect.power));
       break;
     case 'GUARDED':
       break;
@@ -608,25 +701,25 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
     case 'FEAR':
       break;
     case 'HASTE':
-      unit.initiative = Math.max(1, unit.initiative - Math.round(effect.power || 20));
+      unit.initiative = undoStatShift(effect, unit.initiative, Math.round(effect.power || 20));
       break;
     case 'CHAMELEON':
-      unit.dodge = Math.max(0, unit.dodge - Math.round(effect.power || 20));
+      unit.dodge = undoStatShift(effect, unit.dodge, Math.round(effect.power || 20));
       break;
     case 'PETRIFIED':
-      unit.armor = Math.max(0, unit.armor - Math.round(effect.power || 15));
+      unit.armor = undoStatShift(effect, unit.armor, Math.round(effect.power || 15));
       break;
     case 'SLOW':
-      unit.initiative += Math.round(effect.power || 15);
+      unit.initiative = undoStatShift(effect, unit.initiative, -Math.round(effect.power || 15));
       break;
     case 'STONEFLESH':
-      unit.armor = Math.max(0, unit.armor - Math.max(1, Math.round(effect.power || 20)));
+      unit.armor = undoStatShift(effect, unit.armor, Math.max(1, Math.round(effect.power || 20)));
       break;
     case 'DEATHSENTENCE':
-      unit.armor += Math.round(effect.power || 5);
+      unit.armor = undoStatShift(effect, unit.armor, -Math.round(effect.power || 5));
       break;
     case 'INTERFERENCE':
-      unit.power += Math.round(effect.power || 5);
+      unit.power = undoStatShift(effect, unit.power, -Math.round(effect.power || 5));
       break;
     case 'IMPISH': {
       if (unit.polymorphSavedArmor >= 0) {
@@ -643,6 +736,10 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
       }
       if (parent && state && unit.heroClassCode === 'Imp') {
         transformClassOnly(state, unit, parent);
+        const snap = popResistSnapshot(unit);
+        if (snap) {
+          unit.resists = snap;
+        }
       }
       break;
     }
@@ -657,27 +754,31 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
       const parent = unit.transformParentCode;
       unit.transformParentCode = null;
       if (parent && state) {
-        applyCatalogStats(state, unit, parent);
+        applyCatalogStats(state, unit, parent, { resistMode: 'restore' });
       }
       break;
     }
     case 'LUCKY':
-      unit.luck = Math.max(0, unit.luck - Math.round(effect.power || 20));
+      unit.luck = undoStatShift(effect, unit.luck, Math.round(effect.power || 20));
       break;
     case 'FOCUSED':
-      unit.accuracy = Math.max(0, unit.accuracy - Math.round(effect.power || 15));
+      unit.accuracy = undoStatShift(effect, unit.accuracy, Math.round(effect.power || 15));
       break;
     case 'DRUNK':
-      unit.accuracy += Math.round(effect.power);
+      unit.accuracy = undoStatShift(effect, unit.accuracy, -Math.round(effect.power));
       break;
     case 'INVISIBLE':
-      unit.dodge = Math.max(0, unit.dodge - Math.round(effect.power || 25));
+      if (typeof effect.applied === 'number') {
+        unit.dodge -= effect.applied;
+      } else {
+        unit.dodge = Math.max(0, unit.dodge - Math.round(effect.power || 25));
+      }
       break;
     case 'WEAKNESS':
-      unit.damage += Math.round(effect.power || 5);
+      unit.damage = undoStatShift(effect, unit.damage, -Math.round(effect.power || 5));
       break;
     case 'UNLUCKY':
-      unit.luck += Math.round(effect.power || 20);
+      unit.luck = undoStatShift(effect, unit.luck, -Math.round(effect.power || 20));
       break;
     case 'GALL':
       // CUT AC-12: снятая броня не возвращается.
@@ -702,18 +803,21 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
       break;
     }
     case 'ROW_FORTIFY':
-      unit.armor = Math.max(0, unit.armor - Math.max(1, Math.round(effect.power || 1)));
+      unit.armor = undoStatShift(effect, unit.armor, Math.max(1, Math.round(effect.power || 1)));
       break;
     case 'ASHILLNESS':
       // Снижение постоянное на время маркера; откат не восстанавливаем (доля от текущего).
       break;
     case 'BERSERK':
-      unit.damage = Math.max(0, unit.damage - Math.round(effect.power));
+      unit.damage = undoStatShift(effect, unit.damage, Math.round(effect.power));
       unit.armor += effect.extra ?? 0;
       break;
     case 'IMAGINARY_HEALTH':
       if (unit.alive) {
-        unit.health = Math.max(1, unit.health - Math.round(effect.power));
+        unit.health = undoStatShift(effect, unit.health, Math.round(effect.power));
+        if (unit.health < 1) {
+          unit.health = 1;
+        }
       }
       break;
     case 'DEATHWARD':
@@ -729,6 +833,19 @@ function reverseEffect(unit: BattleUnit, effect: BattleEffect, state?: BattleSta
     case 'POISONEDWEAPON':
     case 'BREAKWEAPON':
       break;
+    case 'LOVE_SHACKLES': {
+      const partnerId = effect.linkId;
+      if (state && partnerId) {
+        const partner = state.units.find((item) => item.id === partnerId);
+        const back = partner?.effects.find(
+          (item) => item.id === 'LOVE_SHACKLES' && item.linkId === unit.id,
+        );
+        if (partner && back) {
+          delEffect(partner, 'LOVE_SHACKLES', state);
+        }
+      }
+      break;
+    }
     case 'LIFE_FETTERS':
       // Снимаем связь у Воина-призрака, который держал оковы на этой цели.
       if (state) {
@@ -776,7 +893,13 @@ function isDebuffId(id: EffectId): boolean {
  * Новый эффект помечается fresh — первый end-тик носителя его пропустит.
  * Дебафф на носителе с REFLECTION уходит случайному живому врагу без REFLECTION.
  */
-export function grantEffect(unit: BattleUnit, id: EffectId, rounds: number, power = 0): void {
+export function grantEffect(
+  unit: BattleUnit,
+  id: EffectId,
+  rounds: number,
+  power = 0,
+  opts?: { readonly casterLvl?: number },
+): void {
   if (isDebuffId(id) && hasEffect(unit, 'REFLECTION')) {
     const state = currentEffectState();
     if (state) {
@@ -789,7 +912,7 @@ export function grantEffect(unit: BattleUnit, id: EffectId, rounds: number, powe
           state.log.push(
             `Отражение: «${effectLogLabel(id)}» с ${unit.displayName} переходит на ${target.displayName}.`
           );
-          grantEffect(target, id, rounds, power);
+          grantEffect(target, id, rounds, power, opts);
           return;
         }
       }
@@ -801,6 +924,18 @@ export function grantEffect(unit: BattleUnit, id: EffectId, rounds: number, powe
     return;
   }
   const effect: BattleEffect = { id, rounds, power, fresh: true };
+  if (opts && typeof opts.casterLvl === 'number') {
+    effect.casterLvl = opts.casterLvl;
+  }
   unit.effects.push(effect);
   applyEffectOnAdd(unit, effect);
+}
+
+/** Снимает невидимость после активного действия носителя. Защита и ожидание не вызывают. */
+export function revealAfterAction(state: BattleState, actor: BattleUnit): void {
+  if (!hasEffect(actor, 'INVISIBLE')) {
+    return;
+  }
+  delEffect(actor, 'INVISIBLE', state);
+  state.log.push(`${actor.displayName} обнаруживает себя.`);
 }

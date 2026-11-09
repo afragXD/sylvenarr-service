@@ -1,9 +1,12 @@
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { DAMAGE_SOURCE_LABELS, type DamageSource } from '../damageSources';
 import { clearAllEffects, grantEffect, healUnit, trySpendMana } from '../effects';
-import { setWard } from '../resists';
+import { levelUpUnit } from '../level';
+import { setWard, rollSrcChance } from '../resists';
 import { ROW_BACK } from '../settings';
+import { reduceMaxHp } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { alliesOf, enemiesOf, unitsOnSameRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
@@ -31,14 +34,14 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         attackKind: 'magic',
         previewSource: 'HOLY',
         previewArmorIgnore: 0.1,
-        disabledReason: actor.mana < 2 ? 'Нужно 2 МР' : targets.length === 0 ? 'Нет целей' : null,
+        disabledReason: actor.mana < 3 ? 'Нужно 3 МР' : targets.length === 0 ? 'Нет целей' : null,
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
     case 2: {
       const allies = alliesOf(state, actor);
-      const healLo = pyRound(actor.power * 0.5);
-      const healHi = pyRound(actor.power * 0.75);
+      const healLo = pyRound(actor.power * 0.6);
+      const healHi = pyRound(actor.power * 0.85);
       return {
         slot: 2,
         label: 'Божественная длань',
@@ -63,27 +66,32 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         label: 'Святая броня',
         needsTarget: true,
         disabledReason:
-          actor.mana < 3 ? 'Нужно 3 МР' : allies.length === 0 ? 'Нет союзников' : null,
+          cdReason(actor, 3, 2) ??
+          (actor.mana < 3 ? 'Нужно 3 МР' : allies.length === 0 ? 'Нет союзников' : null),
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
     case 4: {
-      const allies = alliesOf(state, actor);
+      const targets = state.units.filter((unit) => unit.alive);
       return {
         slot: 4,
-        label: 'Перерождение',
+        label: 'Перерождение (2 МР)',
         needsTarget: true,
-        disabledReason: allies.length === 0 ? 'Нет союзников' : null,
-        legalTargetIds: allies.map((unit) => unit.id),
+        disabledReason:
+          cdReason(actor, 4, 3) ??
+          (actor.mana < 2 ? 'Нужно 2 МР' : targets.length === 0 ? 'Нет целей' : null),
+        legalTargetIds: targets.map((unit) => unit.id),
       };
     }
     case 5: {
       const allies = alliesOf(state, actor);
       return {
         slot: 5,
-        label: 'Призыв к оружию',
+        label: 'Призыв к оружию (3 МР)',
         needsTarget: true,
-        disabledReason: allies.length === 0 ? 'Нет союзников' : null,
+        disabledReason:
+          cdReason(actor, 5, 4) ??
+          (actor.mana < 3 ? 'Нужно 3 МР' : allies.length === 0 ? 'Нет союзников' : null),
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -98,6 +106,10 @@ export const abbessAbilities: AbilityHandler = {
     return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
   },
 
+  preChoice(_state, actor) {
+    tickSlotCds(actor);
+  },
+
   apply(state, actor, input): AbilityOutcome {
     const meta = abilityMeta(state, actor, input.slot);
     if (meta.disabledReason) {
@@ -105,7 +117,7 @@ export const abbessAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const err = trySpendMana(actor, 2);
+      const err = trySpendMana(actor, 3);
       if (err) {
         return { status: 'reject', message: err };
       }
@@ -151,10 +163,8 @@ export const abbessAbilities: AbilityHandler = {
         if (ally.team !== actor.team || !ally.alive) {
           continue;
         }
-        // CUT-2026-11-01c AC-4: randint(round(p*0.5), round(p*0.75));
-        // round — как в Python 3 (half to even): round(20.5)=20.
-        const lo = pyRound(actor.power * 0.5);
-        const hi = pyRound(actor.power * 0.75);
+        const lo = pyRound(actor.power * 0.6);
+        const hi = pyRound(actor.power * 0.85);
         const amount = randInt(Math.min(lo, hi), Math.max(lo, hi));
         const healed = healUnit(ally, amount);
         state.log.push(`${ally.displayName} восстанавливает ${healed} ОЗ.`);
@@ -171,6 +181,7 @@ export const abbessAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Нужен союзник' };
       }
+      setSlotCd(actor, 3, 2);
       grantEffect(target, 'STONEFLESH', 2 + Math.floor(actor.lvl / 4), 20 + actor.lvl * 2);
       // Как в боте: варды от двух разных случайных источников — себе и цели.
       const pool: DamageSource[] = [
@@ -196,18 +207,38 @@ export const abbessAbilities: AbilityHandler = {
     }
 
     if (input.slot === 4) {
-      const target = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
+      const target = state.units.find((unit) => unit.alive && unit.id === input.targetId);
       if (!target) {
-        return { status: 'reject', message: 'Нужен союзник' };
+        return { status: 'reject', message: 'Цель не найдена' };
+      }
+      const err = trySpendMana(actor, 2);
+      if (err) {
+        return { status: 'reject', message: err };
       }
       for (const unit of unitsOnSameRow(state, target)) {
-        clearAllEffects(unit);
+        clearAllEffects(unit, state);
       }
-      state.log.push(`${actor.displayName}: перерождение — эффекты ряда сняты.`);
+      setSlotCd(actor, 4, 3);
+      const ally = target.team === actor.team;
+      if (ally && randInt(1, 100) <= 50 + actor.lvl) {
+        const levels = 1 + Math.floor(target.lvl / 6);
+        levelUpUnit(target, levels, state);
+        state.log.push(`${actor.displayName}: перерождение поднимает ${target.displayName} на ${levels} ур.`);
+      } else if (!ally && rollSrcChance(state, target, 58 + actor.lvl, 'LOWERINGLEVEL')) {
+        reduceMaxHp(target, 0.85);
+        state.log.push(
+          `${actor.displayName}: перерождение ужимает ${target.displayName} до ${target.maxHp} ОЗ.`,
+        );
+      } else {
+        state.log.push(`${actor.displayName}: перерождение снимает эффекты ряда ${target.displayName}.`);
+      }
       return { status: 'done' };
     }
 
-    // slot 5
+    const err = trySpendMana(actor, 3);
+    if (err) {
+      return { status: 'reject', message: err };
+    }
     const target = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
     if (!target) {
       return { status: 'reject', message: 'Нужен союзник' };
@@ -215,6 +246,7 @@ export const abbessAbilities: AbilityHandler = {
     for (const ally of unitsOnSameRow(state, target)) {
       grantEffect(ally, 'CONTR', 2 + Math.floor(actor.lvl / 4), 0);
     }
+    setSlotCd(actor, 5, 4);
     state.log.push(`${actor.displayName} призывает ряд к оружию!`);
     return { status: 'done' };
   },

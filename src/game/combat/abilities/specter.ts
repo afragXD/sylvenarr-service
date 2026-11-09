@@ -1,6 +1,7 @@
 import { harmWithSource, markDeadIfNeeded, randInt } from '../damage';
 import { formatLogDamage } from '../damageSources';
 import { grantEffect, tryStun } from '../effects';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { setWardExact } from '../resists';
 import { unitChoiceLabel } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
@@ -40,7 +41,8 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         slot: 3,
         label: 'Сглаз',
         needsTarget: true,
-        disabledReason: targets.length === 0 ? 'Нет целей' : null,
+        disabledReason:
+          cdReason(actor, 3, 2) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -122,6 +124,7 @@ export const specterAbilities: AbilityHandler = {
   },
 
   preChoice(state, actor) {
+    tickSlotCds(actor);
     if (actor.darkRitualCd > 0) {
       actor.darkRitualCd -= 1;
     }
@@ -166,7 +169,7 @@ export const specterAbilities: AbilityHandler = {
         slot: 1,
         options: others.map((unit) => ({
           id: unit.id,
-          label: unitChoiceLabel(unit),
+          label: unitChoiceLabel(unit, state),
         })),
         context: { firstTargetId: target.id },
       };
@@ -198,8 +201,23 @@ export const specterAbilities: AbilityHandler = {
       const dodgeLoss = 15 + Math.floor(actor.lvl / 2);
       const rounds = 2 + Math.floor(actor.lvl / 7);
       grantEffect(target, 'FATMAN', rounds, dodgeLoss);
+      grantEffect(target, 'MAGIC_SHACKLES', 2 + Math.floor(actor.lvl / 6), 0, {
+        casterLvl: actor.lvl,
+      });
+      const manaHalf = Math.floor(target.mana / 2);
+      const raw = Math.min(manaHalf * 8, 30 + 2 * actor.lvl);
+      if (raw > 0) {
+        const dealt = harmWithSource(state, target, raw, 'FIRE');
+        if (dealt > 0) {
+          state.log.push(
+            `${actor.displayName}: сглаз жжёт ${target.displayName} ${formatLogDamage(dealt, 'FIRE')}.`,
+          );
+        }
+        markDeadIfNeeded(state, target);
+      }
+      setSlotCd(actor, 3, 2);
       state.log.push(
-        `${actor.displayName} отмечает ${target.displayName} сглазом (−${dodgeLoss} уклонения, ${rounds} р.).`
+        `${actor.displayName} отмечает ${target.displayName} сглазом (−${dodgeLoss} уклонения, ${rounds} р.).`,
       );
       return { status: 'done' };
     }

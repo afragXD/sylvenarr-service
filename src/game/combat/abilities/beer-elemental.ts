@@ -78,12 +78,12 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
       };
     }
     case 3: {
-      const allies = alliesOf(state, actor);
+      const allies = alliesOf(state, actor).filter((unit) => (unit.critBank ?? 0) < 2);
       return {
         slot: 3,
         label: 'Огуречное',
         needsTarget: true,
-        disabledReason: allies.length === 0 ? 'Нет союзников' : null,
+        disabledReason: allies.length === 0 ? 'Уже 2 крит-банка' : null,
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -165,8 +165,11 @@ export const beerElementalAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const bank = 1 + Math.floor(actor.lvl / 5);
-      target.critBank += bank;
+      if ((target.critBank ?? 0) >= 2) {
+        return { status: 'reject', message: 'Уже 2 крит-банка' };
+      }
+      const bank = 1 + Math.floor(actor.lvl / 6);
+      target.critBank = Math.min(2, (target.critBank ?? 0) + bank);
       state.log.push(
         `${actor.displayName}: ${target.displayName} получает ${bank} гарант-крит(а).`
       );

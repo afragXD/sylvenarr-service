@@ -199,7 +199,7 @@ export const orcKingAbilities: AbilityHandler = {
         slot: 4,
         options: others.map((unit) => ({
           id: unit.id,
-          label: unitChoiceLabel(unit),
+          label: unitChoiceLabel(unit, state),
         })),
         context: { firstTargetId: target.id },
       };

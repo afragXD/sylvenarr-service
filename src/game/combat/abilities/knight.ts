@@ -1,6 +1,6 @@
 import { economyOn, spendTeamGold, teamGold } from '../../economy';
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
-import { delEffect, grantEffect, hasEffect, resurrectUnit } from '../effects';
+import { delEffect, grantEffect, resurrectUnit } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, meleeOrAll, neighbourBehind, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
@@ -105,14 +105,20 @@ export const knightAbilities: AbilityHandler = {
   },
 
   preChoice(state, actor) {
-    const bonus = actor.lvl + 1;
-    for (const ally of ownRowAllies(state, actor)) {
-      if (hasEffect(ally, 'ROW_FORTIFY')) {
-        delEffect(ally, 'ROW_FORTIFY');
-      }
-      grantEffect(ally, 'ROW_FORTIFY', 1, bonus);
+    if (randInt(1, 100) > 65 + actor.lvl) {
+      return;
     }
-    state.log.push(`${actor.displayName} укрепляет доспехи ряда на ${bonus}.`);
+    const bonus = 1 + Math.floor(actor.lvl / 5);
+    for (const ally of ownRowAllies(state, actor)) {
+      const gained = ally.knightRowArmor ?? 0;
+      const add = Math.min(bonus, Math.max(0, 20 - gained));
+      if (add <= 0) {
+        continue;
+      }
+      ally.armor += add;
+      ally.knightRowArmor = gained + add;
+    }
+    state.log.push(`${actor.displayName} укрепляет доспехи ряда.`);
   },
 
   apply(state, actor, input): AbilityOutcome {
@@ -208,7 +214,7 @@ export const knightAbilities: AbilityHandler = {
       // economyOn — прежний прирост бота (20+2L); иначе текущий 11-01c (15+L).
       const atk = economyOn(state) ? 20 + actor.lvl * 2 : 15 + actor.lvl;
       grantEffect(ally, 'STRENGTH', 1 + Math.floor(actor.lvl / 5), atk);
-      grantEffect(ally, 'BLESSED', 1 + Math.floor(actor.lvl / 6), 0.5);
+      grantEffect(ally, 'BLESSED', 2, 0.5);
       delEffect(ally, 'POISON');
       delEffect(ally, 'BURNING');
       delEffect(ally, 'BLEEDING');

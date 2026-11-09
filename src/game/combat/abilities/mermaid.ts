@@ -1,6 +1,7 @@
 import { randInt } from '../damage';
 import {
   addMana,
+  delEffect,
   enslaveUnit,
   grantEffect,
   hasEffect,
@@ -30,9 +31,9 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
       const allies = alliesOf(state, actor);
       return {
         slot: 1,
-        label: 'Морской бриз (1 МР)',
+        label: 'Морской бриз (2 МР)',
         needsTarget: true,
-        disabledReason: manaReason(actor, 1) ?? (allies.length === 0 ? 'Нет союзников' : null),
+        disabledReason: manaReason(actor, 2) ?? (allies.length === 0 ? 'Нет союзников' : null),
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
@@ -60,24 +61,38 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
       };
     }
     case 4: {
-      const targets = enemiesOf(state, actor);
+      const allies = alliesOf(state, actor).filter(
+        (unit) => unit.id !== actor.id && !hasEffect(unit, 'STUN_IMMUNE'),
+      );
+      const onlySelf = alliesOf(state, actor).every((unit) => unit.id === actor.id);
       return {
         slot: 4,
-        label: 'Волшебные оковы (2 МР)',
+        label: 'Мыло слоад (1 МР)',
         needsTarget: true,
         disabledReason:
-          manaReason(actor, 2) ?? (targets.length === 0 ? 'Нет целей' : null),
-        legalTargetIds: targets.map((unit) => unit.id),
+          cdReason(actor, 4, 3) ??
+          manaReason(actor, 1) ??
+          (allies.length === 0
+            ? onlySelf
+              ? 'Не на себя'
+              : 'Иммунитет к оглушению'
+            : null),
+        legalTargetIds: allies.map((unit) => unit.id),
       };
     }
-    case 5:
+    case 5: {
+      const allies = alliesOf(state, actor);
       return {
         slot: 5,
-        label: 'Базовые действия',
-        needsTarget: false,
-        disabledReason: 'Используйте защиту / ожидание',
-        legalTargetIds: [],
+        label: 'Восточный ветер (2 МР)',
+        needsTarget: true,
+        disabledReason:
+          cdReason(actor, 5, 3) ??
+          manaReason(actor, 2) ??
+          (allies.length === 0 ? 'Нет союзников' : null),
+        legalTargetIds: allies.map((unit) => unit.id),
       };
+    }
   }
 }
 
@@ -100,23 +115,19 @@ export const mermaidAbilities: AbilityHandler = {
     }
 
     if (input.slot === 1) {
-      const err = trySpendMana(actor, 1);
+      const err = trySpendMana(actor, 2);
       if (err) {
         return { status: 'reject', message: err };
       }
       const target = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
-        addMana(actor, 1);
+        addMana(actor, 2);
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const bonusForLowHp = Math.round(actor.power * (2 - target.health / target.maxHp));
-      const amount = actor.lvl * 2 + bonusForLowHp;
+      const ratio = target.maxHp > 0 ? target.health / target.maxHp : 1;
+      const amount = actor.lvl * 2 + Math.round(actor.power * (1 + 0.5 * (1 - ratio)));
       const healed = healUnit(target, amount);
-      const accGain = actor.lvl + 2;
-      target.accuracy += accGain;
-      state.log.push(
-        `${actor.displayName}: морской бриз — ${target.displayName} +${healed} ОЗ, +${accGain} точности.`
-      );
+      state.log.push(`${actor.displayName}: морской бриз — ${target.displayName} +${healed} ОЗ.`);
       return { status: 'done' };
     }
 
@@ -174,20 +185,56 @@ export const mermaidAbilities: AbilityHandler = {
     }
 
     if (input.slot === 4) {
+      const err = trySpendMana(actor, 1);
+      if (err) {
+        return { status: 'reject', message: err };
+      }
+      const target = alliesOf(state, actor).find(
+        (unit) => unit.id === input.targetId && unit.id !== actor.id,
+      );
+      if (!target) {
+        addMana(actor, 1);
+        return { status: 'reject', message: 'Цель не найдена' };
+      }
+      if (hasEffect(target, 'STUN_IMMUNE')) {
+        addMana(actor, 1);
+        return { status: 'reject', message: 'Иммунитет к оглушению' };
+      }
+      const acc = actor.lvl + 3;
+      target.accuracy += acc;
+      grantEffect(target, 'STUN_IMMUNE', 2, 50);
+      setSlotCd(actor, 4, 3);
+      state.log.push(
+        `${actor.displayName}: мыло слоад — ${target.displayName} +${acc} точности и иммунитет к оглушению.`,
+      );
+      return { status: 'done' };
+    }
+
+    if (input.slot === 5) {
       const err = trySpendMana(actor, 2);
       if (err) {
         return { status: 'reject', message: err };
       }
-      const target = enemiesOf(state, actor).find((unit) => unit.id === input.targetId);
+      const target = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
       if (!target) {
         addMana(actor, 2);
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      grantEffect(target, 'MAGIC_SHACKLES', 2 + Math.floor(actor.lvl / 6), 0);
-      state.log.push(`${actor.displayName}: волшебные оковы на ${target.displayName}.`);
+      const haste = 15 + actor.lvl;
+      const row = alliesOf(state, actor).filter((unit) => unit.row === target.row);
+      for (const ally of row) {
+        if (hasEffect(ally, 'SLOW')) {
+          delEffect(ally, 'SLOW', state);
+        }
+        grantEffect(ally, 'HASTE', 2, haste);
+      }
+      setSlotCd(actor, 5, 3);
+      state.log.push(
+        `${actor.displayName} призывает восточный ветер: ${target.row === 0 ? 'передний' : 'задний'} ряд ускоряется (+${haste} инициативы).`,
+      );
       return { status: 'done' };
     }
 
-    return { status: 'reject', message: 'Используйте защиту / ожидание' };
+    return { status: 'reject', message: 'Способность недоступна' };
   },
 };

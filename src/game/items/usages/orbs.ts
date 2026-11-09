@@ -1,5 +1,5 @@
 import { harmWithSource, markDeadIfNeeded, randInt } from '../../combat/damage';
-import { clearAllEffects, clearBuffs, grantEffect } from '../../combat/effects';
+import { clearAllEffects, clearBuffs, grantEffect, hasEffect } from '../../combat/effects';
 import { levelUpUnit } from '../../combat/level';
 import { rollSrcChance } from '../../combat/resists';
 import { applyCatalogStats, transformClassOnly } from '../../combat/transform';
@@ -76,9 +76,13 @@ const HANDLERS: Record<number, (ctx: ItemUsageContext) => ItemUsageOutcome> = {
   },
   413: (ctx) => {
     for (const unit of ctx.state.units) {
-      if (unit.team === ctx.target.team && unit.alive) {
-        levelUpUnit(unit, 2, ctx.state);
+      if (unit.team !== ctx.target.team || !unit.alive) {
+        continue;
       }
+      if (unit.team !== ctx.invoker.team && hasEffect(unit, 'INVISIBLE')) {
+        continue;
+      }
+      levelUpUnit(unit, 2, ctx.state);
     }
     log(
       ctx,

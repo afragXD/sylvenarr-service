@@ -14,6 +14,7 @@ import { ROW_BACK, ROW_FRONT } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { firstActionAttackKind } from './primary-attack';
 import { createPhantomCopy, createSummon, preferPhantomRow, preferSummonRow } from './summon';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { alliesOf, enemiesOf } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
@@ -92,9 +93,9 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
     case 5:
       return {
         slot: 5,
-        label: 'Философский камень',
+        label: 'Философский камень (3 МР)',
         needsTarget: false,
-        disabledReason: actor.mana < 3 ? 'Нужно 3 МР' : null,
+        disabledReason: cdReason(actor, 5, 2) ?? (actor.mana < 3 ? 'Нужно 3 МР' : null),
         legalTargetIds: [],
       };
   }
@@ -147,6 +148,7 @@ export const demiurgeAbilities: AbilityHandler = {
   },
 
   preChoice(state, actor) {
+    tickSlotCds(actor);
     if (actor.mindCloudCd > 0) {
       actor.mindCloudCd -= 1;
     }
@@ -329,8 +331,16 @@ export const demiurgeAbilities: AbilityHandler = {
         state.log.push(`${actor.displayName} творит философский камень — пустой тир.`);
       }
     } else {
-      state.log.push(`${actor.displayName} творит философский камень.`);
+      for (const ally of state.units.filter(
+        (unit) => unit.alive && unit.team === actor.team && !unit.isSummon,
+      )) {
+        const size = state.catalog[ally.heroClassCode]?.size ?? 1;
+        const gain = actor.lvl + randInt(5, 7);
+        ally.armor += size >= 2 ? gain * 2 : gain;
+      }
+      state.log.push(`${actor.displayName} творит философский камень: броня отряда растёт.`);
     }
+    setSlotCd(actor, 5, 2);
     if (randInt(1, 100) <= 8 * actor.lvl) {
       state.log.push(`${actor.displayName} сохраняет ход.`);
       return { status: 'done', keepTurn: true };

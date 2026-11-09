@@ -123,7 +123,9 @@ export const incubAbilities: AbilityHandler = {
 
   preChoice(state, actor) {
     tickSlotCds(actor);
-    const enemies = state.units.filter((unit) => unit.alive && unit.team !== actor.team);
+    const enemies = state.units.filter(
+      (unit) => unit.alive && unit.team !== actor.team && !hasEffect(unit, 'INVISIBLE'),
+    );
     if (enemies.length === 0) {
       return;
     }
@@ -199,9 +201,10 @@ export const incubAbilities: AbilityHandler = {
       const share = Math.floor(actor.power / Math.max(1, row.length));
       for (const enemy of row) {
         // Нежить: мораль не модифицирует урон ни в плюс, ни в минус.
-        const moraleFactor = isUndeadClass(enemy.heroClassCode)
-          ? 1
-          : Math.max(0.1, 1 - enemy.morale / 100);
+        const moraleFactor =
+          isUndeadClass(enemy.heroClassCode) || enemy.heroClassCode === 'GoldGolem'
+            ? 1
+            : Math.max(0.1, 1 - enemy.morale / 100);
         const dealt = harmWithSource(
           state,
           enemy,

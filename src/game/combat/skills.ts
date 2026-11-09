@@ -1,4 +1,4 @@
-import { enemiesOf, meleeTargets } from './abilities/targets';
+import { enemiesOf, isConcealedFrom, meleeTargets } from './abilities/targets';
 import { basicAttackKind } from './attack-style';
 import type { BattleState, BattleUnit } from './types';
 
@@ -238,7 +238,9 @@ export function listSkillTargets(state: BattleState, actor: BattleUnit): BattleU
     return [];
   }
   if (skill.kind === 'heal_ally') {
-    return state.units.filter((unit) => unit.alive && unit.team === actor.team);
+    return state.units.filter(
+      (unit) => unit.alive && unit.team === actor.team && !isConcealedFrom(actor, unit),
+    );
   }
   // offensive skills — SANCTUM/GUARDED как у Pattern.
   if (skill.ignoreMelee) {

@@ -40,7 +40,10 @@ describe('CUT-2026-11-01c AC-3', () => {
     expect(seed('Abbess').health).toBe(185);
     expect(seed('Abbess').mana).toBe(10);
     expect(seed('Mermaid').health).toBe(162);
-    expect(seed('Mermaid').mana).toBe(10);
+    expect(seed('Mermaid').mana).toBe(6); // CUT-2026-11-09 AC-2
+    expect(seed('Mermaid').initiative).toBe(30); // CUT-2026-11-09 AC-2
+    expect(seed('DemonLord').initiative).toBe(35); // CUT-2026-11-09 AC-5
+    expect(seed('Herbalist').armor).toBe(10); // CUT-2026-11-09 AC-9
     expect(seed('Titan').damage).toBe(36);
     expect(seed('DemonLord').accuracy).toBe(95);
   });
@@ -173,13 +176,13 @@ describe('CUT-2026-11-01c AC-4', () => {
       return values;
     };
     const p40 = run(40);
-    expect(Math.min(...p40)).toBeGreaterThanOrEqual(20);
-    expect(Math.max(...p40)).toBeLessThanOrEqual(30);
-    expect(p40.includes(20)).toBe(true);
-    expect(p40.includes(30)).toBe(true);
+    expect(Math.min(...p40)).toBeGreaterThanOrEqual(24); // CUT-2026-11-09 AC-4
+    expect(Math.max(...p40)).toBeLessThanOrEqual(34);
+    expect(p40.includes(24)).toBe(true);
+    expect(p40.includes(34)).toBe(true);
     const p41 = run(41);
-    expect(Math.min(...p41)).toBe(20);
-    expect(Math.max(...p41)).toBe(31);
+    expect(Math.min(...p41)).toBe(25); // CUT-2026-11-09 AC-4
+    expect(Math.max(...p41)).toBe(35);
   });
 
   test('fixture herbalist-elixir: lvl 1/9/10 фракции и длительность', () => {

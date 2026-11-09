@@ -1,7 +1,7 @@
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { addMana, grantEffect, healUnit, trySpendMana } from '../effects';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { alliesOf, enemiesOf, unitsOnSameRow } from './targets';
+import { alliesOf, enemiesOf, omitConcealed, unitsOnSameRow } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function findMaster(state: BattleState, actor: BattleUnit): BattleUnit | null {
@@ -91,7 +91,10 @@ export const goblinShamanAbilities: AbilityHandler = {
         addMana(actor, 2);
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const row = unitsOnSameRow(state, target).filter((unit) => unit.team !== actor.team);
+      const row = omitConcealed(
+        actor,
+        unitsOnSameRow(state, target).filter((unit) => unit.team !== actor.team),
+      );
       for (const enemy of row) {
         const damage = dealDamage(
           actor,

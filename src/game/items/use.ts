@@ -1,3 +1,4 @@
+import { hasEffect } from '../combat/effects';
 import { chancePercent } from '../combat/morale';
 import { isDemonClass, isUndeadClass } from '../combat/races';
 import type { BattleState, BattleUnit } from '../combat/types';
@@ -71,6 +72,9 @@ function resolveTarget(
   const target = state.units.find((unit) => unit.id === targetId);
   if (!target || !isValidTarget(state, invoker, target, group)) {
     return { error: 'Цель недоступна' };
+  }
+  if (target.id !== invoker.id && hasEffect(target, 'INVISIBLE')) {
+    return { error: 'Цель невидима' };
   }
   return target;
 }

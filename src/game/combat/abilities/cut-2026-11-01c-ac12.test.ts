@@ -86,7 +86,7 @@ describe('CUT-2026-11-01c AC-12 Gall / accuracy / Death Sentence', () => {
     foe.armor = 20;
     foe.health = 500;
     foe.maxHp = 500;
-    grantEffect(foe, 'GALL', 3, 20); // L10: 10+L урон, strip 4
+    grantEffect(foe, 'GALL', 3, 20); // L10: 10+L урон, strip 5 // CUT-2026-11-09 AC-20
     expect(foe.armor).toBe(20); // наложение без снятия брони
 
     let totalDmg = 0;
@@ -102,14 +102,14 @@ describe('CUT-2026-11-01c AC-12 Gall / accuracy / Death Sentence', () => {
       const lost = beforeHp - foe.health;
       totalDmg += lost;
       expect(lost).toBe(20);
-      expect(foe.armor).toBe(beforeArmor - 4);
+      expect(foe.armor).toBe(beforeArmor - 5); // CUT-2026-11-09 AC-20
       expect(startLog.some((line) => line.includes('⟦WATER⟧'))).toBe(true);
       expect(startLog.some((line) => line.includes('Желчь') && line.includes('броню'))).toBe(true);
       tickEffectsOnTurnEnd(foe, state);
     }
 
     expect(totalDmg).toBe(60);
-    expect(foe.armor).toBe(8); // 20 − 12
+    expect(foe.armor).toBe(5); // CUT-2026-11-09 AC-20: 20 − 15
     expect(foe.effects.some((e) => e.id === 'GALL')).toBe(false);
   });
 

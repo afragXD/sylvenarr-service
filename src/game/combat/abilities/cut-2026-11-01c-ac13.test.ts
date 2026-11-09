@@ -108,9 +108,9 @@ describe('CUT-2026-11-01c AC-13 damage preview', () => {
     abbess.mana = 10;
     const hand = listPilotAbilities(state, abbess).find((a) => a.slot === 2);
     expect(hand).toBeTruthy();
-    expect(hand!.previewHealMin).toBe(pyRound(49 * 0.5));
-    expect(hand!.previewHealMax).toBe(pyRound(49 * 0.75));
-    expect(hand!.previewHealMin).toBe(24);
-    expect(hand!.previewHealMax).toBe(37);
+    expect(hand!.previewHealMin).toBe(pyRound(49 * 0.6)); // CUT-2026-11-09 AC-4
+    expect(hand!.previewHealMax).toBe(pyRound(49 * 0.85)); // CUT-2026-11-09 AC-4
+    expect(hand!.previewHealMin).toBe(29);
+    expect(hand!.previewHealMax).toBe(42);
   });
 });

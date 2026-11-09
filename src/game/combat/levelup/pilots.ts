@@ -149,8 +149,10 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
     bumpLevel(unit, ind);
   },
 
-  Witch(unit, ind, _state) {
-    // CUT-2026-11-05 AC-7: убран раундовый спайк gun/damage; прирост урона как у Мародёра.
+  Witch(unit, ind, state) {
+    if (state.stage % 5 === 0 && ind > 0) {
+      unit.gun += 4;
+    }
     unit.damage += (randInt(2, 5) + Math.floor(unit.lvl / 2)) * ind;
     addMana(unit, ind * randInt(1, 2));
     unit.power += (Math.floor(unit.lvl / 2) + 3) * ind;
@@ -224,12 +226,13 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
 
   Mermaid(unit, ind, _state) {
     addMana(unit, ind);
+    unit.power += (randInt(0, 1) + Math.floor(unit.lvl / 2)) * ind;
     const hiddenBefore = unit.hiddenLvl;
     bumpLevel(unit, ind);
-    // CUT-2026-11-05 AC-4: заряд ульты при пересечении порога hiddenLvl % 4 === 0 (после bump).
+    // Заряд Песни сирены, когда скрытый уровень после повышения кратен 5.
     if (ind > 0) {
       for (let h = hiddenBefore + 1; h <= unit.hiddenLvl; h += 1) {
-        if (h % 4 === 0) {
+        if (h % 5 === 0) {
           unit.ultaCharges += 1;
         }
       }

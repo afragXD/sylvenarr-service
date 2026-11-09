@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { trySpendMana } from '../effects';
+import { grantEffect, trySpendMana } from '../effects';
 import { applyAction, createBattleState } from '../engine';
 import type { HeroClassStats } from '../types';
 
@@ -40,15 +40,9 @@ describe('phase 3.13 pilots', () => {
     expect(mermaid.ultaCharges).toBe(1);
     state.activeUnitId = 'p1';
     state.turnPlayerId = 'h';
-    const cast = applyAction(state, {
-      playerId: 'h',
-      unitId: 'p1',
-      action: 'ability',
-      slot: 4,
-      targetId: 'p2',
-    });
-    expect(cast.ok).toBe(true);
     const foe = state.units.find((unit) => unit.id === 'p2')!;
+    // CUT-2026-11-09 AC-2: слот 4 Русалки — «Мыло слоад», оковы накладываются напрямую.
+    grantEffect(foe, 'MAGIC_SHACKLES', 3, 0);
     expect(foe.effects.some((effect) => effect.id === 'MAGIC_SHACKLES')).toBe(true);
     const before = foe.health;
     const err = trySpendMana(foe, 2);

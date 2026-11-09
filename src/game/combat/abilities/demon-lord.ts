@@ -1,7 +1,9 @@
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
-import { grantEffect, healUnit, tryStun } from '../effects';
+import { grantEffect, healUnit } from '../effects';
+import { rollMindChance } from '../resists';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
-import { alliesOf, enemiesOf, meleeOrAll } from './targets';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
+import { enemiesInColumn, enemiesOf, meleeOrAll, omitConcealed } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
 function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): AbilityInfo {
@@ -26,7 +28,7 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         slot: 2,
         label: 'Клинок Бездны',
         needsTarget: true,
-        disabledReason: targets.length === 0 ? 'Нет целей' : null,
+        disabledReason: cdReason(actor, 2, 2) ?? (targets.length === 0 ? 'Нет целей' : null),
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
@@ -40,16 +42,14 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         legalTargetIds: targets.map((unit) => unit.id),
       };
     }
-    case 4: {
-      const allies = alliesOf(state, actor);
+    case 4:
       return {
         slot: 4,
-        label: 'Глубинная защита',
-        needsTarget: true,
-        disabledReason: allies.length === 0 ? 'Нет союзников' : null,
-        legalTargetIds: allies.map((unit) => unit.id),
+        label: 'Рёв королей',
+        needsTarget: false,
+        disabledReason: cdReason(actor, 4, 3),
+        legalTargetIds: [],
       };
-    }
     case 5:
       return {
         slot: 5,
@@ -69,6 +69,10 @@ export const demonLordAbilities: AbilityHandler = {
     return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
   },
 
+  preChoice(_state, actor) {
+    tickSlotCds(actor);
+  },
+
   apply(state, actor, input): AbilityOutcome {
     const meta = abilityMeta(state, actor, input.slot);
     if (meta.disabledReason) {
@@ -81,8 +85,11 @@ export const demonLordAbilities: AbilityHandler = {
         return { status: 'reject', message: 'Цель не найдена' };
       }
       // Как в боте: все живые враги на ряду цели (без отсечения GUARDED/SANCTUM).
-      const rowTargets = state.units.filter(
-        (unit) => unit.alive && unit.team !== actor.team && unit.row === primary.row
+      const rowTargets = omitConcealed(
+        actor,
+        state.units.filter(
+          (unit) => unit.alive && unit.team !== actor.team && unit.row === primary.row,
+        ),
       );
       let killed = false;
       for (const enemy of rowTargets) {
@@ -107,11 +114,11 @@ export const demonLordAbilities: AbilityHandler = {
         markDeadIfNeeded(state, enemy);
         if (!enemy.alive) {
           killed = true;
+          healUnit(actor, Math.max(0, Math.round(enemy.maxHp * 0.33)));
         }
       }
       if (killed) {
-        const healed = healUnit(actor, Math.max(1, Math.round(primary.maxHp * 0.25)));
-        state.log.push(`${actor.displayName} пожирает труп и восстанавливает ${healed} ОЗ.`);
+        state.log.push(`${actor.displayName} пожирает убитых и залечивает раны.`);
       }
       return { status: 'done' };
     }
@@ -121,26 +128,31 @@ export const demonLordAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      const damage = dealDamage(
-        actor,
-        target,
-        { kind: 'melee', damageMult: 2, armorIgnore: 0, source: 'WEAPON' },
-        state
-      );
-      if (damage === 0) {
-        state.log.push(`${actor.displayName}: клинок Бездны — промах.`);
-        return { status: 'done' };
+      const column = enemiesInColumn(state, actor, target);
+      const second = column.find((unit) => unit.id !== target.id);
+      const strikes: Array<readonly [BattleUnit, number]> = [[target, 2]];
+      if (second) {
+        strikes.push([second, 1]);
       }
-      state.log.push(
-        `${actor.displayName} обрушивает клинок Бездны на ${target.displayName} ${formatLastLogDamage(damage)}.`
-      );
-      markDeadIfNeeded(state, target);
-      if (target.alive && randInt(1, 100) <= 70 + actor.lvl) {
-        grantEffect(target, 'PETRIFIED', 2, 15);
-        grantEffect(target, 'CHAINED', 2, 0);
-        tryStun(state, target, 1 + Math.floor(actor.lvl / 8));
-        state.log.push(`${target.displayName} обращается в камень и пропускает ход.`);
+      for (const [enemy, mult] of strikes) {
+        const damage = dealDamage(
+          actor,
+          enemy,
+          { kind: 'melee', damageMult: mult, armorIgnore: 0, source: 'WEAPON' },
+          state,
+        );
+        if (damage > 0) {
+          state.log.push(
+            `${actor.displayName} бьёт клинком Бездны ${enemy.displayName} ${formatLastLogDamage(damage)}.`,
+          );
+        }
+        markDeadIfNeeded(state, enemy);
+        if (enemy.alive && randInt(1, 100) <= 70 + actor.lvl) {
+          grantEffect(enemy, 'PETRIFIED', 2, 15);
+          state.log.push(`${enemy.displayName} каменеет.`);
+        }
       }
+      setSlotCd(actor, 2, 2);
       return { status: 'done' };
     }
 
@@ -155,8 +167,10 @@ export const demonLordAbilities: AbilityHandler = {
         { kind: 'magic', damageMult: 1, armorIgnore: 0.2, source: 'FIRE' },
         state
       );
+      const haste = 15 + Math.floor(actor.lvl / 3);
+      grantEffect(actor, 'HASTE', 2, haste);
       if (damage === 0) {
-        state.log.push(`${actor.displayName}: кислота — промах.`);
+        state.log.push(`${actor.displayName}: кислота — промах, но сам ускоряется (+${haste}).`);
         return { status: 'done' };
       }
       state.log.push(
@@ -172,16 +186,26 @@ export const demonLordAbilities: AbilityHandler = {
     }
 
     if (input.slot === 4) {
-      const ally = alliesOf(state, actor).find((unit) => unit.id === input.targetId);
-      if (!ally) {
-        return { status: 'reject', message: 'Нужен союзник' };
+      setSlotCd(actor, 4, 3);
+      if (actor.health * 2 <= actor.maxHp) {
+        for (const ally of state.units.filter((unit) => unit.alive && unit.team === actor.team)) {
+          const power = Math.round(ally.damage * 0.33);
+          if (power > 0) {
+            grantEffect(ally, 'STRENGTH', 2, power);
+          }
+        }
+        grantEffect(actor, 'REGENHP', 3, 1.5);
+        state.log.push(`${actor.displayName}: рёв королей поднимает союзников.`);
+        return { status: 'done' };
       }
-      grantEffect(actor, 'FIRESHIELD', 2, 0);
-      grantEffect(actor, 'HASTE', 2, 15);
-      grantEffect(ally, 'REGENHP', 2 + Math.floor(actor.lvl / 5), 1.25);
-      state.log.push(
-        `${actor.displayName} окутывает себя огненным щитом, ускоряется и дарует регенерацию ${ally.displayName}.`
-      );
+      const loss = 8 + randInt(actor.lvl, actor.lvl * 2);
+      for (const enemy of enemiesOf(state, actor)) {
+        enemy.morale -= loss;
+        if (rollMindChance(state, enemy, 75 + actor.lvl)) {
+          grantEffect(enemy, 'SLOW', 2, 15 + Math.floor(actor.lvl / 2));
+        }
+      }
+      state.log.push(`${actor.displayName}: рёв королей давит на врагов (−${loss} боевого духа).`);
       return { status: 'done' };
     }
 

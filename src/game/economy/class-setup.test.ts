@@ -117,12 +117,12 @@ describe('class economy setup (T10)', () => {
     expect(expectedClassPerks('Archlich')).toEqual(['MISC', 'ORBS']);
     expect(expectedClassPerks('Marauder')).toEqual(['MISC', 'DOUBLE_USING_INVENTORY']);
     expect(expectedClassPerks('DemonLord')).toEqual(['MISC', 'TALISMANS']);
-    expect(expectedClassPerks('Abbess')).toEqual(['MISC', 'GRAND_MERCHANT', 'RELICS']);
+    expect(expectedClassPerks('Abbess')).toEqual(['MISC', 'RELICS']); // CUT-2026-11-09 AC-6
     expect(expectedClassPerks('Detective')).toEqual(['MISC']);
 
     const abbess = battle('Abbess');
-    expect(abbess.unit.perks).toEqual(['MISC', 'GRAND_MERCHANT', 'RELICS']);
-    expect(abbess.unit.merchant).toBe(0.2);
+    expect(abbess.unit.perks).toEqual(['MISC', 'RELICS']); // CUT-2026-11-09 AC-6
+    expect(abbess.unit.merchant).toBe(0); // CUT-2026-11-09 AC-6
     expect(abbess.unit.develop).toBe(6);
 
     const det = battle('Detective');

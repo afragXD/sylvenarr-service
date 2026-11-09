@@ -116,7 +116,6 @@ describe('phase 3.7 pilots', () => {
       heroes,
     });
     const demon = state.units.find((unit) => unit.id === 'p1')!;
-    const ally = state.units.find((unit) => unit.id === 'p2')!;
     const foe = state.units.find((unit) => unit.id === 'p3')!;
     const initBefore = demon.initiative;
     state.activeUnitId = 'p1';
@@ -129,26 +128,9 @@ describe('phase 3.7 pilots', () => {
       targetId: 'p2',
     });
     expect(cast.ok).toBe(true);
-    expect(demon.effects.some((effect) => effect.id === 'FIRESHIELD')).toBe(true);
-    expect(demon.effects.some((effect) => effect.id === 'GUARDED')).toBe(false);
-    expect(demon.effects.some((effect) => effect.id === 'HASTE')).toBe(true);
-    expect(demon.initiative).toBe(initBefore + 15);
-    expect(ally.effects.some((effect) => effect.id === 'REGENHP')).toBe(true);
-
-    const armorBefore = foe.armor;
-    const hpBefore = foe.health;
-    state.activeUnitId = 'p3';
-    state.turnPlayerId = 'g';
-    const hit = applyAction(state, {
-      playerId: 'g',
-      unitId: 'p3',
-      action: 'attack',
-      targetId: 'p1',
-    });
-    expect(hit.ok).toBe(true);
-    expect(foe.health).toBeLessThan(hpBefore);
-    expect(foe.armor).toBe(armorBefore - demon.lvl);
-    expect(state.log.some((line) => line.includes('Огненный щит'))).toBe(true);
+    expect(demon.effects.some((effect) => effect.id === 'FIRESHIELD')).toBe(false); // CUT-2026-11-09 AC-5
+    expect(foe.morale).toBeLessThan(0);
+    expect(demon.initiative).toBe(initBefore);
   });
 
   test('Assassin slot 2 polymorphs into target and gains a level', () => {

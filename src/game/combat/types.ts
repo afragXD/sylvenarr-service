@@ -104,6 +104,8 @@ export type EffectId =
   | 'INVISIBLE'
   | 'INTERDICT'
   | 'MAGIC_SHACKLES'
+  /** Патриарх: положительное лечение одного копируется второму один раз. */
+  | 'LOVE_SHACKLES'
   | 'ENSLAVED'
   | 'ROW_FORTIFY'
   | 'ASHILLNESS'
@@ -140,6 +142,16 @@ export type BattleEffect = {
   power: number;
   /** Второе числовое значение (BERSERK: снятая броня). */
   extra?: number;
+  /**
+   * Фактическая дельта основного стата при наложении (со знаком).
+   * Снятие вычитает ровно её: clamp на наложении не раздувает стат.
+   * Старые снимки без поля откатываются по power.
+   */
+  applied?: number;
+  /** Уровень кастера, если тик нельзя честно вывести из power (Желчь, Оковы, Искра). */
+  casterLvl?: number;
+  /** Второй юнит связи (Оковы любви). */
+  linkId?: string;
   /**
    * Наложен в текущий ход носителя: end-тик пропускает (self-buffs не теряют ход).
    * Сбрасывается start-тиком в начале следующего хода носителя.
@@ -213,6 +225,17 @@ export type BattleUnit = {
   /** Константный потолок маны класса (не растёт в бою). */
   maxMana: number;
   /**
+   * maxHp в момент появления в бою.
+   * Пол для Могучего кулака и Перерождения: не ниже 50 % этого значения.
+   * Старые снимки без поля — пол не действует.
+   */
+  initialMaxHp?: number;
+  /**
+   * Стек снимков резистов перед превращением.
+   * Возврат облика берёт снимок, а не дефолты каталога: потраченные варды не возвращаются.
+   */
+  resistSnapshots?: ResistMap[];
+  /**
    * DoT уже тикнули в этом логическом ходе (legacy was_effected).
    * Сбрасывается в начале раунда; wait / доп. ход не сбрасывают.
    */
@@ -245,6 +268,8 @@ export type BattleUnit = {
   isLichSummon: boolean;
   /** Заряды ульты (DemonLord / Paladin / Marauder / Patriarch). */
   ultaCharges: number;
+  /** Сколько брони ряд уже получил от пассивки Кентавра за бой (потолок +20). */
+  knightRowArmor?: number;
   /** Paladin «Разбить душу»: устаревший счётчик кастов (не используется для шанса). */
   soulShatterCasts: number;
   /** Paladin «Разбить душу»: кулдаун в раундах. */
@@ -459,4 +484,6 @@ export type AbilityInfo = {
   previewAccuracyPenalty?: number;
   previewHealMin?: number;
   previewHealMax?: number;
+  /** Подсказка зарядов или патронов: старт, правило, следующий через K. */
+  hint?: string | null;
 };

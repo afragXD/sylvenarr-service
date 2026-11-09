@@ -241,7 +241,7 @@ describe('relics + artifacts (T7)', () => {
     const { state, actor } = battle();
     addItem(state, actor.team, 935, 1);
     expect(runItem(state, actor, 935, actor.id).ok).toBe(true);
-    expect(actor.lives).toBe(3);
+    expect(actor.lives).toBe(2); // CUT-2026-11-09 AC-18
   });
 
   test('346 шлем: MIND + REGENMANA', () => {

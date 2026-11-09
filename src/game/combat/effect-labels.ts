@@ -43,6 +43,7 @@ const LABELS: Record<EffectId, string> = {
   INVISIBLE: 'Невидимость',
   INTERDICT: 'Запрет лечения',
   MAGIC_SHACKLES: 'Волшебные оковы',
+  LOVE_SHACKLES: 'Оковы любви',
   ENSLAVED: 'Порабощённый',
   ROW_FORTIFY: 'Укрепление ряда',
   ASHILLNESS: 'Пепельная язва',

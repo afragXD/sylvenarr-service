@@ -9,8 +9,21 @@ export type EnemyFilterOpts = {
   readonly ignoreGuard?: boolean;
 };
 
+/** Сообщение отказа, если цель скрыта невидимостью. Ход при этом не тратится. */
+export const CONCEALED_TARGET_MESSAGE = 'Цель невидима';
+
+/** Чужого невидимого нельзя выбрать. Себя — можно. */
+export function isConcealedFrom(actor: BattleUnit, target: BattleUnit): boolean {
+  return target.id !== actor.id && hasEffect(target, 'INVISIBLE');
+}
+
+/** Убирает невидимых для актора. Союзные массовые баффы этот фильтр не используют. */
+export function omitConcealed(actor: BattleUnit, units: readonly BattleUnit[]): BattleUnit[] {
+  return units.filter((unit) => !isConcealedFrom(actor, unit));
+}
+
 /**
- * Все живые враги (без SANCTUM; без GUARDED, если не ignoreGuard).
+ * Все живые враги (без SANCTUM; без GUARDED, если не ignoreGuard; без INVISIBLE).
  */
 export function enemiesOf(
   state: BattleState,
@@ -22,6 +35,7 @@ export function enemiesOf(
       unit.alive &&
       unit.team !== actor.team &&
       !hasEffect(unit, 'SANCTUM') &&
+      !hasEffect(unit, 'INVISIBLE') &&
       (opts.ignoreGuard === true || !hasEffect(unit, 'GUARDED'))
   );
 }

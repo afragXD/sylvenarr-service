@@ -77,6 +77,7 @@ export function createSummon(
     column,
     maxHp,
     health: maxHp,
+    initialMaxHp: maxHp,
     damage: hero.damage,
     armor: hero.armor,
     initiative: hero.initiative,

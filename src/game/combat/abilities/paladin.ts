@@ -5,7 +5,7 @@ import {
   markDeadIfNeeded,
   randInt,
 } from '../damage';
-import { grantEffect, healUnit } from '../effects';
+import { grantEffect, healUnit, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
 import { unholyDamageMult } from '../races';
 import { rollSrcChance, setWard } from '../resists';
@@ -141,10 +141,10 @@ export const paladinAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Цель не найдена' };
       }
-      if (actor.mana < 2) {
-        return { status: 'reject', message: 'Нужно 2 МР' };
+      const manaErr = trySpendMana(actor, 2);
+      if (manaErr) {
+        return { status: 'reject', message: manaErr };
       }
-      actor.mana -= 2;
       actor.soulShatterCd = 3;
       // Порт MagicPattern(HOLY, meleeFlag): урон от силы, касание.
       const damage = dealDamage(
@@ -204,10 +204,10 @@ export const paladinAbilities: AbilityHandler = {
     }
 
     // slot 5
-    if (actor.mana < 3) {
-      return { status: 'reject', message: 'Нужно 3 МР' };
+    const prayerErr = trySpendMana(actor, 3);
+    if (prayerErr) {
+      return { status: 'reject', message: prayerErr };
     }
-    actor.mana -= 3;
     grantEffect(actor, 'REGENHP', 2 + Math.floor(actor.lvl / 5), 1.1);
     grantEffect(actor, 'STUN_IMMUNE', 3, 50);
     moveToOtherRow(actor);

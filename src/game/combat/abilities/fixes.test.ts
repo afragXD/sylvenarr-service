@@ -506,9 +506,10 @@ describe('combat fixes', () => {
       playerId: 'h',
       unitId: 'p1',
       action: 'ability',
-      slot: 4,
+      slot: 2,
       targetId: 'p2',
     });
+    // CUT-2026-11-09 AC-2: слот 4 больше не тратит 2 МР. Обледенение тратит 2 МР.
     // burn = 2 * (10 + floor(lvl/4)) = 20 > 10 ОЗ — русалка сгорает оковами.
     expect(cast.ok).toBe(true);
     expect(mermaid.alive).toBe(false);

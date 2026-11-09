@@ -1,5 +1,8 @@
+import { hasEffect } from '../effects';
+import { chargeHintFor } from './charge-hints';
 import { baseMaxSummonsForClass } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
+import { CONCEALED_TARGET_MESSAGE, isConcealedFrom } from './targets';
 import { abbessAbilities } from './abbess';
 import { angelAbilities } from './angel';
 import { antipaladinAbilities } from './antipaladin';
@@ -72,6 +75,9 @@ const PILOT_HANDLERS: Record<string, AbilityHandler> = {
   Incub: incubAbilities,
 };
 
+/** Коды классов со слотами 1–5. */
+export const PILOT_CLASS_CODES: readonly string[] = Object.keys(PILOT_HANDLERS);
+
 /**
  * Класс с полным набором слотов 1–5.
  */
@@ -79,15 +85,59 @@ export function isPilotClass(code: string): boolean {
   return code in PILOT_HANDLERS;
 }
 
-/**
- * Список способностей пилота (или пусто).
- */
+/** Убирает чужих невидимых из списка выбора. Пустые id (могилы, skip) остаются. */
+function publishAbilities(
+  state: BattleState,
+  actor: BattleUnit,
+  abilities: readonly AbilityInfo[],
+): AbilityInfo[] {
+  return abilities.map((ability) => {
+    const legalTargetIds = ability.legalTargetIds.filter((id) => {
+      if (id === actor.id) {
+        return true;
+      }
+      const unit = state.units.find((item) => item.id === id);
+      if (!unit || !unit.alive) {
+        return true;
+      }
+      return !hasEffect(unit, 'INVISIBLE');
+    });
+    const lostAll =
+      ability.needsTarget && ability.legalTargetIds.length > 0 && legalTargetIds.length === 0;
+    return {
+      ...ability,
+      legalTargetIds,
+      disabledReason: ability.disabledReason ?? (lostAll ? 'Нет целей' : null),
+    };
+  });
+}
+
+function rejectConcealedSelection(
+  state: BattleState,
+  actor: BattleUnit,
+  ids: readonly (string | undefined)[],
+): AbilityOutcome | null {
+  for (const id of ids) {
+    if (!id) {
+      continue;
+    }
+    const unit = state.units.find((item) => item.id === id && item.alive);
+    if (unit && isConcealedFrom(actor, unit)) {
+      return { status: 'reject', message: CONCEALED_TARGET_MESSAGE };
+    }
+  }
+  return null;
+}
+
 export function listPilotAbilities(state: BattleState, actor: BattleUnit): AbilityInfo[] {
   const handler = PILOT_HANDLERS[actor.heroClassCode];
   if (!handler) {
     return [];
   }
-  return handler.listAbilities(state, actor);
+  return publishAbilities(state, actor, handler.listAbilities(state, actor)).map((ability) => {
+    const hint = chargeHintFor(actor, state, ability.slot);
+    return hint ? { ...ability, hint } : ability;
+  });
 }
 
 /**
@@ -113,6 +163,10 @@ export function applyAbility(
   const handler = PILOT_HANDLERS[actor.heroClassCode];
   if (!handler) {
     return { status: 'reject', message: 'У этого героя нет слотов способностей' };
+  }
+  const concealed = rejectConcealedSelection(state, actor, [input.targetId, input.choice]);
+  if (concealed) {
+    return concealed;
   }
   if (state.pendingPrompt && state.pendingPrompt.unitId !== actor.id) {
     return { status: 'reject', message: 'Ожидается выбор другого юнита' };
@@ -179,6 +233,9 @@ export function initPilotFlags(unit: BattleUnit): void {
       unit.ultaCharges = 3;
       break;
     case 'Mermaid':
+      unit.ultaCharges = 1;
+      break;
+    case 'Titan':
       unit.ultaCharges = 1;
       break;
     case 'Pyro':

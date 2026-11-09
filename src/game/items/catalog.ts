@@ -1129,7 +1129,7 @@ export const ITEM_CATALOG: readonly ItemCatalogEntry[] = [
   {
     code: 935,
     name: 'Книга пророка Изатиса',
-    description: '3 дополнительные жизни',
+    description: 'Две дополнительные жизни',
     cost: 1800,
     category: 5,
     tier: 9,

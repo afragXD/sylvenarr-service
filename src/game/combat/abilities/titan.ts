@@ -1,7 +1,9 @@
 import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
-import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
+import { grantEffect, healUnit, trySpendMana } from '../effects';
 import { consumeSrcFactor, rollSrcChance } from '../resists';
+import { reduceMaxHp } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { alliesOf, enemiesOf, meleeTargets, ownRowAllies } from './targets';
 import type { AbilityHandler, AbilityOutcome } from './types';
 
@@ -13,7 +15,7 @@ function manaReason(actor: BattleUnit, cost: number): string | null {
 function rewardKill(state: BattleState, actor: BattleUnit, target: BattleUnit): void {
   if (!target.alive) {
     actor.ultaCharges += 1;
-    state.log.push(`${actor.displayName} получает заряд исцеляющей волны (${actor.ultaCharges}).`);
+    state.log.push(`${actor.displayName} получает заряд Дрожи земли (${actor.ultaCharges}).`);
   }
 }
 
@@ -65,21 +67,20 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
     case 4:
       return {
         slot: 4,
-        label: `Исцеляющая волна (${actor.ultaCharges})`,
+        label: 'Исцеляющая волна (2 МР)',
         needsTarget: false,
-        disabledReason: actor.ultaCharges <= 0 ? 'Нет зарядов' : manaReason(actor, 2),
+        disabledReason: cdReason(actor, 4, 3) ?? manaReason(actor, 2),
         legalTargetIds: [],
       };
-    case 5: {
-      const allies = alliesOf(state, actor);
+    case 5:
       return {
         slot: 5,
-        label: 'Восточный ветер (ряд)',
-        needsTarget: true,
-        disabledReason: manaReason(actor, 2),
-        legalTargetIds: allies.map((unit) => unit.id),
+        label: `Дрожь земли (${actor.ultaCharges})`,
+        needsTarget: false,
+        disabledReason:
+          actor.ultaCharges <= 0 ? 'Нет зарядов' : (manaReason(actor, 2) ?? null),
+        legalTargetIds: [],
       };
-    }
   }
 }
 
@@ -92,6 +93,7 @@ export const titanAbilities: AbilityHandler = {
   },
 
   preChoice(state, actor) {
+    tickSlotCds(actor);
     if (actor.passiveUsed) {
       return;
     }
@@ -178,8 +180,7 @@ export const titanAbilities: AbilityHandler = {
       );
       markDeadIfNeeded(state, target);
       if (target.alive && rollSrcChance(state, target, 50 + actor.lvl * 2, 'LOWERINGLEVEL')) {
-        target.maxHp = Math.max(1, Math.round(target.maxHp * 0.85));
-        target.health = Math.min(target.health, target.maxHp);
+        reduceMaxHp(target, 0.85);
         state.log.push(`Максимальное здоровье ${target.displayName} снижено до ${target.maxHp}.`);
       }
       rewardKill(state, actor, target);
@@ -191,7 +192,7 @@ export const titanAbilities: AbilityHandler = {
       if (err) {
         return { status: 'reject', message: err };
       }
-      actor.ultaCharges -= 1;
+      setSlotCd(actor, 4, 3);
       const armor = 15 + actor.lvl * 2;
       for (const ally of ownRowAllies(state, actor)) {
         grantEffect(ally, 'STONEFLESH', 2, armor);
@@ -204,22 +205,28 @@ export const titanAbilities: AbilityHandler = {
       return { status: 'done' };
     }
 
-    if (input.slot === 5 && target) {
+    if (input.slot === 5) {
+      if (actor.ultaCharges <= 0) {
+        return { status: 'reject', message: 'Нет зарядов' };
+      }
       const err = trySpendMana(actor, 2);
       if (err) {
         return { status: 'reject', message: err };
       }
-      const haste = 15 + actor.lvl;
-      const row = alliesOf(state, actor).filter((unit) => unit.row === target.row);
-      for (const ally of row) {
-        if (hasEffect(ally, 'SLOW')) {
-          delEffect(ally, 'SLOW', state);
+      actor.ultaCharges -= 1;
+      const chance = 80 + actor.lvl;
+      for (const enemy of enemiesOf(state, actor)) {
+        dealDamage(actor, enemy, { kind: 'magic', damageMult: 0.75, source: 'EARTH' }, state);
+        if (enemy.alive) {
+          const weak = Math.round(enemy.damage * 0.33);
+          if (weak > 0 && rollSrcChance(state, enemy, chance, 'DEATH')) {
+            grantEffect(enemy, 'WEAKNESS', 2, weak);
+          }
         }
-        grantEffect(ally, 'HASTE', 2, haste);
+        markDeadIfNeeded(state, enemy);
+        rewardKill(state, actor, enemy);
       }
-      state.log.push(
-        `${actor.displayName} призывает восточный ветер: ${target.row === 0 ? 'передний' : 'задний'} ряд ускоряется (+${haste} инициативы).`
-      );
+      state.log.push(`${actor.displayName}: дрожь земли (осталось ${actor.ultaCharges}).`);
       return { status: 'done' };
     }
 

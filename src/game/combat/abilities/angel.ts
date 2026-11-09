@@ -170,7 +170,7 @@ export const angelAbilities: AbilityHandler = {
         unitId: actor.id,
         kind: PROMPT_SECOND_HEAL,
         slot: 1,
-        options: others.map((unit) => ({ id: unit.id, label: unitChoiceLabel(unit) })),
+        options: others.map((unit) => ({ id: unit.id, label: unitChoiceLabel(unit, state) })),
         context: { firstTargetId: target.id },
       };
       state.log.push(`${actor.displayName}: выберите вторую цель лечения.`);

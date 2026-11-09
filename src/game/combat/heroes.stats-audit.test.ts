@@ -84,7 +84,7 @@ const LEGACY_STATS_DICT: Record<
     health: 350,
     damage: 28,
     armor: 5,
-    initiative: 30,
+    initiative: 35, // CUT-2026-11-09 AC-5
     dodge: 0,
     luck: 10,
     morale: 0,
@@ -224,7 +224,7 @@ const LEGACY_STATS_DICT: Record<
     displayName: 'Травница',
     health: 165,
     damage: 18,
-    armor: 20,
+    armor: 10, // CUT-2026-11-09 AC-9
     initiative: 50,
     dodge: 5,
     luck: 0,
@@ -292,15 +292,15 @@ const LEGACY_STATS_DICT: Record<
   },
   Mermaid: {
     displayName: 'Русалка',
-    // CUT-2026-11-05 AC-3/AC-4: ОЗ 162, МР 10.
+    // CUT-2026-11-09 AC-2: ОЗ 162, инициатива 30, МР 6.
     health: 162,
     damage: 0,
     armor: 0,
-    initiative: 48,
+    initiative: 30,
     dodge: 0,
     luck: 0,
     morale: 0,
-    mana: 10,
+    mana: 6,
     power: 30,
     gold: 290,
     accuracy: 100,

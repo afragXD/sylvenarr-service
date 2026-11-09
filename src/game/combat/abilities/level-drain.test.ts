@@ -58,9 +58,7 @@ describe('petrify and level drain', () => {
     const foe = state.units.find((unit) => unit.id === 'p2');
     expect(foe?.alive).toBe(true);
     expect(hasEffect(foe!, 'PETRIFIED')).toBe(true);
-    // STUNNED длительностью 1 снимается при пропуске хода в том же applyAction.
-    expect(state.log.some((line) => line.includes('оглушён и пропускает ход. (авто)'))).toBe(true);
-    expect(state.log.some((line) => line.includes('обращается в камень'))).toBe(true);
+    expect(state.log.some((line) => line.includes('каменеет'))).toBe(true); // CUT-2026-11-09 AC-5
   });
 
   test('Paladin slot 3 transfers levels via levelUpUnit', () => {

@@ -25,7 +25,8 @@ const CLASS_SETUP: Record<string, ClassSetup> = {
   Archlich: { perks: [...BASE_PERKS, 'ORBS'] },
   Marauder: { perks: [...BASE_PERKS, 'DOUBLE_USING_INVENTORY'] },
   DemonLord: { perks: [...BASE_PERKS, 'TALISMANS'] },
-  Abbess: { perks: [...BASE_PERKS, 'GRAND_MERCHANT', 'RELICS'], merchant: 0.2 },
+  Abbess: { perks: [...BASE_PERKS, 'RELICS'], merchant: 0 },
+  Titan: { perks: [...BASE_PERKS, 'GRAND_MERCHANT'], merchant: 0.2 },
   Detective: { perks: [...BASE_PERKS], develop: 5 },
 };
 

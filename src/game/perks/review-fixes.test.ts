@@ -96,11 +96,11 @@ describe('SIGMALIKE / значение резиста STUN', () => {
     expect(hasEffect(target, 'STUNNED')).toBe(false);
   });
 
-  test('при выключенной экономике значение резиста не читается', () => {
+  test('процент STUN блокирует и без ярмарки', () => {
     const state = duel(false);
     const target = guestUnit(state);
     changeResist(target, 'STUN', 100);
-    expect(tryStun(state, target, 1)).toBe(true);
+    expect(tryStun(state, target, 1)).toBe(false); // CUT-2026-11-09 AC-7
   });
 });
 

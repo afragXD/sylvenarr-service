@@ -5,6 +5,7 @@ import {
   applyVampWeaponHeal,
   delEffect,
   destroyArmor,
+  breakLoveLinks,
   grantEffect,
   hasEffect,
   tryStun,
@@ -567,7 +568,8 @@ export function dealDamage(
     counterDepth === 0
   ) {
     counterDepth += 1;
-    const sparkRaw = Math.max(1, Math.round(attacker.power / 5 + 4));
+    const air = attacker.effects.find((effect) => effect.id === 'AIRWEAPON');
+    const sparkRaw = Math.round(attacker.power / 5 + 4) + Math.floor((air?.casterLvl ?? 0) / 3);
     const sparkResist = applyResistMultiplier(defender, 'AIR');
     if (sparkResist.blocked) {
       if (state && sparkResist.blockReason) {
@@ -802,6 +804,7 @@ export function markDeadIfNeeded(state: BattleState, unit: BattleUnit, opts?: Ma
   }
   unit.alive = false;
   unit.health = 0;
+  breakLoveLinks(state, unit);
   if (!wasAlive) {
     return;
   }

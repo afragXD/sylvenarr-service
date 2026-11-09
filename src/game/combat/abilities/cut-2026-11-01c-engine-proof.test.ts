@@ -1148,8 +1148,8 @@ describe('CUT-2026-11-01c engine-proof', () => {
         targetId: 'p2',
       });
       const healed = ally.health - before;
-      expect(healed).toBeGreaterThanOrEqual(24);
-      expect(healed).toBeLessThanOrEqual(37);
+      expect(healed).toBeGreaterThanOrEqual(29); // CUT-2026-11-09 AC-4
+      expect(healed).toBeLessThanOrEqual(42);
       healSamples.push(healed);
     }
 

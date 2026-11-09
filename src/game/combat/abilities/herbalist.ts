@@ -132,10 +132,9 @@ export const herbalistAbilities: AbilityHandler = {
 
     if (input.slot === 4) {
       if (!economyOn(state)) {
-        const healed = healUnit(actor, 5 + actor.lvl);
-        state.log.push(
-          `${actor.displayName} варит зелье поддержки (+${healed} ОЗ; инвентарь — позже).`
-        );
+        const healed = healUnit(actor, 15 + randInt(actor.lvl * 2, actor.lvl * 3));
+        grantEffect(actor, 'STONEFLESH', 2, 15 + actor.lvl * 2);
+        state.log.push(`${actor.displayName} пьёт зелье поддержки (+${healed} ОЗ, каменная плоть).`);
         return { status: 'done' };
       }
       const code = POTION_CRAFT_POOL[randInt(0, POTION_CRAFT_POOL.length - 1)]!;

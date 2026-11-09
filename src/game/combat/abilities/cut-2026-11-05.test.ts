@@ -50,7 +50,7 @@ describe('CUT-2026-11-05', () => {
     mermaid.power = 10;
     const healLow = applyAbility(state, mermaid, { slot: 1, targetId: 'a' });
     expect(healLow.status).toBe('done');
-    expect(mermaid.mana).toBe(9);
+    expect(mermaid.mana).toBe(8); // CUT-2026-11-09 AC-2
     const healedLow = ally.health;
 
     mermaid.mana = 10;
@@ -195,9 +195,9 @@ describe('CUT-2026-11-05', () => {
 
   test('giant STUN resists: Titan 60 ward 1', () => {
     const titan = resistsForClass('Titan').STUN;
-    expect(titan?.value).toBe(60);
+    expect(titan?.value).toBe(40); // CUT-2026-11-09 AC-6
     expect(titan?.wardCharges).toBe(1);
-    expect(resistsForClass('DemonLord').STUN?.value).toBe(33);
-    expect(resistsForClass('Dracolich').STUN?.value).toBe(33);
+    expect(resistsForClass('DemonLord').STUN?.value).toBe(25); // CUT-2026-11-09 AC-5
+    expect(resistsForClass('Dracolich').STUN?.value).toBe(25); // CUT-2026-11-09 AC-7
   });
 });

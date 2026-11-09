@@ -1,5 +1,7 @@
-import { dealDamage, formatLastLogDamage, markDeadIfNeeded } from '../damage';
+import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../damage';
 import { addMana, grantEffect, healUnit, resurrectUnit, trySpendMana } from '../effects';
+import { pyRound } from './abbess';
+import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { ROW_BACK } from '../settings';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { alliesOf, enemiesInColumn, enemiesOf } from './targets';
@@ -22,13 +24,15 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
     }
     case 2: {
       const allies = alliesOf(state, actor);
-      const heal = actor.lvl * 7 + Math.floor(actor.power / 3);
+      const lo = pyRound(actor.power * 0.5);
+      const hi = pyRound(actor.power * 0.6);
+      const flat = actor.lvl * 2 + actor.lvl * 4;
       return {
         slot: 2,
-        label: 'Изобильный свет',
+        label: 'Изобильный свет (3 МР)',
         needsTarget: true,
-        previewHealMin: heal,
-        previewHealMax: heal,
+        previewHealMin: flat + Math.min(lo, hi),
+        previewHealMax: flat + Math.max(lo, hi),
         disabledReason:
           actor.mana < 3 ? 'Нужно 3 МР' : allies.length === 0 ? 'Нет союзников' : null,
         legalTargetIds: allies.map((unit) => unit.id),
@@ -62,14 +66,18 @@ function abilityMeta(state: BattleState, actor: BattleUnit, slot: AbilitySlot): 
         legalTargetIds: allies.map((unit) => unit.id),
       };
     }
-    case 5:
+    case 5: {
+      const allies = alliesOf(state, actor).filter((unit) => unit.id !== actor.id);
       return {
         slot: 5,
-        label: 'Базовые действия',
-        needsTarget: false,
-        disabledReason: 'Используйте защиту / ожидание',
-        legalTargetIds: [],
+        label: 'Оковы любви (2 МР)',
+        needsTarget: true,
+        disabledReason:
+          cdReason(actor, 5, 3) ??
+          (actor.mana < 2 ? 'Нужно 2 МР' : allies.length === 0 ? 'Не на себя' : null),
+        legalTargetIds: allies.map((unit) => unit.id),
       };
+    }
   }
 }
 
@@ -113,9 +121,30 @@ function resolveResurrect(
 /**
  * Patriarch: колонка, heal, resurrect, SANCTUM.
  */
+function bindLove(unit: BattleUnit, partnerId: string, rounds: number): void {
+  const existing = unit.effects.find((effect) => effect.id === 'LOVE_SHACKLES');
+  if (existing) {
+    existing.rounds = rounds;
+    existing.linkId = partnerId;
+    existing.fresh = true;
+    return;
+  }
+  unit.effects.push({
+    id: 'LOVE_SHACKLES',
+    rounds,
+    power: 0,
+    fresh: true,
+    linkId: partnerId,
+  });
+}
+
 export const patriarchAbilities: AbilityHandler = {
   listAbilities(state, actor) {
     return ([1, 2, 3, 4, 5] as AbilitySlot[]).map((slot) => abilityMeta(state, actor, slot));
+  },
+
+  preChoice(_state, actor) {
+    tickSlotCds(actor);
   },
 
   apply(state, actor, input): AbilityOutcome {
@@ -163,7 +192,9 @@ export const patriarchAbilities: AbilityHandler = {
       if (!target) {
         return { status: 'reject', message: 'Нужен союзник' };
       }
-      const amount = actor.lvl * 7 + Math.floor(actor.power / 3);
+      const lo = pyRound(actor.power * 0.5);
+      const hi = pyRound(actor.power * 0.6);
+      const amount = actor.lvl * 2 + target.lvl * 4 + randInt(Math.min(lo, hi), Math.max(lo, hi));
       const healed = healUnit(target, amount);
       state.log.push(`${actor.displayName} исцеляет ${target.displayName} (+${healed}).`);
       return { status: 'done' };
@@ -203,6 +234,23 @@ export const patriarchAbilities: AbilityHandler = {
       return { status: 'done' };
     }
 
-    return { status: 'reject', message: 'Используйте защиту / ожидание' };
+    const partner = alliesOf(state, actor).find(
+      (unit) => unit.id === input.targetId && unit.id !== actor.id,
+    );
+    if (!partner) {
+      return { status: 'reject', message: 'Нужен союзник' };
+    }
+    const loveErr = trySpendMana(actor, 2);
+    if (loveErr) {
+      return { status: 'reject', message: loveErr };
+    }
+    const rounds = 3 + Math.floor(actor.lvl / 7);
+    bindLove(actor, partner.id, rounds);
+    bindLove(partner, actor.id, rounds);
+    setSlotCd(actor, 5, 3);
+    state.log.push(
+      `${actor.displayName} связывает себя с ${partner.displayName} оковами любви на ${rounds} р.`,
+    );
+    return { status: 'done' };
   },
 };

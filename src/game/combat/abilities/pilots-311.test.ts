@@ -174,7 +174,7 @@ describe('phase 3.11 pilots', () => {
     });
     expect(result.ok).toBe(true);
     expect(det.ultaCharges).toBe(1);
-    expect(det.effects.some((effect) => effect.id === 'INVISIBLE')).toBe(true);
+    expect(det.effects.some((effect) => effect.id === 'INVISIBLE')).toBe(false); // CUT-2026-11-09 AC-1
   });
 
   test('GhostWarrior slot 1: урон не зависит от кладбища (CUT AC-7)', () => {

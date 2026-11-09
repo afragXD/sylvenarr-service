@@ -3,7 +3,7 @@ import { dealDamage, formatLastLogDamage, markDeadIfNeeded, randInt } from '../d
 import { delEffect, grantEffect, hasEffect, healUnit, trySpendMana } from '../effects';
 import { levelUpUnit } from '../level';
 import { rollSrcChance } from '../resists';
-import { transformClassOnly } from '../transform';
+import { popResistSnapshot, pushResistSnapshot, transformClassOnly } from '../transform';
 import type { AbilityInfo, AbilitySlot, BattleState, BattleUnit } from '../types';
 import { cdReason, setSlotCd, tickSlotCds } from './cooldowns';
 import { degradationSquareTargets, enemiesOf, meleeOrAll } from './targets';
@@ -260,7 +260,9 @@ export const witchAbilities: AbilityHandler = {
       }
       target.polymorphSavedArmor = target.armor;
       target.armor = 0;
+      pushResistSnapshot(target);
       if (!transformClassOnly(state, target, 'Imp')) {
+        popResistSnapshot(target);
         target.armor = target.polymorphSavedArmor;
         target.polymorphSavedArmor = -1;
         if (target.transformParentCode === target.heroClassCode) {

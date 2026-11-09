@@ -9,6 +9,7 @@ import { APAL, antipaladinAbilities } from './antipaladin';
 import { resetCooldowns, slotCd } from './cooldowns';
 import { incubAbilities } from './incub';
 import { oracleAbilities } from './oracle';
+import { mermaidAbilities } from './mermaid';
 import { titanAbilities } from './titan';
 
 const hero = (code: string, overrides: Partial<HeroClassStats> = {}): HeroClassStats => ({
@@ -246,10 +247,10 @@ describe('Titan', () => {
   });
 
   test('Восточный ветер снимает замедление и ускоряет ряд', () => {
-    const state = battle('Titan');
+    const state = battle('Mermaid', { actor: { mana: 10 } });
     const ally = unit(state, 'p2');
     grantEffect(ally, 'SLOW', 3, 10);
-    titanAbilities.apply(state, unit(state, 'p1'), { slot: 5, targetId: 'p2' });
+    mermaidAbilities.apply(state, unit(state, 'p1'), { slot: 5, targetId: 'p2' }); // CUT-2026-11-09 AC-2
     expect(hasEffect(ally, 'SLOW')).toBe(false);
     expect(hasEffect(ally, 'HASTE')).toBe(true);
   });
