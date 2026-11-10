@@ -159,6 +159,8 @@ export type BattleEffect = {
   fresh?: boolean;
   /** CUT-2026-11-09 AC-1: невидимость обновлена этим действием — revealAfterAction не снимает. */
   refreshedThisAction?: boolean;
+  /** CUT-2026-11-09 AC-20: Желчь тикнула в этом ходу — только тогда уменьшаем rounds на end. */
+  consumeRoundOnEnd?: boolean;
 };
 
 /** Запись на кладбище для воскрешения. */

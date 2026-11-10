@@ -483,6 +483,8 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
       }
       // CUT AC-12: Желчь каждый тик навсегда разъедает броню (даже если вард съел урон).
       if (effect.id === 'GALL') {
+        // CUT-2026-11-09 AC-20: тик и срок связаны — end уменьшит rounds только после тика.
+        effect.consumeRoundOnEnd = true;
         const strip = gallArmorStrip(effect);
         if (strip > 0) {
           const before = unit.armor;
@@ -523,6 +525,13 @@ export function tickEffectsOnTurnEnd(unit: BattleUnit, state?: BattleState): str
     if (effect.fresh) {
       continue;
     }
+    // CUT-2026-11-09 AC-20: доп. ход («Ждать») без тика Желчи не съедает её раунд.
+    if (effect.id === 'GALL') {
+      if (!effect.consumeRoundOnEnd) {
+        continue;
+      }
+      effect.consumeRoundOnEnd = undefined;
+    }
     effect.rounds -= 1;
     if (effect.rounds <= 0) {
       // Расплата за договор — только по истечении, не при рассеивании.
@@ -546,7 +555,8 @@ export function tickEffectsOnTurnEnd(unit: BattleUnit, state?: BattleState): str
 export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
   switch (effect.id) {
     case 'STRENGTH':
-      unit.damage = applyStatShift(effect, unit.damage, Math.round(effect.power));
+      // CUT-2026-11-09 AC-22: пол 0 — normalizeUnit не обрежет мимо applied.
+      unit.damage = applyStatShift(effect, unit.damage, Math.round(effect.power), 0);
       break;
     case 'HAPPY':
       // В боте attrs=['morale'], не luck.
@@ -558,7 +568,8 @@ export function applyEffectOnAdd(unit: BattleUnit, effect: BattleEffect): void {
         effect.power > 0 && effect.power <= 1
           ? Math.max(1, Math.round(unit.power * effect.power))
           : Math.round(effect.power);
-      unit.power = applyStatShift(effect, unit.power, bonus);
+      // CUT-2026-11-09 AC-22: пол 0 — normalizeUnit(power) не даёт дрейфа при снятии.
+      unit.power = applyStatShift(effect, unit.power, bonus, 0);
       effect.power = bonus;
       break;
     }
