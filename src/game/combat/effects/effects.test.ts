@@ -211,6 +211,7 @@ describe('effects', () => {
     tickEffectsOnTurnEnd(u);
     expect(hasEffect(u, 'GUARDED')).toBe(true);
     expect(u.effects.find((effect) => effect.id === 'GUARDED')?.rounds).toBe(2);
+    u.effectsAgedThisRound = false;
     tickEffectsOnTurnStart(u);
     tickEffectsOnTurnEnd(u);
     expect(u.effects.find((effect) => effect.id === 'GUARDED')?.rounds).toBe(1);
@@ -223,6 +224,7 @@ describe('effects', () => {
     expect(u.resists.ARROWS?.value).toBe(33);
     tickEffectsOnTurnStart(u);
     tickEffectsOnTurnEnd(u);
+    u.effectsAgedThisRound = false;
     tickEffectsOnTurnStart(u);
     tickEffectsOnTurnEnd(u);
     expect(hasEffect(u, 'AIRSHIELD')).toBe(false);
@@ -241,6 +243,7 @@ describe('effects', () => {
     expect(hasEffect(u, 'STUNNED')).toBe(false);
     // STUN_IMMUNE (3 р.) спадает через 3 end-тика; дальше стан снова возможен.
     for (let i = 0; i < 3; i += 1) {
+      u.effectsAgedThisRound = false;
       tickEffectsOnTurnStart(u);
       tickEffectsOnTurnEnd(u);
     }

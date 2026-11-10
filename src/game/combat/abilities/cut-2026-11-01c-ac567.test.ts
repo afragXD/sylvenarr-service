@@ -247,6 +247,7 @@ describe('CUT-2026-11-01c AC-6 SkeletonChampion', () => {
     effect.fresh = undefined;
     tickEffectsOnTurnEnd(ally, state);
     expect(hasEffect(ally, 'PAIN_REFLECT')).toBe(true);
+    ally.effectsAgedThisRound = false;
     tickEffectsOnTurnEnd(ally, state);
     expect(hasEffect(ally, 'PAIN_REFLECT')).toBe(false);
   });

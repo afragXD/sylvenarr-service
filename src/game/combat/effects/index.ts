@@ -483,8 +483,6 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
       }
       // CUT AC-12: Желчь каждый тик навсегда разъедает броню (даже если вард съел урон).
       if (effect.id === 'GALL') {
-        // CUT-2026-11-09 AC-20: тик и срок связаны — end уменьшит rounds только после тика.
-        effect.consumeRoundOnEnd = true;
         const strip = gallArmorStrip(effect);
         if (strip > 0) {
           const before = unit.armor;
@@ -518,19 +516,17 @@ export function addMana(unit: BattleUnit, amount: number): number {
 /**
  * Тик в конце хода юнита: уменьшение rounds и спадание эффектов.
  * Эффекты, наложенные в этот же ход (fresh), первый тик пропускают.
+ * CUT-2026-11-09 r5: срок списывается раз за раунд носителя (Ждать / доп. ход не едят раунд).
  */
 export function tickEffectsOnTurnEnd(unit: BattleUnit, state?: BattleState): string[] {
   const log: string[] = [];
+  if (unit.effectsAgedThisRound) {
+    return log;
+  }
+  unit.effectsAgedThisRound = true;
   for (const effect of [...unit.effects]) {
     if (effect.fresh) {
       continue;
-    }
-    // CUT-2026-11-09 AC-20: доп. ход («Ждать») без тика Желчи не съедает её раунд.
-    if (effect.id === 'GALL') {
-      if (!effect.consumeRoundOnEnd) {
-        continue;
-      }
-      effect.consumeRoundOnEnd = undefined;
     }
     effect.rounds -= 1;
     if (effect.rounds <= 0) {

@@ -159,8 +159,6 @@ export type BattleEffect = {
   fresh?: boolean;
   /** CUT-2026-11-09 AC-1: невидимость обновлена этим действием — revealAfterAction не снимает. */
   refreshedThisAction?: boolean;
-  /** CUT-2026-11-09 AC-20: Желчь тикнула в этом ходу — только тогда уменьшаем rounds на end. */
-  consumeRoundOnEnd?: boolean;
 };
 
 /** Запись на кладбище для воскрешения. */
@@ -244,6 +242,11 @@ export type BattleUnit = {
    * Сбрасывается в начале раунда; wait / доп. ход не сбрасывают.
    */
   wasEffected: boolean;
+  /**
+   * CUT-2026-11-09 r5: срок эффектов (rounds) уже списан в этом раунде носителя.
+   * Сбрасывается вместе с wasEffected при stage++; wait / доп. ход не сбрасывают.
+   */
+  effectsAgedThisRound?: boolean;
   /** Уровень юнита в бою (legacy Hero.lvl); старт 1. */
   lvl: number;
   /**

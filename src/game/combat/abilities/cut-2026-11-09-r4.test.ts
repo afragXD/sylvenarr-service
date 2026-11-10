@@ -128,6 +128,7 @@ describe('CUT-2026-11-09 r4 AC-20 GALL wait ticks', () => {
     let strips = 0;
     // Первый «ход»: тик + end.
     knight.wasEffected = false;
+    knight.effectsAgedThisRound = false;
     const armorBefore = knight.armor;
     tickEffectsOnTurnStart(knight);
     if (knight.armor < armorBefore) {
@@ -146,6 +147,7 @@ describe('CUT-2026-11-09 r4 AC-20 GALL wait ticks', () => {
     // Оставшиеся раунды эффекта (по одному тику на раунд).
     while (hasEffect(knight, 'GALL')) {
       knight.wasEffected = false;
+      knight.effectsAgedThisRound = false;
       const before = knight.armor;
       tickEffectsOnTurnStart(knight);
       if (knight.armor < before) {
@@ -196,6 +198,7 @@ describe('CUT-2026-11-09 r4 AC-20 GALL wait ticks', () => {
     gall.fresh = undefined;
     for (let i = 0; i < 3; i += 1) {
       knight.wasEffected = false;
+      knight.effectsAgedThisRound = false;
       tickEffectsOnTurnStart(knight);
       expect(knight.armor).toBeGreaterThanOrEqual(0);
       tickEffectsOnTurnEnd(knight, state);

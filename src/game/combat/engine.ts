@@ -232,6 +232,7 @@ function buildTeamUnits(
         mana: hero.mana,
         maxMana: hero.maxMana ?? hero.mana,
         wasEffected: false,
+        effectsAgedThisRound: false,
         lvl: 1,
         hiddenLvl: 1,
         defending: false,
@@ -327,6 +328,7 @@ export function advanceToNextUnit(state: BattleState): void {
       for (const unit of state.units) {
         // defending снимается reverseEffect(DEFEND), не принудительно на стыке раундов.
         unit.wasEffected = false;
+        unit.effectsAgedThisRound = false;
         unit.lowHpExtraTurn = false;
       }
       if (state.stage > state.rules.maxRounds) {

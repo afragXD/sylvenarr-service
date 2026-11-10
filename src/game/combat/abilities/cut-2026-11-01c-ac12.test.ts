@@ -92,6 +92,7 @@ describe('CUT-2026-11-01c AC-12 Gall / accuracy / Death Sentence', () => {
     let totalDmg = 0;
     for (let i = 0; i < 3; i += 1) {
       foe.wasEffected = false;
+      foe.effectsAgedThisRound = false;
       const current = foe.effects.find((e) => e.id === 'GALL');
       if (current) {
         current.fresh = undefined;
