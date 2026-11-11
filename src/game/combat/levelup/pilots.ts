@@ -4,7 +4,7 @@ import { randInt } from '../damage';
 import { addMana, healUnit } from '../effects';
 import { changeResist, setWard } from '../resists';
 import type { BattleUnit } from '../types';
-import { chargeDueBeforeBump, chargeGainedAfterBump } from '../abilities/charge-hints';
+import { chargeGainedAfterBump, claimChargeIfDue } from '../abilities/charge-hints';
 import { bumpLevel } from './bump';
 import type { ClassLevelUpFn } from './types';
 
@@ -14,7 +14,7 @@ function werewolfRage(unit: BattleUnit): number {
 
 export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   Assassin(unit, ind, state) {
-    if (chargeDueBeforeBump('Assassin', unit.hiddenLvl, state.stage, ind)) {
+    if (claimChargeIfDue('Assassin', unit, state.stage, ind)) {
       unit.darts += randInt(1, 2);
       if (economyOn(state)) {
         addItem(state, unit.team, 107, 1);
@@ -28,7 +28,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Paladin(unit, ind, state) {
-    if (chargeDueBeforeBump('Paladin', unit.hiddenLvl, state.stage, ind)) {
+    if (claimChargeIfDue('Paladin', unit, state.stage, ind)) {
       unit.ultaCharges += 1;
       addMana(unit, 5);
       if (economyOn(state)) {
@@ -70,7 +70,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   DemonLord(unit, ind, state) {
-    if (chargeDueBeforeBump('DemonLord', unit.hiddenLvl, state.stage, ind)) {
+    if (claimChargeIfDue('DemonLord', unit, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     unit.power += randInt(2, 4) * ind;
@@ -107,7 +107,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Marauder(unit, ind, state) {
-    if (chargeDueBeforeBump('Marauder', unit.hiddenLvl, state.stage, ind)) {
+    if (claimChargeIfDue('Marauder', unit, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     unit.damage += (randInt(2, 5) + Math.floor(unit.lvl / 2)) * ind;
@@ -125,7 +125,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Werewolf(unit, ind, state) {
-    if (chargeDueBeforeBump('Werewolf', unit.hiddenLvl, state.stage, ind)) {
+    if (claimChargeIfDue('Werewolf', unit, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     // CUT-2026-11-01c AC-3: randInt(2,3) + L//2 (было 1..3).
@@ -151,7 +151,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Witch(unit, ind, state) {
-    if (chargeDueBeforeBump('Witch', unit.hiddenLvl, state.stage, ind)) {
+    if (claimChargeIfDue('Witch', unit, state.stage, ind)) {
       unit.gun += 4;
     }
     unit.damage += (randInt(2, 5) + Math.floor(unit.lvl / 2)) * ind;
@@ -164,7 +164,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
 
   GhostWarrior(unit, ind, state) {
     // Ульта «Личный слуга»: +1 заряд каждые 5 раундов (как Мародёр/Пайро).
-    if (chargeDueBeforeBump('GhostWarrior', unit.hiddenLvl, state.stage, ind)) {
+    if (claimChargeIfDue('GhostWarrior', unit, state.stage, ind)) {
       unit.ultaCharges += 1;
       state.log.push(`${unit.displayName} получает заряд личного слуги (${unit.ultaCharges}).`);
     }
@@ -176,7 +176,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Oracle(unit, ind, state) {
-    if (chargeDueBeforeBump('Oracle', unit.hiddenLvl, state.stage, ind)) {
+    if (claimChargeIfDue('Oracle', unit, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     addMana(unit, 2 * ind);
@@ -203,7 +203,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   BeerElemental(unit, ind, state) {
-    if (chargeDueBeforeBump('BeerElemental', unit.hiddenLvl, state.stage, ind)) {
+    if (claimChargeIfDue('BeerElemental', unit, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     unit.power += randInt(1, 2) * ind;
@@ -234,7 +234,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   },
 
   Patriarch(unit, ind, state) {
-    if (chargeDueBeforeBump('Patriarch', unit.hiddenLvl, state.stage, ind)) {
+    if (claimChargeIfDue('Patriarch', unit, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     unit.armor += 3 * ind;
@@ -247,7 +247,7 @@ export const pilotLevelUps: Record<string, ClassLevelUpFn> = {
   Pyro(unit, ind, state) {
     unit.damage += 2;
     unit.power += (2 + Math.floor(unit.lvl / 3)) * ind;
-    if (chargeDueBeforeBump('Pyro', unit.hiddenLvl, state.stage, ind)) {
+    if (claimChargeIfDue('Pyro', unit, state.stage, ind)) {
       unit.ultaCharges += 1;
     }
     bumpLevel(unit, ind);

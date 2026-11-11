@@ -91,15 +91,19 @@ describe('CUT-2026-11-01c AC-12 Gall / accuracy / Death Sentence', () => {
 
     let totalDmg = 0;
     for (let i = 0; i < 3; i += 1) {
+      // CUT-2026-11-09 r6: stage++ между симулируемыми раундами.
       foe.wasEffected = false;
       foe.effectsAgedThisRound = false;
+      if (i > 0) {
+        state.stage += 1;
+      }
       const current = foe.effects.find((e) => e.id === 'GALL');
       if (current) {
         current.fresh = undefined;
       }
       const beforeHp = foe.health;
       const beforeArmor = foe.armor;
-      const startLog = tickEffectsOnTurnStart(foe);
+      const startLog = tickEffectsOnTurnStart(foe, state);
       const lost = beforeHp - foe.health;
       totalDmg += lost;
       expect(lost).toBe(20);

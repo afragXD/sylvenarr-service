@@ -370,7 +370,7 @@ export function advanceToNextUnit(state: BattleState): void {
   }
 
   const stunned = hasEffect(next, 'STUNNED');
-  const tickLog = tickEffectsOnTurnStart(next);
+  const tickLog = tickEffectsOnTurnStart(next, state);
   state.log.push(...tickLog);
   markDeadIfNeeded(state, next);
   if (next.alive) {

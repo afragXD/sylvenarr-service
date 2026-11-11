@@ -159,6 +159,16 @@ export type BattleEffect = {
   fresh?: boolean;
   /** CUT-2026-11-09 AC-1: невидимость обновлена этим действием — revealAfterAction не снимает. */
   refreshedThisAction?: boolean;
+  /**
+   * CUT-2026-11-09 r6: stage, на котором уже списали rounds у этого эффекта.
+   * Wait / доп. ход не старят повторно; эффект, наложенный после Wait, стареет на отложенном ходе.
+   */
+  agedAtStage?: number;
+  /**
+   * CUT-2026-11-09 r6: stage, на котором DoT/FEAR уже тикнули.
+   * Новый эффект после Wait может тикнуть на отложенном ходе того же stage.
+   */
+  tickedAtStage?: number;
 };
 
 /** Запись на кладбище для воскрешения. */
@@ -243,10 +253,15 @@ export type BattleUnit = {
    */
   wasEffected: boolean;
   /**
-   * CUT-2026-11-09 r5: срок эффектов (rounds) уже списан в этом раунде носителя.
-   * Сбрасывается вместе с wasEffected при stage++; wait / доп. ход не сбрасывают.
+   * CUT-2026-11-09 r5 (legacy): раньше — unit-gate срока; r6 считает age по effect.agedAtStage.
+   * Поле оставляем для старых снимков, движок больше не опирается на него.
    */
   effectsAgedThisRound?: boolean;
+  /**
+   * CUT-2026-11-09 r6: stage последнего начисления заряда по часам kind=stage.
+   * Не больше одного гранта за раунд периода при мульти-level-up.
+   */
+  lastChargeStage?: number;
   /** Уровень юнита в бою (legacy Hero.lvl); старт 1. */
   lvl: number;
   /**

@@ -94,6 +94,29 @@ export function chargeDueBeforeBump(
   return false;
 }
 
+/**
+ * CUT-2026-11-09 r6: как chargeDueBeforeBump, но для kind=stage —
+ * не больше одного гранта за state.stage (мульти-level-up в одном раунде).
+ */
+export function claimChargeIfDue(
+  code: string,
+  unit: BattleUnit,
+  stage: number,
+  ind: number,
+): boolean {
+  if (!chargeDueBeforeBump(code, unit.hiddenLvl, stage, ind)) {
+    return false;
+  }
+  const clock = CHARGE_CLOCK[code];
+  if (clock?.kind === 'stage') {
+    if (unit.lastChargeStage === stage) {
+      return false;
+    }
+    unit.lastChargeStage = stage;
+  }
+  return true;
+}
+
 /** Сколько зарядов добавить после bump (Русалка). */
 export function chargeGainedAfterBump(code: string, before: number, after: number, ind: number): number {
   const clock = CHARGE_CLOCK[code];
@@ -163,7 +186,7 @@ export function chargeHintFor(
     case 'Mermaid':
       return `Старт 1. +1 заряд, когда скрытый уровень после повышения кратен 5, следующий через ${stepsUntilCharge(unit.heroClassCode, unit.hiddenLvl, stage)}.`;
     case 'Patriarch':
-      return `Старт 1. +1 заряд каждые 7 уровней, следующий через ${stepsUntilCharge(unit.heroClassCode, unit.hiddenLvl, stage)}.`;
+      return `Старт 1. +1 заряд, когда скрытый уровень кратен 7, следующий через ${stepsUntilCharge(unit.heroClassCode, unit.hiddenLvl, stage)}.`;
     case 'Pyro':
       return `Старт 1. +1 заряд каждый 5-й раунд, следующий через ${stepsUntilCharge(unit.heroClassCode, unit.hiddenLvl, stage)}.`;
     case 'Zombie':

@@ -130,7 +130,7 @@ describe('CUT-2026-11-09 r4 AC-20 GALL wait ticks', () => {
     knight.wasEffected = false;
     knight.effectsAgedThisRound = false;
     const armorBefore = knight.armor;
-    tickEffectsOnTurnStart(knight);
+    tickEffectsOnTurnStart(knight, state);
     if (knight.armor < armorBefore) {
       strips += 1;
       expect(armorBefore - knight.armor).toBe(Math.min(strip, armorBefore));
@@ -139,17 +139,19 @@ describe('CUT-2026-11-09 r4 AC-20 GALL wait ticks', () => {
 
     // Второй ход того же раунда («Ждать»): без тика, без съедания раунда.
     const roundsAfterFirst = knight.effects.find((effect) => effect.id === 'GALL')?.rounds;
-    tickEffectsOnTurnStart(knight);
+    tickEffectsOnTurnStart(knight, state);
     expect(knight.armor).toBe(armorBefore - Math.min(strip, armorBefore));
     tickEffectsOnTurnEnd(knight, state);
     expect(knight.effects.find((effect) => effect.id === 'GALL')?.rounds).toBe(roundsAfterFirst);
 
     // Оставшиеся раунды эффекта (по одному тику на раунд).
     while (hasEffect(knight, 'GALL')) {
+      // CUT-2026-11-09 r6: новый раунд носителя = stage++.
       knight.wasEffected = false;
       knight.effectsAgedThisRound = false;
+      state.stage += 1;
       const before = knight.armor;
-      tickEffectsOnTurnStart(knight);
+      tickEffectsOnTurnStart(knight, state);
       if (knight.armor < before) {
         strips += 1;
       }
@@ -197,9 +199,13 @@ describe('CUT-2026-11-09 r4 AC-20 GALL wait ticks', () => {
     const gall = knight.effects.find((effect) => effect.id === 'GALL')!;
     gall.fresh = undefined;
     for (let i = 0; i < 3; i += 1) {
+      // CUT-2026-11-09 r6: stage++ между симулируемыми раундами.
       knight.wasEffected = false;
       knight.effectsAgedThisRound = false;
-      tickEffectsOnTurnStart(knight);
+      if (i > 0) {
+        state.stage += 1;
+      }
+      tickEffectsOnTurnStart(knight, state);
       expect(knight.armor).toBeGreaterThanOrEqual(0);
       tickEffectsOnTurnEnd(knight, state);
     }

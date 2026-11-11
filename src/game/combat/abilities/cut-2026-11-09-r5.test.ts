@@ -76,13 +76,15 @@ function runCarrierRound(
 ): void {
   const waits = opts.waits ?? 0;
   if (opts.resetFlags !== false) {
+    // CUT-2026-11-09 r6: age/tick по effect.*AtStage — новый «раунд» = stage++.
     carrier.wasEffected = false;
     carrier.effectsAgedThisRound = false;
+    state.stage += 1;
   }
-  tickEffectsOnTurnStart(carrier);
+  tickEffectsOnTurnStart(carrier, state);
   tickEffectsOnTurnEnd(carrier, state);
   for (let i = 0; i < waits; i += 1) {
-    tickEffectsOnTurnStart(carrier);
+    tickEffectsOnTurnStart(carrier, state);
     tickEffectsOnTurnEnd(carrier, state);
   }
 }

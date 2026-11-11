@@ -423,12 +423,14 @@ export function enslaveUnit(target: BattleUnit, enslaver: BattleUnit): void {
 
 /**
  * Тик в начале хода юнита: regen и DoT (без уменьшения rounds).
- * DoT тикают только если !wasEffected (wait / доп. ход не повторяют урон).
+ * CUT-2026-11-09 r6: DoT/FEAR — не чаще одного раза за stage на эффект (tickedAtStage).
  * Также сбрасывает флаг fresh — эффекты, дожившие до своего хода, тикают в его конце.
  */
-export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
+export function tickEffectsOnTurnStart(unit: BattleUnit, state?: BattleState): string[] {
   const log: string[] = [];
+  const stage = state?.stage;
   let fearTicked = false;
+  let anyDot = false;
   for (const effect of [...unit.effects]) {
     effect.fresh = undefined;
     if (effect.id === 'REGENHP' && unit.alive) {
@@ -457,17 +459,25 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
         }
       }
     }
+    const alreadyTicked =
+      typeof stage === 'number' && effect.tickedAtStage === stage
+        ? true
+        : typeof stage !== 'number' && unit.wasEffected;
     // FEAR — VOT бота: каждый тик −мораль, без мгновенного −урона.
-    if (effect.id === 'FEAR' && unit.alive && !unit.wasEffected) {
+    if (effect.id === 'FEAR' && unit.alive && !alreadyTicked) {
       const loss = Math.round((5 + (effect.power || 3)) * mindResistFactor(unit));
       if (loss > 0) {
         unit.morale -= loss;
         log.push(`От магического страха ${unit.displayName} теряет ${loss} единиц боевого духа.`);
       }
+      if (typeof stage === 'number') {
+        effect.tickedAtStage = stage;
+      }
       fearTicked = true;
     }
     const dotSource = DOT_SOURCES[effect.id];
-    if (dotSource && unit.alive && !unit.wasEffected) {
+    if (dotSource && unit.alive && !alreadyTicked) {
+      anyDot = true;
       const resist = applyResistMultiplier(unit, dotSource);
       if (resist.blocked) {
         if (resist.blockReason) {
@@ -493,9 +503,12 @@ export function tickEffectsOnTurnStart(unit: BattleUnit): string[] {
           }
         }
       }
+      if (typeof stage === 'number') {
+        effect.tickedAtStage = stage;
+      }
     }
   }
-  if (fearTicked || [...unit.effects].some((effect) => DOT_SOURCES[effect.id])) {
+  if (fearTicked || anyDot || [...unit.effects].some((effect) => DOT_SOURCES[effect.id])) {
     unit.wasEffected = true;
   }
   return log;
@@ -516,19 +529,22 @@ export function addMana(unit: BattleUnit, amount: number): number {
 /**
  * Тик в конце хода юнита: уменьшение rounds и спадание эффектов.
  * Эффекты, наложенные в этот же ход (fresh), первый тик пропускают.
- * CUT-2026-11-09 r5: срок списывается раз за раунд носителя (Ждать / доп. ход не едят раунд).
+ * CUT-2026-11-09 r6: каждый эффект стареет не чаще одного раза за state.stage.
  */
 export function tickEffectsOnTurnEnd(unit: BattleUnit, state?: BattleState): string[] {
   const log: string[] = [];
-  if (unit.effectsAgedThisRound) {
-    return log;
-  }
-  unit.effectsAgedThisRound = true;
+  const stage = state?.stage;
   for (const effect of [...unit.effects]) {
     if (effect.fresh) {
       continue;
     }
+    if (typeof stage === 'number' && effect.agedAtStage === stage) {
+      continue;
+    }
     effect.rounds -= 1;
+    if (typeof stage === 'number') {
+      effect.agedAtStage = stage;
+    }
     if (effect.rounds <= 0) {
       // Расплата за договор — только по истечении, не при рассеивании.
       if (effect.id === 'IMMOLATION' && unit.alive) {
@@ -542,6 +558,8 @@ export function tickEffectsOnTurnEnd(unit: BattleUnit, state?: BattleState): str
       log.push(`Эффект ${effectLogLabel(effect.id, effect.power)} спадает с ${unit.displayName}.`);
     }
   }
+  // Legacy: помечаем unit-gate, чтобы старые симуляции без stage вели себя предсказуемо.
+  unit.effectsAgedThisRound = true;
   return log;
 }
 
