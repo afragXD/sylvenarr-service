@@ -465,6 +465,12 @@ describe('combat engine', () => {
     paladin.soulShatterCd = 1;
     grantEffect(paladin, 'POISON', 5, 1);
     paladin.wasEffected = true;
+    // CUT-2026-11-09 r6: DoT gated by tickedAtStage, не только wasEffected.
+    const poison = paladin.effects.find((effect) => effect.id === 'POISON');
+    if (poison) {
+      poison.tickedAtStage = state.stage;
+      poison.fresh = undefined;
+    }
     const hpBeforeWait = paladin.health;
 
     expect(applyAction(state, { playerId: 'h', unitId: 'p1', action: 'wait' }).ok).toBe(true);
