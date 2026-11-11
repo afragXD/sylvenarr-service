@@ -5,9 +5,11 @@ import {
   toBattleSummary,
 } from '../../game/combat';
 import type { BattleState, BattleUnit } from '../../game/combat/types';
+import { summarizeInventory } from '../../game/items/inventory';
 import { prisma } from '../../shared/db';
 import { withBattleLock } from '../matches/battle-lock';
 import type { CreatorMatchesModel } from './model';
+import { applyTeamInventoryPatch } from './patch-inventory';
 import { applyUnitStatsPatch } from './patch-unit';
 
 function toEditorUnit(unit: BattleUnit): CreatorMatchesModel.editorUnit {
@@ -40,6 +42,13 @@ function toEditorUnit(unit: BattleUnit): CreatorMatchesModel.editorUnit {
   };
 }
 
+function toEditorTeam(state: BattleState, team: 0 | 1): CreatorMatchesModel.editorTeam {
+  return {
+    gold: state.teams?.[team]?.gold ?? 0,
+    inventory: summarizeInventory(state, team),
+  };
+}
+
 function toDetail(
   matchId: string,
   hostDisplayName: string,
@@ -55,7 +64,20 @@ function toDetail(
     phase: state.phase ?? 'combat',
     activeUnitId: state.activeUnitId,
     units: state.units.map(toEditorUnit),
+    teams: [toEditorTeam(state, 0), toEditorTeam(state, 1)],
   };
+}
+
+async function loadFightingMatch(matchId: string) {
+  return prisma.match.findUnique({
+    where: { id: matchId },
+    select: {
+      id: true,
+      status: true,
+      host: { select: { displayName: true } },
+      guest: { select: { displayName: true } },
+    },
+  });
 }
 
 export class CreatorMatchesService {
@@ -91,15 +113,7 @@ export class CreatorMatchesService {
     | { ok: true; detail: CreatorMatchesModel.matchDetail }
     | { ok: false; status: 404; message: string }
   > {
-    const row = await prisma.match.findUnique({
-      where: { id: matchId },
-      select: {
-        id: true,
-        status: true,
-        host: { select: { displayName: true } },
-        guest: { select: { displayName: true } },
-      },
-    });
+    const row = await loadFightingMatch(matchId);
     if (!row || row.status !== 'fighting') {
       return { ok: false, status: 404, message: 'Бой не найден или уже не идёт' };
     }
@@ -121,15 +135,7 @@ export class CreatorMatchesService {
     | { ok: true; detail: CreatorMatchesModel.matchDetail; summary: BattleSummary }
     | { ok: false; status: 400 | 404; message: string }
   > {
-    const row = await prisma.match.findUnique({
-      where: { id: input.matchId },
-      select: {
-        id: true,
-        status: true,
-        host: { select: { displayName: true } },
-        guest: { select: { displayName: true } },
-      },
-    });
+    const row = await loadFightingMatch(input.matchId);
     if (!row || row.status !== 'fighting') {
       return { ok: false, status: 404, message: 'Бой не найден или уже не идёт' };
     }
@@ -162,6 +168,48 @@ export class CreatorMatchesService {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Не удалось обновить юнита';
+      return { ok: false, status: 400, message };
+    }
+  }
+
+  static async patchTeamInventory(input: {
+    readonly matchId: string;
+    readonly team: 0 | 1;
+    readonly patch: CreatorMatchesModel.teamInventoryPatchBody;
+  }): Promise<
+    | { ok: true; detail: CreatorMatchesModel.matchDetail; summary: BattleSummary }
+    | { ok: false; status: 400 | 404; message: string }
+  > {
+    const row = await loadFightingMatch(input.matchId);
+    if (!row || row.status !== 'fighting') {
+      return { ok: false, status: 404, message: 'Бой не найден или уже не идёт' };
+    }
+
+    try {
+      return await withBattleLock(input.matchId, async () => {
+        const store = getBattleStore();
+        const state = await store.get(input.matchId);
+        if (!state) {
+          return { ok: false as const, status: 404 as const, message: 'Состояние боя недоступно' };
+        }
+        applyTeamInventoryPatch(state, input.team, input.patch.inventory);
+        await store.set(state);
+        const summary = toBattleSummary(state);
+        publishBattle(input.matchId, 'battle:state', summary);
+        return {
+          ok: true as const,
+          detail: toDetail(
+            row.id,
+            row.host.displayName,
+            row.guest?.displayName ?? null,
+            state
+          ),
+          summary,
+        };
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Не удалось обновить инвентарь';
       return { ok: false, status: 400, message };
     }
   }

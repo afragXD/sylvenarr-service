@@ -67,6 +67,41 @@ export namespace CreatorMatchesModel {
   });
   export type editorUnit = typeof editorUnit.static;
 
+  export const inventoryStack = t.Object({
+    code: t.Number(),
+    name: t.String(),
+    description: t.String(),
+    quantity: t.Number(),
+    category: t.Number(),
+    tier: t.Number(),
+    target: t.Union([
+      t.Literal('self'),
+      t.Literal('ally'),
+      t.Literal('allySummon'),
+      t.Literal('enemy'),
+      t.Literal('enemySummon'),
+      t.Literal('sellOnly'),
+    ]),
+  });
+  export type inventoryStack = typeof inventoryStack.static;
+
+  export const editorTeam = t.Object({
+    gold: t.Number(),
+    inventory: t.Array(inventoryStack),
+  });
+  export type editorTeam = typeof editorTeam.static;
+
+  export const inventoryStackPatch = t.Object({
+    code: t.Number(),
+    quantity: t.Number(),
+  });
+  export type inventoryStackPatch = typeof inventoryStackPatch.static;
+
+  export const teamInventoryPatchBody = t.Object({
+    inventory: t.Array(inventoryStackPatch),
+  });
+  export type teamInventoryPatchBody = typeof teamInventoryPatchBody.static;
+
   export const matchDetail = t.Object({
     id: t.String(),
     status: t.Literal('fighting'),
@@ -76,6 +111,7 @@ export namespace CreatorMatchesModel {
     phase: t.String(),
     activeUnitId: t.Nullable(t.String()),
     units: t.Array(editorUnit),
+    teams: t.Tuple([editorTeam, editorTeam]),
   });
   export type matchDetail = typeof matchDetail.static;
 }
